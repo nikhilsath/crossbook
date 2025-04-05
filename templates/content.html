@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Content{% endblock %}
+
+{% block content %}
+  <h1 class="text-2xl font-bold mb-4">Content</h1>
+  <p class="text-sm text-gray-500 mb-4">Showing up to 1000 entries</p>
+  <form method="get" class="mb-6">
+    <input type="text" name="q" value="{{ request.args.get('q', '') }}" 
+           placeholder="Search content or notes..."
+           class="border px-3 py-2 rounded w-1/2">
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded ml-2">Search</button>
+  </form>  
+  <div class="overflow-x-auto">
+    <table class="min-w-full table-auto text-left border border-gray-200 rounded-lg">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="p-4">
+            <a href="{{ url_for('content', sort=next_sort) }}" class="font-medium text-gray-700 hover:text-primary">
+              Source
+              {% if sort == 'asc' %}↑{% else %}↓{% endif %}
+            </a>
+          </th>
+          <th class="p-4">Chapter</th>
+          <th class="p-4">Content (Preview)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in content %}
+        {% if row %}
+          <tr>
+            <td class="p-4">{{ row[1] }}</td>  <!-- source -->
+            <td class="p-4">{{ row[2] }}</td>  <!-- chapter -->
+            <td class="p-4">{{ row[3][:80] ~ ('...' if row[3]|length > 80 else '') }}</td>  <!-- content preview -->
+            <td class="p-4">
+              <a href="{{ url_for('content_detail', id=row[0]) }}" class="text-blue-500 hover:underline font-medium">
+                Edit
+              </a>
+            </td>
+          </tr>
+        {% endif %}
+      {% endfor %}      
+      </tbody>
+    </table>
+  </div>
+{% endblock %}
