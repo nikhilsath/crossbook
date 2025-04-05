@@ -10,8 +10,21 @@
            placeholder="Search content or notes..."
            class="border px-3 py-2 rounded w-1/2">
     <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded ml-2">Search</button>
-  </form>  
-  <div class="overflow-x-auto">
+    <div class="mb-4 mt-2">
+        <label class="block font-medium mb-1">Filter by Source:</label>
+        <div class="flex flex-wrap gap-4">
+        {% for src in available_sources %}
+            <label class="inline-flex items-center">
+            <input type="checkbox" name="source[]" value="{{ src }}"
+                    {% if src in selected_sources %}checked{% endif %} 
+                    class="form-checkbox text-blue-600 mr-2">
+            {{ src }}
+            </label>
+        {% endfor %}
+        </div>
+  </div>
+</form>
+    <div class="overflow-x-auto">
     <table class="min-w-full table-auto text-left border border-gray-200 rounded-lg">
       <thead class="bg-gray-100">
         <tr>

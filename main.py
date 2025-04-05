@@ -26,7 +26,6 @@ def characters():
 
     return render_template('characters.html', characters=rows, sort=sort, next_sort=next_sort)
 
-
 @app.route('/character/<int:character_id>')
 def character_detail(character_id):
     conn = sqlite3.connect('data/crossbook.db')
@@ -65,7 +64,6 @@ def items():
 
     return render_template('items.html', items=rows, sort=sort, next_sort=next_sort)
 
-
 @app.route('/items/<int:item_id>')
 def items_detail(item_id):
     conn = sqlite3.connect('data/crossbook.db')
@@ -82,7 +80,6 @@ def items_detail(item_id):
     item = dict(zip(fields, row)) 
 
     return render_template("item_detail.html", item=item)
-
 
 @app.route('/groups')
 def groups():
@@ -102,7 +99,6 @@ def groups():
 
     return render_template('groups.html', groups=rows, sort=sort, next_sort=next_sort)
 
-
 @app.route('/groups/<int:group_id>')
 def group_detail(group_id):
     conn = sqlite3.connect('data/crossbook.db')
@@ -119,6 +115,144 @@ def group_detail(group_id):
     group = dict(zip(fields, row)) 
 
     return render_template("group_detail.html", group=group)
+
+@app.route('/lore_topics')
+def lore_topics():
+    sort = request.args.get('sort', 'asc')
+    next_sort = 'desc' if sort == 'asc' else 'asc'
+
+    conn = sqlite3.connect('data/crossbook.db')
+    cursor = conn.cursor()
+
+    cursor.execute(f"""
+        SELECT id, topic, type, related_content
+        FROM lore_topics
+        ORDER BY topic {sort.upper()}
+    """)
+    rows = cursor.fetchall()
+    conn.close()
+
+    return render_template('lore_topics.html', lore_topics=rows, sort=sort, next_sort=next_sort)
+
+@app.route('/lore_topics/<int:topic_id>')
+def lore_topic_detail(topic_id):
+    conn = sqlite3.connect('data/crossbook.db')
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM lore_topics WHERE id = ?", (topic_id,))
+    row = cursor.fetchone()
+    conn.close()
+
+    if row is None:
+        return "Lore topic not found", 404
+
+    fields = ['id', 'topic', 'type', 'related_content', 'next_steps', 'notes']
+    lore_topic = dict(zip(fields, row))
+
+    return render_template('lore_topic_detail.html', lore_topic=lore_topic)
+
+@app.route('/locations')
+def locations():
+    sort = request.args.get('sort', 'asc')
+    next_sort = 'desc' if sort == 'asc' else 'asc'
+
+    conn = sqlite3.connect('data/crossbook.db')
+    cursor = conn.cursor()
+
+    cursor.execute(f"""
+        SELECT id, location, description
+        FROM locations
+        ORDER BY location {sort.upper()}
+    """)
+    rows = cursor.fetchall()
+    conn.close()
+
+    return render_template('locations.html', locations=rows, sort=sort, next_sort=next_sort)
+
+@app.route('/locations/<int:location_id>')
+def location_detail(location_id):
+    conn = sqlite3.connect('data/crossbook.db')
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM locations WHERE id = ?", (location_id,))
+    row = cursor.fetchone()
+    conn.close()
+
+    if row is None:
+        return "Location not found", 404
+
+    fields = ['id', 'location', 'region', 'notes']
+    location = dict(zip(fields, row))
+
+    return render_template('location_detail.html', location=location)
+
+@app.route('/content')
+def content():
+    sort = request.args.get('sort', 'asc')
+    next_sort = 'desc' if sort == 'asc' else 'asc'
+    search_query = request.args.get('q', '').strip()
+    selected_sources = request.args.getlist('source[]')
+
+    conn = sqlite3.connect('data/crossbook.db')
+    cursor = conn.cursor()
+
+    # Get all unique sources
+    cursor.execute("SELECT DISTINCT source FROM content ORDER BY source")
+    available_sources = [row[0].strip() for row in cursor.fetchall() if row[0]]
+
+    # Start building the query
+    base_query = "SELECT id, source, chapter, content FROM content WHERE 1=1"
+    params = []
+
+    # Search filter
+    if search_query:
+        base_query += " AND (content LIKE ? OR notes LIKE ?)"
+        like_term = f"%{search_query}%"
+        params.extend([like_term, like_term])
+
+    # Source filters
+    if selected_sources:
+        placeholders = ','.join(['?'] * len(selected_sources))
+        base_query += f" AND source IN ({placeholders})"
+        params.extend(selected_sources)
+
+
+    base_query += f" ORDER BY contentid {sort.upper()} LIMIT 1000"
+    cursor.execute(base_query, params)
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        'content.html',
+        content=rows,
+        sort=sort,
+        next_sort=next_sort,
+        selected_sources=selected_sources,
+        available_sources=available_sources
+    )
+
+@app.route('/content/<int:id>')
+def content_detail(id):
+    conn = sqlite3.connect('data/crossbook.db')
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM content WHERE id = ?", (id,))
+    row = cursor.fetchone()
+    conn.close()
+
+    if row is None:
+        return "Content not found", 404
+
+    fields = [
+        'id', 'contentid', 'linenumber', 'source', 'chapter', 'content',
+        'notes', 'tags', 'key_lore', 'characters',
+        'paragraph_length', 'dialog', 'dialog.1'
+    ]
+    content_entry = dict(zip(fields, row))
+
+    return render_template("content_detail.html", content=content_entry)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
