@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>    
+    <title>Groups</title>
+</head>
+<body>
+    <div class="p-4">
+        <h1 class="text-2xl font-bold mb-4">Groups</h1>
+        <div class="overflow-x-auto">
+          <table class="min-w-full table-auto text-left border border-gray-200 rounded-lg">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="p-4">
+                  <a href="{{ url_for('groups', sort=next_sort) }}" class="font-medium text-gray-700 hover:text-primary">
+                    Group
+                    {% if sort == 'asc' %}
+                      ↑
+                    {% else %}
+                      ↓
+                    {% endif %}
+                  </a>
+                </th>
+                <th class="p-4">Description</th>
+                <th class="p-4">Appearance</th>
+                <th class="p-4"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for group in groups %}
+              <tr class="hover:bg-gray-50">
+                <td class="p-4">{{ group[1] }}</td>  <!-- group -->
+                <td class="p-4">{{ group[2] }}</td>  <!-- description -->
+                <td class="p-4">{{ group[3] }}</td>  <!-- appearance -->
+                <td class="p-4">
+                  <a href="{{ url_for('group_detail', group_id=group[0]) }}" class="text-blue-500 hover:underline font-medium">
+                    Edit
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+</body>
+</html>

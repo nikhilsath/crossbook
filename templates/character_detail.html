@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>{{ character.character }}</title>
+</head>
+<body class="bg-orange-50 p-6">
+  <div class="max-w-5xl mx-auto border-4 border-orange-300 rounded-xl flex flex-row p-6 space-x-6 bg-orange-100">
+    
+    <!-- Left panel: Character details -->
+    <div class="flex-1 space-y-4">
+      <h1 class="text-4xl font-bold">{{ character.character }}</h1>
+      <div class="grid grid-cols-2 gap-4 text-lg">
+        <div><strong>Magical:</strong> {{ character.magical or "None" }}</div>
+        <div><strong>Allegience:</strong> {{ character.allegience or "None" }}</div>
+        <div><strong>Status:</strong> {{ character.status or "Unknown" }}</div>
+        <div><strong>Race:</strong> {{ character.race or "Unknown" }}</div>
+      </div>
+
+      <div>
+        <h2 class="font-semibold text-lg mt-4">Description</h2>
+        <p>{{ character.description or "No description available." }}</p>
+      </div>
+
+      <div>
+        <h2 class="font-semibold text-lg mt-4">Significance</h2>
+        <p>{{ character.significance or "No significance noted." }}</p>
+      </div>
+
+      <div>
+        <h2 class="font-semibold text-lg mt-4">Notes</h2>
+        <p>{{ character.notes or "No additional notes." }}</p>
+      </div>
+    </div>
+
+    <!-- Right panel: Related content -->
+    <div class="w-64 border-l-2 border-orange-300 pl-6">
+      <h2 class="text-xl font-semibold mb-2">Related Content</h2>
+      <ul class="space-y-1 text-blue-600">
+        <li><a href="#">Link 1</a></li>
+        <li><a href="#">Link 2</a></li>
+        <li><a href="#">Link 3</a></li>
+      </ul>
+    </div>
+    
+  </div>
+</body>
+</html>
