@@ -1,45 +1,46 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Crossbook</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-white text-gray-800">
+{% extends "base.html" %}
 
-    <!-- Simple Nav -->
-    <nav class="bg-gray-100 p-4 shadow-sm">
-      <ul class="flex space-x-6 text-lg font-medium">
-        <li><a href="/" class="text-blue-600 hover:underline">Home</a></li>
-        <li><a href="/characters" class="hover:underline">Characters</a></li>
-        <li><a href="/items" class="hover:underline">Items</a></li>
-        <li><a href="/groups" class="hover:underline">Groups</a></li>
-      </ul>
-    </nav>
-<div class="min-h-screen bg-gray-100 py-12 px-6">
-    <h1 class="text-4xl font-bold text-center mb-10">Browse Canon Content</h1>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-      
-      <!-- Characters -->
-      <a href="/characters" class="bg-white rounded-xl shadow-md p-6 hover:bg-gray-50 transition">
-        <h2 class="text-2xl font-bold mb-2">Characters</h2>
-        <p class="text-gray-600">View all known characters in the world</p>
-      </a>
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<h1 class="text-4xl font-bold text-center mb-10">Load the Glass Cannon</h1>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
   
-      <!-- Items -->
-      <a href="/items" class="bg-white rounded-xl shadow-md p-6 hover:bg-gray-50 transition">
-        <h2 class="text-2xl font-bold mb-2">Items</h2>
-        <p class="text-gray-600">Explore magical or significant objects</p>
-      </a>
-  
-      <!-- Groups -->
-      <a href="/groups" class="bg-white rounded-xl shadow-md p-6 hover:bg-gray-50 transition">
-        <h2 class="text-2xl font-bold mb-2">Groups</h2>
-        <p class="text-gray-600">Factions, cultures, and organizations</p>
-      </a>
-  
-    </div>
-  </div>  
-</body>
-</html>
+<!-- Content -->
+  <a href="/content" class="bg-white rounded-xl shadow-md p-6 hover:bg-gray-50 transition">
+    <h2 class="text-2xl font-bold mb-2">Content</h2>
+    <p class="text-gray-600">Content Index</p>
+  </a>
+
+  <!-- Characters -->
+  <a href="/characters" class="bg-white rounded-xl shadow-md p-6 hover:bg-gray-50 transition">
+    <h2 class="text-2xl font-bold mb-2">Characters</h2>
+    <p class="text-gray-600">View all known characters in Alagaesia</p>
+  </a>
+
+  <!-- Items -->
+  <a href="/items" class="bg-white rounded-xl shadow-md p-6 hover:bg-gray-50 transition">
+    <h2 class="text-2xl font-bold mb-2">Items</h2>
+    <p class="text-gray-600">Objects of significance</p>
+  </a>
+
+  <!-- Groups -->
+  <a href="/groups" class="bg-white rounded-xl shadow-md p-6 hover:bg-gray-50 transition">
+    <h2 class="text-2xl font-bold mb-2">Groups</h2>
+    <p class="text-gray-600">Factions, cultures, and organizations</p>
+  </a>
+
+  <!-- Locations -->
+  <a href="/locations" class="bg-white rounded-xl shadow-md p-6 hover:bg-gray-50 transition">
+    <h2 class="text-2xl font-bold mb-2">Locations</h2>
+    <p class="text-gray-600">Important places throughout the land</p>
+  </a>
+
+  <!-- Lore Topics -->
+  <a href="/lore_topics" class="bg-white rounded-xl shadow-md p-6 hover:bg-gray-50 transition">
+    <h2 class="text-2xl font-bold mb-2">Lore Topics</h2>
+    <p class="text-gray-600">Themes, magic systems, and unanswered questions</p>
+  </a>
+
+</div>
+{% endblock %}
