@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>{{ location.location }}</title>
+</head>
+<body class="bg-orange-50 p-6">
+  <div class="max-w-5xl mx-auto border-4 border-orange-300 rounded-xl flex flex-row p-6 space-x-6 bg-orange-100">
+
+    <!-- Left panel: Location details -->
+    <div class="flex-1 space-y-4">
+      <h1 class="text-4xl font-bold">{{ location.location }}</h1>
+      <div>
+        <h2 class="font-semibold text-lg mt-4">Region</h2>
+        <p>{{ location.region or "Unknown region" }}</p>
+      </div>
+      <div>
+        <h2 class="font-semibold text-lg mt-4">Details</h2>
+        <p>{{ location.details or "No details available." }}</p>
+      </div>
+    </div>
+
+    <!-- Right panel: Related content -->
+    <div class="w-64 border-l-2 border-orange-300 pl-6">
+      <h2 class="text-xl font-semibold mb-2">Related Content</h2>
+      <ul class="space-y-1 text-blue-600">
+        <li><a href="#">Link 1</a></li>
+        <li><a href="#">Link 2</a></li>
+        <li><a href="#">Link 3</a></li>
+      </ul>
+    </div>
+
+  </div>
+</body>
+</html>

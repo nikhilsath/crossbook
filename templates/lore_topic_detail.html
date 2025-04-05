@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>{{ lore_topic.topic }}</title>
+</head>
+<body class="bg-orange-50 p-6">
+  <div class="max-w-5xl mx-auto border-4 border-orange-300 rounded-xl flex flex-row p-6 space-x-6 bg-orange-100">
+
+    <!-- Left panel: Lore topic details -->
+    <div class="flex-1 space-y-4">
+      <h1 class="text-4xl font-bold">{{ lore_topic.topic }}</h1>
+      <div class="grid grid-cols-2 gap-4 text-lg">
+        <div><strong>Type:</strong> {{ lore_topic.type or "Unknown" }}</div>
+        <div><strong>Related Content:</strong> {{ lore_topic.related_content or "None" }}</div>
+      </div>
+
+      <div>
+        <h2 class="font-semibold text-lg mt-4">Next Steps</h2>
+        <p>{{ lore_topic.next_steps or "No next steps documented." }}</p>
+      </div>
+
+      <div>
+        <h2 class="font-semibold text-lg mt-4">Notes</h2>
+        <p>{{ lore_topic.notes or "No additional notes." }}</p>
+      </div>
+    </div>
+
+    <!-- Right panel: Related content -->
+    <div class="w-64 border-l-2 border-orange-300 pl-6">
+      <h2 class="text-xl font-semibold mb-2">Related Content</h2>
+      <ul class="space-y-1 text-blue-600">
+        <li><a href="#">Link 1</a></li>
+        <li><a href="#">Link 2</a></li>
+        <li><a href="#">Link 3</a></li>
+      </ul>
+    </div>
+
+  </div>
+</body>
+</html>
