@@ -37,14 +37,17 @@ def character_detail(character_id):
 
     if row is None:
         return "Character not found", 404
-    
+
     fields = [
         'id', 'character', 'race', 'origin', 'allegience',
-        'magical', 'status', 'description', 'significance', 'notes'
+        'magical', 'status', 'description', 'significance', 'notes',
+        'related_items', 'related_groups', 'related_locations',
+        'related_lore', 'related_content'
     ]
     character = dict(zip(fields, row))
 
     return render_template("character_detail.html", character=character)
+
 
 @app.route('/items')
 def items():
@@ -75,11 +78,16 @@ def items_detail(item_id):
 
     if row is None:
         return "Item not found", 404
-    
-    fields = ['id', 'items', 'description', 'notes']
-    item = dict(zip(fields, row)) 
+
+    fields = [
+        'id', 'items', 'description', 'notes',
+        'related_characters', 'related_groups',
+        'related_locations', 'related_lore', 'related_content'
+    ]
+    item = dict(zip(fields, row))
 
     return render_template("item_detail.html", item=item)
+
 
 @app.route('/groups')
 def groups():
@@ -104,17 +112,28 @@ def group_detail(group_id):
     conn = sqlite3.connect('data/crossbook.db')
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM groups WHERE id = ?", (group_id,))
+    cursor.execute("""
+    SELECT id, "group", descriptions, apperance,
+           related_characters, related_items, related_locations,
+           related_lore_topics, related_content
+    FROM groups
+    WHERE id = ?
+    """, (group_id,))
     row = cursor.fetchone()
     conn.close()
 
     if row is None:
         return "Group not found", 404
-    
-    fields = ['id', 'group', 'description', 'apperance']
-    group = dict(zip(fields, row)) 
+
+    fields = [
+        'id', 'group', 'descriptions', 'apperance',
+        'related_characters', 'related_items', 'related_locations',
+        'related_lore_topics', 'related_content'
+    ]
+    group = dict(zip(fields, row))
 
     return render_template("group_detail.html", group=group)
+
 
 @app.route('/lore_topics')
 def lore_topics():
@@ -139,17 +158,25 @@ def lore_topic_detail(topic_id):
     conn = sqlite3.connect('data/crossbook.db')
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM lore_topics WHERE id = ?", (topic_id,))
+    cursor.execute("""
+        SELECT id, topic, type, related_content, next_steps, notes,
+               related_characters, related_groups, related_items, related_locations
+        FROM lore_topics WHERE id = ?
+    """, (topic_id,))
     row = cursor.fetchone()
     conn.close()
 
     if row is None:
         return "Lore topic not found", 404
 
-    fields = ['id', 'topic', 'type', 'related_content', 'next_steps', 'notes']
+    fields = [
+        'id', 'topic', 'type', 'related_content', 'next_steps', 'notes',
+        'related_characters', 'related_groups', 'related_items', 'related_locations'
+    ]
     lore_topic = dict(zip(fields, row))
 
-    return render_template('lore_topic_detail.html', lore_topic=lore_topic)
+    return render_template("lore_topic_detail.html", lore_topic=lore_topic)
+
 
 @app.route('/locations')
 def locations():
@@ -174,17 +201,27 @@ def location_detail(location_id):
     conn = sqlite3.connect('data/crossbook.db')
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM locations WHERE id = ?", (location_id,))
+    cursor.execute("""
+        SELECT id, location, description,
+               related_characters, related_groups,
+               related_items, related_lore_topics, related_content
+        FROM locations WHERE id = ?
+    """, (location_id,))
     row = cursor.fetchone()
     conn.close()
 
     if row is None:
         return "Location not found", 404
 
-    fields = ['id', 'location', 'region', 'notes']
+    fields = [
+        'id', 'location', 'description',
+        'related_characters', 'related_groups',
+        'related_items', 'related_lore_topics', 'related_content'
+    ]
     location = dict(zip(fields, row))
 
-    return render_template('location_detail.html', location=location)
+    return render_template("location_detail.html", location=location)
+
 
 @app.route('/content')
 def content():
@@ -217,7 +254,7 @@ def content():
         params.extend(selected_sources)
 
 
-    base_query += f" ORDER BY contentid {sort.upper()} LIMIT 1000"
+    base_query += f" ORDER BY id {sort.upper()} LIMIT 1000"
     cursor.execute(base_query, params)
     rows = cursor.fetchall()
 
@@ -245,7 +282,7 @@ def content_detail(id):
         return "Content not found", 404
 
     fields = [
-        'id', 'contentid', 'linenumber', 'source', 'chapter', 'content',
+        'id', 'linenumber', 'source', 'chapter', 'content',
         'notes', 'tags', 'key_lore', 'characters',
         'paragraph_length', 'dialog', 'dialog.1'
     ]

@@ -1,9 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <title>{{ item.items }}</title>
-</head>
+{% extends "base.html" %}
+{% block title %}Content Detail{% endblock %}
+{% block content %}
 <body class="bg-orange-50 p-6">
   <div class="max-w-5xl mx-auto border-4 border-orange-300 rounded-xl flex flex-row p-6 space-x-6 bg-orange-100">
     
@@ -20,17 +17,17 @@
         <h2 class="font-semibold text-lg mt-4">Significance</h2>
         <p>{{ item.notes or "No significance noted." }}</p>
       </div>
-
+    </div>
     <!-- Right panel: Related content -->
     <div class="w-64 border-l-2 border-orange-300 pl-6">
-      <h2 class="text-xl font-semibold mb-2">Related Content</h2>
-      <ul class="space-y-1 text-blue-600">
-        <li><a href="#">Link 1</a></li>
-        <li><a href="#">Link 2</a></li>
-        <li><a href="#">Link 3</a></li>
-      </ul>
-    </div>
-    
+        <h2 class="text-xl font-semibold mb-2">Related</h2>
+        <ul class="text-sm text-blue-600 space-y-1">
+          <li><strong>Characters:</strong> {{ item.related_characters }}</li>
+          <li><strong>Groups:</strong> {{ item.related_groups }}</li>
+          <li><strong>Locations:</strong> {{ item.related_locations }}</li>
+          <li><strong>Lore Topics:</strong> {{ item.related_lore }}</li>
+          <li><strong>Content:</strong> {{ item.related_content }}</li>
+        </ul>
+      </div>
   </div>
-</body>
-</html>
+  {% endblock %}

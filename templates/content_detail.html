@@ -3,10 +3,13 @@
 {% block title %}Content Detail{% endblock %}
 
 {% block content %}
-  <div class="max-w-5xl mx-auto bg-white p-6 rounded shadow-md">
+<div class="max-w-5xl mx-auto bg-white p-6 rounded shadow-md flex flex-row space-x-6">
+
+  <!-- Left: Main Details -->
+  <div class="flex-1 space-y-4 text-gray-800">
     <h1 class="text-2xl font-bold mb-4">Content Entry</h1>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-800">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div><strong>Source:</strong> {{ content.source }}</div>
       <div><strong>Chapter:</strong> {{ content.chapter }}</div>
       <div><strong>Line Number:</strong> {{ content.linenumber }}</div>
@@ -30,4 +33,16 @@
     </div>
     {% endif %}
   </div>
+
+  <!-- Right: Related Placeholder -->
+  <div class="w-64 border-l-2 border-blue-200 pl-6">
+    <h2 class="text-xl font-semibold mb-2">Related Pages</h2>
+    <ul class="space-y-1 text-blue-600">
+      <li><a href="#">(Placeholder)</a></li>
+      <li><a href="#">(Placeholder)</a></li>
+      <li><a href="#">(Placeholder)</a></li>
+    </ul>
+  </div>
+
+</div>
 {% endblock %}
