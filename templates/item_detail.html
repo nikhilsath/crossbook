@@ -19,15 +19,47 @@
       </div>
     </div>
     <!-- Right panel: Related content -->
-    <div class="w-64 border-l-2 border-orange-300 pl-6">
-        <h2 class="text-xl font-semibold mb-2">Related</h2>
-        <ul class="text-sm text-blue-600 space-y-1">
-          <li><strong>Characters:</strong> {{ item.related_characters }}</li>
-          <li><strong>Groups:</strong> {{ item.related_groups }}</li>
-          <li><strong>Locations:</strong> {{ item.related_locations }}</li>
-          <li><strong>Lore Topics:</strong> {{ item.related_lore }}</li>
-          <li><strong>Content:</strong> {{ item.related_content }}</li>
-        </ul>
-      </div>
+    <ul class="text-sm text-blue-600 space-y-1">
+        <li><strong>Characters:</strong>
+          {% if item.related_characters %}
+            {% for id in item.related_characters.split(',') %}
+              <a href="{{ url_for('character_detail', character_id=id|trim) }}" class="underline mr-1">{{ id|trim }}</a>
+            {% endfor %}
+          {% else %}—
+          {% endif %}
+        </li>
+        <li><strong>Groups:</strong>
+          {% if item.related_groups %}
+            {% for id in item.related_groups.split(',') %}
+              <a href="{{ url_for('group_detail', group_id=id|trim) }}" class="underline mr-1">{{ id|trim }}</a>
+            {% endfor %}
+          {% else %}—
+          {% endif %}
+        </li>
+        <li><strong>Locations:</strong>
+          {% if item.related_locations %}
+            {% for id in item.related_locations.split(',') %}
+              <a href="{{ url_for('location_detail', location_id=id|trim) }}" class="underline mr-1">{{ id|trim }}</a>
+            {% endfor %}
+          {% else %}—
+          {% endif %}
+        </li>
+        <li><strong>Lore Topics:</strong>
+          {% if item.related_lore %}
+            {% for id in item.related_lore.split(',') %}
+              <a href="{{ url_for('lore_topic_detail', topic_id=id|trim) }}" class="underline mr-1">{{ id|trim }}</a>
+            {% endfor %}
+          {% else %}—
+          {% endif %}
+        </li>
+        <li><strong>Content:</strong>
+          {% if item.related_content %}
+            {% for id in item.related_content.split(',') %}
+              <a href="{{ url_for('content_detail', id=id|trim) }}" class="underline mr-1">{{ id|trim }}</a>
+            {% endfor %}
+          {% else %}—
+          {% endif %}
+        </li>
+      </ul>      
   </div>
   {% endblock %}
