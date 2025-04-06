@@ -58,8 +58,8 @@ def items():
     cursor = conn.cursor()
 
     cursor.execute(f"""
-        SELECT id, items, description, notes
-        FROM items
+        SELECT id, object_name, description, notes
+        FROM objects
         ORDER BY items {sort.upper()}
     """)
     rows = cursor.fetchall()
@@ -72,7 +72,12 @@ def items_detail(item_id):
     conn = sqlite3.connect('data/crossbook.db')
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM items WHERE id = ?", (item_id,))
+    cursor.execute("""
+        SELECT id, object_name, description, notes,
+               related_characters, related_groups,
+               related_locations, related_lore, related_content
+        FROM objects WHERE id = ?
+    """, (item_id,))
     row = cursor.fetchone()
     conn.close()
 
@@ -80,12 +85,12 @@ def items_detail(item_id):
         return "Item not found", 404
 
     fields = [
-        'id', 'items', 'description', 'notes',
+        'id', 'object_name', 'description', 'notes',
         'related_characters', 'related_groups',
         'related_locations', 'related_lore', 'related_content'
     ]
     item = dict(zip(fields, row))
-
+    
     return render_template("item_detail.html", item=item)
 
 
@@ -201,6 +206,7 @@ def location_detail(location_id):
     conn = sqlite3.connect('data/crossbook.db')
     cursor = conn.cursor()
 
+    # Main record
     cursor.execute("""
         SELECT id, location, description,
                related_characters, related_groups,
@@ -208,9 +214,8 @@ def location_detail(location_id):
         FROM locations WHERE id = ?
     """, (location_id,))
     row = cursor.fetchone()
-    conn.close()
-
-    if row is None:
+    if not row:
+        conn.close()
         return "Location not found", 404
 
     fields = [
@@ -220,7 +225,35 @@ def location_detail(location_id):
     ]
     location = dict(zip(fields, row))
 
-    return render_template("location_detail.html", location=location)
+    # Helper: fetch name by ID from any table
+    def fetch_labels(table, id_list, label_column):
+        placeholders = ','.join(['?'] * len(id_list))
+        # Only quote label_column if it is a reserved keyword (like "group").
+        # Do NOT quote normal column names like items, topic, character — it breaks the query.
+        quoted_column = f'"{label_column}"' if label_column in ["group"] else label_column
+        cursor.execute(f"SELECT id, {quoted_column} FROM {table} WHERE id IN ({placeholders})", id_list)
+        return {str(row[0]): row[1] for row in cursor.fetchall()}
+
+
+
+    # Parse ID fields
+    def parse_ids(field):
+        return [id.strip() for id in location.get(field, '').split(',') if id.strip().isdigit()]
+
+    # Resolve labels
+    related = {
+        'characters': fetch_labels("characters", parse_ids("related_characters"), "character"),
+        'groups': fetch_labels("groups", parse_ids("related_groups"), "group"),
+        'object_labels': fetch_labels("objects", parse_ids("related_items"), "object_name"),
+        'lore_topics': fetch_labels("lore_topics", parse_ids("related_lore_topics"), "topic"),
+        'content': fetch_labels("content", parse_ids("related_content"), "id")  
+    }
+    print("[DEBUG] Object labels from DB:", related["object_labels"])
+    conn.close()
+    print("Related Items:", related["object_labels"])
+    print("Related items debug:", related["object_labels"])
+    return render_template("location_detail.html", location=location, related=related)
+
 
 
 @app.route('/content')
