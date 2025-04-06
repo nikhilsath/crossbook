@@ -274,7 +274,15 @@ def content_detail(id):
     conn = sqlite3.connect('data/crossbook.db')
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM content WHERE id = ?", (id,))
+    cursor.execute("""
+        SELECT id, linenumber, source, chapter, content,
+               notes, tags, key_lore, characters,
+               paragraph_length, dialog, "dialog.1",
+               related_characters, related_items,
+               related_groups, related_locations, related_lore_topics
+        FROM content
+        WHERE id = ?
+    """, (id,))
     row = cursor.fetchone()
     conn.close()
 
@@ -284,11 +292,14 @@ def content_detail(id):
     fields = [
         'id', 'linenumber', 'source', 'chapter', 'content',
         'notes', 'tags', 'key_lore', 'characters',
-        'paragraph_length', 'dialog', 'dialog.1'
+        'paragraph_length', 'dialog', 'dialog.1',
+        'related_characters', 'related_items',
+        'related_groups', 'related_locations', 'related_lore_topics'
     ]
     content_entry = dict(zip(fields, row))
 
     return render_template("content_detail.html", content=content_entry)
+
 
 
 if __name__ == "__main__":
