@@ -1,85 +1,74 @@
 {% extends "base.html" %}
-{% block title %}Characters{% endblock %}
+{% block title %}Character Detail{% endblock %}
+
 {% block content %}
-<div class="max-w-5xl mx-auto border-4 border-300 rounded-xl flex flex-row p-6 space-x-6 mt-6">
+<div class="max-w-5xl mx-auto bg-white p-6 rounded shadow-md flex flex-row space-x-6">
 
-  <!-- Left panel: Character details -->
-  <div class="flex-1 space-y-4">
-    <h1 class="text-4xl font-bold">{{ character.character }}</h1>
-    <div class="grid grid-cols-2 gap-4 text-lg">
-      <div><strong>Magical:</strong> {{ character.magical or "None" }}</div>
-      <div><strong>Allegience:</strong> {{ character.allegience or "None" }}</div>
-      <div><strong>Status:</strong> {{ character.status or "Unknown" }}</div>
+  <!-- Left: Main Details -->
+  <div class="flex-1 space-y-4 text-gray-800">
+    <h1 class="text-2xl font-bold mb-4">{{ character.character }}</h1>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div><strong>Race:</strong> {{ character.race or "Unknown" }}</div>
+      <div><strong>Origin:</strong> {{ character.origin or "Unknown" }}</div>
+      <div><strong>Allegience:</strong> {{ character.allegience or "Unknown" }}</div>
+      <div><strong>Status:</strong> {{ character.status or "Unknown" }}</div>
+      <div><strong>Magical:</strong> {{ character.magical or "Unknown" }}</div>
     </div>
 
-    <div>
-      <h2 class="font-semibold text-lg mt-4">Description</h2>
-      <p>{{ character.description or "No description available." }}</p>
+    {% if character.description %}
+    <div class="mt-6">
+      <h2 class="font-semibold text-lg">Description</h2>
+      <p class="whitespace-pre-line border-l-4 border-blue-300 pl-4 italic">{{ character.description }}</p>
     </div>
+    {% endif %}
 
-    <div>
-      <h2 class="font-semibold text-lg mt-4">Significance</h2>
-      <p>{{ character.significance or "No significance noted." }}</p>
+    {% if character.significance %}
+    <div class="mt-4">
+      <h2 class="font-semibold text-lg">Significance</h2>
+      <p class="whitespace-pre-line">{{ character.significance }}</p>
     </div>
+    {% endif %}
 
-    <div>
-      <h2 class="font-semibold text-lg mt-4">Notes</h2>
-      <p>{{ character.notes or "No additional notes." }}</p>
+    {% if character.notes %}
+    <div class="mt-4">
+      <h2 class="font-semibold text-lg">Notes</h2>
+      <p class="text-gray-700 whitespace-pre-line">{{ character.notes }}</p>
     </div>
+    {% endif %}
   </div>
 
-  <!-- Right panel: Related content -->
-  <div class="w-64 border-l-2 border-300 pl-6">
-    <h2 class="text-xl font-semibold mb-2">Related</h2>
-    <ul class="text-sm text-blue-600 space-y-1">
-
+  <!-- Right: Related Pages -->
+  <div class="w-64 border-l-2 border-blue-200 pl-6">
+    <h2 class="text-xl font-semibold mb-2">Related Pages</h2>
+    <ul class="space-y-1 text-blue-600 text-sm">
       <li><strong>Things:</strong>
-        {% if character.related_things %}
-          {% for id, name in character.related_things %}
-            <a href="{{ url_for('thing_detail', thing_id=id) }}" class="underline mr-1">{{ name }}</a>
-          {% endfor %}
-        {% else %}—
-        {% endif %}
+        {% for id, name in character.related_things %}
+          <a href="{{ url_for('thing_detail', thing_id=id) }}" class="underline mr-1">{{ name }}</a>
+        {% else %}—{% endfor %}
       </li>
-
       <li><strong>Faction(s):</strong>
-        {% if character.related_factions %}
-          {% for id, name in character.related_factions %}
-            <a href="{{ url_for('faction_detail', faction_id=id) }}" class="underline mr-1">{{ name }}</a>
-          {% endfor %}
-        {% else %}—
-        {% endif %}
+        {% for id, name in character.related_factions %}
+          <a href="{{ url_for('faction_detail', faction_id=id) }}" class="underline mr-1">{{ name }}</a>
+        {% else %}—{% endfor %}
       </li>
-
       <li><strong>Locations:</strong>
-        {% if character.related_locations %}
-          {% for id, name in character.related_locations %}
-            <a href="{{ url_for('location_detail', location_id=id) }}" class="underline mr-1">{{ name }}</a>
-          {% endfor %}
-        {% else %}—
-        {% endif %}
+        {% for id, name in character.related_locations %}
+          <a href="{{ url_for('location_detail', location_id=id) }}" class="underline mr-1">{{ name }}</a>
+        {% else %}—{% endfor %}
       </li>
-
       <li><strong>Lore Topics:</strong>
-        {% if character.related_lore_topics %}
-          {% for id, name in character.related_lore_topics %}
-            <a href="{{ url_for('lore_topic_detail', topic_id=id) }}" class="underline mr-1">{{ name }}</a>
-          {% endfor %}
-        {% else %}—
-        {% endif %}
+        {% for id, name in character.related_lore_topics %}
+          <a href="{{ url_for('lore_topic_detail', topic_id=id) }}" class="underline mr-1">{{ name }}</a>
+        {% else %}—{% endfor %}
       </li>
-
       <li><strong>Content:</strong>
-        {% if character.related_content %}
-          {% for id, _ in character.related_content %}
-            <a href="{{ url_for('content_detail', id=id) }}" class="underline mr-1">#{{ id }}</a>
-          {% endfor %}
-        {% else %}—
-        {% endif %}
+        {% for id, name in character.related_content %}
+          <a href="{{ url_for('content_detail', id=id) }}" class="underline mr-1">{{ id }}</a>
+        {% else %}—{% endfor %}
       </li>
-
     </ul>
   </div>
+
 </div>
 {% endblock %}

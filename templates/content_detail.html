@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-
 {% block title %}Content Detail{% endblock %}
 
 {% block content %}
@@ -39,44 +38,29 @@
     <h2 class="text-xl font-semibold mb-2">Related Pages</h2>
     <ul class="space-y-1 text-blue-600 text-sm">
       <li><strong>Characters:</strong>
-        {% if content.related_characters %}
-          {% for id in content.related_characters.split(',') %}
-            <a href="{{ url_for('character_detail', character_id=id|trim) }}" class="underline mr-1">{{ id|trim }}</a>
-          {% endfor %}
-        {% else %}—
-        {% endif %}
+        {% for id, name in content.related_characters %}
+          <a href="{{ url_for('character_detail', character_id=id) }}" class="underline mr-1">{{ name }}</a>
+        {% else %}—{% endfor %}
       </li>
       <li><strong>Things:</strong>
-        {% if content.related_things %}
-          {% for id in content.related_things.split(',') %}
-            <a href="{{ url_for('thing_detail', thing_id=id|trim) }}" class="underline mr-1">{{ id|trim }}</a>
-          {% endfor %}
-        {% else %}—
-        {% endif %}
+        {% for id, name in content.related_things %}
+          <a href="{{ url_for('thing_detail', thing_id=id) }}" class="underline mr-1">{{ name }}</a>
+        {% else %}—{% endfor %}
       </li>
       <li><strong>Faction(s):</strong>
-        {% if content.related_factions %}
-          {% for id in content.related_factions.split(',') %}
-            <a href="{{ url_for('faction_detail', faction_id=id|trim) }}" class="underline mr-1">{{ id|trim }}</a>
-          {% endfor %}
-        {% else %}—
-        {% endif %}
+        {% for id, name in content.related_factions %}
+          <a href="{{ url_for('faction_detail', faction_id=id) }}" class="underline mr-1">{{ name }}</a>
+        {% else %}—{% endfor %}
       </li>
       <li><strong>Locations:</strong>
-        {% if content.related_locations %}
-          {% for id in content.related_locations.split(',') %}
-            <a href="{{ url_for('location_detail', location_id=id|trim) }}" class="underline mr-1">{{ id|trim }}</a>
-          {% endfor %}
-        {% else %}—
-        {% endif %}
+        {% for id, name in content.related_locations %}
+          <a href="{{ url_for('location_detail', location_id=id) }}" class="underline mr-1">{{ name }}</a>
+        {% else %}—{% endfor %}
       </li>
       <li><strong>Lore Topics:</strong>
-        {% if content.related_lore_topics %}
-          {% for id in content.related_lore_topics.split(',') %}
-            <a href="{{ url_for('lore_topic_detail', topic_id=id|trim) }}" class="underline mr-1">{{ id|trim }}</a>
-          {% endfor %}
-        {% else %}—
-        {% endif %}
+        {% for id, name in content.related_lore_topics %}
+          <a href="{{ url_for('lore_topic_detail', topic_id=id) }}" class="underline mr-1">{{ name }}</a>
+        {% else %}—{% endfor %}
       </li>
     </ul>
   </div>

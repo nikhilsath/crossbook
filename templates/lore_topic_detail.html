@@ -1,70 +1,63 @@
 {% extends "base.html" %}
-
 {% block title %}Lore Topic Detail{% endblock %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto border-4 border-orange-300 rounded-xl flex flex-row p-6 space-x-6 bg-orange-100">
+<div class="max-w-5xl mx-auto bg-white p-6 rounded shadow-md flex flex-row space-x-6">
 
-  <!-- Left panel: Lore topic details -->
-  <div class="flex-1 space-y-4">
-    <h1 class="text-4xl font-bold">{{ lore_topic.topic }}</h1>
+  <!-- Left: Main Details -->
+  <div class="flex-1 space-y-4 text-gray-800">
+    <h1 class="text-2xl font-bold mb-4">{{ lore_topic.topic }}</h1>
 
-    <div>
-      <h2 class="font-semibold text-lg mt-4">Next Steps</h2>
-      <p>{{ lore_topic.next_steps or "No next steps documented." }}</p>
+    {% if lore_topic.type %}
+    <div><strong>Type:</strong> {{ lore_topic.type }}</div>
+    {% endif %}
+
+    {% if lore_topic.next_steps %}
+    <div class="mt-4">
+      <h2 class="font-semibold text-lg">Next Steps</h2>
+      <p class="whitespace-pre-line">{{ lore_topic.next_steps }}</p>
     </div>
+    {% endif %}
 
-    <div>
-      <h2 class="font-semibold text-lg mt-4">Notes</h2>
-      <p>{{ lore_topic.notes or "No additional notes." }}</p>
+    {% if lore_topic.notes %}
+    <div class="mt-4">
+      <h2 class="font-semibold text-lg">Notes</h2>
+      <p class="text-gray-700 whitespace-pre-line">{{ lore_topic.notes }}</p>
     </div>
+    {% endif %}
   </div>
 
-  <!-- Right panel: Related content -->
-  <div class="w-64 border-l-2 border-orange-300 pl-6">
-    <h2 class="text-xl font-semibold mb-2">Related</h2>
-    <ul class="text-sm text-blue-600 space-y-1">
-      <li><strong>Content:</strong>
-        {% if lore_topic.related_content %}
-          {% for id in lore_topic.related_content.split(',') %}
-            <a href="{{ url_for('content_detail', id=id|trim) }}" class="underline mr-1">{{ id|trim }}</a>
-          {% endfor %}
-        {% else %}—
-        {% endif %}
-      </li>
+  <!-- Right: Related Pages -->
+  <div class="w-64 border-l-2 border-blue-200 pl-6">
+    <h2 class="text-xl font-semibold mb-2">Related Pages</h2>
+    <ul class="space-y-1 text-blue-600 text-sm">
       <li><strong>Characters:</strong>
-        {% if lore_topic.related_characters %}
-          {% for id in lore_topic.related_characters.split(',') %}
-            <a href="{{ url_for('character_detail', character_id=id|trim) }}" class="underline mr-1">{{ id|trim }}</a>
-          {% endfor %}
-        {% else %}—
-        {% endif %}
-      </li>
-      <li><strong>Things:</strong>
-        {% if lore_topic.related_things %}
-          {% for id in lore_topic.related_things.split(',') %}
-            <a href="{{ url_for('thing_detail', thing_id=id|trim) }}" class="underline mr-1">{{ id|trim }}</a>
-          {% endfor %}
-        {% else %}—
-        {% endif %}
+        {% for id, name in lore_topic.related_characters %}
+          <a href="{{ url_for('character_detail', character_id=id) }}" class="underline mr-1">{{ name }}</a>
+        {% else %}—{% endfor %}
       </li>
       <li><strong>Factions:</strong>
-        {% if lore_topic.related_factions %}
-          {% for id in lore_topic.related_factions.split(',') %}
-            <a href="{{ url_for('faction_detail', faction_id=id|trim) }}" class="underline mr-1">{{ id|trim }}</a>
-          {% endfor %}
-        {% else %}—
-        {% endif %}
+        {% for id, name in lore_topic.related_factions %}
+          <a href="{{ url_for('faction_detail', faction_id=id) }}" class="underline mr-1">{{ name }}</a>
+        {% else %}—{% endfor %}
+      </li>
+      <li><strong>Things:</strong>
+        {% for id, name in lore_topic.related_things %}
+          <a href="{{ url_for('thing_detail', thing_id=id) }}" class="underline mr-1">{{ name }}</a>
+        {% else %}—{% endfor %}
       </li>
       <li><strong>Locations:</strong>
-        {% if lore_topic.related_locations %}
-          {% for id in lore_topic.related_locations.split(',') %}
-            <a href="{{ url_for('location_detail', location_id=id|trim) }}" class="underline mr-1">{{ id|trim }}</a>
-          {% endfor %}
-        {% else %}—
-        {% endif %}
+        {% for id, name in lore_topic.related_locations %}
+          <a href="{{ url_for('location_detail', location_id=id) }}" class="underline mr-1">{{ name }}</a>
+        {% else %}—{% endfor %}
+      </li>
+      <li><strong>Content:</strong>
+        {% for id, name in lore_topic.related_content %}
+          <a href="{{ url_for('content_detail', id=id) }}" class="underline mr-1">{{ id }}</a>
+        {% else %}—{% endfor %}
       </li>
     </ul>
   </div>
+
 </div>
 {% endblock %}
