@@ -77,31 +77,35 @@ def things():
     conn.close()
 
     return render_template('things.html', things=rows, sort=sort, next_sort=next_sort)
-
+    
 @app.route('/things/<int:thing_id>')
 def thing_detail(thing_id):
     conn = sqlite3.connect('data/crossbook.db')
     cursor = conn.cursor()
 
+    # Fetch main thing record
     cursor.execute("""
-        SELECT id, thing, description, notes,
-               related_characters, related_factions,
-               related_locations, related_lore_topics, related_content
-        FROM things WHERE id = ?
+        SELECT id, thing, description, notes
+        FROM things
+        WHERE id = ?
     """, (thing_id,))
     row = cursor.fetchone()
-    conn.close()
 
     if row is None:
-        return "thing not found", 404
+        conn.close()
+        return "Thing not found", 404
 
-    fields = [
-        'id', 'thing', 'description', 'notes',
-        'related_characters', 'related_factions',
-        'related_locations', 'related_lore_topics', 'related_content'
-    ]
+    fields = ['id', 'thing', 'description', 'notes']
     thing = dict(zip(fields, row))
-    
+
+    # Fetch related records using join tables
+    thing['related_characters']    = fetch_related(cursor, "character_things",    "thing_id", "characters",    "character", thing_id)
+    thing['related_factions']      = fetch_related(cursor, "faction_things",      "thing_id", "factions",      "faction",   thing_id)
+    thing['related_locations']     = fetch_related(cursor, "location_things",     "thing_id", "locations",     "location",  thing_id)
+    thing['related_lore_topics']   = fetch_related(cursor, "thing_lore_topics",   "thing_id", "lore_topics",   "topic",     thing_id)
+    thing['related_content']       = fetch_related(cursor, "content_things",      "thing_id", "content",       "content",   thing_id)
+
+    conn.close()
     return render_template("thing_detail.html", thing=thing)
 
 
@@ -129,25 +133,26 @@ def faction_detail(faction_id):
     cursor = conn.cursor()
 
     cursor.execute("""
-    SELECT id, "faction", descriptions, apperance,
-           related_characters, related_things, related_locations,
-           related_lore_topics, related_content
-    FROM factions
-    WHERE id = ?
+        SELECT id, faction, descriptions, apperance
+        FROM factions
+        WHERE id = ?
     """, (faction_id,))
     row = cursor.fetchone()
-    conn.close()
 
     if row is None:
+        conn.close()
         return "Faction not found", 404
 
-    fields = [
-        'id', 'faction', 'descriptions', 'apperance',
-        'related_characters', 'related_things', 'related_locations',
-        'related_lore_topics', 'related_content'
-    ]
+    fields = ['id', 'faction', 'descriptions', 'appearance']
     faction = dict(zip(fields, row))
 
+    faction['related_characters'] = fetch_related(cursor, "character_factions", "faction_id", "characters", "character", faction_id)
+    faction['related_things']     = fetch_related(cursor, "faction_things",     "faction_id", "things",     "thing",     faction_id)
+    faction['related_locations']  = fetch_related(cursor, "faction_locations",  "faction_id", "locations",  "location",  faction_id)
+    faction['related_lore_topics']= fetch_related(cursor, "faction_lore_topics","faction_id", "lore_topics","topic",     faction_id)
+    faction['related_content']    = fetch_related(cursor, "faction_content",    "faction_id", "content",    "content",   faction_id)
+
+    conn.close()
     return render_template("faction_detail.html", faction=faction)
 
 
@@ -175,22 +180,26 @@ def lore_topic_detail(topic_id):
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT id, topic, type, related_content, next_steps, notes,
-               related_characters, related_factions, related_things, related_locations
-        FROM lore_topics WHERE id = ?
+        SELECT id, topic, type, next_steps, notes
+        FROM lore_topics
+        WHERE id = ?
     """, (topic_id,))
     row = cursor.fetchone()
-    conn.close()
 
     if row is None:
-        return "Lore topic not found", 404
+        conn.close()
+        return "Lore Topic not found", 404
 
-    fields = [
-        'id', 'topic', 'type', 'related_content', 'next_steps', 'notes',
-        'related_characters', 'related_factions', 'related_things', 'related_locations'
-    ]
+    fields = ['id', 'topic', 'type', 'next_steps', 'notes']
     lore_topic = dict(zip(fields, row))
 
+    lore_topic['related_characters'] = fetch_related(cursor, "character_lore_topics", "topic_id", "characters", "character", topic_id)
+    lore_topic['related_factions']   = fetch_related(cursor, "faction_lore_topics",   "topic_id", "factions",   "faction",   topic_id)
+    lore_topic['related_locations']  = fetch_related(cursor, "location_lore_topics",  "topic_id", "locations",  "location",  topic_id)
+    lore_topic['related_things']     = fetch_related(cursor, "thing_lore_topics",     "topic_id", "things",     "thing",     topic_id)
+    lore_topic['related_content']    = fetch_related(cursor, "content_lore_topics",   "topic_id", "content",    "content",   topic_id)
+
+    conn.close()
     return render_template("lore_topic_detail.html", lore_topic=lore_topic)
 
 
@@ -318,30 +327,35 @@ def content_detail(id):
     conn = sqlite3.connect('data/crossbook.db')
     cursor = conn.cursor()
 
+    # Fetch core content row
     cursor.execute("""
         SELECT id, linenumber, source, chapter, content,
                notes, tags, key_lore, characters,
-               paragraph_length, dialog, "dialog.1",
-               related_characters, related_things,
-               related_factions, related_locations, related_lore_topics
+               paragraph_length, dialog, "dialog.1"
         FROM content
         WHERE id = ?
     """, (id,))
     row = cursor.fetchone()
-    conn.close()
 
     if row is None:
+        conn.close()
         return "Content not found", 404
 
     fields = [
         'id', 'linenumber', 'source', 'chapter', 'content',
         'notes', 'tags', 'key_lore', 'characters',
-        'paragraph_length', 'dialog', 'dialog.1',
-        'related_characters', 'related_things',
-        'related_factions', 'related_locations', 'related_lore_topics'
+        'paragraph_length', 'dialog', 'dialog.1'
     ]
     content_entry = dict(zip(fields, row))
 
+    # Add related entries using fetch_related()
+    content_entry['related_characters'] = fetch_related(cursor, "content_characters", "content_id", "characters", "character", id)
+    content_entry['related_things']     = fetch_related(cursor, "content_things",     "content_id", "things",     "thing",     id)
+    content_entry['related_factions']   = fetch_related(cursor, "content_factions",   "content_id", "factions",   "faction",   id)
+    content_entry['related_locations']  = fetch_related(cursor, "content_locations",  "content_id", "locations",  "location",  id)
+    content_entry['related_lore_topics']= fetch_related(cursor, "content_lore_topics","content_id", "lore_topics","topic",     id)
+
+    conn.close()
     return render_template("content_detail.html", content=content_entry)
 
 
