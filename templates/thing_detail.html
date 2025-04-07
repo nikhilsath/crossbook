@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Thing Detail{% endblock %}
+{% block content %}
+<body class="bg-orange-50 p-6">
+  <div class="max-w-5xl mx-auto border-4 border-orange-300 rounded-xl flex flex-row p-6 space-x-6 bg-orange-100">
+    
+    <!-- Left panel: Thing details -->
+    <div class="flex-1 space-y-4">
+      <h1 class="text-4xl font-bold">{{ thing["thing_name"] }}</h1>  
+      <div>
+        <h2 class="font-semibold text-lg mt-4">Description</h2>
+        <p>{{ thing.description or "No description available." }}</p>
+      </div>
+
+      <div>
+        <h2 class="font-semibold text-lg mt-4">Notes</h2>
+        <p>{{ thing.notes or "No notes noted." }}</p>
+      </div>
+    </div>
+
+    <!-- Right panel: Related content -->
+    <ul class="text-sm text-blue-600 space-y-1">
+        <li><strong>Characters:</strong>
+          {% if thing.related_characters %}
+            {% for id in thing.related_characters.split(',') %}
+              <a href="{{ url_for('character_detail', character_id=id|trim) }}" class="underline mr-1">{{ id|trim }}</a>
+            {% endfor %}
+          {% else %}—
+          {% endif %}
+        </li>
+        <li><strong>Faction(s):</strong>
+          {% if thing.related_factions %}
+            {% for id in thing.related_factions.split(',') %}
+              <a href="{{ url_for('faction_detail', faction_id=id|trim) }}" class="underline mr-1">{{ id|trim }}</a>
+            {% endfor %}
+          {% else %}—
+          {% endif %}
+        </li>
+        <li><strong>Locations:</strong>
+          {% if thing.related_locations %}
+            {% for id in thing.related_locations.split(',') %}
+              <a href="{{ url_for('location_detail', location_id=id|trim) }}" class="underline mr-1">{{ id|trim }}</a>
+            {% endfor %}
+          {% else %}—
+          {% endif %}
+        </li>
+        <li><strong>Lore Topics:</strong>
+          {% if thing.related_lore %}
+            {% for id in thing.related_lore.split(',') %}
+              <a href="{{ url_for('lore_topic_detail', topic_id=id|trim) }}" class="underline mr-1">{{ id|trim }}</a>
+            {% endfor %}
+          {% else %}—
+          {% endif %}
+        </li>
+        <li><strong>Content:</strong>
+          {% if thing.related_content %}
+            {% for id in thing.related_content.split(',') %}
+              <a href="{{ url_for('content_detail', id=id|trim) }}" class="underline mr-1">{{ id|trim }}</a>
+            {% endfor %}
+          {% else %}—
+          {% endif %}
+        </li>
+    </ul>      
+  </div>
+{% endblock %}

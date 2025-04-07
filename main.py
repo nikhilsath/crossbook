@@ -41,7 +41,7 @@ def character_detail(character_id):
     fields = [
         'id', 'character', 'race', 'origin', 'allegience',
         'magical', 'status', 'description', 'significance', 'notes',
-        'related_items', 'related_groups', 'related_locations',
+        'related_things', 'related_factions', 'related_locations',
         'related_lore', 'related_content'
     ]
     character = dict(zip(fields, row))
@@ -49,8 +49,8 @@ def character_detail(character_id):
     return render_template("character_detail.html", character=character)
 
 
-@app.route('/items')
-def items():
+@app.route('/things')
+def things():
     sort = request.args.get('sort', 'asc')
     next_sort = 'desc' if sort == 'asc' else 'asc'
 
@@ -58,44 +58,44 @@ def items():
     cursor = conn.cursor()
 
     cursor.execute(f"""
-        SELECT id, object_name, description, notes
-        FROM objects
-        ORDER BY items {sort.upper()}
+        SELECT id, thing_name, description, notes
+        FROM things
+        ORDER BY thing_name {sort.upper()}
     """)
     rows = cursor.fetchall()
     conn.close()
 
-    return render_template('items.html', items=rows, sort=sort, next_sort=next_sort)
+    return render_template('things.html', things=rows, sort=sort, next_sort=next_sort)
 
-@app.route('/items/<int:item_id>')
-def items_detail(item_id):
+@app.route('/things/<int:thing_id>')
+def thing_detail(thing_id):
     conn = sqlite3.connect('data/crossbook.db')
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT id, object_name, description, notes,
-               related_characters, related_groups,
-               related_locations, related_lore, related_content
-        FROM objects WHERE id = ?
-    """, (item_id,))
+        SELECT id, thing_name, description, notes,
+               related_characters, related_factions,
+               related_locations, related_lore_topics, related_content
+        FROM things WHERE id = ?
+    """, (thing_id,))
     row = cursor.fetchone()
     conn.close()
 
     if row is None:
-        return "Item not found", 404
+        return "thing not found", 404
 
     fields = [
-        'id', 'object_name', 'description', 'notes',
-        'related_characters', 'related_groups',
-        'related_locations', 'related_lore', 'related_content'
+        'id', 'thing_name', 'description', 'notes',
+        'related_characters', 'related_factions',
+        'related_locations', 'related_lore_topics', 'related_content'
     ]
-    item = dict(zip(fields, row))
+    thing = dict(zip(fields, row))
     
-    return render_template("item_detail.html", item=item)
+    return render_template("thing_detail.html", thing=thing)
 
 
-@app.route('/groups')
-def groups():
+@app.route('/factions')
+def factions():
     sort = request.args.get('sort', 'asc')
     next_sort = 'desc' if sort == 'asc' else 'asc'
 
@@ -103,41 +103,41 @@ def groups():
     cursor = conn.cursor()
 
     cursor.execute(f"""
-        SELECT id, "group", descriptions, apperance
-        FROM groups
-        ORDER BY "group" {sort.upper()}
+        SELECT id, "faction", descriptions, apperance
+        FROM factions
+        ORDER BY "faction" {sort.upper()}
     """)
     rows = cursor.fetchall()
     conn.close()
 
-    return render_template('groups.html', groups=rows, sort=sort, next_sort=next_sort)
+    return render_template('factions.html', factions=rows, sort=sort, next_sort=next_sort)
 
-@app.route('/groups/<int:group_id>')
-def group_detail(group_id):
+@app.route('/factions/<int:faction_id>')
+def faction_detail(faction_id):
     conn = sqlite3.connect('data/crossbook.db')
     cursor = conn.cursor()
 
     cursor.execute("""
-    SELECT id, "group", descriptions, apperance,
-           related_characters, related_items, related_locations,
+    SELECT id, "faction", descriptions, apperance,
+           related_characters, related_things, related_locations,
            related_lore_topics, related_content
-    FROM groups
+    FROM factions
     WHERE id = ?
-    """, (group_id,))
+    """, (faction_id,))
     row = cursor.fetchone()
     conn.close()
 
     if row is None:
-        return "Group not found", 404
+        return "Faction not found", 404
 
     fields = [
-        'id', 'group', 'descriptions', 'apperance',
-        'related_characters', 'related_items', 'related_locations',
+        'id', 'faction', 'descriptions', 'apperance',
+        'related_characters', 'related_things', 'related_locations',
         'related_lore_topics', 'related_content'
     ]
-    group = dict(zip(fields, row))
+    faction = dict(zip(fields, row))
 
-    return render_template("group_detail.html", group=group)
+    return render_template("faction_detail.html", faction=faction)
 
 
 @app.route('/lore_topics')
@@ -165,7 +165,7 @@ def lore_topic_detail(topic_id):
 
     cursor.execute("""
         SELECT id, topic, type, related_content, next_steps, notes,
-               related_characters, related_groups, related_items, related_locations
+               related_characters, related_factions, related_things, related_locations
         FROM lore_topics WHERE id = ?
     """, (topic_id,))
     row = cursor.fetchone()
@@ -176,7 +176,7 @@ def lore_topic_detail(topic_id):
 
     fields = [
         'id', 'topic', 'type', 'related_content', 'next_steps', 'notes',
-        'related_characters', 'related_groups', 'related_items', 'related_locations'
+        'related_characters', 'related_factions', 'related_things', 'related_locations'
     ]
     lore_topic = dict(zip(fields, row))
 
@@ -209,8 +209,8 @@ def location_detail(location_id):
     # Main record
     cursor.execute("""
         SELECT id, location, description,
-               related_characters, related_groups,
-               related_items, related_lore_topics, related_content
+               related_characters, related_factions,
+               related_things, related_lore_topics, related_content
         FROM locations WHERE id = ?
     """, (location_id,))
     row = cursor.fetchone()
@@ -220,17 +220,17 @@ def location_detail(location_id):
 
     fields = [
         'id', 'location', 'description',
-        'related_characters', 'related_groups',
-        'related_items', 'related_lore_topics', 'related_content'
+        'related_characters', 'related_factions',
+        'related_things', 'related_lore_topics', 'related_content'
     ]
     location = dict(zip(fields, row))
 
     # Helper: fetch name by ID from any table
     def fetch_labels(table, id_list, label_column):
         placeholders = ','.join(['?'] * len(id_list))
-        # Only quote label_column if it is a reserved keyword (like "group").
-        # Do NOT quote normal column names like items, topic, character — it breaks the query.
-        quoted_column = f'"{label_column}"' if label_column in ["group"] else label_column
+        # Only quote label_column if it is a reserved keyword (like "faction").
+        # Do NOT quote normal column names like things, topic, character — it breaks the query.
+        quoted_column = f'"{label_column}"' if label_column in ["faction"] else label_column
         cursor.execute(f"SELECT id, {quoted_column} FROM {table} WHERE id IN ({placeholders})", id_list)
         return {str(row[0]): row[1] for row in cursor.fetchall()}
 
@@ -243,15 +243,15 @@ def location_detail(location_id):
     # Resolve labels
     related = {
         'characters': fetch_labels("characters", parse_ids("related_characters"), "character"),
-        'groups': fetch_labels("groups", parse_ids("related_groups"), "group"),
-        'object_labels': fetch_labels("objects", parse_ids("related_items"), "object_name"),
+        'factions': fetch_labels("factions", parse_ids("related_factions"), "faction"),
+        'thing_labels': fetch_labels("things", parse_ids("related_things"), "thing_name"),
         'lore_topics': fetch_labels("lore_topics", parse_ids("related_lore_topics"), "topic"),
         'content': fetch_labels("content", parse_ids("related_content"), "id")  
     }
-    print("[DEBUG] Object labels from DB:", related["object_labels"])
+    print("[DEBUG] thing labels from DB:", related["thing_labels"])
     conn.close()
-    print("Related Items:", related["object_labels"])
-    print("Related items debug:", related["object_labels"])
+    print("Related things:", related["thing_labels"])
+    print("Related things debug:", related["thing_labels"])
     return render_template("location_detail.html", location=location, related=related)
 
 
@@ -311,8 +311,8 @@ def content_detail(id):
         SELECT id, linenumber, source, chapter, content,
                notes, tags, key_lore, characters,
                paragraph_length, dialog, "dialog.1",
-               related_characters, related_items,
-               related_groups, related_locations, related_lore_topics
+               related_characters, related_things,
+               related_factions, related_locations, related_lore_topics
         FROM content
         WHERE id = ?
     """, (id,))
@@ -326,8 +326,8 @@ def content_detail(id):
         'id', 'linenumber', 'source', 'chapter', 'content',
         'notes', 'tags', 'key_lore', 'characters',
         'paragraph_length', 'dialog', 'dialog.1',
-        'related_characters', 'related_items',
-        'related_groups', 'related_locations', 'related_lore_topics'
+        'related_characters', 'related_things',
+        'related_factions', 'related_locations', 'related_lore_topics'
     ]
     content_entry = dict(zip(fields, row))
 
