@@ -1,81 +1,85 @@
 {% extends "base.html" %}
 {% block title %}Characters{% endblock %}
 {% block content %}
-  <!-- Page Body -->
-  <div class="max-w-5xl mx-auto border-4 border-300 rounded-xl flex flex-row p-6 space-x-6  mt-6">
-    
-    <!-- Left panel: Character details -->
-    <div class="flex-1 space-y-4">
-      <h1 class="text-4xl font-bold">{{ character.character }}</h1>
-      <div class="grid grid-cols-2 gap-4 text-lg">
-        <div><strong>Magical:</strong> {{ character.magical or "None" }}</div>
-        <div><strong>Allegience:</strong> {{ character.allegience or "None" }}</div>
-        <div><strong>Status:</strong> {{ character.status or "Unknown" }}</div>
-        <div><strong>Race:</strong> {{ character.race or "Unknown" }}</div>
-      </div>
+<div class="max-w-5xl mx-auto border-4 border-300 rounded-xl flex flex-row p-6 space-x-6 mt-6">
 
-      <div>
-        <h2 class="font-semibold text-lg mt-4">Description</h2>
-        <p>{{ character.description or "No description available." }}</p>
-      </div>
-
-      <div>
-        <h2 class="font-semibold text-lg mt-4">Significance</h2>
-        <p>{{ character.significance or "No significance noted." }}</p>
-      </div>
-
-      <div>
-        <h2 class="font-semibold text-lg mt-4">Notes</h2>
-        <p>{{ character.notes or "No additional notes." }}</p>
-      </div>
+  <!-- Left panel: Character details -->
+  <div class="flex-1 space-y-4">
+    <h1 class="text-4xl font-bold">{{ character.character }}</h1>
+    <div class="grid grid-cols-2 gap-4 text-lg">
+      <div><strong>Magical:</strong> {{ character.magical or "None" }}</div>
+      <div><strong>Allegience:</strong> {{ character.allegience or "None" }}</div>
+      <div><strong>Status:</strong> {{ character.status or "Unknown" }}</div>
+      <div><strong>Race:</strong> {{ character.race or "Unknown" }}</div>
     </div>
 
-    <!-- Right panel: Related content -->
-    <div class="w-64 border-l-2 border-300 pl-6">
-      <h2 class="text-xl font-semibold mb-2">Related</h2>
-      <ul class="text-sm text-blue-600 space-y-1">
-        <li><strong>Things:</strong>
-            {% if character.related_things %}
-              {% for id in character.related_things.split(',') %}
-                <a href="{{ url_for('thing_detail', thing_id=id|trim) }}" class="text-blue-600 underline mr-1">{{ id|trim }}</a>
-              {% endfor %}
-            {% else %}—
-            {% endif %}
-        </li>          
-        <li><strong>Faction(s):</strong>
-            {% if character.related_factions %}
-              {% for id in character.related_factions.split(',') %}
-                <a href="{{ url_for('faction_detail', faction_id=id|trim) }}" class="text-blue-600 underline mr-1">{{ id|trim }}</a>
-              {% endfor %}
-            {% else %}—
-            {% endif %}
-          </li>  
-        <li><strong>Locations:</strong>
-            {% if character.related_locations %}
-              {% for id in character.related_locations.split(',') %}
-                <a href="{{ url_for('location_detail', location_id=id|trim) }}" class="text-blue-600 underline mr-1">{{ id|trim }}</a>
-              {% endfor %}
-            {% else %}—
-            {% endif %}
-          </li>  
-        <li><strong>Lore Topics:</strong>
-            {% if character.related_lore %}
-              {% for id in character.related_lore.split(',') %}
-                <a href="{{ url_for('lore_topic_detail', topic_id=id|trim) }}" class="text-blue-600 underline mr-1">{{ id|trim }}</a>
-              {% endfor %}
-            {% else %}—
-            {% endif %}
-          </li>  
-        <li><strong>Content:</strong>
-            {% if character.related_content %}
-              {% for id in character.related_content.split(',') %}
-                <a href="{{ url_for('content_detail', id=id|trim) }}" class="text-blue-600 underline mr-1">{{ id|trim }}</a>
-              {% endfor %}
-            {% else %}—
-            {% endif %}
-          </li>  
-      </ul>
+    <div>
+      <h2 class="font-semibold text-lg mt-4">Description</h2>
+      <p>{{ character.description or "No description available." }}</p>
     </div>
-    
+
+    <div>
+      <h2 class="font-semibold text-lg mt-4">Significance</h2>
+      <p>{{ character.significance or "No significance noted." }}</p>
+    </div>
+
+    <div>
+      <h2 class="font-semibold text-lg mt-4">Notes</h2>
+      <p>{{ character.notes or "No additional notes." }}</p>
+    </div>
   </div>
+
+  <!-- Right panel: Related content -->
+  <div class="w-64 border-l-2 border-300 pl-6">
+    <h2 class="text-xl font-semibold mb-2">Related</h2>
+    <ul class="text-sm text-blue-600 space-y-1">
+
+      <li><strong>Things:</strong>
+        {% if character.related_things %}
+          {% for id, name in character.related_things %}
+            <a href="{{ url_for('thing_detail', thing_id=id) }}" class="underline mr-1">{{ name }}</a>
+          {% endfor %}
+        {% else %}—
+        {% endif %}
+      </li>
+
+      <li><strong>Faction(s):</strong>
+        {% if character.related_factions %}
+          {% for id, name in character.related_factions %}
+            <a href="{{ url_for('faction_detail', faction_id=id) }}" class="underline mr-1">{{ name }}</a>
+          {% endfor %}
+        {% else %}—
+        {% endif %}
+      </li>
+
+      <li><strong>Locations:</strong>
+        {% if character.related_locations %}
+          {% for id, name in character.related_locations %}
+            <a href="{{ url_for('location_detail', location_id=id) }}" class="underline mr-1">{{ name }}</a>
+          {% endfor %}
+        {% else %}—
+        {% endif %}
+      </li>
+
+      <li><strong>Lore Topics:</strong>
+        {% if character.related_lore_topics %}
+          {% for id, name in character.related_lore_topics %}
+            <a href="{{ url_for('lore_topic_detail', topic_id=id) }}" class="underline mr-1">{{ name }}</a>
+          {% endfor %}
+        {% else %}—
+        {% endif %}
+      </li>
+
+      <li><strong>Content:</strong>
+        {% if character.related_content %}
+          {% for id, _ in character.related_content %}
+            <a href="{{ url_for('content_detail', id=id) }}" class="underline mr-1">#{{ id }}</a>
+          {% endfor %}
+        {% else %}—
+        {% endif %}
+      </li>
+
+    </ul>
+  </div>
+</div>
 {% endblock %}

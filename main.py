@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request
+from utils.db_helpers import fetch_related
 import sqlite3
 
 
@@ -31,23 +32,33 @@ def character_detail(character_id):
     conn = sqlite3.connect('data/crossbook.db')
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM characters WHERE id = ?", (character_id,))
+    # Fetch main character record
+    cursor.execute("""
+        SELECT id, character, race, origin, allegience,
+               magical, status, description, significance, notes
+        FROM characters
+        WHERE id = ?
+    """, (character_id,))
     row = cursor.fetchone()
-    conn.close()
 
     if row is None:
+        conn.close()
         return "Character not found", 404
 
     fields = [
         'id', 'character', 'race', 'origin', 'allegience',
-        'magical', 'status', 'description', 'significance', 'notes',
-        'related_things', 'related_factions', 'related_locations',
-        'related_lore', 'related_content'
+        'magical', 'status', 'description', 'significance', 'notes'
     ]
     character = dict(zip(fields, row))
 
+    # Fetch related records using join tables
+    character['related_things'] = fetch_related(cursor, "character_things", "character_id", "things", "thing", character_id)
+    character['related_factions'] = fetch_related(cursor, "character_factions", "character_id", "factions", "faction", character_id)
+    character['related_locations'] = fetch_related(cursor, "character_locations", "character_id", "locations", "location", character_id)
+    character['related_lore_topics'] = fetch_related(cursor, "character_lore_topics", "character_id", "lore_topics", "topic", character_id)
+    character['related_content'] = fetch_related(cursor, "character_content", "character_id", "content", "content", character_id)
+    conn.close()
     return render_template("character_detail.html", character=character)
-
 
 @app.route('/things')
 def things():
@@ -58,9 +69,9 @@ def things():
     cursor = conn.cursor()
 
     cursor.execute(f"""
-        SELECT id, thing_name, description, notes
+        SELECT id, thing, description, notes
         FROM things
-        ORDER BY thing_name {sort.upper()}
+        ORDER BY thing {sort.upper()}
     """)
     rows = cursor.fetchall()
     conn.close()
@@ -73,7 +84,7 @@ def thing_detail(thing_id):
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT id, thing_name, description, notes,
+        SELECT id, thing, description, notes,
                related_characters, related_factions,
                related_locations, related_lore_topics, related_content
         FROM things WHERE id = ?
@@ -85,7 +96,7 @@ def thing_detail(thing_id):
         return "thing not found", 404
 
     fields = [
-        'id', 'thing_name', 'description', 'notes',
+        'id', 'thing', 'description', 'notes',
         'related_characters', 'related_factions',
         'related_locations', 'related_lore_topics', 'related_content'
     ]
@@ -244,7 +255,7 @@ def location_detail(location_id):
     related = {
         'characters': fetch_labels("characters", parse_ids("related_characters"), "character"),
         'factions': fetch_labels("factions", parse_ids("related_factions"), "faction"),
-        'thing_labels': fetch_labels("things", parse_ids("related_things"), "thing_name"),
+        'thing_labels': fetch_labels("things", parse_ids("related_things"), "thing"),
         'lore_topics': fetch_labels("lore_topics", parse_ids("related_lore_topics"), "topic"),
         'content': fetch_labels("content", parse_ids("related_content"), "id")  
     }

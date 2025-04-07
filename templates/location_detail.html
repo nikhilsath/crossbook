@@ -15,7 +15,7 @@
   </div>
 
   <!-- Right panel: Related Content -->
-  <div class="w-64 border-l-2 border-orange-300 pl-6">
+<div class="w-64 border-l-2 border-orange-300 pl-6">
     <h2 class="text-xl font-semibold mb-2">Related Content</h2>
     <ul class="text-sm text-blue-600 space-y-1">
       <li><strong>Characters:</strong>
@@ -34,10 +34,10 @@
         {% else %}—
         {% endif %}
       </li>
-      <li><strong>Things:</strong>
-        {% if related["thing_labels"] %}
-          {% for id, name in related["thing_labels"].items() %}
-            <a href="{{ url_for('thing_detail', thing_id=id) }}" class="underline mr-1">{{ name }}</a>
+      <li><strong>Items:</strong>
+        {% if related["object_labels"] %}
+            {% for id, name in related["object_labels"].items() %}
+            <a href="{{ url_for('items_detail', item_id=id) }}" class="underline mr-1">{{ name }}</a>
           {% endfor %}
         {% else %}—
         {% endif %}
@@ -60,5 +60,7 @@
       </li>
     </ul>
   </div>
+  
+
 </div>
 {% endblock %}
