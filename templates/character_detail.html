@@ -6,34 +6,50 @@
 
   <!-- Left: Main Details -->
   <div class="flex-1 space-y-4 text-gray-800">
-    <h1 class="text-2xl font-bold mb-4">{{ character.character }}</h1>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div><strong>Race:</strong> {{ character.race or "Unknown" }}</div>
-      <div><strong>Origin:</strong> {{ character.origin or "Unknown" }}</div>
-      <div><strong>Allegience:</strong> {{ character.allegience or "Unknown" }}</div>
-      <div><strong>Status:</strong> {{ character.status or "Unknown" }}</div>
-      <div><strong>Magical:</strong> {{ character.magical or "Unknown" }}</div>
+    <!-- Load reusable field macro -->
+    {% from "macros/fields.html" import render_editable_field %}
+
+    <!-- Character Name Field -->
+    <div class="flex items-center space-x-2">
+      <h1 class="text-2xl font-bold">{{ character.character }}</h1>
+      <a href="{{ url_for('character_detail', character_id=character.id) }}?edit=character" class="text-sm text-blue-600 underline">✏️</a>
     </div>
+    <!-- Conditionally show inline edit form for character name only -->
+    {% if request.args.get('edit') == 'character' %}
+    <form method="post" action="{{ url_for('update_character_field', character_id=character.id) }}" class="mt-2">
+      <input type="hidden" name="field" value="character">
+      <input type="text" name="new_value" value="{{ character.character }}" class="border px-2 py-1 text-sm rounded">
+      <button type="submit" class="ml-1 text-blue-600 text-sm underline">Save</button>
+      <a href="{{ url_for('character_detail', character_id=character.id) }}" class="text-sm text-gray-500 ml-2">Cancel</a>
+    </form>
+    {% endif %}
+
+    <!-- Reusable editable fields for each character property -->
+    {{ render_editable_field('race', character.race, character.id, request) }}
+    {{ render_editable_field('origin', character.origin, character.id, request) }}
+    {{ render_editable_field('allegience', character.allegience, character.id, request) }}
+    {{ render_editable_field('magical', character.magical, character.id, request) }}
+    {{ render_editable_field('status', character.status, character.id, request) }}
 
     {% if character.description %}
-    <div class="mt-6">
-      <h2 class="font-semibold text-lg">Description</h2>
+    <div>
+      <h2 class="font-semibold text-lg mt-4">Description</h2>
       <p class="whitespace-pre-line border-l-4 border-blue-300 pl-4 italic">{{ character.description }}</p>
     </div>
     {% endif %}
 
     {% if character.significance %}
-    <div class="mt-4">
-      <h2 class="font-semibold text-lg">Significance</h2>
+    <div>
+      <h2 class="font-semibold text-lg mt-4">Significance</h2>
       <p class="whitespace-pre-line">{{ character.significance }}</p>
     </div>
     {% endif %}
 
     {% if character.notes %}
-    <div class="mt-4">
-      <h2 class="font-semibold text-lg">Notes</h2>
-      <p class="text-gray-700 whitespace-pre-line">{{ character.notes }}</p>
+    <div>
+      <h2 class="font-semibold text-lg mt-4">Notes</h2>
+      <p class="whitespace-pre-line text-gray-700">{{ character.notes }}</p>
     </div>
     {% endif %}
   </div>
@@ -47,7 +63,7 @@
           <a href="{{ url_for('thing_detail', thing_id=id) }}" class="underline mr-1">{{ name }}</a>
         {% else %}—{% endfor %}
       </li>
-      <li><strong>Faction(s):</strong>
+      <li><strong>Factions:</strong>
         {% for id, name in character.related_factions %}
           <a href="{{ url_for('faction_detail', faction_id=id) }}" class="underline mr-1">{{ name }}</a>
         {% else %}—{% endfor %}
@@ -71,4 +87,5 @@
   </div>
 
 </div>
+
 {% endblock %}
