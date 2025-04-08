@@ -6,10 +6,9 @@
 
   <!-- Left: Main Details -->
   <div class="flex-1 space-y-4 text-gray-800">
+    {% from "macros/fields.html" import render_editable_field, render_edit_log %}
 
-    {% from "macros/fields.html" import render_editable_field %}
-
-    <!-- Faction Name Field -->
+    <!-- Title -->
     <div class="flex items-center space-x-2">
       <h1 class="text-2xl font-bold">{{ faction.faction }}</h1>
       <a href="{{ url_for('faction_detail', faction_id=faction.id) }}?edit=faction" class="text-sm text-blue-600 underline">✏️</a>
@@ -24,8 +23,13 @@
     </form>
     {% endif %}
 
-    {{ render_editable_field('descriptions', faction.descriptions, faction.id, request, detail_endpoint='faction_detail', update_endpoint='update_faction_field', id_param='faction_id') }}
-    {{ render_editable_field('appearance', faction.appearance, faction.id, request, detail_endpoint='faction_detail', update_endpoint='update_faction_field', id_param='faction_id') }}
+    {{ render_editable_field('descriptions', faction.descriptions, faction.id, request, 'faction_detail', 'update_faction_field', 'faction_id') }}
+    {{ render_editable_field('appearance', faction.appearance, faction.id, request, 'faction_detail', 'update_faction_field', 'faction_id') }}
+
+    <!-- Edit Log -->
+    <div class="pt-4">
+      {{ render_edit_log(faction.edit_log) }}
+    </div>
   </div>
 
   <!-- Right: Related Pages -->
