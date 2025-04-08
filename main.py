@@ -424,6 +424,19 @@ def content_detail(id):
     conn.close()
     return render_template("content_detail.html", content=content_entry)
 
+@app.route('/update_content_field/<int:id>', methods=['POST'])
+def update_content_field(id):
+    field = request.form.get('field')
+    new_value = request.form.get('new_value')
+
+    conn = sqlite3.connect('data/crossbook.db')
+    cursor = conn.cursor()
+
+    cursor.execute(f"UPDATE content SET {field} = ? WHERE id = ?", (new_value, id))
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('content_detail', id=id))
 
 
 if __name__ == "__main__":
