@@ -1,66 +1,62 @@
 {% extends "base.html" %}
-
 {% block title %}Location Detail{% endblock %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto border-4 border-orange-300 rounded-xl flex flex-row p-6 space-x-6 bg-orange-100">
+<div class="max-w-5xl mx-auto bg-white p-6 rounded shadow-md flex flex-row space-x-6">
 
-  <!-- Left panel: Location Details -->
-  <div class="flex-1 space-y-4">
-    <h1 class="text-4xl font-bold">{{ location.location }}</h1>
-    <div>
-      <h2 class="font-semibold text-lg mt-4">Description</h2>
-      <p>{{ location.description or "No description available." }}</p>
+  <!-- Left: Main Details -->
+  <div class="flex-1 space-y-4 text-gray-800">
+    {% from "macros/fields.html" import render_editable_field %}
+
+    <!-- Location Name Field -->
+    <div class="flex items-center space-x-2">
+      <h1 class="text-2xl font-bold">{{ location.location }}</h1>
+      <a href="{{ url_for('location_detail', location_id=location.id) }}?edit=location" class="text-sm text-blue-600 underline">✏️</a>
     </div>
+
+    {% if request.args.get('edit') == 'location' %}
+    <form method="post" action="{{ url_for('update_location_field', location_id=location.id) }}" class="mt-2">
+      <input type="hidden" name="field" value="location">
+      <input type="text" name="new_value" value="{{ location.location }}" class="border px-2 py-1 text-sm rounded">
+      <button type="submit" class="ml-1 text-blue-600 text-sm underline">Save</button>
+      <a href="{{ url_for('location_detail', location_id=location.id) }}" class="text-sm text-gray-500 ml-2">Cancel</a>
+    </form>
+    {% endif %}
+
+    {{ render_editable_field('description', location.description, location.id, request, detail_endpoint='location_detail', update_endpoint='update_location_field', id_param='location_id') }}
   </div>
 
-  <!-- Right panel: Related Content -->
-<div class="w-64 border-l-2 border-orange-300 pl-6">
-    <h2 class="text-xl font-semibold mb-2">Related Content</h2>
-    <ul class="text-sm text-blue-600 space-y-1">
+  <!-- Right: Related Pages -->
+  <div class="w-64 border-l-2 border-blue-200 pl-6">
+    <h2 class="text-xl font-semibold mb-2">Related Pages</h2>
+    <ul class="space-y-1 text-blue-600 text-sm">
       <li><strong>Characters:</strong>
-        {% if related["characters"] %}
-          {% for id, name in related["characters"].items() %}
-            <a href="{{ url_for('character_detail', character_id=id) }}" class="underline mr-1">{{ name }}</a>
-          {% endfor %}
-        {% else %}—
-        {% endif %}
+        {% for id, name in location.related_characters %}
+          <a href="{{ url_for('character_detail', character_id=id) }}" class="underline mr-1">{{ name }}</a>
+        {% else %}—{% endfor %}
       </li>
       <li><strong>Factions:</strong>
-        {% if related["factions"] %}
-          {% for id, name in related["factions"].items() %}
-            <a href="{{ url_for('faction_detail', faction_id=id) }}" class="underline mr-1">{{ name }}</a>
-          {% endfor %}
-        {% else %}—
-        {% endif %}
+        {% for id, name in location.related_factions %}
+          <a href="{{ url_for('faction_detail', faction_id=id) }}" class="underline mr-1">{{ name }}</a>
+        {% else %}—{% endfor %}
       </li>
-      <li><strong>Items:</strong>
-        {% if related["object_labels"] %}
-            {% for id, name in related["object_labels"].items() %}
-            <a href="{{ url_for('items_detail', item_id=id) }}" class="underline mr-1">{{ name }}</a>
-          {% endfor %}
-        {% else %}—
-        {% endif %}
-      </li>      
+      <li><strong>Things:</strong>
+        {% for id, name in location.related_things %}
+          <a href="{{ url_for('thing_detail', thing_id=id) }}" class="underline mr-1">{{ name }}</a>
+        {% else %}—{% endfor %}
+      </li>
       <li><strong>Lore Topics:</strong>
-        {% if related["lore_topics"] %}
-          {% for id, name in related["lore_topics"].items() %}
-            <a href="{{ url_for('lore_topic_detail', topic_id=id) }}" class="underline mr-1">{{ name }}</a>
-          {% endfor %}
-        {% else %}—
-        {% endif %}
+        {% for id, name in location.related_lore_topics %}
+          <a href="{{ url_for('lore_topic_detail', topic_id=id) }}" class="underline mr-1">{{ name }}</a>
+        {% else %}—{% endfor %}
       </li>
       <li><strong>Content:</strong>
-        {% if related["content"] %}
-          {% for id in related["content"].keys() %}
-            <a href="{{ url_for('content_detail', id=id) }}" class="underline mr-1">{{ id }}</a>
-          {% endfor %}
-        {% else %}—
-        {% endif %}
+        {% for id, name in location.related_content %}
+          <a href="{{ url_for('content_detail', id=id) }}" class="underline mr-1">{{ id }}</a>
+        {% else %}—{% endfor %}
       </li>
     </ul>
   </div>
-  
 
 </div>
 {% endblock %}

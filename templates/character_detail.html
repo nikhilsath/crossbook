@@ -7,7 +7,6 @@
   <!-- Left: Main Details -->
   <div class="flex-1 space-y-4 text-gray-800">
 
-    <!-- Load reusable field macro -->
     {% from "macros/fields.html" import render_editable_field %}
 
     <!-- Character Name Field -->
@@ -15,7 +14,7 @@
       <h1 class="text-2xl font-bold">{{ character.character }}</h1>
       <a href="{{ url_for('character_detail', character_id=character.id) }}?edit=character" class="text-sm text-blue-600 underline">✏️</a>
     </div>
-    <!-- Conditionally show inline edit form for character name only -->
+
     {% if request.args.get('edit') == 'character' %}
     <form method="post" action="{{ url_for('update_character_field', character_id=character.id) }}" class="mt-2">
       <input type="hidden" name="field" value="character">
@@ -25,12 +24,11 @@
     </form>
     {% endif %}
 
-    <!-- Reusable editable fields for each character property -->
-    {{ render_editable_field('race', character.race, character.id, request) }}
-    {{ render_editable_field('origin', character.origin, character.id, request) }}
-    {{ render_editable_field('allegience', character.allegience, character.id, request) }}
-    {{ render_editable_field('magical', character.magical, character.id, request) }}
-    {{ render_editable_field('status', character.status, character.id, request) }}
+    {{ render_editable_field('race', character.race, character.id, request, 'character_detail', 'update_character_field', 'character_id') }}
+    {{ render_editable_field('origin', character.origin, character.id, request, 'character_detail', 'update_character_field', 'character_id') }}
+    {{ render_editable_field('allegience', character.allegience, character.id, request, 'character_detail', 'update_character_field', 'character_id') }}
+    {{ render_editable_field('magical', character.magical, character.id, request, 'character_detail', 'update_character_field', 'character_id') }}
+    {{ render_editable_field('status', character.status, character.id, request, 'character_detail', 'update_character_field', 'character_id') }}
 
     {% if character.description %}
     <div>
@@ -87,5 +85,4 @@
   </div>
 
 </div>
-
 {% endblock %}

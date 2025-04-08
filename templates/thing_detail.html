@@ -6,21 +6,25 @@
 
   <!-- Left: Main Details -->
   <div class="flex-1 space-y-4 text-gray-800">
-    <h1 class="text-2xl font-bold mb-4">{{ thing.thing }}</h1>
+    {% from "macros/fields.html" import render_editable_field %}
 
-    {% if thing.description %}
-    <div class="mt-4">
-      <h2 class="font-semibold text-lg">Description</h2>
-      <p class="whitespace-pre-line border-l-4 border-blue-300 pl-4 italic">{{ thing.description }}</p>
+    <!-- Thing Title with inline edit -->
+    <div class="flex items-center space-x-2">
+      <h1 class="text-2xl font-bold">{{ thing.thing }}</h1>
+      <a href="{{ url_for('thing_detail', thing_id=thing.id) }}?edit=thing" class="text-sm text-blue-600 underline">✏️</a>
     </div>
+
+    {% if request.args.get('edit') == 'thing' %}
+    <form method="post" action="{{ url_for('update_thing_field', thing_id=thing.id) }}" class="mt-2">
+      <input type="hidden" name="field" value="thing">
+      <input type="text" name="new_value" value="{{ thing.thing }}" class="border px-2 py-1 text-sm rounded">
+      <button type="submit" class="ml-1 text-blue-600 text-sm underline">Save</button>
+      <a href="{{ url_for('thing_detail', thing_id=thing.id) }}" class="text-sm text-gray-500 ml-2">Cancel</a>
+    </form>
     {% endif %}
 
-    {% if thing.notes %}
-    <div class="mt-4">
-      <h2 class="font-semibold text-lg">Notes</h2>
-      <p class="text-gray-700 whitespace-pre-line">{{ thing.notes }}</p>
-    </div>
-    {% endif %}
+    {{ render_editable_field('description', thing.description, thing.id, request, 'thing_detail', 'update_thing_field', 'thing_id') }}
+    {{ render_editable_field('notes', thing.notes, thing.id, request, 'thing_detail', 'update_thing_field', 'thing_id') }}
   </div>
 
   <!-- Right: Related Pages -->

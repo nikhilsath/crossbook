@@ -6,25 +6,53 @@
 
   <!-- Left: Main Details -->
   <div class="flex-1 space-y-4 text-gray-800">
-    <h1 class="text-2xl font-bold mb-4">{{ lore_topic.topic }}</h1>
 
-    {% if lore_topic.type %}
-    <div><strong>Type:</strong> {{ lore_topic.type }}</div>
-    {% endif %}
+    {% from "macros/fields.html" import render_editable_field %}
 
-    {% if lore_topic.next_steps %}
-    <div class="mt-4">
-      <h2 class="font-semibold text-lg">Next Steps</h2>
-      <p class="whitespace-pre-line">{{ lore_topic.next_steps }}</p>
+    <!-- Topic Title with inline edit -->
+    <div class="flex items-center space-x-2">
+      <h1 class="text-2xl font-bold">{{ lore_topic.topic }}</h1>
+      <a href="{{ url_for('lore_topic_detail', topic_id=lore_topic.id) }}?edit=topic" class="text-sm text-blue-600 underline">✏️</a>
     </div>
+    {% if request.args.get('edit') == 'topic' %}
+    <form method="post" action="{{ url_for('update_lore_topic_field', topic_id=lore_topic.id) }}" class="mt-2">
+      <input type="hidden" name="field" value="topic">
+      <input type="text" name="new_value" value="{{ lore_topic.topic }}" class="border px-2 py-1 text-sm rounded">
+      <button type="submit" class="ml-1 text-blue-600 text-sm underline">Save</button>
+      <a href="{{ url_for('lore_topic_detail', topic_id=lore_topic.id) }}" class="text-sm text-gray-500 ml-2">Cancel</a>
+    </form>
     {% endif %}
-
-    {% if lore_topic.notes %}
-    <div class="mt-4">
-      <h2 class="font-semibold text-lg">Notes</h2>
-      <p class="text-gray-700 whitespace-pre-line">{{ lore_topic.notes }}</p>
-    </div>
-    {% endif %}
+    
+    {{ render_editable_field(
+        'type',
+        lore_topic.type,
+        lore_topic.id,
+        request,
+        detail_endpoint='lore_topic_detail',
+        update_endpoint='update_lore_topic_field',
+        id_param='topic_id'
+    ) }}
+    
+    {{ render_editable_field(
+      'next_steps',
+      lore_topic.next_steps,
+      lore_topic.id,
+      request,
+      detail_endpoint='lore_topic_detail',
+      update_endpoint='update_lore_topic_field',
+      id_param='topic_id'
+   ) }}  
+    
+    {{ render_editable_field(
+        'edit_log',
+        lore_topic.edit_log,
+        lore_topic.id,
+        request,
+        detail_endpoint='lore_topic_detail',
+        update_endpoint='update_lore_topic_field',
+        id_param='topic_id'
+    ) }}
+    
   </div>
 
   <!-- Right: Related Pages -->
@@ -36,14 +64,14 @@
           <a href="{{ url_for('character_detail', character_id=id) }}" class="underline mr-1">{{ name }}</a>
         {% else %}—{% endfor %}
       </li>
-      <li><strong>Factions:</strong>
-        {% for id, name in lore_topic.related_factions %}
-          <a href="{{ url_for('faction_detail', faction_id=id) }}" class="underline mr-1">{{ name }}</a>
-        {% else %}—{% endfor %}
-      </li>
       <li><strong>Things:</strong>
         {% for id, name in lore_topic.related_things %}
           <a href="{{ url_for('thing_detail', thing_id=id) }}" class="underline mr-1">{{ name }}</a>
+        {% else %}—{% endfor %}
+      </li>
+      <li><strong>Factions:</strong>
+        {% for id, name in lore_topic.related_factions %}
+          <a href="{{ url_for('faction_detail', faction_id=id) }}" class="underline mr-1">{{ name }}</a>
         {% else %}—{% endfor %}
       </li>
       <li><strong>Locations:</strong>

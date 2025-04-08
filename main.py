@@ -111,7 +111,6 @@ def update_character_field(character_id):
     conn.close()
     return redirect(url_for('character_detail', character_id=character_id))
 
-
 @app.route('/things')
 def things():
     sort = request.args.get('sort', 'asc')
@@ -129,13 +128,12 @@ def things():
     conn.close()
 
     return render_template('things.html', things=rows, sort=sort, next_sort=next_sort)
-    
-@app.route('/things/<int:thing_id>')
+
+@app.route('/thing/<int:thing_id>')
 def thing_detail(thing_id):
     conn = sqlite3.connect('data/crossbook.db')
     cursor = conn.cursor()
 
-    # Fetch main thing record
     cursor.execute("""
         SELECT id, thing, description, notes
         FROM things
@@ -150,16 +148,28 @@ def thing_detail(thing_id):
     fields = ['id', 'thing', 'description', 'notes']
     thing = dict(zip(fields, row))
 
-    # Fetch related records using join tables
-    thing['related_characters']    = fetch_related(cursor, "character_things",    "thing_id", "characters",    "character", thing_id)
-    thing['related_factions']      = fetch_related(cursor, "faction_things",      "thing_id", "factions",      "faction",   thing_id)
-    thing['related_locations']     = fetch_related(cursor, "location_things",     "thing_id", "locations",     "location",  thing_id)
-    thing['related_lore_topics']   = fetch_related(cursor, "thing_lore_topics",   "thing_id", "lore_topics",   "topic",     thing_id)
-    thing['related_content']       = fetch_related(cursor, "content_things",      "thing_id", "content",       "content",   thing_id)
+    # Related entries
+    thing['related_characters'] = fetch_related(cursor, "character_things", "thing_id", "characters", "character", thing_id)
+    thing['related_factions'] = fetch_related(cursor, "thing_factions", "thing_id", "factions", "faction", thing_id)
+    thing['related_locations'] = fetch_related(cursor, "thing_locations", "thing_id", "locations", "location", thing_id)
+    thing['related_lore_topics'] = fetch_related(cursor, "thing_lore_topics", "thing_id", "lore_topics", "topic", thing_id)
+    thing['related_content'] = fetch_related(cursor, "thing_content", "thing_id", "content", "content", thing_id)
 
     conn.close()
     return render_template("thing_detail.html", thing=thing)
 
+@app.route('/update_thing_field/<int:thing_id>', methods=['POST'])
+def update_thing_field(thing_id):
+    field = request.form.get("field")
+    new_value = request.form.get("new_value")
+
+    conn = sqlite3.connect('data/crossbook.db')
+    cursor = conn.cursor()
+    cursor.execute(f"UPDATE things SET {field} = ? WHERE id = ?", (new_value, thing_id))
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('thing_detail', thing_id=thing_id))
 
 @app.route('/factions')
 def factions():
@@ -170,7 +180,7 @@ def factions():
     cursor = conn.cursor()
 
     cursor.execute(f"""
-        SELECT id, "faction", descriptions, apperance
+        SELECT id, "faction", descriptions, appearance
         FROM factions
         ORDER BY "faction" {sort.upper()}
     """)
@@ -179,16 +189,12 @@ def factions():
 
     return render_template('factions.html', factions=rows, sort=sort, next_sort=next_sort)
 
-@app.route('/factions/<int:faction_id>')
+@app.route('/faction/<int:faction_id>')
 def faction_detail(faction_id):
     conn = sqlite3.connect('data/crossbook.db')
     cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT id, faction, descriptions, apperance
-        FROM factions
-        WHERE id = ?
-    """, (faction_id,))
+    cursor.execute("SELECT id, faction, descriptions, appearance FROM factions WHERE id = ?", (faction_id,))
     row = cursor.fetchone()
 
     if row is None:
@@ -199,55 +205,25 @@ def faction_detail(faction_id):
     faction = dict(zip(fields, row))
 
     faction['related_characters'] = fetch_related(cursor, "character_factions", "faction_id", "characters", "character", faction_id)
-    faction['related_things']     = fetch_related(cursor, "faction_things",     "faction_id", "things",     "thing",     faction_id)
-    faction['related_locations']  = fetch_related(cursor, "faction_locations",  "faction_id", "locations",  "location",  faction_id)
-    faction['related_lore_topics']= fetch_related(cursor, "faction_lore_topics","faction_id", "lore_topics","topic",     faction_id)
-    faction['related_content']    = fetch_related(cursor, "faction_content",    "faction_id", "content",    "content",   faction_id)
+    faction['related_things'] = fetch_related(cursor, "thing_factions", "faction_id", "things", "thing", faction_id)
+    faction['related_locations'] = fetch_related(cursor, "faction_locations", "faction_id", "locations", "location", faction_id)
+    faction['related_lore_topics'] = fetch_related(cursor, "faction_lore_topics", "faction_id", "lore_topics", "topic", faction_id)
+    faction['related_content'] = fetch_related(cursor, "faction_content", "faction_id", "content", "content", faction_id)
 
     conn.close()
     return render_template("faction_detail.html", faction=faction)
 
-@app.route('/faction/<int:faction_id>/update_field', methods=['POST'])
+@app.route('/update_faction_field/<int:faction_id>', methods=['POST'])
 def update_faction_field(faction_id):
-    from flask import request, redirect, url_for
+    field = request.form.get("field")
+    new_value = request.form.get("new_value")
 
     conn = sqlite3.connect('data/crossbook.db')
     cursor = conn.cursor()
-
-    field = request.form.get('field')
-    new_value = request.form.get('new_value')
-
-    allowed_fields = ['faction', 'descriptions', 'appearance']
-    if field not in allowed_fields:
-        conn.close()
-        return "Invalid field", 400
-
-    cursor.execute(f"SELECT {field}, edit_log FROM factions WHERE id = ?", (faction_id,))
-    row = cursor.fetchone()
-    if not row:
-        conn.close()
-        return "Faction not found", 404
-
-    old_value, log = row
-    log = log or ""
-
-    if old_value == new_value:
-        conn.close()
-        return redirect(url_for('faction_detail', faction_id=faction_id))
-
-    import datetime
-    timestamp = datetime.datetime.utcnow().isoformat()
-    diff_entry = f"[{timestamp}] {field}: '{old_value}' → '{new_value}'"
-    updated_log = f"{log}\n{diff_entry}".strip()
-
-    cursor.execute(f"""
-        UPDATE factions
-        SET {field} = ?, edit_log = ?
-        WHERE id = ?
-    """, (new_value, updated_log, faction_id))
-
+    cursor.execute(f"UPDATE factions SET {field} = ? WHERE id = ?", (new_value, faction_id))
     conn.commit()
     conn.close()
+
     return redirect(url_for('faction_detail', faction_id=faction_id))
 
 @app.route('/lore_topics')
@@ -259,7 +235,7 @@ def lore_topics():
     cursor = conn.cursor()
 
     cursor.execute(f"""
-        SELECT id, topic, type, related_content
+        SELECT id, topic, type
         FROM lore_topics
         ORDER BY topic {sort.upper()}
     """)
@@ -268,7 +244,7 @@ def lore_topics():
 
     return render_template('lore_topics.html', lore_topics=rows, sort=sort, next_sort=next_sort)
 
-@app.route('/lore_topics/<int:topic_id>')
+@app.route('/lore_topic/<int:topic_id>')
 def lore_topic_detail(topic_id):
     conn = sqlite3.connect('data/crossbook.db')
     cursor = conn.cursor()
@@ -296,6 +272,19 @@ def lore_topic_detail(topic_id):
     conn.close()
     return render_template("lore_topic_detail.html", lore_topic=lore_topic)
 
+@app.route('/update_lore_topic_field/<int:topic_id>', methods=['POST'])
+def update_lore_topic_field(topic_id):
+    field = request.form.get('field')
+    new_value = request.form.get('new_value')
+
+    conn = sqlite3.connect('data/crossbook.db')
+    cursor = conn.cursor()
+
+    cursor.execute(f"UPDATE lore_topics SET {field} = ? WHERE id = ?", (new_value, topic_id))
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('lore_topic_detail', topic_id=topic_id))
 
 @app.route('/locations')
 def locations():
@@ -315,60 +304,43 @@ def locations():
 
     return render_template('locations.html', locations=rows, sort=sort, next_sort=next_sort)
 
-@app.route('/locations/<int:location_id>')
+@app.route('/location/<int:location_id>')
 def location_detail(location_id):
     conn = sqlite3.connect('data/crossbook.db')
     cursor = conn.cursor()
 
-    # Main record
-    cursor.execute("""
-        SELECT id, location, description,
-               related_characters, related_factions,
-               related_things, related_lore_topics, related_content
-        FROM locations WHERE id = ?
-    """, (location_id,))
+    cursor.execute("SELECT id, location, description FROM locations WHERE id = ?", (location_id,))
     row = cursor.fetchone()
-    if not row:
+
+    if row is None:
         conn.close()
         return "Location not found", 404
 
-    fields = [
-        'id', 'location', 'description',
-        'related_characters', 'related_factions',
-        'related_things', 'related_lore_topics', 'related_content'
-    ]
+    fields = ['id', 'location', 'description']
     location = dict(zip(fields, row))
 
-    # Helper: fetch name by ID from any table
-    def fetch_labels(table, id_list, label_column):
-        placeholders = ','.join(['?'] * len(id_list))
-        # Only quote label_column if it is a reserved keyword (like "faction").
-        # Do NOT quote normal column names like things, topic, character — it breaks the query.
-        quoted_column = f'"{label_column}"' if label_column in ["faction"] else label_column
-        cursor.execute(f"SELECT id, {quoted_column} FROM {table} WHERE id IN ({placeholders})", id_list)
-        return {str(row[0]): row[1] for row in cursor.fetchall()}
+    location['related_characters'] = fetch_related(cursor, "character_locations", "location_id", "characters", "character", location_id)
+    location['related_factions'] = fetch_related(cursor, "faction_locations", "location_id", "factions", "faction", location_id)
+    location['related_things'] = fetch_related(cursor, "thing_locations", "location_id", "things", "thing", location_id)
+    location['related_lore_topics'] = fetch_related(cursor, "location_lore_topics", "location_id", "lore_topics", "topic", location_id)
+    location['related_content'] = fetch_related(cursor, "location_content", "location_id", "content", "content", location_id)
 
-
-
-    # Parse ID fields
-    def parse_ids(field):
-        return [id.strip() for id in location.get(field, '').split(',') if id.strip().isdigit()]
-
-    # Resolve labels
-    related = {
-        'characters': fetch_labels("characters", parse_ids("related_characters"), "character"),
-        'factions': fetch_labels("factions", parse_ids("related_factions"), "faction"),
-        'thing_labels': fetch_labels("things", parse_ids("related_things"), "thing"),
-        'lore_topics': fetch_labels("lore_topics", parse_ids("related_lore_topics"), "topic"),
-        'content': fetch_labels("content", parse_ids("related_content"), "id")  
-    }
-    print("[DEBUG] thing labels from DB:", related["thing_labels"])
     conn.close()
-    print("Related things:", related["thing_labels"])
-    print("Related things debug:", related["thing_labels"])
-    return render_template("location_detail.html", location=location, related=related)
+    return render_template("location_detail.html", location=location)
 
 
+@app.route('/update_location_field/<int:location_id>', methods=['POST'])
+def update_location_field(location_id):
+    field = request.form.get("field")
+    new_value = request.form.get("new_value")
+
+    conn = sqlite3.connect('data/crossbook.db')
+    cursor = conn.cursor()
+    cursor.execute(f"UPDATE locations SET {field} = ? WHERE id = ?", (new_value, location_id))
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('location_detail', location_id=location_id))
 
 @app.route('/content')
 def content():
