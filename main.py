@@ -34,7 +34,7 @@ def character_detail(character_id):
     # Fetch main character record
     cursor.execute("""
         SELECT id, character, race, origin, allegience,
-               magical, status, description, significance, notes
+               magical, status, description, significance, notes, edit_log
         FROM characters
         WHERE id = ?
     """, (character_id,))
@@ -45,9 +45,10 @@ def character_detail(character_id):
         return "Character not found", 404
 
     fields = [
-        'id', 'character', 'race', 'origin', 'allegience',
-        'magical', 'status', 'description', 'significance', 'notes'
+        "id", "character", "race", "origin", "allegience",
+        "magical", "status", "description", "significance", "notes", "edit_log"
     ]
+
     character = dict(zip(fields, row))
 
     # Fetch related records using join tables

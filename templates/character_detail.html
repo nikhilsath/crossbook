@@ -7,7 +7,7 @@
   <!-- Left: Main Details -->
   <div class="flex-1 space-y-4 text-gray-800">
 
-    {% from "macros/fields.html" import render_editable_field %}
+    {% from "macros/fields.html" import render_editable_field, render_edit_log %}
 
     <!-- Character Name Field -->
     <div class="flex items-center space-x-2">
@@ -29,27 +29,13 @@
     {{ render_editable_field('allegience', character.allegience, character.id, request, 'character_detail', 'update_character_field', 'character_id') }}
     {{ render_editable_field('magical', character.magical, character.id, request, 'character_detail', 'update_character_field', 'character_id') }}
     {{ render_editable_field('status', character.status, character.id, request, 'character_detail', 'update_character_field', 'character_id') }}
-
-    {% if character.description %}
-    <div>
-      <h2 class="font-semibold text-lg mt-4">Description</h2>
-      <p class="whitespace-pre-line border-l-4 border-blue-300 pl-4 italic">{{ character.description }}</p>
+    {{ render_editable_field('description', character.description, character.id, request, 'character_detail', 'update_character_field', 'character_id') }}
+    {{ render_editable_field('significance', character.significance, character.id, request, 'character_detail', 'update_character_field', 'character_id') }}
+    {{ render_editable_field('notes', character.notes, character.id, request, 'character_detail', 'update_character_field', 'character_id') }}
+    <!-- Edit History -->
+    <div class="pt-4">
+      {{ render_edit_log(character.edit_log) }}
     </div>
-    {% endif %}
-
-    {% if character.significance %}
-    <div>
-      <h2 class="font-semibold text-lg mt-4">Significance</h2>
-      <p class="whitespace-pre-line">{{ character.significance }}</p>
-    </div>
-    {% endif %}
-
-    {% if character.notes %}
-    <div>
-      <h2 class="font-semibold text-lg mt-4">Notes</h2>
-      <p class="whitespace-pre-line text-gray-700">{{ character.notes }}</p>
-    </div>
-    {% endif %}
   </div>
 
   <!-- Right: Related Pages -->

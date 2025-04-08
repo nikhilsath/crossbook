@@ -18,3 +18,12 @@
     {% endif %}
   </div>
 {% endmacro %}
+
+{% macro render_edit_log(edit_log_text) %}
+  {% if edit_log_text %}
+    <details class="mt-6 text-sm text-gray-600">
+      <summary class="cursor-pointer font-medium text-blue-600">Edit History</summary>
+      <pre class="whitespace-pre-wrap mt-2">{{ edit_log_text }}</pre>
+    </details>
+  {% endif %}
+{% endmacro %}
