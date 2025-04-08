@@ -6,7 +6,7 @@
 
   <!-- Left: Main Details -->
   <div class="flex-1 space-y-4 text-gray-800">
-    {% from "macros/fields.html" import render_editable_field %}
+    {% from "macros/fields.html" import render_editable_field, render_edit_log %}
 
     <!-- Thing Title with inline edit -->
     <div class="flex items-center space-x-2">
@@ -25,6 +25,11 @@
 
     {{ render_editable_field('description', thing.description, thing.id, request, 'thing_detail', 'update_thing_field', 'thing_id') }}
     {{ render_editable_field('notes', thing.notes, thing.id, request, 'thing_detail', 'update_thing_field', 'thing_id') }}
+
+    <!-- Edit Log -->
+    <div class="pt-4">
+      {{ render_edit_log(thing.edit_log) }}
+    </div>
   </div>
 
   <!-- Right: Related Pages -->

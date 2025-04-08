@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for
 from utils.db_helpers import fetch_related
 import sqlite3
+import datetime
 
 app = Flask(__name__)
 
@@ -96,7 +97,6 @@ def update_character_field(character_id):
         return redirect(url_for('character_detail', character_id=character_id))
 
     # Log diff
-    import datetime
     timestamp = datetime.datetime.utcnow().isoformat()
     diff_entry = f"[{timestamp}] {field}: '{old_value}' → '{new_value}'"
     updated_log = f"{log}\n{diff_entry}".strip()
@@ -136,7 +136,7 @@ def thing_detail(thing_id):
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT id, thing, description, notes
+        SELECT id, thing, description, notes, edit_log
         FROM things
         WHERE id = ?
     """, (thing_id,))
@@ -146,7 +146,7 @@ def thing_detail(thing_id):
         conn.close()
         return "Thing not found", 404
 
-    fields = ['id', 'thing', 'description', 'notes']
+    fields = ['id', 'thing', 'description', 'notes', 'edit_log']
     thing = dict(zip(fields, row))
 
     # Related entries
@@ -159,18 +159,41 @@ def thing_detail(thing_id):
     conn.close()
     return render_template("thing_detail.html", thing=thing)
 
-@app.route('/update_thing_field/<int:thing_id>', methods=['POST'])
+@app.route("/thing/<int:thing_id>/update", methods=["POST"])
 def update_thing_field(thing_id):
     field = request.form.get("field")
     new_value = request.form.get("new_value")
 
-    conn = sqlite3.connect('data/crossbook.db')
+    if field not in {"thing", "description", "notes"}:
+        return "Invalid field", 400
+
+    conn = sqlite3.connect("data/crossbook.db")
     cursor = conn.cursor()
-    cursor.execute(f"UPDATE things SET {field} = ? WHERE id = ?", (new_value, thing_id))
+
+    # Get current value and edit log
+    cursor.execute(f"SELECT {field}, edit_log FROM things WHERE id = ?", (thing_id,))
+    row = cursor.fetchone()
+
+    if not row:
+        conn.close()
+        return "Thing not found", 404
+
+    old_value, current_log = row
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+
+    log_entry = f"{timestamp} | {field} | {old_value!r} → {new_value!r}"
+    updated_log = (current_log or "") + log_entry + "\n"
+
+    cursor.execute(
+        f"UPDATE things SET {field} = ?, edit_log = ? WHERE id = ?",
+        (new_value, updated_log, thing_id)
+    )
+
     conn.commit()
     conn.close()
 
-    return redirect(url_for('thing_detail', thing_id=thing_id))
+    return redirect(url_for("thing_detail", thing_id=thing_id))
+
 
 @app.route('/factions')
 def factions():
