@@ -1,20 +1,20 @@
-{% macro render_editable_field(field, value, character_id, request) %}
+{% macro render_editable_field(field, value, record_id, request, detail_endpoint, update_endpoint) %}
   <div class="mt-2">
     <strong class="capitalize">{{ field }}:</strong>
 
-    {# If the field is being edited (e.g. URL is ?edit=race), show form #}
+    {# If the field is being edited (e.g. URL is ?edit=race), show input form #}
     {% if request.args.get('edit') == field %}
-      <form method="post" action="{{ url_for('update_character_field', character_id=character_id) }}" class="inline">
+      <form method="post" action="{{ url_for(update_endpoint, **{detail_endpoint + '_id': record_id}) }}" class="inline">
         <input type="hidden" name="field" value="{{ field }}">
         <input type="text" name="new_value" value="{{ value }}" class="border px-1 py-0.5 text-sm rounded">
         <button type="submit" class="text-blue-600 text-sm underline ml-1">Save</button>
-        <a href="{{ url_for('character_detail', character_id=character_id) }}" class="text-gray-500 ml-2 text-sm">Cancel</a>
+        <a href="{{ url_for(detail_endpoint + '_detail', **{detail_endpoint + '_id': record_id}) }}" class="text-gray-500 ml-2 text-sm">Cancel</a>
       </form>
 
-    {# If not being edited, show the value + edit pencil #}
+    {# Else, show the value and a pencil link to toggle editing #}
     {% else %}
       <span class="ml-1">{{ value }}</span>
-      <a href="{{ url_for('character_detail', character_id=character_id) }}?edit={{ field }}" class="text-sm text-blue-600 underline ml-1">✏️</a>
+      <a href="{{ url_for(detail_endpoint + '_detail', **{detail_endpoint + '_id': record_id}) }}?edit={{ field }}" class="text-sm text-blue-600 underline ml-1">✏️</a>
     {% endif %}
   </div>
 {% endmacro %}

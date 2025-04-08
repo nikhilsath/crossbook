@@ -1,7 +1,6 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from utils.db_helpers import fetch_related
 import sqlite3
-
 
 app = Flask(__name__)
 
@@ -59,6 +58,59 @@ def character_detail(character_id):
     character['related_content'] = fetch_related(cursor, "character_content", "character_id", "content", "content", character_id)
     conn.close()
     return render_template("character_detail.html", character=character)
+
+@app.route('/character/<int:character_id>/update_field', methods=['POST'])
+def update_character_field(character_id):
+    from flask import redirect, request, url_for  # ✅ Required if not already at top
+
+    conn = sqlite3.connect('data/crossbook.db')
+    cursor = conn.cursor()
+
+    # Extract field + new value from form
+    field = request.form.get('field')
+    new_value = request.form.get('new_value')
+
+    # ✅ Allow these fields to be edited inline
+    allowed_fields = [
+        'character', 'race', 'origin', 'allegience',
+        'magical', 'status', 'description', 'significance', 'notes'
+    ]
+    if field not in allowed_fields:
+        conn.close()
+        return "Invalid field", 400
+
+    # Get current value and existing log
+    cursor.execute(f"SELECT {field}, edit_log FROM characters WHERE id = ?", (character_id,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        return "Character not found", 404
+
+    old_value, log = row
+    log = log or ""
+
+    # Skip update if value unchanged
+    if old_value == new_value:
+        conn.close()
+        return redirect(url_for('character_detail', character_id=character_id))
+
+    # Log diff
+    import datetime
+    timestamp = datetime.datetime.utcnow().isoformat()
+    diff_entry = f"[{timestamp}] {field}: '{old_value}' → '{new_value}'"
+    updated_log = f"{log}\n{diff_entry}".strip()
+
+    # Update value + log
+    cursor.execute(f"""
+        UPDATE characters
+        SET {field} = ?, edit_log = ?
+        WHERE id = ?
+    """, (new_value, updated_log, character_id))
+
+    conn.commit()
+    conn.close()
+    return redirect(url_for('character_detail', character_id=character_id))
+
 
 @app.route('/things')
 def things():
@@ -155,6 +207,48 @@ def faction_detail(faction_id):
     conn.close()
     return render_template("faction_detail.html", faction=faction)
 
+@app.route('/faction/<int:faction_id>/update_field', methods=['POST'])
+def update_faction_field(faction_id):
+    from flask import request, redirect, url_for
+
+    conn = sqlite3.connect('data/crossbook.db')
+    cursor = conn.cursor()
+
+    field = request.form.get('field')
+    new_value = request.form.get('new_value')
+
+    allowed_fields = ['faction', 'descriptions', 'appearance']
+    if field not in allowed_fields:
+        conn.close()
+        return "Invalid field", 400
+
+    cursor.execute(f"SELECT {field}, edit_log FROM factions WHERE id = ?", (faction_id,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        return "Faction not found", 404
+
+    old_value, log = row
+    log = log or ""
+
+    if old_value == new_value:
+        conn.close()
+        return redirect(url_for('faction_detail', faction_id=faction_id))
+
+    import datetime
+    timestamp = datetime.datetime.utcnow().isoformat()
+    diff_entry = f"[{timestamp}] {field}: '{old_value}' → '{new_value}'"
+    updated_log = f"{log}\n{diff_entry}".strip()
+
+    cursor.execute(f"""
+        UPDATE factions
+        SET {field} = ?, edit_log = ?
+        WHERE id = ?
+    """, (new_value, updated_log, faction_id))
+
+    conn.commit()
+    conn.close()
+    return redirect(url_for('faction_detail', faction_id=faction_id))
 
 @app.route('/lore_topics')
 def lore_topics():

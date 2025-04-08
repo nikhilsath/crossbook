@@ -6,21 +6,27 @@
 
   <!-- Left: Main Details -->
   <div class="flex-1 space-y-4 text-gray-800">
-    <h1 class="text-2xl font-bold mb-4">{{ faction.faction }}</h1>
 
-    {% if faction.descriptions %}
-    <div class="mt-4">
-      <h2 class="font-semibold text-lg">Description</h2>
-      <p class="whitespace-pre-line border-l-4 border-blue-300 pl-4 italic">{{ faction.descriptions }}</p>
+    {# Load reusable field macro #}
+    {% from "macros/fields.html" import render_editable_field %}
+
+    <!-- Faction Name Field (Header + Inline Edit Link) -->
+    <div class="flex items-center space-x-2">
+      <h1 class="text-2xl font-bold">{{ faction.faction }}</h1>
+      <a href="{{ url_for('faction_detail', faction_id=faction.id) }}?edit=faction" class="text-sm text-blue-600 underline">✏️</a>
     </div>
+
+    {% if request.args.get('edit') == 'faction' %}
+    <form method="post" action="{{ url_for('update_faction_field', faction_id=faction.id) }}" class="mt-2">
+      <input type="hidden" name="field" value="faction">
+      <input type="text" name="new_value" value="{{ faction.faction }}" class="border px-2 py-1 text-sm rounded">
+      <button type="submit" class="ml-1 text-blue-600 text-sm underline">Save</button>
+      <a href="{{ url_for('faction_detail', faction_id=faction.id) }}" class="text-sm text-gray-500 ml-2">Cancel</a>
+    </form>
     {% endif %}
 
-    {% if faction.appearance %}
-    <div class="mt-4">
-      <h2 class="font-semibold text-lg">Appearance</h2>
-      <p class="text-gray-700 whitespace-pre-line">{{ faction.appearance }}</p>
-    </div>
-    {% endif %}
+    {{ render_editable_field('descriptions', faction.descriptions, faction.id, request, 'faction', 'update_faction_field') }}
+    {{ render_editable_field('appearance', faction.appearance, faction.id, request, 'faction', 'update_faction_field') }}
   </div>
 
   <!-- Right: Related Pages -->

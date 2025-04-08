@@ -1,91 +1,93 @@
-# 📘 Crossbook
+# Crossbook
 
-Crossbook/
+Crossbook is a structured, browser-based knowledge interface for managing canon content across characters, locations, lore topics, factions, and more. It follows a clean Notion-inspired design and supports relationship mapping through join tables in SQLite.
+
+---
+
+## Project Summary
+
+- Built using Flask, Jinja2, TailwindCSS, and SQLite.
+- Clean and consistent UI for detail pages and sortable list views.
+- Fully normalized schema with many-to-many relationships using join tables.
+- Routes and templates for all major entities:
+  - Characters
+  - Things
+  - Factions
+  - Lore Topics
+  - Locations
+  - Content
+
+---
+
+## Current Status
+
+### Implemented
+
+- All entity tables and detail/list views
+- Schema includes all needed join tables
+- Relationship display via helper `fetch_related()` function
+- Routes: `/characters`, `/things`, `/factions`, `/lore_topics`, `/locations`, `/content`
+- Templates: detail and list views for each entity
+- Fully removed all deprecated `related_*` fields from logic
+- All routes validated for correct join table usage (e.g., `topic_id` for `lore_topic`)
+
+### Not Yet Implemented
+
+- No edit forms or update logic
+- No `edit_log` columns or changelog UI
+- No support for modifying relationships in the UI
+- No use of `reddit_content` table yet
+- No pagination or filtering
+
+---
+
+## Folder Structure
+
+```
+.
 ├── data/
-│   └── crossbook.db            # Main SQLite3 database
-├── templates/
-│   ├── base.html               # Common layout with nav bar
-│   ├── index.html              # Home page
-│   ├── characters.html         # List of characters
-│   ├── character_detail.html   # Detail view for characters
-│   ├── items.html              # List of items
-│   ├── item_detail.html        # Detail view for items
-│   ├── groups.html             # List of groups
-│   ├── group_detail.html       # Detail view for groups
-│   ├── locations.html          # List of locations
-│   ├── location_detail.html    # Detail view for locations
-│   ├── lore_topics.html        # List of lore topics
-│   └── lore_topic_detail.html  # Detail view for lore topics
-└── main.py     
-
-**Crossbook** is a lightweight, browser-based CMS designed to manage canon content from a fantasy universe, starting with read-only access and a clean UI for navigating characters, items, groups, locations, and lore topics.
+│   └── crossbook.db         # SQLite database
+├── templates/               # All Jinja2 templates
+│   ├── *_detail.html        # One per entity
+│   └── *.html               # List views
+├── utils/
+│   └── db_helpers.py        # Contains fetch_related()
+├── main.py                  # Flask routes and logic
+└── README.md
+```
 
 ---
 
-## 🚀 Features (Phase 1 Complete)
+## Development Process
 
-### ✅ Foundation – Read-Only UI
-- 🌐 **Homepage Navigation**
-  - Landing page with grid-style navigation to Characters, Items, Groups, Locations, and Lore Topics.
-  - TailwindCSS-powered UI.
+### Workflow Phases
 
-- 📋 **List Views**
-  - Sortable tables for each category (e.g., sort characters by name).
-  - Toggleable ascending/descending sort for the primary column.
-  - Navigation bar included on all list views.
-
-- 🧾 **Detail Views**
-  - Dedicated pages for each entry using a unique `id`.
-  - Displays key fields for each table.
-  - Placeholder section for related content.
-  - Clean formatting and error handling for missing entries.
+1. **Phase 1 – Read-only UI** (Complete)
+2. **Phase 2 – Schema Cleanup & Join Table Refactoring** (Complete)
+3. **Phase 3 – Editing Support** (Planned)
+4. **Phase 4 – Relationship Editing & Lookup Controls** (Planned)
 
 ---
 
-## 🗂️ Tables Currently Supported
+## If Using AI – Include This In the Prompt
 
-All tables include a newly added `id` (INTEGER PRIMARY KEY AUTOINCREMENT):
-
-- **Characters**
-  - Fields: `character`, `race`, `origin`, `allegience`, `magical`, `status`, `description`, `significance`, `notes`
-
-- **Items**
-  - Fields: `items`, `description`, `notes`
-
-- **Groups**
-  - Fields: `group`, `descriptions`, `apperance`
-
-- **Locations**
-  - Fields: `name`, `location`, `significance`, `notes`
-
-- **Lore Topics**
-  - Fields: `topic`, `type`, `related_content`, `next_steps`, `notes`
+> You are contributing to the Crossbook project.  
+> Crossbook uses Flask, SQLite, and Jinja templates with Tailwind CSS.  
+> The database schema is normalized with join tables for relationships.  
+> All existing `related_*` columns in the database are deprecated and must not be used.  
+> For `lore_topics`, the join field is always `topic_id` (not `lore_topic_id`).  
+> Join logic must use the helper `fetch_related()` already defined in `db_helpers.py`.  
+> When editing templates, match the structure of `content_detail.html`.  
+> Do not add new features unless explicitly requested.  
+> When writing GitHub scripts, do not include comments or combine staging with directory navigation.  
+> Do not assume or infer goals – only reflect what has been confirmed by the user.
 
 ---
 
-## 🧱 Tech Stack
+## Next Planned Steps
 
-- **Backend:** Flask (Python 3)
-- **Frontend:** HTML + Jinja + TailwindCSS
-- **Database:** SQLite3 (`crossbook.db`)
-
----
-
-## 🧪 Setup & Run
-
-### 1. Clone & Setup
-
-```bash
-git clone <your_repo_url>
-cd Crossbook
-python3 -m venv venv
-source venv/bin/activate
-pip install flask
-
-2. Run the App
-bash
-Copy
-Edit
-python main.py
-Then visit http://localhost:5000 in your browser.
-
+1. Add `edit_log` column to all entity tables
+2. Implement form-based editing for all detail views
+3. Log field-level diffs in `edit_log`
+4. Display collapsible edit history in the UI
+5. Add UI dropdowns to manage relationships
