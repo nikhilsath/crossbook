@@ -82,3 +82,28 @@ Crossbook is a structured, browser-based knowledge interface for managing canon 
 4. Extend edit logs to relationship updates
 5. Begin planning for packaging and install automation
 
+## Relation Editing (Add/Remove)
+
+Crossbook supports editing many-to-many relationships directly from each record's detail view.
+
+### Features:
+- Add or remove related entries from tables like Characters, Locations, Things, etc.
+- Use the ➕ (add) button to open a modal listing available related entries.
+- Select a related record from the dropdown and click **Add**.
+- Use the ❌ (remove) button next to an existing relation to unlink it.
+
+### Notes:
+- Non-content tables show names only (sorted alphabetically).
+- Content relationships show `#ID – Title` format, sorted by ID.
+- The backend uses a single `/relationship` endpoint (POST) with action: `add` or `remove`.
+- Join tables are created dynamically in the database and follow the alphabetical format: `table1_table2`.
+
+Example payload:
+```json
+{
+  "table_a": "character",
+  "id_a": 2,
+  "table_b": "location",
+  "id_b": 5,
+  "action": "add"
+}
