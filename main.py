@@ -56,7 +56,7 @@ def character_detail(character_id):
     character['related_things'] = fetch_related(cursor, "character_things", "character_id", "things", "thing", character_id)
     character['related_factions'] = fetch_related(cursor, "character_factions", "character_id", "factions", "faction", character_id)
     character['related_locations'] = fetch_related(cursor, "character_locations", "character_id", "locations", "location", character_id)
-    character['related_lore_topics'] = fetch_related(cursor, "character_lore_topics", "character_id", "lore_topics", "topic", character_id)
+    character['related_topics'] = fetch_related(cursor, "character_topics", "character_id", "topics", "topic", character_id)
     character['related_content'] = fetch_related(cursor, "character_content", "character_id", "content", "content", character_id)
     conn.close()
     return render_template("character_detail.html", character=character)
@@ -153,7 +153,7 @@ def thing_detail(thing_id):
     thing['related_characters'] = fetch_related(cursor, "character_things", "thing_id", "characters", "character", thing_id)
     thing['related_factions'] = fetch_related(cursor, "thing_factions", "thing_id", "factions", "faction", thing_id)
     thing['related_locations'] = fetch_related(cursor, "thing_locations", "thing_id", "locations", "location", thing_id)
-    thing['related_lore_topics'] = fetch_related(cursor, "thing_lore_topics", "thing_id", "lore_topics", "topic", thing_id)
+    thing['related_topics'] = fetch_related(cursor, "thing_topics", "thing_id", "topics", "topic", thing_id)
     thing['related_content'] = fetch_related(cursor, "thing_content", "thing_id", "content", "content", thing_id)
 
     conn.close()
@@ -230,7 +230,7 @@ def faction_detail(faction_id):
     faction['related_characters'] = fetch_related(cursor, "character_factions", "faction_id", "characters", "character", faction_id)
     faction['related_things'] = fetch_related(cursor, "thing_factions", "faction_id", "things", "thing", faction_id)
     faction['related_locations'] = fetch_related(cursor, "faction_locations", "faction_id", "locations", "location", faction_id)
-    faction['related_lore_topics'] = fetch_related(cursor, "faction_lore_topics", "faction_id", "lore_topics", "topic", faction_id)
+    faction['related_topics'] = fetch_related(cursor, "faction_topics", "faction_id", "topics", "topic", faction_id)
     faction['related_content'] = fetch_related(cursor, "faction_content", "faction_id", "content", "content", faction_id)
 
     conn.close()
@@ -271,8 +271,8 @@ def update_faction_field(faction_id):
     return redirect(url_for("faction_detail", faction_id=faction_id))
 
 
-@app.route('/lore_topics')
-def lore_topics():
+@app.route('/topics')
+def topics():
     sort = request.args.get('sort', 'asc')
     next_sort = 'desc' if sort == 'asc' else 'asc'
 
@@ -281,22 +281,22 @@ def lore_topics():
 
     cursor.execute(f"""
         SELECT id, topic, type
-        FROM lore_topics
+        FROM topics
         ORDER BY topic {sort.upper()}
     """)
     rows = cursor.fetchall()
     conn.close()
 
-    return render_template('lore_topics.html', lore_topics=rows, sort=sort, next_sort=next_sort)
+    return render_template('topics.html', topics=rows, sort=sort, next_sort=next_sort)
 
-@app.route('/lore_topic/<int:topic_id>')
-def lore_topic_detail(topic_id):
+@app.route('/topic/<int:topic_id>')
+def topic_detail(topic_id):
     conn = sqlite3.connect('data/crossbook.db')
     cursor = conn.cursor()
 
     cursor.execute("""
         SELECT id, topic, type, next_steps, notes, edit_log
-        FROM lore_topics
+        FROM topics
         WHERE id = ?
     """, (topic_id,))
     row = cursor.fetchone()
@@ -306,19 +306,19 @@ def lore_topic_detail(topic_id):
         return "Lore Topic not found", 404
 
     fields = ['id', 'topic', 'type', 'next_steps', 'notes', 'edit_log']
-    lore_topic = dict(zip(fields, row))
+    topic = dict(zip(fields, row))
 
-    lore_topic['related_characters'] = fetch_related(cursor, "character_lore_topics", "topic_id", "characters", "character", topic_id)
-    lore_topic['related_factions']   = fetch_related(cursor, "faction_lore_topics",   "topic_id", "factions",   "faction",   topic_id)
-    lore_topic['related_locations']  = fetch_related(cursor, "location_lore_topics",  "topic_id", "locations",  "location",  topic_id)
-    lore_topic['related_things']     = fetch_related(cursor, "thing_lore_topics",     "topic_id", "things",     "thing",     topic_id)
-    lore_topic['related_content']    = fetch_related(cursor, "content_lore_topics",   "topic_id", "content",    "content",   topic_id)
+    topic['related_characters'] = fetch_related(cursor, "character_topics", "topic_id", "characters", "character", topic_id)
+    topic['related_factions']   = fetch_related(cursor, "faction_topics",   "topic_id", "factions",   "faction",   topic_id)
+    topic['related_locations']  = fetch_related(cursor, "location_topics",  "topic_id", "locations",  "location",  topic_id)
+    topic['related_things']     = fetch_related(cursor, "thing_topics",     "topic_id", "things",     "thing",     topic_id)
+    topic['related_content']    = fetch_related(cursor, "content_topics",   "topic_id", "content",    "content",   topic_id)
 
     conn.close()
-    return render_template("lore_topic_detail.html", lore_topic=lore_topic)
+    return render_template("topic_detail.html", topic=topic)
 
-@app.route("/lore_topic/<int:topic_id>/update", methods=["POST"])
-def update_lore_topic_field(topic_id):
+@app.route("/topic/<int:topic_id>/update", methods=["POST"])
+def update_topic_field(topic_id):
     field = request.form.get("field")
     new_value = request.form.get("new_value")
 
@@ -328,7 +328,7 @@ def update_lore_topic_field(topic_id):
     conn = sqlite3.connect("data/crossbook.db")
     cursor = conn.cursor()
 
-    cursor.execute(f"SELECT {field}, edit_log FROM lore_topics WHERE id = ?", (topic_id,))
+    cursor.execute(f"SELECT {field}, edit_log FROM topics WHERE id = ?", (topic_id,))
     row = cursor.fetchone()
 
     if not row:
@@ -341,14 +341,14 @@ def update_lore_topic_field(topic_id):
     updated_log = (current_log or "") + log_entry + "\n"
 
     cursor.execute(
-        f"UPDATE lore_topics SET {field} = ?, edit_log = ? WHERE id = ?",
+        f"UPDATE topics SET {field} = ?, edit_log = ? WHERE id = ?",
         (new_value, updated_log, topic_id)
     )
 
     conn.commit()
     conn.close()
 
-    return redirect(url_for("lore_topic_detail", topic_id=topic_id))
+    return redirect(url_for("topic_detail", topic_id=topic_id))
 
 
 @app.route('/locations')
@@ -387,7 +387,7 @@ def location_detail(location_id):
     location['related_characters'] = fetch_related(cursor, "character_locations", "location_id", "characters", "character", location_id)
     location['related_factions'] = fetch_related(cursor, "faction_locations", "location_id", "factions", "faction", location_id)
     location['related_things'] = fetch_related(cursor, "thing_locations", "location_id", "things", "thing", location_id)
-    location['related_lore_topics'] = fetch_related(cursor, "location_lore_topics", "location_id", "lore_topics", "topic", location_id)
+    location['related_topics'] = fetch_related(cursor, "location_topics", "location_id", "topics", "topic", location_id)
     location['related_content'] = fetch_related(cursor, "location_content", "location_id", "content", "content", location_id)
 
     conn.close()
@@ -504,7 +504,7 @@ def content_detail(id):
     content_entry['related_things']     = fetch_related(cursor, "content_things",     "content_id", "things",     "thing",     id)
     content_entry['related_factions']   = fetch_related(cursor, "content_factions",   "content_id", "factions",   "faction",   id)
     content_entry['related_locations']  = fetch_related(cursor, "content_locations",  "content_id", "locations",  "location",  id)
-    content_entry['related_lore_topics']= fetch_related(cursor, "content_lore_topics","content_id", "lore_topics","topic",     id)
+    content_entry['related_topics']= fetch_related(cursor, "content_topics","content_id", "topics","topic",     id)
 
     conn.close()
     return render_template("content_detail.html", content=content_entry)

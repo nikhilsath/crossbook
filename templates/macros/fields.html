@@ -27,3 +27,38 @@
     </details>
   {% endif %}
 {% endmacro %}
+
+{% macro render_relationships(title, related_list, field_name, options, record_id, endpoint) %}
+<div class="mb-4">
+  <h3 class="font-semibold text-lg mb-2">{{ title }}</h3>
+
+  <ul class="mb-2">
+    {% for related in related_list %}
+      <li class="flex justify-between items-center mb-1">
+        <span>{{ related.name }}</span>
+        <form method="POST" action="{{ endpoint }}/remove" class="inline">
+          <input type="hidden" name="record_id" value="{{ record_id }}">
+          <input type="hidden" name="related_id" value="{{ related.id }}">
+          <input type="hidden" name="field_name" value="{{ field_name }}">
+          <button class="text-red-500 hover:underline" type="submit">✕ Remove</button>
+        </form>
+      </li>
+    {% else %}
+      <li class="text-sm text-gray-500">No related records</li>
+    {% endfor %}
+  </ul>
+
+  <form method="POST" action="{{ endpoint }}/add" class="flex gap-2 items-center">
+    <input type="hidden" name="record_id" value="{{ record_id }}">
+    <input type="hidden" name="field_name" value="{{ field_name }}">
+
+    <select name="related_id" class="border rounded p-1 text-sm">
+      {% for option in options %}
+        <option value="{{ option.id }}">{{ option.name }}</option>
+      {% endfor %}
+    </select>
+
+    <button type="submit" class="text-green-600 hover:underline">+ Add</button>
+  </form>
+</div>
+{% endmacro %}

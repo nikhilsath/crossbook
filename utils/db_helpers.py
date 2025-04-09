@@ -1,6 +1,6 @@
 # This function dynamically joins a source table to a target table using a join table.
 # It assumes the join table uses the convention: {target_label}_id (e.g., thing_id, topic_id).
-# For compound target labels (e.g., "lore_topic"), the join table column must still follow the format: topic_id.
+# For compound target labels (e.g., "topic"), the join table column must still follow the format: topic_id.
 
 def fetch_related(cursor, join_table, source_field, target_table, target_label, source_id):
     cursor.execute(f"""

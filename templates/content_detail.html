@@ -67,8 +67,8 @@
         {% else %}—{% endfor %}
       </li>
       <li><strong>Lore Topics:</strong>
-        {% for id, name in content.related_lore_topics %}
-          <a href="{{ url_for('lore_topic_detail', topic_id=id) }}" class="underline mr-1">{{ name }}</a>
+        {% for id, name in content.related_topics %}
+          <a href="{{ url_for('topic_detail', topic_id=id) }}" class="underline mr-1">{{ name }}</a>
         {% else %}—{% endfor %}
       </li>
     </ul>
