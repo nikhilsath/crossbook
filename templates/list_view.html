@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ table|capitalize }} List{% endblock %}
+
+{% block content %}
+<div class="w-full bg-white p-6 rounded shadow-md">
+  <h1 class="text-2xl font-bold mb-4">{{ table|capitalize }}s</h1>
+
+  {% if records %}
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-200">
+        <tr>
+          {% for field in fields %}
+            <th class="text-left px-2 py-1 capitalize">{{ field }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for record in records %}
+        <tr class="border-t hover:bg-gray-100 cursor-pointer" onclick="window.location.href='/{{ table }}/{{ record.id }}'">
+          {% for field in fields %}
+            <td class="px-2 py-1">{{ record[field] }}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="text-gray-600">No records found.</p>
+  {% endif %}
+</div>
+{% endblock %}

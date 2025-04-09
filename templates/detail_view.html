@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}{{ table|capitalize }} {{ record.id }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto bg-white p-6 rounded shadow-md flex space-x-6">
+
+  <!-- Left: Main Details -->
+  <div class="flex-1">
+    <h1 class="text-2xl font-bold mb-4">{{ record[table] }} <span class="text-gray-500 text-base">(ID {{ record.id }})</span></h1>
+
+    <table class="min-w-full text-sm">
+      <tbody>
+        {% for field, value in record.items() %}
+          {% if field not in ['edit_log', 'id'] %}
+          <tr class="border-t">
+            <th class="text-left px-2 py-1 align-top w-1/4 capitalize">{{ field }}</th>
+            <td class="px-2 py-1">
+              {% if request.args.get('edit') == field %}
+                <form method="post" action="/{{ table }}/{{ record.id }}/update" class="inline">
+                  <input type="hidden" name="field" value="{{ field }}">
+                  <input type="text" name="value" value="{{ value }}" class="border px-1 py-0.5 text-sm rounded">
+                  <button type="submit" class="text-blue-600 text-sm underline ml-1">Save</button>
+                  <a href="/{{ table }}/{{ record.id }}" class="text-gray-500 ml-2 text-sm">Cancel</a>
+                </form>
+              {% else %}
+                <span class="mr-2">{{ value }}</span>
+                <a href="/{{ table }}/{{ record.id }}?edit={{ field }}" class="text-sm text-blue-600 underline">✏️</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if record.edit_log %}
+    <details class="mt-6 text-sm text-gray-600">
+      <summary class="cursor-pointer font-medium text-blue-600">Edit History</summary>
+      <pre class="whitespace-pre-wrap mt-2">{{ record.edit_log }}</pre>
+    </details>
+    {% endif %}
+  </div>
+
+  <!-- Right: Related Content -->
+  <div class="w-64 border-l-2 border-blue-200 pl-6">
+    <h2 class="text-xl font-semibold mb-2">Related Pages</h2>
+    <ul class="space-y-2 text-blue-700 text-sm">
+      {% for section, group in related.items() %}
+        <li>
+          <strong>{{ group.label }}:</strong>
+          {% if group["items"] %}
+            {% for item in group["items"] %}
+              <a href="/{{ section }}/{{ item.id }}" class="underline mr-1">
+                {% if section == "content" %}{{ item.id }}{% else %}{{ item.name }}{% endif %}
+              </a>{% if not loop.last %}, {% endif %}
+            {% endfor %}
+          {% else %}
+            <span class="text-gray-400">None</span>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+</div>
+{% endblock %}
