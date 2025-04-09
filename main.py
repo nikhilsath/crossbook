@@ -295,7 +295,7 @@ def lore_topic_detail(topic_id):
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT id, topic, type, next_steps, notes
+        SELECT id, topic, type, next_steps, notes, edit_log
         FROM lore_topics
         WHERE id = ?
     """, (topic_id,))
@@ -305,7 +305,7 @@ def lore_topic_detail(topic_id):
         conn.close()
         return "Lore Topic not found", 404
 
-    fields = ['id', 'topic', 'type', 'next_steps', 'notes']
+    fields = ['id', 'topic', 'type', 'next_steps', 'notes', 'edit_log']
     lore_topic = dict(zip(fields, row))
 
     lore_topic['related_characters'] = fetch_related(cursor, "character_lore_topics", "topic_id", "characters", "character", topic_id)
@@ -317,19 +317,39 @@ def lore_topic_detail(topic_id):
     conn.close()
     return render_template("lore_topic_detail.html", lore_topic=lore_topic)
 
-@app.route('/update_lore_topic_field/<int:topic_id>', methods=['POST'])
+@app.route("/lore_topic/<int:topic_id>/update", methods=["POST"])
 def update_lore_topic_field(topic_id):
-    field = request.form.get('field')
-    new_value = request.form.get('new_value')
+    field = request.form.get("field")
+    new_value = request.form.get("new_value")
 
-    conn = sqlite3.connect('data/crossbook.db')
+    if field not in {"topic", "type", "next_steps", "notes"}:
+        return "Invalid field", 400
+
+    conn = sqlite3.connect("data/crossbook.db")
     cursor = conn.cursor()
 
-    cursor.execute(f"UPDATE lore_topics SET {field} = ? WHERE id = ?", (new_value, topic_id))
+    cursor.execute(f"SELECT {field}, edit_log FROM lore_topics WHERE id = ?", (topic_id,))
+    row = cursor.fetchone()
+
+    if not row:
+        conn.close()
+        return "Lore topic not found", 404
+
+    old_value, current_log = row
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    log_entry = f"{timestamp} | {field} | {old_value!r} → {new_value!r}"
+    updated_log = (current_log or "") + log_entry + "\n"
+
+    cursor.execute(
+        f"UPDATE lore_topics SET {field} = ?, edit_log = ? WHERE id = ?",
+        (new_value, updated_log, topic_id)
+    )
+
     conn.commit()
     conn.close()
 
-    return redirect(url_for('lore_topic_detail', topic_id=topic_id))
+    return redirect(url_for("lore_topic_detail", topic_id=topic_id))
+
 
 @app.route('/locations')
 def locations():
@@ -354,14 +374,14 @@ def location_detail(location_id):
     conn = sqlite3.connect('data/crossbook.db')
     cursor = conn.cursor()
 
-    cursor.execute("SELECT id, location, description FROM locations WHERE id = ?", (location_id,))
+    cursor.execute("SELECT id, location, description, edit_log FROM locations WHERE id = ?", (location_id,))
     row = cursor.fetchone()
 
     if row is None:
         conn.close()
         return "Location not found", 404
 
-    fields = ['id', 'location', 'description']
+    fields = ['id', 'location', 'description', 'edit_log']
     location = dict(zip(fields, row))
 
     location['related_characters'] = fetch_related(cursor, "character_locations", "location_id", "characters", "character", location_id)
@@ -373,19 +393,39 @@ def location_detail(location_id):
     conn.close()
     return render_template("location_detail.html", location=location)
 
-
-@app.route('/update_location_field/<int:location_id>', methods=['POST'])
+@app.route("/location/<int:location_id>/update", methods=["POST"])
 def update_location_field(location_id):
     field = request.form.get("field")
     new_value = request.form.get("new_value")
 
-    conn = sqlite3.connect('data/crossbook.db')
+    if field not in {"location", "description"}:
+        return "Invalid field", 400
+
+    conn = sqlite3.connect("data/crossbook.db")
     cursor = conn.cursor()
-    cursor.execute(f"UPDATE locations SET {field} = ? WHERE id = ?", (new_value, location_id))
+
+    cursor.execute(f"SELECT {field}, edit_log FROM locations WHERE id = ?", (location_id,))
+    row = cursor.fetchone()
+
+    if not row:
+        conn.close()
+        return "Location not found", 404
+
+    old_value, current_log = row
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    log_entry = f"{timestamp} | {field} | {old_value!r} → {new_value!r}"
+    updated_log = (current_log or "") + log_entry + "\n"
+
+    cursor.execute(
+        f"UPDATE locations SET {field} = ?, edit_log = ? WHERE id = ?",
+        (new_value, updated_log, location_id)
+    )
+
     conn.commit()
     conn.close()
 
-    return redirect(url_for('location_detail', location_id=location_id))
+    return redirect(url_for("location_detail", location_id=location_id))
+
 
 @app.route('/content')
 def content():

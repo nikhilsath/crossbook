@@ -7,7 +7,7 @@
   <!-- Left: Main Details -->
   <div class="flex-1 space-y-4 text-gray-800">
 
-    {% from "macros/fields.html" import render_editable_field %}
+    {% from "macros/fields.html" import render_editable_field, render_edit_log %}
 
     <!-- Topic Title with inline edit -->
     <div class="flex items-center space-x-2">
@@ -43,15 +43,10 @@
       id_param='topic_id'
    ) }}  
     
-    {{ render_editable_field(
-        'edit_log',
-        lore_topic.edit_log,
-        lore_topic.id,
-        request,
-        detail_endpoint='lore_topic_detail',
-        update_endpoint='update_lore_topic_field',
-        id_param='topic_id'
-    ) }}
+   <div class="pt-4">
+    {{ render_edit_log(lore_topic.edit_log) }}
+  </div>
+  
     
   </div>
 

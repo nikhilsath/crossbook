@@ -6,7 +6,7 @@
 
   <!-- Left: Main Details -->
   <div class="flex-1 space-y-4 text-gray-800">
-    {% from "macros/fields.html" import render_editable_field %}
+    {% from "macros/fields.html" import render_editable_field, render_edit_log %}
 
     <!-- Location Name Field -->
     <div class="flex items-center space-x-2">
@@ -24,6 +24,10 @@
     {% endif %}
 
     {{ render_editable_field('description', location.description, location.id, request, detail_endpoint='location_detail', update_endpoint='update_location_field', id_param='location_id') }}
+    <div class="pt-4">
+      {{ render_edit_log(location.edit_log) }}
+    </div>
+    
   </div>
 
   <!-- Right: Related Pages -->
