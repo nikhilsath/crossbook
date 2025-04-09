@@ -3,7 +3,7 @@ import sqlite3
 import os
 import datetime
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 DB_PATH = os.path.join("data", "crossbook.db")
 CORE_TABLES = ["character", "thing", "location", "faction", "topic", "content"]
 
@@ -146,6 +146,51 @@ def update_field(table, record_id):
     conn.commit()
     conn.close()
     return redirect(url_for("detail_view", table=table, record_id=record_id))
+
+@app.route('/relationship', methods=['POST'])
+def manage_relationship():
+    import json
+    from flask import request, jsonify
+
+    data = request.get_json()
+    required_fields = {'table_a', 'id_a', 'table_b', 'id_b', 'action'}
+    if not data or not required_fields.issubset(data):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    # Sort table names to match join table convention
+    table1, table2 = sorted([data["table_a"], data["table_b"]])
+    id1_field = f"{table1}_id"
+    id2_field = f"{table2}_id"
+    join_table = f"{table1}_{table2}"
+
+    try:
+        conn = sqlite3.connect("data/crossbook.db")
+        cur = conn.cursor()
+
+        if data["action"] == "add":
+            cur.execute(f"""
+                INSERT OR IGNORE INTO {join_table} ({id1_field}, {id2_field})
+                VALUES (?, ?)
+            """, (data["id_a"], data["id_b"]) if data["table_a"] == table1 else (data["id_b"], data["id_a"]))
+
+        elif data["action"] == "remove":
+            cur.execute(f"""
+                DELETE FROM {join_table}
+                WHERE {id1_field} = ? AND {id2_field} = ?
+            """, (data["id_a"], data["id_b"]) if data["table_a"] == table1 else (data["id_b"], data["id_a"]))
+
+        else:
+            return jsonify({"error": "Invalid action"}), 400
+
+        conn.commit()
+        return jsonify({"success": True}), 200
+
+    except sqlite3.OperationalError as e:
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+    finally:
+        conn.close()
+
 
 if __name__ == "__main__":
     app.run(debug=True)

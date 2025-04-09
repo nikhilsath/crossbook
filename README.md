@@ -74,19 +74,6 @@ Crossbook is a structured, browser-based knowledge interface for managing canon 
 
 ---
 
-## If Using AI – Include This In the Prompt
-
-> You are contributing to the Crossbook project.  
-> Crossbook uses Flask, SQLite, and Jinja templates with Tailwind CSS.  
-> The database schema is normalized with join tables for relationships.  
-> Do not use any `related_*` columns — they are deprecated.  
-> When inspecting relationships, always use the dynamic `get_related_records()` helper.  
-> Match the structure of `detail_view.html` when editing UI.  
-> Do not add new features unless explicitly requested.  
-> When committing to GitHub, do not combine staging with directory navigation or include comments in command snippets.
-
----
-
 ## Next Planned Steps
 
 1. Add/remove relationship editing components

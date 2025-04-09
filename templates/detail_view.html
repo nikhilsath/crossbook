@@ -47,12 +47,18 @@
     <ul class="space-y-2 text-blue-700 text-sm">
       {% for section, group in related.items() %}
         <li>
-          <strong>{{ group.label }}:</strong>
+          <div class="flex items-center justify-between">
+            <strong>{{ group.label }}:</strong>
+            <button onclick="openAddRelationModal('{{ table }}', {{ record.id }}, '{{ section }}')" class="text-green-600 text-xl font-bold">+</button>
+          </div>
           {% if group["items"] %}
             {% for item in group["items"] %}
-              <a href="/{{ section }}/{{ item.id }}" class="underline mr-1">
-                {% if section == "content" %}{{ item.id }}{% else %}{{ item.name }}{% endif %}
-              </a>{% if not loop.last %}, {% endif %}
+              <div class="flex justify-between items-center">
+                <a href="/{{ section }}/{{ item.id }}" class="underline">
+                  {% if section == "content" %}{{ item.id }}{% else %}{{ item.name }}{% endif %}
+                </a>
+                <button onclick="removeRelation('{{ table }}', {{ record.id }}, '{{ section }}', {{ item.id }})" class="text-red-500 text-sm">✖</button>
+              </div>
             {% endfor %}
           {% else %}
             <span class="text-gray-400">None</span>
@@ -61,6 +67,33 @@
       {% endfor %}
     </ul>
   </div>
-
 </div>
+
+<!-- Modal -->
+<div id="relationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50">
+  <div class="bg-white p-6 rounded shadow-md w-80">
+    <h3 class="text-lg font-bold mb-4">Add Relation</h3>
+    <select id="relationOptions" class="w-full border rounded p-1 mb-4">
+      <option>Loading...</option>
+    </select>
+    <div class="flex justify-end space-x-2">
+      <button onclick="closeModal()" class="px-3 py-1 rounded bg-gray-300 hover:bg-gray-400">Cancel</button>
+      <button onclick="submitRelation()" class="px-3 py-1 rounded bg-green-500 text-white hover:bg-green-600">Add</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import {
+    openAddRelationModal,
+    closeModal,
+    submitRelation,
+    removeRelation
+  } from "/static/js/relations.js";
+
+  window.openAddRelationModal = openAddRelationModal;
+  window.closeModal = closeModal;
+  window.submitRelation = submitRelation;
+  window.removeRelation = removeRelation;
+</script>
 {% endblock %}
