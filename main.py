@@ -61,7 +61,7 @@ def character_detail(character_id):
     conn.close()
     return render_template("character_detail.html", character=character)
 
-@app.route('/character/<int:character_id>/update_field', methods=['POST'])
+@app.route('/character/<int:character_id>/update', methods=['POST'])
 def update_character_field(character_id):
     from flask import redirect, request, url_for  # ✅ Required if not already at top
 
@@ -482,7 +482,7 @@ def content_detail(id):
     cursor.execute("""
         SELECT id, linenumber, source, chapter, content,
                notes, tags, key_lore, characters,
-               paragraph_length, dialog, "dialog.1"
+               paragraph_length, dialog, "dialog.1", edit_log
         FROM content
         WHERE id = ?
     """, (id,))
@@ -495,7 +495,7 @@ def content_detail(id):
     fields = [
         'id', 'linenumber', 'source', 'chapter', 'content',
         'notes', 'tags', 'key_lore', 'characters',
-        'paragraph_length', 'dialog', 'dialog.1'
+        'paragraph_length', 'dialog', 'dialog.1', 'edit_log'
     ]
     content_entry = dict(zip(fields, row))
 
@@ -509,7 +509,7 @@ def content_detail(id):
     conn.close()
     return render_template("content_detail.html", content=content_entry)
 
-@app.route('/update_content_field/<int:id>', methods=['POST'])
+@app.route('/content/<int:id>/update', methods=['POST'])
 def update_content_field(id):
     field = request.form.get('field')
     new_value = request.form.get('new_value')
@@ -517,10 +517,28 @@ def update_content_field(id):
     conn = sqlite3.connect('data/crossbook.db')
     cursor = conn.cursor()
 
-    cursor.execute(f"UPDATE content SET {field} = ? WHERE id = ?", (new_value, id))
+    # Step 1: Get old value and current log
+    cursor.execute(f"SELECT {field}, edit_log FROM content WHERE id = ?", (id,))
+    row = cursor.fetchone()
+
+    if not row:
+        conn.close()
+        return "Content not found", 404
+
+    old_value, current_log = row
+
+    # Step 2: Build new log entry
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    log_entry = f"{timestamp} | {field} | {old_value!r} → {new_value!r}"
+    updated_log = (current_log or "") + log_entry + "\n"
+
+    # Step 3: Save updated field and edit log
+    cursor.execute(
+        f"UPDATE content SET {field} = ?, edit_log = ? WHERE id = ?",
+        (new_value, updated_log, id)
+    )
     conn.commit()
     conn.close()
-
     return redirect(url_for('content_detail', id=id))
 
 

@@ -6,7 +6,7 @@
 
   <!-- Left: Main Details -->
   <div class="flex-1 space-y-4 text-gray-800">
-    {% from "macros/fields.html" import render_editable_field %}
+    {% from "macros/fields.html" import render_editable_field, render_edit_log %}
 
     <div class="flex items-center space-x-2">
       <h1 class="text-2xl font-bold">Content Entry</h1>
@@ -35,6 +35,10 @@
       {{ render_editable_field('paragraph_length', content.paragraph_length, content.id, request, 'content_detail', 'update_content_field', 'id') }}
       {{ render_editable_field('dialog', content.dialog, content.id, request, 'content_detail', 'update_content_field', 'id') }}
       {{ render_editable_field('notes', content.notes, content.id, request, 'content_detail', 'update_content_field', 'id') }}
+      <!-- Edit Log -->
+      <div class="pt-4">
+        {{ render_edit_log(content.edit_log) }}
+      </div>
     </div>
   </div>
 
