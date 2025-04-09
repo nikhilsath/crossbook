@@ -9,7 +9,7 @@ Crossbook is a structured, browser-based knowledge interface for managing canon 
 - Built using Flask, Jinja2, TailwindCSS, and SQLite.
 - Clean and consistent UI for detail pages and sortable list views.
 - Fully normalized schema with many-to-many relationships using join tables.
-- Routes and templates for all major entities:
+- Routes and templates are dynamically generated for all major entities:
   - Characters
   - Things
   - Factions
@@ -23,21 +23,25 @@ Crossbook is a structured, browser-based knowledge interface for managing canon 
 
 ### Implemented
 
-- All entity tables and detail/list views
-- Schema includes all needed join tables
-- Relationship display via helper `fetch_related()` function
-- Routes: `/characters`, `/things`, `/factions`, `/lore_topics`, `/locations`, `/content`
-- Templates: detail and list views for each entity
-- Fully removed all deprecated `related_*` fields from logic
-- All routes validated for correct join table usage (e.g., `topic_id` for `lore_topic`)
+- Dynamic Flask routing for all entities: `/character`, `/thing`, `/faction`, etc.
+- Dynamic detail/list templates driven by schema inspection
+- Inline editing with `edit_log` tracking
+- Edit history toggle on detail pages
+- Relationship display using `get_related_records()` helper
+- Bidirectional join table support (e.g., `character_thing`, `thing_character`)
+- Logging enabled for all related-fetching logic
+- Redundant join tables identified and removed (e.g., `thing_character` removed in favor of `character_thing`)
+- Fully read-only schema now editable from UI
+- Navigation bar restored
+- All known pre-rebuild features restored and verified
 
 ### Not Yet Implemented
 
-- No edit forms or update logic
-- No `edit_log` columns or changelog UI
-- No support for modifying relationships in the UI
-- No use of `reddit_content` table yet
-- No pagination or filtering
+- Add/remove relationships through UI
+- Create new records via UI
+- Bulk editing
+- Pagination or filtering
+- README regeneration pipeline
 
 ---
 
@@ -51,7 +55,7 @@ Crossbook is a structured, browser-based knowledge interface for managing canon 
 │   ├── *_detail.html        # One per entity
 │   └── *.html               # List views
 ├── utils/
-│   └── db_helpers.py        # Contains fetch_related()
+│   └── db_helpers.py        # Custom logic (optional)
 ├── main.py                  # Flask routes and logic
 └── README.md
 ```
@@ -62,10 +66,11 @@ Crossbook is a structured, browser-based knowledge interface for managing canon 
 
 ### Workflow Phases
 
-1. **Phase 1 – Read-only UI** (Complete)
-2. **Phase 2 – Schema Cleanup & Join Table Refactoring** (Complete)
-3. **Phase 3 – Editing Support** (Planned)
-4. **Phase 4 – Relationship Editing & Lookup Controls** (Planned)
+1. **Phase 1 – Read-only UI** ✅ Complete
+2. **Phase 2 – Inline Editing + Logging** ✅ Complete
+3. **Phase 3 – Schema Cleanup + Relationship Display** ✅ Complete
+4. **Phase 4 – Relationship Editing in UI** 🔜 Planned
+5. **Phase 5 – Record Creation & Bulk Tools** 🔜 Planned
 
 ---
 
@@ -74,20 +79,19 @@ Crossbook is a structured, browser-based knowledge interface for managing canon 
 > You are contributing to the Crossbook project.  
 > Crossbook uses Flask, SQLite, and Jinja templates with Tailwind CSS.  
 > The database schema is normalized with join tables for relationships.  
-> All existing `related_*` columns in the database are deprecated and must not be used.  
-> For `lore_topics`, the join field is always `topic_id` (not `lore_topic_id`).  
-> Join logic must use the helper `fetch_related()` already defined in `db_helpers.py`.  
-> When editing templates, match the structure of `content_detail.html`.  
+> Do not use any `related_*` columns — they are deprecated.  
+> When inspecting relationships, always use the dynamic `get_related_records()` helper.  
+> Match the structure of `detail_view.html` when editing UI.  
 > Do not add new features unless explicitly requested.  
-> When writing GitHub scripts, do not include comments or combine staging with directory navigation.  
-> Do not assume or infer goals – only reflect what has been confirmed by the user.
+> When committing to GitHub, do not combine staging with directory navigation or include comments in command snippets.
 
 ---
 
 ## Next Planned Steps
 
-1. Add `edit_log` column to all entity tables
-2. Implement form-based editing for all detail views
-3. Log field-level diffs in `edit_log`
-4. Display collapsible edit history in the UI
-5. Add UI dropdowns to manage relationships
+1. Add/remove relationship editing components
+2. Implement dropdown/lookup UI for join table entries
+3. Add record creation UI
+4. Extend edit logs to relationship updates
+5. Begin planning for packaging and install automation
+
