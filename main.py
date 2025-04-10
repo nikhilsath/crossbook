@@ -32,22 +32,40 @@ def load_field_schema():
         schema[table][field] = ftype
 
     FIELD_SCHEMA = schema
-    logging.info(f"[SCHEMA] Loaded full schema: {FIELD_SCHEMA}")
 
 
-def get_all_records(table):
+def get_all_records(table, search=None):
     conn = get_connection()
     cursor = conn.cursor()
     try:
-        cursor.execute(f"SELECT * FROM {table} LIMIT 1000")
+        if search:
+            search = search.strip()
+            search_fields = [
+                field for field, ftype in FIELD_SCHEMA.get(table, {}).items()
+                if ftype in ("text", "textarea", "select", "single select", "multi select")
+            ]
+            if not search_fields:
+                return []
+
+            conditions = [f"{field} LIKE ?" for field in search_fields]
+            sql = f"SELECT * FROM {table} WHERE " + " OR ".join(conditions) + " LIMIT 1000"
+            params = [f"%{search}%"] * len(search_fields)
+            cursor.execute(sql, params)
+        else:
+            sql = f"SELECT * FROM {table} LIMIT 1000"
+            logging.info(f"[QUERY] SQL: {sql}")
+            cursor.execute(sql)
+
         rows = cursor.fetchall()
         fields = [desc[0] for desc in cursor.description]
         records = [dict(zip(fields, row)) for row in rows]
         return records
-    except Exception:
+    except Exception as e:
+        logging.warning(f"[QUERY ERROR] {e}")
         return []
     finally:
         conn.close()
+
 
 def get_record_by_id(table, record_id):
     conn = get_connection()
@@ -115,8 +133,11 @@ def list_view(table):
     if table not in CORE_TABLES:
         abort(404)
     fields = list(FIELD_SCHEMA.get(table, {}).keys())
-    records = get_all_records(table)
-    return render_template("list_view.html", table=table, fields=fields, records=records)
+    search = request.args.get("search", "").strip()
+    records = get_all_records(table, search=search)
+    return render_template(
+        "list_view.html", table=table, fields=fields, records=records, request=request,)
+
 
 @app.route("/<table>/<int:record_id>")
 def detail_view(table, record_id):
