@@ -2,21 +2,35 @@ from flask import Flask, render_template, abort, request, redirect, url_for
 import sqlite3
 import os
 import datetime
+import logging
 
 app = Flask(__name__, static_url_path='/static')
 DB_PATH = os.path.join("data", "crossbook.db")
 CORE_TABLES = ["character", "thing", "location", "faction", "topic", "content"]
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s:%(message)s"
+)
+
 def get_connection():
     return sqlite3.connect(DB_PATH)
 
-def get_table_fields(table):
-    conn = get_connection()
+def get_columns(table):
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute(f"PRAGMA table_info({table})")
-    fields = [row[1] for row in cursor.fetchall()]
+    cursor.execute("""
+        SELECT field_name, field_type
+        FROM field_schema
+        WHERE table_name = ?
+    """, (table,))
+    results = cursor.fetchall()
     conn.close()
-    return fields
+
+    schema = {field: ftype for field, ftype in results}
+    logging.info(f"[SCHEMA] Loaded schema for '{table}': {schema}")
+    return schema
+
 
 def get_all_records(table):
     conn = get_connection()
@@ -97,7 +111,7 @@ def home():
 def list_view(table):
     if table not in CORE_TABLES:
         abort(404)
-    fields = get_table_fields(table)
+    fields = get_columns(table)
     records = get_all_records(table)
     return render_template("list_view.html", table=table, fields=fields, records=records)
 
