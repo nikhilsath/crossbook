@@ -10,14 +10,6 @@ CORE_TABLES = ["character", "thing", "location", "faction", "topic", "content"]
 def get_connection():
     return sqlite3.connect(DB_PATH)
 
-def get_all_tables():
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';")
-    tables = [row[0] for row in cursor.fetchall() if row[0] != "reddit_content"]
-    conn.close()
-    return [t for t in tables if t in CORE_TABLES]
-
 def get_table_fields(table):
     conn = get_connection()
     cursor = conn.cursor()
@@ -103,7 +95,7 @@ def home():
 
 @app.route("/<table>")
 def list_view(table):
-    if table not in get_all_tables():
+    if table not in CORE_TABLES:
         abort(404)
     fields = get_table_fields(table)
     records = get_all_records(table)
@@ -111,7 +103,7 @@ def list_view(table):
 
 @app.route("/<table>/<int:record_id>")
 def detail_view(table, record_id):
-    if table not in get_all_tables():
+    if table not in CORE_TABLES:
         abort(404)
     record = get_record_by_id(table, record_id)
     if not record:
@@ -121,7 +113,7 @@ def detail_view(table, record_id):
 
 @app.route("/<table>/<int:record_id>/update", methods=["POST"])
 def update_field(table, record_id):
-    if table not in get_all_tables():
+    if table not in CORE_TABLES:
         abort(404)
     field = request.form.get("field")
     value = request.form.get("value")
