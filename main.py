@@ -7,6 +7,7 @@ import logging
 app = Flask(__name__, static_url_path='/static')
 DB_PATH = os.path.join("data", "crossbook.db")
 CORE_TABLES = ["character", "thing", "location", "faction", "topic", "content"]
+FIELD_SCHEMA = {}
 
 logging.basicConfig(
     level=logging.INFO,
@@ -16,20 +17,22 @@ logging.basicConfig(
 def get_connection():
     return sqlite3.connect(DB_PATH)
 
-def get_columns(table):
+def load_field_schema():
+    global FIELD_SCHEMA
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("""
-        SELECT field_name, field_type
-        FROM field_schema
-        WHERE table_name = ?
-    """, (table,))
-    results = cursor.fetchall()
+    cursor.execute("SELECT table_name, field_name, field_type FROM field_schema")
+    rows = cursor.fetchall()
     conn.close()
 
-    schema = {field: ftype for field, ftype in results}
-    logging.info(f"[SCHEMA] Loaded schema for '{table}': {schema}")
-    return schema
+    schema = {}
+    for table, field, ftype in rows:
+        if table not in schema:
+            schema[table] = {}
+        schema[table][field] = ftype
+
+    FIELD_SCHEMA = schema
+    logging.info(f"[SCHEMA] Loaded full schema: {FIELD_SCHEMA}")
 
 
 def get_all_records(table):
@@ -111,7 +114,7 @@ def home():
 def list_view(table):
     if table not in CORE_TABLES:
         abort(404)
-    fields = get_columns(table)
+    fields = list(FIELD_SCHEMA.get(table, {}).keys())
     records = get_all_records(table)
     return render_template("list_view.html", table=table, fields=fields, records=records)
 
@@ -199,4 +202,5 @@ def manage_relationship():
 
 
 if __name__ == "__main__":
+    load_field_schema()
     app.run(debug=True)
