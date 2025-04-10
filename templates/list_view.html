@@ -7,20 +7,27 @@
   <h1 class="text-2xl font-bold mb-4">{{ table|capitalize }}s</h1>
 
   <!-- Column visibility control -->
-  <div class="mb-4">
-    <label for="column-visibility" class="block font-medium text-sm mb-1">Visible Columns</label>
-    <select id="column-visibility" multiple class="border rounded p-1 min-w-[200px]">
-      {% for field in fields %}
-        <option value="{{ field }}" selected>{{ field }}</option>
+  <div class="relative inline-block text-left mb-4" id="column-visibility-wrapper">
+    <button id="toggle-columns" class="px-2 py-1 bg-gray-200 rounded">
+      Columns
+    </button>
+  
+    <div id="column-dropdown" class="absolute z-10 mt-2 bg-white border rounded shadow hidden p-2 space-y-1 w-48">
+      {% for field in fields if not field.startswith('_') %}
+        <label class="flex items-center space-x-2">
+          <input type="checkbox" class="column-toggle" value="{{ field|lower }}" checked>
+          <span class="text-sm">{{ field }}</span>
+        </label>
       {% endfor %}
-    </select>
+    </div>
   </div>
+  
 
   {% if records %}
     <table class="min-w-full text-sm">
       <thead class="bg-gray-200">
         <tr>
-          {% for field in fields %}
+          {% for field in fields if not field.startswith('_') %}
             <th class="text-left px-2 py-1 capitalize">{{ field }}</th>
           {% endfor %}
         </tr>
@@ -28,8 +35,8 @@
       <tbody>
         {% for record in records %}
         <tr class="border-t hover:bg-gray-100 cursor-pointer" onclick="window.location.href='/{{ table }}/{{ record.id }}'">
-          {% for field in fields %}
-            <td class="px-2 py-1" data-field="{{ field }}">
+          {% for field in fields if not field.startswith('_') %}
+            <td class="px-2 py-1" data-field="{{ field|lower }}">
               {% if field == "edit_log" %}
                 {{ record[field].split('\n')[0] if record[field] }}
               {% else %}
