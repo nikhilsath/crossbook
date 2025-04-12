@@ -1,21 +1,30 @@
 {% macro render_editable_field(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table) %}
   <div class="mt-2">
-    {% if request.args.get('edit') == field %}
+    {% if field_type == "boolean" %}
       <form method="post" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline">
         <input type="hidden" name="field" value="{{ field }}">
-        <p class="text-xs text-gray-400">[DEBUG: {{ field }} → {{ field_type }}]</p>
-        {% if field_type == "textarea" %}
-          <textarea name="new_value" class="border px-1 py-0.5 text-sm rounded w-full">{{ value }}</textarea>
-
-        {% elif field_type == "boolean" %}
+        <input type="hidden" name="new_value" value="0">
         <label class="relative inline-flex items-center cursor-pointer">
           <input type="checkbox" name="new_value" value="1"
-                 class="sr-only peer" {% if value in ("1", 1, True) %}checked{% endif %}>
+                 class="sr-only peer"
+                 {% if value in ("1", 1, True) %}checked{% endif %}
+                 onchange="
+                   this.insertAdjacentHTML('afterend', `<input type='hidden' name='new_value_override' value='${this.checked ? 1 : 0}'>`);
+                   this.name = '';
+                   this.form.submit();">
           <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300
                       rounded-full peer peer-checked:bg-blue-600 transition duration-300"></div>
           <div class="absolute left-0.5 top-0.5 bg-white w-5 h-5 rounded-full
                       transition-transform duration-300 transform peer-checked:translate-x-full"></div>
-        </label>        
+        </label>
+      </form>
+
+    {% elif request.args.get('edit') == field %}
+      <form method="post" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline">
+        <input type="hidden" name="field" value="{{ field }}">
+
+        {% if field_type == "textarea" %}
+          <textarea name="new_value" class="border px-1 py-0.5 text-sm rounded w-full">{{ value }}</textarea>
 
         {% elif field_type == "number" %}
           <input type="number" name="new_value" value="{{ value }}" class="border px-1 py-0.5 text-sm rounded">
@@ -32,19 +41,17 @@
       </form>
 
     {% else %}
-    {% if field_type == "boolean" %}
-    <input type="checkbox" disabled {% if value in ("1", 1, True) %}checked{% endif %}>
-    {% elif field_type == "textarea" %}
-      <pre class="ml-1 whitespace-pre-wrap">{{ value }}</pre>
-    {% elif field_type == "select" or field_type == "multi_select" %}
-      <span class="ml-1">{{ value }}</span>  {# Optional: format lists #}
-    {% elif field_type == "date" %}
-      <span class="ml-1">{{ value }}</span>  {# Could format ISO date if needed #}
-    {% elif field_type == "foreign_key" %}
-      <span class="ml-1 italic text-blue-600">{{ value }}</span>
-    {% else %}
-      <span class="ml-1">{{ value }}</span>
-    {% endif %}
+      {% if field_type == "textarea" %}
+        <pre class="ml-1 whitespace-pre-wrap">{{ value }}</pre>
+      {% elif field_type == "select" or field_type == "multi_select" %}
+        <span class="ml-1">{{ value }}</span>
+      {% elif field_type == "date" %}
+        <span class="ml-1">{{ value }}</span>
+      {% elif field_type == "foreign_key" %}
+        <span class="ml-1 italic text-blue-600">{{ value }}</span>
+      {% else %}
+        <span class="ml-1">{{ value }}</span>
+      {% endif %}
       <a href="{{ url_for(detail_endpoint, table=table, record_id=record_id) }}?edit={{ field }}" class="text-sm text-blue-600 underline ml-1">✏️</a>
     {% endif %}
   </div>

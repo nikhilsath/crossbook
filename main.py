@@ -159,7 +159,7 @@ def update_field(table, record_id):
         abort(404)
 
     field = request.form.get("field")
-    raw_value = request.form.get("new_value", "")
+    raw_value = request.form.get("new_value_override") or request.form.get("new_value", "")
 
     if field in ["id", "edit_log"]:
         abort(403)
