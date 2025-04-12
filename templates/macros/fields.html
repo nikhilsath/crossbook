@@ -1,20 +1,44 @@
-{% macro render_editable_field(field, value, record_id, request, detail_endpoint, update_endpoint, id_param) %}
+{% macro render_editable_field(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table) %}
   <div class="mt-2">
-    <strong class="capitalize">{{ field }}:</strong>
-
-    {# If the field is being edited (e.g. URL is ?edit=race), show input form #}
     {% if request.args.get('edit') == field %}
-      <form method="post" action="{{ url_for(update_endpoint, **{id_param: record_id}) }}" class="inline">
+      <form method="post" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline">
         <input type="hidden" name="field" value="{{ field }}">
-        <input type="text" name="new_value" value="{{ value }}" class="border px-1 py-0.5 text-sm rounded">
+        <p class="text-xs text-gray-400">[DEBUG: {{ field }} → {{ field_type }}]</p>
+        {% if field_type == "textarea" %}
+          <textarea name="new_value" class="border px-1 py-0.5 text-sm rounded w-full">{{ value }}</textarea>
+
+        {% elif field_type == "boolean" %}
+          <input type="checkbox" name="new_value" value="1" {% if value %}checked{% endif %}>
+
+        {% elif field_type == "number" %}
+          <input type="number" name="new_value" value="{{ value }}" class="border px-1 py-0.5 text-sm rounded">
+
+        {% elif field_type == "date" %}
+          <input type="date" name="new_value" value="{{ value }}" class="border px-1 py-0.5 text-sm rounded">
+
+        {% else %}
+          <input type="text" name="new_value" value="{{ value }}" class="border px-1 py-0.5 text-sm rounded">
+        {% endif %}
+
         <button type="submit" class="text-blue-600 text-sm underline ml-1">Save</button>
-        <a href="{{ url_for(detail_endpoint, **{id_param: record_id}) }}" class="text-gray-500 ml-2 text-sm">Cancel</a>
+        <a href="{{ url_for(detail_endpoint, table=table, record_id=record_id) }}" class="text-gray-500 ml-2 text-sm">Cancel</a>
       </form>
 
-    {# Else, show the value and a pencil link to toggle editing #}
+    {% else %}
+    {% if field_type == "boolean" %}
+    <input type="checkbox" disabled {% if value in ("1", 1, True) %}checked{% endif %}>
+    {% elif field_type == "textarea" %}
+      <pre class="ml-1 whitespace-pre-wrap">{{ value }}</pre>
+    {% elif field_type == "select" or field_type == "multi_select" %}
+      <span class="ml-1">{{ value }}</span>  {# Optional: format lists #}
+    {% elif field_type == "date" %}
+      <span class="ml-1">{{ value }}</span>  {# Could format ISO date if needed #}
+    {% elif field_type == "foreign_key" %}
+      <span class="ml-1 italic text-blue-600">{{ value }}</span>
     {% else %}
       <span class="ml-1">{{ value }}</span>
-      <a href="{{ url_for(detail_endpoint, **{id_param: record_id}) }}?edit={{ field }}" class="text-sm text-blue-600 underline ml-1">✏️</a>
+    {% endif %}
+      <a href="{{ url_for(detail_endpoint, table=table, record_id=record_id) }}?edit={{ field }}" class="text-sm text-blue-600 underline ml-1">✏️</a>
     {% endif %}
   </div>
 {% endmacro %}

@@ -138,6 +138,10 @@ def list_view(table):
     return render_template(
         "list_view.html", table=table, fields=fields, records=records, request=request,)
 
+@app.context_processor
+def inject_field_schema():
+    return dict(field_schema=FIELD_SCHEMA)
+
 
 @app.route("/<table>/<int:record_id>")
 def detail_view(table, record_id):
@@ -153,8 +157,9 @@ def detail_view(table, record_id):
 def update_field(table, record_id):
     if table not in CORE_TABLES:
         abort(404)
+
     field = request.form.get("field")
-    value = request.form.get("value")
+    raw_value = request.form.get("new_value", "")
 
     if field in ["id", "edit_log"]:
         abort(403)
@@ -163,19 +168,36 @@ def update_field(table, record_id):
     if not record:
         abort(404)
 
+    field_type = FIELD_SCHEMA.get(table, {}).get(field, "text")
+
+    # Coerce value based on field_type
+    if field_type == "boolean":
+        value = "1" if raw_value in ("on", "1", "true", "True") else "0"
+    elif field_type == "number":
+        try:
+            value = int(raw_value)
+        except ValueError:
+            value = 0
+    else:
+        value = raw_value
+
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(f"UPDATE {table} SET {field} = ? WHERE id = ?", (value, record_id))
 
-    # Append to edit log
-    timestamp = datetime.datetime.now().isoformat(timespec='seconds')
-    log_entry = f"[{timestamp}] Updated {field} from '{record[field]}' to '{value}'"
-    new_log = (record.get("edit_log") or "") + "\n" + log_entry
-    cursor.execute(f"UPDATE {table} SET edit_log = ? WHERE id = ?", (new_log.strip(), record_id))
+    # Append to edit log only if value changed
+    old_value = str(record.get(field))
+    if str(value) != old_value:
+        timestamp = datetime.datetime.now().isoformat(timespec='seconds')
+        log_entry = f"[{timestamp}] Updated {field} from '{old_value}' to '{value}'"
+        new_log = (record.get("edit_log") or "") + "\n" + log_entry
+        cursor.execute(f"UPDATE {table} SET edit_log = ? WHERE id = ?", (new_log.strip(), record_id))
 
     conn.commit()
     conn.close()
     return redirect(url_for("detail_view", table=table, record_id=record_id))
+
+
 
 @app.route('/relationship', methods=['POST'])
 def manage_relationship():
