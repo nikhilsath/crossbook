@@ -10,8 +10,8 @@
 
     <table class="min-w-full text-sm">
       <tbody>
-        {% for field, value in record.items() if not field.startswith('_') %}
-          {% if field not in ['edit_log', 'id'] %}
+        {% for field, value in record.items() %}
+        {% if field_schema[table][field] != 'hidden' %}
           <tr class="border-t">
             <th class="text-left px-2 py-1 align-top w-1/4 capitalize">{{ field }}</th>
             <td class="px-2 py-1">
