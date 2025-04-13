@@ -13,7 +13,7 @@
             <button type="button" data-command="underline" class="format-btn underline text-sm px-2 py-1 rounded bg-white border">U</button>
             <button type="button" data-command="createLink" class="format-btn text-sm px-2 py-1 rounded bg-white border">🔗</button>
           </div>
-          <div class="px-4 py-2 bg-white rounded-b-lg >
+          <div class="px-4 py-2 bg-white rounded-b-lg" >
             <div id="editor_{{ field }}" contenteditable="true"
                  class="rich-editor block w-full text-sm text-gray-800 bg-white border-0 focus:ring-0 dark:text-white dark:bg-gray-800"
                  style="min-height: 200px;">{{ value|safe }}</div>
@@ -74,8 +74,15 @@
         <span class="ml-1">{{ value }}</span>
       {% elif field_type == "foreign_key" %}
         <span class="ml-1 italic text-blue-600">{{ value }}</span>
-      {% elif field_type == "boolean" %}
-        <input type="checkbox" disabled {% if value in ("1", 1, True) %}checked{% endif %}>
+        {% elif field_type == "boolean" %}
+        <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline">
+          <input type="hidden" name="field" value="{{ field }}">
+          <input type="hidden" name="new_value_override" value="{{ '0' if value in ('1', 1, True) else '1' }}">
+          <button type="submit" class="inline-flex items-center space-x-1 px-2 py-1 border rounded {{ 'bg-green-100 text-green-700' if value in ('1', 1, True) else 'bg-red-100 text-red-700' }}">
+            <span>{{ 'Yes' if value in ('1', 1, True) else 'No' }}</span>
+          </button>
+        </form>
+      
       {% else %}
         <span class="ml-1">{{ value }}</span>
       {% endif %}
