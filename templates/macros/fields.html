@@ -1,30 +1,55 @@
 {% macro render_editable_field(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table) %}
   <div class="mt-2">
-    {% if field_type == "boolean" %}
-      <form method="post" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline">
+    {% if request.args.get('edit') == field %}
+      <form method="post" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline w-full">
         <input type="hidden" name="field" value="{{ field }}">
-        <input type="hidden" name="new_value" value="0">
+        <p class="text-xs text-gray-400">[DEBUG: {{ field }} → {{ field_type }}]</p>
+
+        {% if field_type == "textarea" %}
+        <div class="w-full mb-4 border border-gray-200 rounded-lg bg-gray-50 ">
+          <div class="flex items-center px-3 py-2 border-b border-gray-200 space-x-1">
+            <button type="button" data-command="bold" class="format-btn font-bold text-sm px-2 py-1 rounded bg-white border">B</button>
+            <button type="button" data-command="italic" class="format-btn italic text-sm px-2 py-1 rounded bg-white border">I</button>
+            <button type="button" data-command="underline" class="format-btn underline text-sm px-2 py-1 rounded bg-white border">U</button>
+            <button type="button" data-command="createLink" class="format-btn text-sm px-2 py-1 rounded bg-white border">🔗</button>
+          </div>
+          <div class="px-4 py-2 bg-white rounded-b-lg >
+            <div id="editor_{{ field }}" contenteditable="true"
+                 class="rich-editor block w-full text-sm text-gray-800 bg-white border-0 focus:ring-0 dark:text-white dark:bg-gray-800"
+                 style="min-height: 200px;">{{ value|safe }}</div>
+            <input type="hidden" name="new_value" id="hidden_{{ field }}">
+          </div>
+        </div>
+        <script>
+          const editor = document.getElementById("editor_{{ field }}");
+          const hidden = document.getElementById("hidden_{{ field }}");
+          document.querySelectorAll('[data-command]').forEach(btn => {
+            btn.addEventListener("click", () => {
+              const cmd = btn.getAttribute("data-command");
+              if (cmd === "createLink") {
+                const url = prompt("Enter URL:");
+                if (url) document.execCommand(cmd, false, url);
+              } else {
+                document.execCommand(cmd, false, null);
+              }
+              editor.focus();
+            });
+          });
+          editor.addEventListener("input", () => {
+            hidden.value = editor.innerHTML;
+          });
+          hidden.value = editor.innerHTML;
+        </script>
+
+        {% elif field_type == "boolean" %}
         <label class="relative inline-flex items-center cursor-pointer">
           <input type="checkbox" name="new_value" value="1"
-                 class="sr-only peer"
-                 {% if value in ("1", 1, True) %}checked{% endif %}
-                 onchange="
-                   this.insertAdjacentHTML('afterend', `<input type='hidden' name='new_value_override' value='${this.checked ? 1 : 0}'>`);
-                   this.name = '';
-                   this.form.submit();">
+                 class="sr-only peer" {% if value in ("1", 1, True) %}checked{% endif %}>
           <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300
                       rounded-full peer peer-checked:bg-blue-600 transition duration-300"></div>
           <div class="absolute left-0.5 top-0.5 bg-white w-5 h-5 rounded-full
                       transition-transform duration-300 transform peer-checked:translate-x-full"></div>
         </label>
-      </form>
-
-    {% elif request.args.get('edit') == field %}
-      <form method="post" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline">
-        <input type="hidden" name="field" value="{{ field }}">
-
-        {% if field_type == "textarea" %}
-          <textarea name="new_value" class="border px-1 py-0.5 text-sm rounded w-full">{{ value }}</textarea>
 
         {% elif field_type == "number" %}
           <input type="number" name="new_value" value="{{ value }}" class="border px-1 py-0.5 text-sm rounded">
@@ -42,61 +67,19 @@
 
     {% else %}
       {% if field_type == "textarea" %}
-        <pre class="ml-1 whitespace-pre-wrap">{{ value }}</pre>
+        <div class="ml-1 prose dark:prose-invert">{{ value|safe }}</div>
       {% elif field_type == "select" or field_type == "multi_select" %}
         <span class="ml-1">{{ value }}</span>
       {% elif field_type == "date" %}
         <span class="ml-1">{{ value }}</span>
       {% elif field_type == "foreign_key" %}
         <span class="ml-1 italic text-blue-600">{{ value }}</span>
+      {% elif field_type == "boolean" %}
+        <input type="checkbox" disabled {% if value in ("1", 1, True) %}checked{% endif %}>
       {% else %}
         <span class="ml-1">{{ value }}</span>
       {% endif %}
       <a href="{{ url_for(detail_endpoint, table=table, record_id=record_id) }}?edit={{ field }}" class="text-sm text-blue-600 underline ml-1">✏️</a>
     {% endif %}
   </div>
-{% endmacro %}
-
-{% macro render_edit_log(edit_log_text) %}
-  {% if edit_log_text %}
-    <details class="mt-6 text-sm text-gray-600">
-      <summary class="cursor-pointer font-medium text-blue-600">Edit History</summary>
-      <pre class="whitespace-pre-wrap mt-2">{{ edit_log_text }}</pre>
-    </details>
-  {% endif %}
-{% endmacro %}
-
-{% macro render_relationships(title, related_list, field_name, options, record_id, endpoint) %}
-<div class="mb-4">
-  <h3 class="font-semibold text-lg mb-2">{{ title }}</h3>
-
-  <ul class="mb-2">
-    {% for related in related_list %}
-      <li class="flex justify-between items-center mb-1">
-        <span>{{ related.name }}</span>
-        <form method="POST" action="{{ endpoint }}/remove" class="inline">
-          <input type="hidden" name="record_id" value="{{ record_id }}">
-          <input type="hidden" name="related_id" value="{{ related.id }}">
-          <input type="hidden" name="field_name" value="{{ field_name }}">
-          <button class="text-red-500 hover:underline" type="submit">✕ Remove</button>
-        </form>
-      </li>
-    {% else %}
-      <li class="text-sm text-gray-500">No related records</li>
-    {% endfor %}
-  </ul>
-
-  <form method="POST" action="{{ endpoint }}/add" class="flex gap-2 items-center">
-    <input type="hidden" name="record_id" value="{{ record_id }}">
-    <input type="hidden" name="field_name" value="{{ field_name }}">
-
-    <select name="related_id" class="border rounded p-1 text-sm">
-      {% for option in options %}
-        <option value="{{ option.id }}">{{ option.name }}</option>
-      {% endfor %}
-    </select>
-
-    <button type="submit" class="text-green-600 hover:underline">+ Add</button>
-  </form>
-</div>
 {% endmacro %}
