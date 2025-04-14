@@ -4,7 +4,6 @@
       <form method="post" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline w-full">
         <input type="hidden" name="field" value="{{ field }}">
         <p class="text-xs text-gray-400">[DEBUG: {{ field }} → {{ field_type }}]</p>
-
         {% if field_type == "textarea" %}
         <div class="w-full mb-4 border border-gray-200 rounded-lg bg-gray-50">
           <div class="flex items-center px-3 py-2 border-b border-gray-200 space-x-1">
@@ -93,14 +92,18 @@
         <span class="ml-1">{{ value }}</span>
       {% elif field_type == "foreign_key" %}
         <span class="ml-1 italic text-blue-600">{{ value }}</span>
-      {% elif field_type == "boolean" %}
-        <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline">
+        {% elif field_type == "boolean" %}
+        <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline-flex items-center space-x-2">
           <input type="hidden" name="field" value="{{ field }}">
           <input type="hidden" name="new_value_override" value="{{ '0' if value in ('1', 1, True) else '1' }}">
-          <button type="submit" class="inline-flex items-center space-x-1 px-2 py-1 border rounded {{ 'bg-green-100 text-green-700' if value in ('1', 1, True) else 'bg-red-100 text-red-700' }}">
-            <span>{{ 'Yes' if value in ('1', 1, True) else 'No' }}</span>
+          <button type="submit" class="relative inline-flex items-center w-10 h-6 rounded-full transition-colors duration-300 
+                          {{ 'bg-green-500' if value in ('1', 1, True) else 'bg-red-500' }}">
+            <span class="sr-only">{{ 'Yes' if value in ('1', 1, True) else 'No' }}</span>
+            <span class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform duration-300 
+                         {{ 'translate-x-5' if value in ('1', 1, True) else 'translate-x-1' }}"></span>
           </button>
         </form>
+      
       {% else %}
         <span class="ml-1">{{ value }}</span>
       {% endif %}
