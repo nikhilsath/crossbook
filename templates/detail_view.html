@@ -17,7 +17,7 @@
             <tr class="border-t">
               <th class="text-left px-2 py-1 align-top w-1/4 capitalize">{{ field }}</th>
               <td class="px-2 py-1">
-                {{ fields.render_editable_field(field, value, record.id, request, 'detail_view', 'update_field', 'record_id', field_type, table) }}
+                {{ fields.render_editable_field(field, value, record.id, request, 'detail_view', 'update_field', 'record_id', field_type, table, get_field_options) }}
               </td>
             </tr>
           {% endif %}

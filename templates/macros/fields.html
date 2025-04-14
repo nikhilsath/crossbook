@@ -1,4 +1,4 @@
-{% macro render_editable_field(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table) %}
+{% macro render_editable_field(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, get_field_options) %}
   <div class="mt-2">
     {% if request.args.get('edit') == field %}
       <form method="post" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline w-full">
@@ -50,6 +50,13 @@
           <div class="absolute left-0.5 top-0.5 bg-white w-5 h-5 rounded-full
                       transition-transform duration-300 transform peer-checked:translate-x-full"></div>
         </label>
+        {% elif field_type == "select" %}
+          {% set options = get_field_options(table, field) %}
+          <select name="new_value" class="border px-1 py-0.5 text-sm rounded">
+            {% for option in options %}
+              <option value="{{ option }}" {% if option == value %}selected{% endif %}>{{ option }}</option>
+            {% endfor %}
+          </select>
 
         {% elif field_type == "number" %}
           <input type="number" name="new_value" value="{{ value }}" class="border px-1 py-0.5 text-sm rounded">

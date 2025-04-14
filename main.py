@@ -3,6 +3,7 @@ import sqlite3
 import os
 import datetime
 import logging
+import json
 
 app = Flask(__name__, static_url_path='/static')
 DB_PATH = os.path.join("data", "crossbook.db")
@@ -16,6 +17,8 @@ logging.basicConfig(
 
 def get_connection():
     return sqlite3.connect(DB_PATH)
+
+
 
 def load_field_schema():
     global FIELD_SCHEMA
@@ -66,6 +69,28 @@ def get_all_records(table, search=None):
     finally:
         conn.close()
 
+def get_field_options(table, field):
+    print(f"Fetching field options for {table}.{field}")
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT field_options
+        FROM field_schema
+        WHERE table_name = ? AND field_name = ?
+    """, (table, field))
+    row = cursor.fetchone()
+    conn.close()
+
+    if not row or not row[0]:
+        print(f"No options found for {table}.{field}")
+        return []
+    try:
+        options = json.loads(row[0])
+        print(f"Options loaded for {table}.{field}: {options}")
+        return options
+    except Exception as e:
+        print(f"Error parsing options for {table}.{field}: {e}")
+        return []
 
 def get_record_by_id(table, record_id):
     conn = get_connection()
@@ -140,7 +165,10 @@ def list_view(table):
 
 @app.context_processor
 def inject_field_schema():
-    return dict(field_schema=FIELD_SCHEMA)
+    return dict(
+        field_schema=FIELD_SCHEMA,
+        get_field_options=get_field_options
+    )
 
 
 @app.route("/<table>/<int:record_id>")
