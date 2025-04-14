@@ -6,14 +6,13 @@
         <p class="text-xs text-gray-400">[DEBUG: {{ field }} → {{ field_type }}]</p>
 
         {% if field_type == "textarea" %}
-        <div class="w-full mb-4 border border-gray-200 rounded-lg bg-gray-50 ">
+        <div class="w-full mb-4 border border-gray-200 rounded-lg bg-gray-50">
           <div class="flex items-center px-3 py-2 border-b border-gray-200 space-x-1">
             <button type="button" data-command="bold" class="format-btn font-bold text-sm px-2 py-1 rounded bg-white border">B</button>
             <button type="button" data-command="italic" class="format-btn italic text-sm px-2 py-1 rounded bg-white border">I</button>
             <button type="button" data-command="underline" class="format-btn underline text-sm px-2 py-1 rounded bg-white border">U</button>
-            <button type="button" data-command="createLink" class="format-btn text-sm px-2 py-1 rounded bg-white border">🔗</button>
           </div>
-          <div class="px-4 py-2 bg-white rounded-b-lg" >
+          <div class="px-4 py-2 bg-white rounded-b-lg">
             <div id="editor_{{ field }}" contenteditable="true"
                  class="rich-editor block w-full text-sm text-gray-800 bg-white border-0 focus:ring-0"
                  style="min-height: 200px;">{{ value|safe }}</div>
@@ -23,22 +22,23 @@
         <script>
           const editor = document.getElementById("editor_{{ field }}");
           const hidden = document.getElementById("hidden_{{ field }}");
-          document.querySelectorAll('[data-command]').forEach(btn => {
-            btn.addEventListener("click", () => {
-              const cmd = btn.getAttribute("data-command");
-              if (cmd === "createLink") {
-                const url = prompt("Enter URL:");
-                if (url) document.execCommand(cmd, false, url);
-              } else {
-                document.execCommand(cmd, false, null);
-              }
-              editor.focus();
+
+          if (editor && hidden) {
+            const container = editor.closest('.mb-4');
+            container.querySelectorAll('[data-command]').forEach(btn => {
+              btn.addEventListener("click", () => {
+                const cmd = btn.getAttribute("data-command");
+                const success = document.execCommand(cmd, false, null);
+                editor.focus();
+              });
             });
-          });
-          editor.addEventListener("input", () => {
+
+            editor.addEventListener("input", () => {
+              hidden.value = editor.innerHTML;
+            });
+
             hidden.value = editor.innerHTML;
-          });
-          hidden.value = editor.innerHTML;
+          }
         </script>
 
         {% elif field_type == "boolean" %}
@@ -50,6 +50,7 @@
           <div class="absolute left-0.5 top-0.5 bg-white w-5 h-5 rounded-full
                       transition-transform duration-300 transform peer-checked:translate-x-full"></div>
         </label>
+
         {% elif field_type == "select" %}
           {% set options = get_field_options(table, field) %}
           <select name="new_value" class="border px-1 py-0.5 text-sm rounded">
@@ -92,7 +93,7 @@
         <span class="ml-1">{{ value }}</span>
       {% elif field_type == "foreign_key" %}
         <span class="ml-1 italic text-blue-600">{{ value }}</span>
-        {% elif field_type == "boolean" %}
+      {% elif field_type == "boolean" %}
         <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline">
           <input type="hidden" name="field" value="{{ field }}">
           <input type="hidden" name="new_value_override" value="{{ '0' if value in ('1', 1, True) else '1' }}">
@@ -100,7 +101,6 @@
             <span>{{ 'Yes' if value in ('1', 1, True) else 'No' }}</span>
           </button>
         </form>
-      
       {% else %}
         <span class="ml-1">{{ value }}</span>
       {% endif %}
