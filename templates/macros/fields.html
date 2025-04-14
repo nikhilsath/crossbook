@@ -75,8 +75,17 @@
     {% else %}
       {% if field_type == "textarea" %}
         <div class="ml-1 prose dark:prose-invert">{{ value|safe }}</div>
-      {% elif field_type == "select" or field_type == "multi_select" %}
-        <span class="ml-1">{{ value }}</span>
+      {% elif field_type == "select" %}
+      <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline">
+        <input type="hidden" name="field" value="{{ field }}">
+        <select name="new_value" class="bg-white border border-gray-300 text-sm rounded px-2 py-1 shadow-sm focus:ring-blue-500 focus:border-blue-500" onchange="this.form.submit()">
+          {% for option in get_field_options(table, field) %}
+            <option value="{{ option }}" {% if option == value %}selected{% endif %}>{{ option }}</option>
+          {% endfor %}
+        </select>
+      </form>
+      {% elif field_type == "multi_select" %}
+        <span class="ml-1">{{ value }}</span>      
       {% elif field_type == "date" %}
         <span class="ml-1">{{ value }}</span>
       {% elif field_type == "foreign_key" %}
