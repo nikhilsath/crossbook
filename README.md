@@ -20,6 +20,7 @@
 - **Schema-Driven Fields:** The application reads a `field_schema` table from the database on startup to learn what fields each entity has and their data types (text, number, boolean, etc.). This drives form field types and display logic without hardcoding field names in the templates.
 - **List View with Search:** Each entity list page shows up to 1000 records in a table. A search form allows filtering results by text-based fields (partial match). Columns can be shown or hidden on the fly using the **Columns** dropdown.
 - **Detail View & Inline Edit:** The detail page for each record displays all its fields (except those marked as hidden in the schema) and allows inline editing:
+  - `multi_select` fields now use a tag-style interface with autosave, filtering, and click-to-remove behavior. The old `<select multiple>` dropdown has been replaced with a rich, interactive component.
   - Clicking the ✏️ icon next to a field turns that field into an edit form (text input, date picker, checkbox, or rich text editor depending on field type).
   - Edits are saved via a POST request, and changes are appended to an **edit log** visible on the page.  
   - Boolean fields have a one-click toggle (a colored Yes/No button) that updates immediately without entering edit mode.
@@ -128,6 +129,8 @@ The front-end JavaScript files enhance the user experience by adding interactivi
 
 **Purpose:** Manages the relationship-addition modal on detail pages and handles sending add/remove requests for relationships. This script enables users to link existing records together without leaving the detail view.
 
+As of April 2025, `relations.js` also includes `submitMultiSelectAuto(form)` to support autosaving changes from `multi_select` fields, and logic to automatically close dropdowns when clicking outside them.
+
 **Exported Functions:**
 
 - `openAddRelationModal(tableA, idA, tableB)`: Opens the "Add Relation" modal to link a record from **tableA** (with id **idA**, the current record) to some record in **tableB**. When called, it:
@@ -228,7 +231,7 @@ Key features of the detail view:
     - Date fields -> an HTML date picker.
     - Textarea (long text) -> a rich text editor area (actually an editable `<div>` with formatting toolbar, plus a hidden field to capture the formatted content as HTML).
     - Boolean fields -> a toggle checkbox input.
-    - (Select/multi-select would be a dropdown or multi-select field, but as noted, those are not implemented yet, so they currently also render as a text input in edit mode.)
+    - `multi_select` fields now render as searchable dropdowns with checkboxes and tag-style badges for selected values. Users can filter options live, deselect tags with ✖, and all changes autosave automatically. A Tailwind-styled dropdown appears inline with live filtering and closing behavior.
   - If the field is **not** in edit mode, the macro will display the value in a read-only format:
     - For textarea (HTML content) fields: it wraps the content in a `<div class="prose">` to apply typographic styling to the HTML content (and uses `|safe` to allow rendering HTML).
     - For boolean fields: it shows a colored badge with "Yes" or "No". Actually, for booleans, the macro provides a special case: even when not explicitly in edit mode, the boolean is shown as a clickable form (the colored badge is a submit button that immediately flips the boolean value). This design allows one-click toggling of true/false fields without needing the separate edit step.
