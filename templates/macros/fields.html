@@ -89,7 +89,7 @@
       {% elif field_type == "multi_select" %}
       <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="relative w-full" data-multiselect-dropdown onsubmit="event.preventDefault();">
         <input type="hidden" name="field" value="{{ field }}">
-        {% set selected_options = value.split(', ') %}
+        {% set selected_options = (value or '').split(', ') %}
 
         <!-- Display selected tags -->
         <div class="flex flex-wrap gap-1 mb-2">
