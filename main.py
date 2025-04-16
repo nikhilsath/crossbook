@@ -3,12 +3,13 @@ import sqlite3
 import os
 import datetime
 import logging
-import json
+from schema_utils import load_field_schema, get_field_options
+
 
 app = Flask(__name__, static_url_path='/static')
 DB_PATH = os.path.join("data", "crossbook.db")
 CORE_TABLES = ["character", "thing", "location", "faction", "topic", "content"]
-FIELD_SCHEMA = {}
+FIELD_SCHEMA = load_field_schema()
 
 logging.basicConfig(
     level=logging.INFO,
@@ -17,22 +18,6 @@ logging.basicConfig(
 
 def get_connection():
     return sqlite3.connect(DB_PATH)
-
-def load_field_schema():
-    global FIELD_SCHEMA
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("SELECT table_name, field_name, field_type FROM field_schema")
-    rows = cursor.fetchall()
-    conn.close()
-
-    schema = {}
-    for table, field, ftype in rows:
-        if table not in schema:
-            schema[table] = {}
-        schema[table][field] = ftype
-
-    FIELD_SCHEMA = schema
 
 def get_all_records(table, search=None):
     conn = get_connection()
@@ -65,29 +50,6 @@ def get_all_records(table, search=None):
         return []
     finally:
         conn.close()
-
-def get_field_options(table, field):
-    print(f"Fetching field options for {table}.{field}")
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT field_options
-        FROM field_schema
-        WHERE table_name = ? AND field_name = ?
-    """, (table, field))
-    row = cursor.fetchone()
-    conn.close()
-
-    if not row or not row[0]:
-        print(f"No options found for {table}.{field}")
-        return []
-    try:
-        options = json.loads(row[0])
-        print(f"Options loaded for {table}.{field}: {options}")
-        return options
-    except Exception as e:
-        print(f"Error parsing options for {table}.{field}: {e}")
-        return []
 
 def get_record_by_id(table, record_id):
     conn = get_connection()
@@ -146,6 +108,10 @@ def get_related_records(source_table, record_id):
     return related
 
 
+@app.context_processor
+def inject_field_schema():
+    return dict(field_schema=FIELD_SCHEMA, get_field_options=get_field_options)
+
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -159,14 +125,6 @@ def list_view(table):
     records = get_all_records(table, search=search)
     return render_template(
         "list_view.html", table=table, fields=fields, records=records, request=request,)
-
-@app.context_processor
-def inject_field_schema():
-    return dict(
-        field_schema=FIELD_SCHEMA,
-        get_field_options=get_field_options
-    )
-
 
 @app.route("/<table>/<int:record_id>")
 def detail_view(table, record_id):
