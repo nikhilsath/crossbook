@@ -18,8 +18,6 @@ logging.basicConfig(
 def get_connection():
     return sqlite3.connect(DB_PATH)
 
-
-
 def load_field_schema():
     global FIELD_SCHEMA
     conn = sqlite3.connect(DB_PATH)
@@ -35,7 +33,6 @@ def load_field_schema():
         schema[table][field] = ftype
 
     FIELD_SCHEMA = schema
-
 
 def get_all_records(table, search=None):
     conn = get_connection()
@@ -180,7 +177,6 @@ def detail_view(table, record_id):
         abort(404)
     related = get_related_records(table, record_id)
     return render_template("detail_view.html", table=table, record=record, related=related)
-
 @app.route("/<table>/<int:record_id>/update", methods=["POST"])
 def update_field(table, record_id):
     if table not in CORE_TABLES:
@@ -198,16 +194,22 @@ def update_field(table, record_id):
 
     field_type = FIELD_SCHEMA.get(table, {}).get(field, "text")
 
-    # Coerce value based on field_type
-    if field_type == "boolean":
-        value = "1" if raw_value in ("on", "1", "true", "True") else "0"
-    elif field_type == "number":
-        try:
-            value = int(raw_value)
-        except ValueError:
-            value = 0
+    # Special handling for multi_select FIRST
+    if field_type == "multi_select":
+        raw_values = request.form.getlist("new_value[]")
+        value = ", ".join(raw_values)  # override value
+        print(f"[DEBUG] Incoming multi_select update for {table}.{field}: {raw_values} -> {value}")
     else:
-        value = raw_value
+        # Coerce value based on field_type
+        if field_type == "boolean":
+            value = "1" if raw_value in ("on", "1", "true", "True") else "0"
+        elif field_type == "number":
+            try:
+                value = int(raw_value)
+            except ValueError:
+                value = 0
+        else:
+            value = raw_value
 
     conn = get_connection()
     cursor = conn.cursor()
@@ -224,8 +226,6 @@ def update_field(table, record_id):
     conn.commit()
     conn.close()
     return redirect(url_for("detail_view", table=table, record_id=record_id))
-
-
 
 @app.route('/relationship', methods=['POST'])
 def manage_relationship():
