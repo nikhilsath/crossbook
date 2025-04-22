@@ -30,7 +30,7 @@
   - A **+** button opens a modal listing all possible records from another category to relate to the current item. Selecting one and clicking Add will create the link (inserting a row into the appropriate join table).
   - Each existing related item is shown with a **✖** remove button, which, when clicked, removes that relationship (deletes the join table entry).
   - The relationship modal and remove buttons perform their actions via AJAX (using a single `/relationship` endpoint on the backend), and then refresh the page to show updates.
-- **Rich Text Support:** “Textarea” fields (intended for multi-paragraph text like descriptions or content) support basic rich text editing. In edit mode, a mini formatting toolbar (Bold, Italic, Underline, Link) is available, and the content is saved as HTML. On display, this HTML is rendered with proper styling (using Tailwind’s `prose` classes).
+- **Rich Text Support:** “Textarea” fields (intended for multi-paragraph text like descriptions or content) support basic rich text editing. In edit mode, a mini formatting toolbar (Bold, Italic, Underline, Link) is available, and the content is saved as HTML. On display, this HTML is rendered with proper styling (using Tailwind’s `prose` classes). The formatting logic is now modularized in `editor.js` and loaded per-field with ES6 imports.
 - **Navigation Bar:** A consistent hardcoded top navigation is present on all pages (via the base template), linking to Home and each core entity section for quick access.
 
 
@@ -52,6 +52,7 @@ The project is organized into a simple structure, separating the Flask app, temp
 ├── static/
 │   └── js/
 │       ├── column_visibility.js # Client-side logic for toggling list view columns
+│       ├── editor.js             # Handles formatting and autosave for rich text (textarea) fields
 │       └── relations.js         # Client-side logic for managing relationships (modal add/remove)
 ├── main.py                      # Flask application (routes, database access, and core logic)
 └── README.md                    # Project documentation (you are reading this)
@@ -99,7 +100,19 @@ The following functions encapsulate the application logic:
 
 All routes and functions above are actively used by the application (there is no dead code in `main.py`). The file concludes by calling `load_field_schema()` and then `app.run(debug=True)` if executed directly, to initialize the schema and start the development server.
 
-### **Front-End Scripts – `static/js/`**
+### **Front-End Scripts – `static/js/`
+
+#### 📄 `editor.js`
+
+**Purpose:** Initializes rich text formatting controls for `textarea` fields rendered as contenteditable HTML blocks.
+
+**Key Features:**
+- Hooks up toolbar buttons (`B`, `I`, `U`) to `execCommand(...)`
+- Keeps a hidden `<input>` in sync with the editor’s `.innerHTML`
+- Uses `initRichTextEditor(field)` called inline by the template
+
+**How it’s used in the app:** This module is imported in `fields.html` whenever a `textarea` field is edited.
+**
 
 The front-end JavaScript files enhance the user experience by adding interactivity for column toggling and relationship management. They are written as modular ES6 modules and are imported in the templates where needed.
 
