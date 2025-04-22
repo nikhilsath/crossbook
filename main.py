@@ -3,7 +3,7 @@ import sqlite3
 import os
 import datetime
 import logging
-from schema_utils import load_field_schema, get_field_options
+from schema_utils import load_field_schema, get_field_options, update_foreign_field_options
 
 
 app = Flask(__name__, static_url_path='/static')
@@ -232,4 +232,5 @@ def manage_relationship():
 
 if __name__ == "__main__":
     load_field_schema()
+    update_foreign_field_options()
     app.run(debug=True)

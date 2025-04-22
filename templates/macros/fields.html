@@ -18,27 +18,10 @@
             <input type="hidden" name="new_value" id="hidden_{{ field }}">
           </div>
         </div>
-        <script>
-          const editor = document.getElementById("editor_{{ field }}");
-          const hidden = document.getElementById("hidden_{{ field }}");
-
-          if (editor && hidden) {
-            const container = editor.closest('.mb-4');
-            container.querySelectorAll('[data-command]').forEach(btn => {
-              btn.addEventListener("click", () => {
-                const cmd = btn.getAttribute("data-command");
-                const success = document.execCommand(cmd, false, null);
-                editor.focus();
-              });
-            });
-
-            editor.addEventListener("input", () => {
-              hidden.value = editor.innerHTML;
-            });
-
-            hidden.value = editor.innerHTML;
-          }
-        </script>
+        <script type="module">
+          import { initRichTextEditor } from '/static/js/editor.js';
+          initRichTextEditor("{{ field }}");
+        </script>        
 
         {% elif field_type == "boolean" %}
         <label class="relative inline-flex items-center cursor-pointer">
@@ -129,7 +112,44 @@
       {% elif field_type == "date" %}
         <span class="ml-1">{{ value }}</span>
       {% elif field_type == "foreign_key" %}
-        <span class="ml-1 italic text-blue-600">{{ value }}</span>
+      <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="relative w-full" data-multiselect-dropdown onsubmit="event.preventDefault();">
+        <input type="hidden" name="field" value="{{ field }}">
+        {% set selected_options = (value or '').split(', ') %}
+
+        <!-- Display selected tags -->
+        <div class="flex flex-wrap gap-1 mb-2">
+          {% for tag in selected_options if tag %}
+            <span class="inline-flex items-center bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
+              {{ tag }}
+              <button type="button" class="ml-1 text-blue-500 hover:text-red-500" onclick="this.closest('form').querySelector('input[value=\'{{ tag }}\']').checked = false; submitMultiSelectAuto(this.closest('form'))">×</button>
+            </span>
+          {% endfor %}
+        </div>
+
+        <!-- Toggle & search -->
+        <button type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-left focus:outline-none focus:ring-2 focus:ring-blue-500" onclick="this.nextElementSibling.classList.toggle('hidden')">
+          Choose Tags
+        </button>
+
+        <!-- Dropdown with checkboxes -->
+        <div class="absolute z-10 mt-1 w-full bg-white border rounded shadow hidden max-h-64 overflow-y-auto p-2 space-y-1" data-options>
+          <input type="text" placeholder="Search..." class="w-full px-2 py-1 border rounded text-sm mb-2" oninput="const v=this.value.toLowerCase();[...this.parentElement.querySelectorAll('label')].forEach(l => l.classList.toggle('hidden', !l.textContent.toLowerCase().includes(v)))">
+
+          {% for option in get_field_options(table, field) %}
+            <label class="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                name="new_value[]"
+                value="{{ option }}"
+                {% if option in selected_options %}checked{% endif %}
+                onchange="submitMultiSelectAuto(this.form)"
+                class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500"
+              >
+              <span class="text-sm">{{ option }}</span>
+            </label>
+          {% endfor %}
+        </div>
+      </form>
         {% elif field_type == "boolean" %}
         <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline-flex items-center space-x-2">
           <input type="hidden" name="field" value="{{ field }}">
