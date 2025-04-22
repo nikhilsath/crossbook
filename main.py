@@ -1,8 +1,9 @@
-from flask import Flask, render_template, abort, request, redirect, url_for
+from flask import Flask, render_template, abort, request, redirect, url_for, jsonify
 import sqlite3
 import os
 import datetime
 import logging
+import json
 from schema_utils import load_field_schema, get_field_options, update_foreign_field_options, backfill_layout_defaults, load_field_layout
 
 
@@ -270,6 +271,17 @@ def delete_record(table, record_id):
     conn.close()
     return redirect(url_for('list_view', table=table))
 
+@app.route("/<table>/layout", methods=["POST"])
+def update_layout(table):
+    updates = request.json  # [{ field: ..., layout: {...} }]
+    with sqlite3.connect(DB_PATH) as conn:
+        for u in updates:
+            conn.execute(
+                "UPDATE field_schema SET layout = ? WHERE table_name = ? AND field_name = ?",
+                [json.dumps(u["layout"]), table, u["field"]]
+            )
+        conn.commit()
+    return jsonify(success=True)
 
 
 if __name__ == "__main__":
