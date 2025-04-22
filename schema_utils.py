@@ -3,6 +3,17 @@ import json
 
 DB_PATH = "data/crossbook.db"
 
+DEFAULT_LAYOUTS = {
+    "textarea":     {"width": "100%", "minWidth": "300px"},
+    "multi_select": {"width": "200px", "minWidth": "250px"},
+    "boolean":      {"width": "auto", "minWidth": "100px"},
+    "select":       {"width": "50%", "minWidth": "120px"},
+    "text":         {"width": "50%", "minWidth": "200px"},
+    "number":       {"width": "auto", "minWidth": "120px"},
+    "date":         {"width": "auto", "minWidth": "150px"},
+    "foreign_key":  {"width": "auto%", "minWidth": "250px"},
+}
+
 def load_field_schema():
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
@@ -62,3 +73,44 @@ def update_foreign_field_options():
 
     conn.commit()
     conn.close()
+
+def backfill_layout_defaults():
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.cursor()
+        cur.execute("SELECT table_name, field_name, field_type, layout FROM field_schema")
+        updates = []
+
+        for table_name, field_name, field_type, layout in cur.fetchall():
+            if layout and layout.strip() not in ("", "{}"):
+                continue  # already set
+
+            base_type = field_type.strip().lower()
+            layout_json = DEFAULT_LAYOUTS.get(base_type)
+            if layout_json:
+                updates.append((json.dumps(layout_json), table_name, field_name))
+
+        for layout, table_name, field_name in updates:
+            cur.execute(
+                "UPDATE field_schema SET layout = ? WHERE table_name = ? AND field_name = ?",
+                (layout, table_name, field_name)
+            )
+
+        conn.commit()
+        print(f"Backfilled layout for {len(updates)} fields.")
+
+def load_field_layout():
+    import json
+    import sqlite3
+    from main import DB_PATH
+
+    layout = {}
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT table_name, field_name, layout FROM field_schema")
+    for table, field, layout_raw in cur.fetchall():
+        layout.setdefault(table, {})
+        try:
+            layout[table][field] = json.loads(layout_raw or "{}")
+        except Exception:
+            layout[table][field] = {}
+    return layout
