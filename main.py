@@ -254,6 +254,18 @@ def create_record(table):
 
     return render_template('new_record.html', table=table, fields=fields)
 
+@app.route('/<table>/<int:record_id>/delete', methods=['POST'])
+def delete_record(table, record_id):
+    if table not in CORE_TABLES:
+        abort(404)
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(f"DELETE FROM {table} WHERE id = ?", (record_id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('list_view', table=table))
+
 
 
 if __name__ == "__main__":

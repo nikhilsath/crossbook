@@ -15,12 +15,23 @@
       <a href="/location" class="text-blue-600">Locations</a>
       <a href="/topic" class="text-blue-600">Lore Topics</a>
     </div>
-    {% set current_table = request.path.strip('/').split('/')[0] %}
-    {% if current_table in field_schema %}
-      <a href="/{{ current_table }}/new" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">+ Add</a>
-    {% endif %}
+
+    {% set segments = request.path.strip('/').split('/') %}
+    {% set current_table = segments[0] %}
+    {% set current_id = segments[1] if segments|length > 1 else None %}
+
+    <div class="ml-auto flex space-x-2">
+      {% if current_table in field_schema %}
+        <a href="/{{ current_table }}/new" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">+ Add</a>
+        {% if current_id %}
+          <form method="post" action="/{{ current_table }}/{{ current_id }}/delete" onsubmit="return confirm('Are you sure?')">
+            <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Delete</button>
+          </form>
+        {% endif %}
+      {% endif %}
+    </div>
   </nav>
-  
+
   <div class="p-6">
     {% block content %}{% endblock %}
   </div>
