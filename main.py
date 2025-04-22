@@ -229,6 +229,32 @@ def manage_relationship():
     finally:
         conn.close()
 
+@app.route('/<table>/new', methods=['GET', 'POST'])
+def create_record(table):
+    if table not in CORE_TABLES:
+        abort(404)
+
+    fields = FIELD_SCHEMA.get(table, {})
+    if request.method == 'POST':
+        data = {f: request.form.get(f, '') for f in fields if f not in ('id', 'edit_log') and fields[f] != 'hidden'}
+
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute(f"PRAGMA table_info({table})")
+        columns = [col[1] for col in cur.fetchall()]
+        field_names = [f for f in data.keys() if f in columns]
+        placeholders = ', '.join('?' for _ in field_names)
+        sql = f"INSERT INTO {table} ({', '.join(field_names)}) VALUES ({placeholders})"
+        cur.execute(sql, [data[f] for f in field_names])
+        record_id = cur.lastrowid
+        conn.commit()
+        conn.close()
+
+        return redirect(f"/{table}/{record_id}")
+
+    return render_template('new_record.html', table=table, fields=fields)
+
+
 
 if __name__ == "__main__":
     load_field_schema()

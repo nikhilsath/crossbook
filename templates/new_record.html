@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}New {{ table|capitalize }}{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-6">Create New {{ table|capitalize }}</h1>
+
+<form method="post" class="space-y-4">
+  {% for field, ftype in fields.items() %}
+    {% if field != "id" and field != "edit_log" and ftype != "hidden" %}
+      <div>
+        <label class="block text-sm font-medium capitalize mb-1">{{ field }}</label>
+        {% if ftype == "textarea" %}
+          <textarea name="{{ field }}" rows="4" class="w-full border rounded p-2 text-sm"></textarea>
+        {% elif ftype == "boolean" %}
+          <input type="checkbox" name="{{ field }}" value="1">
+        {% elif ftype == "number" %}
+          <input type="number" name="{{ field }}" class="w-full border rounded px-2 py-1 text-sm">
+        {% elif ftype == "date" %}
+          <input type="date" name="{{ field }}" class="w-full border rounded px-2 py-1 text-sm">
+        {% else %}
+          <input type="text" name="{{ field }}" class="w-full border rounded px-2 py-1 text-sm">
+        {% endif %}
+      </div>
+    {% endif %}
+  {% endfor %}
+
+  <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Create</button>
+</form>
+{% endblock %}
