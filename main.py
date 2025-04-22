@@ -153,7 +153,7 @@ def update_field(table, record_id):
     field_type = FIELD_SCHEMA.get(table, {}).get(field, "text")
 
     # Special handling for multi_select FIRST
-    if field_type == "multi_select":
+    if field_type in ("multi_select", "foreign_key"):
         raw_values = request.form.getlist("new_value[]")
         value = ", ".join(raw_values)  # override value
         print(f"[DEBUG] Incoming multi_select update for {table}.{field}: {raw_values} -> {value}")
