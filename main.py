@@ -4,7 +4,7 @@ import os
 import datetime
 import logging
 import json
-from schema_utils import load_field_schema, get_field_options, update_foreign_field_options, backfill_layout_defaults, load_field_layout
+from schema_utils import load_field_schema, get_field_options, update_foreign_field_options
 
 
 app = Flask(__name__, static_url_path='/static')
@@ -113,7 +113,6 @@ def get_related_records(source_table, record_id):
 def inject_field_schema():
     return {
         'field_schema': FIELD_SCHEMA,
-        'field_layout': load_field_layout(),
         'get_field_options': get_field_options
     }
 
@@ -287,5 +286,4 @@ def update_layout(table):
 if __name__ == "__main__":
     load_field_schema()
     update_foreign_field_options()
-    backfill_layout_defaults()
     app.run(debug=True)
