@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     const GRID_SIZE = 40; // Size of each grid unit in pixels
 
-    // Make fields draggable
     interact('.draggable-field')
       .draggable({
         modifiers: [
@@ -9,6 +8,10 @@ document.addEventListener("DOMContentLoaded", () => {
             targets: [interact.snappers.grid({ x: GRID_SIZE, y: GRID_SIZE })],
             range: Infinity,
             relativePoints: [{ x: 0, y: 0 }]
+          }),
+          interact.modifiers.restrictRect({
+            restriction: '#layout-grid',
+            endOnly: true
           })
         ],
         inertia: true,
@@ -25,12 +28,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       })
 
-      // Make fields resizable
       .resizable({
         edges: { top: true, left: true, bottom: true, right: true },
         modifiers: [
           interact.modifiers.snapSize({
             targets: [interact.snappers.grid({ width: GRID_SIZE, height: GRID_SIZE })]
+          }),
+          interact.modifiers.restrictSize({
+            min: { width: GRID_SIZE * 4, height: GRID_SIZE * 1 }
           })
         ],
         listeners: {
@@ -39,11 +44,9 @@ document.addEventListener("DOMContentLoaded", () => {
             let x = parseFloat(target.getAttribute('data-x')) || 0;
             let y = parseFloat(target.getAttribute('data-y')) || 0;
 
-            // Apply size
             target.style.width = `${event.rect.width}px`;
             target.style.height = `${event.rect.height}px`;
 
-            // Apply new transform offset
             x += event.deltaRect.left;
             y += event.deltaRect.top;
 
@@ -55,17 +58,22 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
     function getGridData(el) {
-      const x = parseInt(el.getAttribute('data-x')) || 0;
-      const y = parseInt(el.getAttribute('data-y')) || 0;
+      const rawX = parseFloat(el.getAttribute('data-x')) || 0;
+      const rawY = parseFloat(el.getAttribute('data-y')) || 0;
       const width = el.offsetWidth;
       const height = el.offsetHeight;
 
+      const x = Math.round(rawX / GRID_SIZE);
+      const y = Math.round(rawY / GRID_SIZE);
+      const w = Math.round(width / GRID_SIZE);
+      const h = Math.round(height / GRID_SIZE);
+
       return {
         field: el.dataset.field,
-        x: Math.round(x / GRID_SIZE),
-        y: Math.round(y / GRID_SIZE),
-        w: Math.round(width / GRID_SIZE),
-        h: Math.round(height / GRID_SIZE)
+        x,
+        y,
+        w,
+        h
       };
     }
 
@@ -91,7 +99,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Trigger layout save on drag or resize end
     document.addEventListener('mouseup', () => {
       setTimeout(captureAllLayout, 10);
     });

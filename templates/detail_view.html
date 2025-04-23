@@ -26,10 +26,12 @@
           <div class="draggable-field border p-2 rounded shadow bg-gray-50"
                data-field="{{ field }}"
                style="
-                 grid-column: span {{ w }} / span {{ w }};
-                 grid-row: span {{ h }} / span {{ h }};
-                 transform: translate({{ x * 40 }}px, {{ y * 40 }}px);
-               ">
+                width: {{ w * 40 }}px;
+                height: {{ h * 40 }}px;
+                grid-column: span {{ w }};
+                grid-row: span {{ h }};
+                transform: translate({{ x * 40 }}px, {{ y * 40 }}px);
+              ">
             <div class="text-sm font-bold capitalize mb-1">{{ field }}</div>
             <div>
               {{ fields.render_editable_field(field, value, record.id, request, 'detail_view', 'update_field', 'record_id', field_type, table, get_field_options) }}
