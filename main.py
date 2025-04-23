@@ -132,13 +132,34 @@ def list_view(table):
 
 @app.route("/<table>/<int:record_id>")
 def detail_view(table, record_id):
-    if table not in CORE_TABLES:
-        abort(404)
+    conn = get_connection()
+
+    # Get record
     record = get_record_by_id(table, record_id)
     if not record:
         abort(404)
+
+    # Get related records
     related = get_related_records(table, record_id)
-    return render_template("detail_view.html", table=table, record=record, related=related)
+
+    # Load layout info
+    cur = conn.execute("SELECT field_name, layout FROM field_schema WHERE table_name = ?", (table,))
+    layout_by_field = {}
+    for field, layout_json in cur.fetchall():
+        try:
+            layout_by_field[field] = json.loads(layout_json) if layout_json else {}
+        except Exception:
+            layout_by_field[field] = {}
+
+    return render_template(
+        "detail_view.html",
+        table=table,
+        record=record,
+        related=related,
+        field_schema_layout=layout_by_field  # ✅ this was missing
+    )
+
+
 @app.route("/<table>/<int:record_id>/update", methods=["POST"])
 def update_field(table, record_id):
     if table not in CORE_TABLES:
@@ -272,15 +293,37 @@ def delete_record(table, record_id):
 
 @app.route("/<table>/layout", methods=["POST"])
 def update_layout(table):
-    updates = request.json  # [{ field: ..., layout: {...} }]
-    with sqlite3.connect(DB_PATH) as conn:
-        for u in updates:
-            conn.execute(
-                "UPDATE field_schema SET layout = ? WHERE table_name = ? AND field_name = ?",
-                [json.dumps(u["layout"]), table, u["field"]]
-            )
-        conn.commit()
-    return jsonify(success=True)
+    data = request.get_json()
+    layout_items = data.get("layout", [])
+
+    if not layout_items or table not in FIELD_SCHEMA:
+        return jsonify({"error": "Invalid data"}), 400
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    for item in layout_items:
+        field = item.get("field")
+        layout_data = {
+            "x": item.get("x", 0),
+            "y": item.get("y", 0),
+            "w": item.get("w", 1),
+            "h": item.get("h", 1)
+        }
+
+        if not field:
+            continue  # Skip broken entry
+
+        cur.execute("""
+            UPDATE field_schema
+            SET layout = ?
+            WHERE table_name = ? AND field_name = ?
+        """, (json.dumps(layout_data), table, field))
+
+    conn.commit()
+    conn.close()
+    return jsonify({"success": True})
+
 
 
 if __name__ == "__main__":
