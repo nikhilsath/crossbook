@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     const GRID_SIZE = 40; // Size of each grid unit in pixels
+    const layoutCache = {}; // Track previous valid layout
 
     interact('.draggable-field')
       .draggable({
@@ -24,6 +25,14 @@ document.addEventListener("DOMContentLoaded", () => {
             target.style.transform = `translate(${x}px, ${y}px)`;
             target.setAttribute('data-x', x);
             target.setAttribute('data-y', y);
+          },
+          end(event) {
+            if (!validatePosition(event.target)) {
+              revertPosition(event.target);
+            } else {
+              updateCache(event.target);
+              setTimeout(captureAllLayout, 10);
+            }
           }
         }
       })
@@ -53,6 +62,14 @@ document.addEventListener("DOMContentLoaded", () => {
             target.style.transform = `translate(${x}px, ${y}px)`;
             target.setAttribute('data-x', x);
             target.setAttribute('data-y', y);
+          },
+          end(event) {
+            if (!validatePosition(event.target)) {
+              revertPosition(event.target);
+            } else {
+              updateCache(event.target);
+              setTimeout(captureAllLayout, 10);
+            }
           }
         }
       });
@@ -77,10 +94,47 @@ document.addEventListener("DOMContentLoaded", () => {
       };
     }
 
+    function updateCache(el) {
+      const data = getGridData(el);
+      layoutCache[data.field] = { ...data };
+    }
+
+    function revertPosition(el) {
+      const field = el.dataset.field;
+      const data = layoutCache[field];
+      if (data) {
+        el.style.transform = `translate(${data.x * GRID_SIZE}px, ${data.y * GRID_SIZE}px)`;
+        el.style.width = `${data.w * GRID_SIZE}px`;
+        el.style.height = `${data.h * GRID_SIZE}px`;
+        el.setAttribute('data-x', data.x * GRID_SIZE);
+        el.setAttribute('data-y', data.y * GRID_SIZE);
+      }
+    }
+
+    function validatePosition(movedEl) {
+      const moved = getGridData(movedEl);
+      return !Array.from(document.querySelectorAll('.draggable-field')).some(el => {
+        if (el === movedEl) return false;
+        const other = getGridData(el);
+        return intersect(moved, other);
+      });
+    }
+
+    function intersect(a, b) {
+      return (
+        a.x < b.x + b.w &&
+        a.x + a.w > b.x &&
+        a.y < b.y + b.h &&
+        a.y + a.h > b.y
+      );
+    }
+
     function captureAllLayout() {
       const layout = [];
       document.querySelectorAll('.draggable-field').forEach(el => {
-        layout.push(getGridData(el));
+        const data = getGridData(el);
+        layout.push(data);
+        updateCache(el);
       });
 
       const table = window.location.pathname.split('/')[1];
@@ -99,7 +153,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    document.addEventListener('mouseup', () => {
-      setTimeout(captureAllLayout, 10);
-    });
+    // Cache all field positions on load
+    document.querySelectorAll('.draggable-field').forEach(updateCache);
 });
