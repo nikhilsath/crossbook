@@ -155,7 +155,7 @@ def detail_view(table, record_id):
         table=table,
         record=record,
         related=related,
-        field_schema_layout=layout_by_field  # ✅ this was missing
+        field_schema_layout=layout_by_field  
     )
 
 
@@ -311,7 +311,7 @@ def update_layout(table):
         }
 
         if not field:
-            continue  # Skip broken entry
+            continue  # Skip broken entries
 
         cur.execute("""
             UPDATE field_schema
