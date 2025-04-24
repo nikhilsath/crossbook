@@ -10,8 +10,11 @@
   <div class="flex-1">
     {% set display_value = record.get(table) or record.get("title") or record.get("name") or "Untitled" %}
   <h1 class="text-2xl font-bold mb-4">{{ display_value }} <span class="text-gray-500 text-base">(ID {{ record.id }})</span></h1>
-
-    <!-- Grid layout restored -->
+  <div class="flex space-x-2 mb-4">
+    <button id="toggle-edit-layout" class="px-4 py-2 bg-blue-500 text-white rounded">Edit Layout</button>
+    <button id="reset-layout" class="px-4 py-2 bg-gray-300 text-black rounded hidden">Reset Layout</button>
+  </div>  
+    <!-- Grid layout  -->
     <div id="layout-grid" class="grid grid-cols-12 gap-4 relative">
       {% for field, value in record.items() %}
         {% if field_schema[table][field].type != 'hidden' %}
