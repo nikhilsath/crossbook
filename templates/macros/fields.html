@@ -1,63 +1,39 @@
 {% macro render_editable_field(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) %}
   <div class="mt-2">
-    {% if request.args.get('edit') == field %}
-      <form method="post" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline w-full">
-        <input type="hidden" name="field" value="{{ field }}">
-        <p class="text-xs text-gray-400">[DEBUG: {{ field }} → {{ field_type }}]</p>
-        {% if field_type == "textarea" %}
-        <div class="w-full mb-4 border border-gray-200 rounded-lg bg-gray-50">
-          <div class="flex items-center px-3 py-2 border-b border-gray-200 space-x-1">
-            <button type="button" data-command="bold" class="format-btn font-bold text-sm px-2 py-1 rounded bg-white border">B</button>
-            <button type="button" data-command="italic" class="format-btn italic text-sm px-2 py-1 rounded bg-white border">I</button>
-            <button type="button" data-command="underline" class="format-btn underline text-sm px-2 py-1 rounded bg-white border">U</button>
-          </div>
-          <div class="px-4 py-2 bg-white rounded-b-lg">
-            <div id="editor_{{ field }}" contenteditable="true"
-                 class="rich-editor block w-full text-sm text-gray-800 bg-white border-0 focus:ring-0"
-                 style="min-height: 200px;">{{ value|safe }}</div>
-            <input type="hidden" name="new_value" id="hidden_{{ field }}">
-          </div>
+    {% if field_type == "textarea" %}
+    <form method="POST"
+          action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}"
+          class="w-full mb-4"
+          onsubmit="event.preventDefault()">
+      <input type="hidden" name="field" value="{{ field }}">
+      <div class="w-full mb-4 border border-gray-200 rounded-lg bg-gray-50">
+        <div class="flex items-center px-3 py-2 border-b border-gray-200 space-x-1">
+          <button type="button" data-command="bold" class="format-btn font-bold text-sm px-2 py-1 rounded bg-white border">B</button>
+          <button type="button" data-command="italic" class="format-btn italic text-sm px-2 py-1 rounded bg-white border">I</button>
+          <button type="button" data-command="underline" class="format-btn underline text-sm px-2 py-1 rounded bg-white border">U</button>
         </div>
-        <script type="module">
-          import { initRichTextEditor } from '/static/js/editor.js';
-          initRichTextEditor("{{ field }}");
-        </script>        
-
-        {% elif field_type == "boolean" %}
-        <label class="relative inline-flex items-center cursor-pointer">
-          <input type="checkbox" name="new_value" value="1"
-                 class="sr-only peer" {% if value in ("1", 1, True) %}checked{% endif %}>
-          <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300
-                      rounded-full peer peer-checked:bg-blue-600 transition duration-300"></div>
-          <div class="absolute left-0.5 top-0.5 bg-white w-5 h-5 rounded-full
-                      transition-transform duration-300 transform peer-checked:translate-x-full"></div>
-        </label>
-
-        {% elif field_type == "select" %}
-          {% set options = field_schema[table][field].options %}
-          <select name="new_value" class="border px-1 py-0.5 text-sm rounded">
-            {% for option in options %}
-              <option value="{{ option }}" {% if option == value %}selected{% endif %}>{{ option }}</option>
-            {% endfor %}
-          </select>
-
-        {% elif field_type == "number" %}
-          <input type="number" name="new_value" value="{{ value }}" class="border px-1 py-0.5 text-sm rounded">
-
-          {% elif field_type == "date" %}
-          <input type="date" name="new_value" value="{{ value }}" class="border px-1 py-0.5 text-sm rounded" onchange="this.form.submit()">
-        {% elif field_type == "text" %}
-          <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline">
-            <input type="hidden" name="field" value="{{ field }}">
-            <input type="text" name="new_value" value="{{ value }}" class="border px-1 py-0.5 text-sm rounded" onchange="this.form.submit()">
-          </form>
-        {% endif %}
-        
-      </form>
-
-    {% else %}
-      {% if field_type == "textarea" %}
-        <div class="ml-1 prose dark:prose-invert">{{ value|safe }}</div>
+        <div class="px-4 py-2 bg-white rounded-b-lg">
+          <div id="editor_{{ field }}" contenteditable="true"
+                class="rich-editor block w-full text-sm text-gray-800 bg-white border-0 focus:ring-0"
+                style="min-height: 200px;">{{ value|safe }}</div>
+          <input type="hidden" name="new_value" id="hidden_{{ field }}" value="{{ value|e }}">
+        </div>
+      </div>
+    </form>
+    <script type="module">
+      import { initRichTextEditor } from '/static/js/editor.js';
+      initRichTextEditor("{{ field }}");
+    </script>
+    <script>
+      (function(){
+        const editor = document.getElementById('editor_{{ field }}');
+        const hidden = document.getElementById('hidden_{{ field }}');
+        editor.addEventListener('input', () => {
+          hidden.value = editor.innerHTML;
+          hidden.form.submit();
+        });
+      })();
+    </script>
       {% elif field_type == "select" %}
       <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline">
         <input type="hidden" name="field" value="{{ field }}">
@@ -108,9 +84,28 @@
           {% endfor %}
         </div>
       </form>
-
-      {% elif field_type == "date" %}
-        <span class="ml-1">{{ value }}</span>
+      {% elif field_type == "number" %}
+      <form method="POST"
+            action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}"
+            class="inline">
+        <input type="hidden" name="field" value="{{ field }}">
+        <input type="number"
+                name="new_value"
+                value="{{ value }}"
+                class="border px-1 py-0.5 text-sm rounded"
+                onchange="this.form.submit()">
+      </form>
+    {% elif field_type == "date" %}
+      <form method="POST"
+            action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}"
+            class="inline">
+        <input type="hidden" name="field" value="{{ field }}">
+        <input type="date"
+                name="new_value"
+                value="{{ value }}"
+                class="border px-1 py-0.5 text-sm rounded"
+                onchange="this.form.submit()">
+      </form>
       {% elif field_type == "foreign_key" %}
       <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="relative w-full" data-multiselect-dropdown onsubmit="event.preventDefault();">
         <input type="hidden" name="field" value="{{ field }}">
@@ -158,7 +153,7 @@
                           {{ 'bg-green-500' if value in ('1', 1, True) else 'bg-red-500' }}">
             <span class="sr-only">{{ 'Yes' if value in ('1', 1, True) else 'No' }}</span>
             <span class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform duration-300 
-                         {{ 'translate-x-5' if value in ('1', 1, True) else 'translate-x-1' }}"></span>
+                          {{ 'translate-x-5' if value in ('1', 1, True) else 'translate-x-1' }}"></span>
           </button>
         </form>
         {% elif field_type == "text" %}
@@ -167,17 +162,13 @@
               class="inline">
           <input type="hidden" name="field" value="{{ field }}">
           <input type="text"
-                 name="new_value"
-                 value="{{ value }}"
-                 class="border px-1 py-0.5 text-sm rounded"
-                 onchange="this.form.submit()">
+                  name="new_value"
+                  value="{{ value }}"
+                  class="border px-1 py-0.5 text-sm rounded"
+                  onchange="this.form.submit()">
         </form>
       {% else %}
         <span class="ml-1">{{ value }}</span>
-        <a href="{{ url_for(detail_endpoint, table=table, record_id=record_id) }}?edit={{ field }}"
-           class="text-sm text-blue-600 underline ml-1">✏️</a>
       {% endif %}
-      <a href="{{ url_for(detail_endpoint, table=table, record_id=record_id) }}?edit={{ field }}" class="text-sm text-blue-600 underline ml-1">✏️</a>
-    {% endif %}
   </div>
 {% endmacro %}
