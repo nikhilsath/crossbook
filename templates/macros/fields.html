@@ -1,3 +1,12 @@
+{% macro inline_input(field, update_endpoint, table, record_id, input_element) -%}
+{% import "tag_selector.js" as tag_selector %}
+  <form method="POST"
+        action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}"
+        class="inline">
+    <input type="hidden" name="field" value="{{ field }}">
+    {{ input_element|safe }}
+  </form>
+{%- endmacro %}
 {% macro render_editable_field(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) %}
   <div class="mt-2">
     {% if field_type == "textarea" %}
@@ -85,27 +94,14 @@
         </div>
       </form>
       {% elif field_type == "number" %}
-      <form method="POST"
-            action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}"
-            class="inline">
-        <input type="hidden" name="field" value="{{ field }}">
-        <input type="number"
-                name="new_value"
-                value="{{ value }}"
-                class="border px-1 py-0.5 text-sm rounded"
-                onchange="this.form.submit()">
-      </form>
+        {{ inline_input(field, update_endpoint, table, record_id,
+        '<input type="number" name="new_value" value="' ~ value ~
+        '" class="border px-1 py-0.5 text-sm rounded" onchange="this.form.submit()">' ) }}
     {% elif field_type == "date" %}
-      <form method="POST"
-            action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}"
-            class="inline">
-        <input type="hidden" name="field" value="{{ field }}">
-        <input type="date"
-                name="new_value"
-                value="{{ value }}"
-                class="border px-1 py-0.5 text-sm rounded"
-                onchange="this.form.submit()">
-      </form>
+    {{ inline_input(field,update_endpoint,table,record_id,
+         '<input type="date" name="new_value" value="' ~ value ~
+         '" class="border px-1 py-0.5 text-sm rounded" onchange="this.form.submit()">' ) }}
+  
       {% elif field_type == "foreign_key" %}
       <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="relative w-full" data-multiselect-dropdown onsubmit="event.preventDefault();">
         <input type="hidden" name="field" value="{{ field }}">
@@ -157,16 +153,9 @@
           </button>
         </form>
         {% elif field_type == "text" %}
-        <form method="POST"
-              action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}"
-              class="inline">
-          <input type="hidden" name="field" value="{{ field }}">
-          <input type="text"
-                  name="new_value"
-                  value="{{ value }}"
-                  class="border px-1 py-0.5 text-sm rounded"
-                  onchange="this.form.submit()">
-        </form>
+        {{ inline_input(field, update_endpoint, table, record_id,
+             '<input type="text" name="new_value" value="' ~ value ~
+             '" class="border px-1 py-0.5 text-sm rounded" onchange="this.form.submit()">' ) }}      
       {% else %}
         <span class="ml-1">{{ value }}</span>
       {% endif %}
