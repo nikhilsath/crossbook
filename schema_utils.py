@@ -3,38 +3,42 @@ import json
 
 DB_PATH = "data/crossbook.db"
 
-DEFAULT_LAYOUTS = {
-    "textarea":     {"width": "100%", "minWidth": "300px"},
-    "multi_select": {"width": "200px", "minWidth": "250px"},
-    "boolean":      {"width": "auto", "minWidth": "100px"},
-    "select":       {"width": "50%", "minWidth": "120px"},
-    "text":         {"width": "50%", "minWidth": "200px"},
-    "number":       {"width": "auto", "minWidth": "120px"},
-    "date":         {"width": "auto", "minWidth": "150px"},
-    "foreign_key":  {"width": "auto%", "minWidth": "250px"},
-}
-
+# Create library with field types 
 def load_field_schema():
+    import json
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
-    cur.execute("SELECT table_name, field_name, field_type FROM field_schema")
+    cur.execute("""
+        SELECT table_name, field_name, field_type, field_options, foreign_key, layout
+        FROM field_schema
+    """)
     rows = cur.fetchall()
     schema = {}
-    for table, field, ftype in rows:
-        schema.setdefault(table, {})[field] = ftype
+
+    for table, field, ftype, options, fk, layout_json in rows:
+        schema.setdefault(table, {})[field] = {
+            "type": ftype.strip(),
+            "options": [],
+            "foreign_key": fk,
+            "layout": {}
+        }
+
+        # Parse options if present
+        if options:
+            try:
+                schema[table][field]["options"] = json.loads(options)
+            except Exception:
+                schema[table][field]["options"] = []
+
+        # Parse layout if present
+        if layout_json:
+            try:
+                schema[table][field]["layout"] = json.loads(layout_json)
+            except Exception:
+                schema[table][field]["layout"] = {}
+
     return schema
 
-def get_field_options(table, field):
-    conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
-    cur.execute("SELECT field_options FROM field_schema WHERE table_name = ? AND field_name = ?", (table, field))
-    row = cur.fetchone()
-    if row and row[0]:
-        try:
-            return json.loads(row[0])
-        except Exception:
-            return []
-    return []
 
 def update_foreign_field_options():
     conn = sqlite3.connect(DB_PATH)

@@ -1,4 +1,4 @@
-{% macro render_editable_field(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, get_field_options) %}
+{% macro render_editable_field(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) %}
   <div class="mt-2">
     {% if request.args.get('edit') == field %}
       <form method="post" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline w-full">
@@ -34,7 +34,7 @@
         </label>
 
         {% elif field_type == "select" %}
-          {% set options = get_field_options(table, field) %}
+          {% set options = field_schema[table][field].options %}
           <select name="new_value" class="border px-1 py-0.5 text-sm rounded">
             {% for option in options %}
               <option value="{{ option }}" {% if option == value %}selected{% endif %}>{{ option }}</option>
@@ -64,7 +64,7 @@
         <select name="new_value"
         class="appearance-none bg-white border border-gray-300 text-sm px-3 py-2 pr-8 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         onchange="this.form.submit()">
-          {% for option in get_field_options(table, field) %}
+          {% for option in field_schema[table][field].options %}
             <option value="{{ option }}" {% if option == value %}selected{% endif %}>{{ option }}</option>
           {% endfor %}
         </select>
@@ -93,7 +93,7 @@
         <div class="absolute z-10 mt-1 w-full bg-white border rounded shadow hidden max-h-64 overflow-y-auto p-2 space-y-1" data-options>
           <input type="text" placeholder="Search..." class="w-full px-2 py-1 border rounded text-sm mb-2" oninput="const v=this.value.toLowerCase();[...this.parentElement.querySelectorAll('label')].forEach(l => l.classList.toggle('hidden', !l.textContent.toLowerCase().includes(v)))">
 
-          {% for option in get_field_options(table, field) %}
+          {% for option in field_schema[table][field].options %}
             <label class="flex items-center space-x-2">
               <input
                 type="checkbox"
@@ -135,7 +135,7 @@
         <div class="absolute z-10 mt-1 w-full bg-white border rounded shadow hidden max-h-64 overflow-y-auto p-2 space-y-1" data-options>
           <input type="text" placeholder="Search..." class="w-full px-2 py-1 border rounded text-sm mb-2" oninput="const v=this.value.toLowerCase();[...this.parentElement.querySelectorAll('label')].forEach(l => l.classList.toggle('hidden', !l.textContent.toLowerCase().includes(v)))">
 
-          {% for option in get_field_options(table, field) %}
+          {% for option in field_schema[table][field].options %}
             <label class="flex items-center space-x-2">
               <input
                 type="checkbox"

@@ -4,7 +4,7 @@ import os
 import datetime
 import logging
 import json
-from schema_utils import load_field_schema, get_field_options, update_foreign_field_options
+from schema_utils import load_field_schema, update_foreign_field_options
 
 
 app = Flask(__name__, static_url_path='/static')
@@ -113,7 +113,6 @@ def get_related_records(source_table, record_id):
 def inject_field_schema():
     return {
         'field_schema': FIELD_SCHEMA,
-        'get_field_options': get_field_options
     }
 
 @app.route("/")
