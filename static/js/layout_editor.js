@@ -27,11 +27,13 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateCache(el) {
     const data = getGridData(el);
     layoutCache[data.field] = { ...data };
+    console.log(`🔁 updateCache: ${data.field}`, data);
   }
 
   // Restore element to last valid spot from layoutCache
   function revertPosition(el) {
     const cfg = layoutCache[el.dataset.field];
+    console.log(`⚠️ revertPosition on: ${el.dataset.field}`, cfg);
     if (!cfg) return;
     el.style.transform = `translate(${cfg.x * GRID_SIZE}px, ${cfg.y * GRID_SIZE}px)`;
     el.style.width     = `${cfg.w * GRID_SIZE}px`;
@@ -52,11 +54,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function validatePosition(movedEl) {
     const moved = getGridData(movedEl);
-    return !Array.from(document.querySelectorAll('.draggable-field')).some(el => {
+    const ok = !Array.from(document.querySelectorAll('.draggable-field')).some(el => {
       if (el === movedEl) return false;
       const other = getGridData(el);
       return intersect(moved, other);
     });
+    console.log(`🔍 validatePosition for: ${movedEl.dataset.field} => ${ok}`);
+    return ok;
   }
 
   // Send full layout to server
@@ -180,6 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Toggle handlers
   editBtn.addEventListener('click', () => {
+    console.log('🔘 Toggled edit mode:', !editMode);
     if (!editMode) {
       enableLayoutEditing();
       resetBtn.classList.remove('hidden');

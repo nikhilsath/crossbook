@@ -174,7 +174,10 @@ def update_field(table, record_id):
     if not record:
         abort(404)
 
-    field_type = FIELD_SCHEMA.get(table, {}).get(field, "text")
+    table_schema = FIELD_SCHEMA.get(table, {})
+    entry = table_schema.get(field, {})
+    field_type = entry.get("type", "text")
+
 
     # Special handling for multi_select FIRST
     if field_type in ("multi_select", "foreign_key"):
@@ -195,7 +198,10 @@ def update_field(table, record_id):
 
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute(f"UPDATE {table} SET {field} = ? WHERE id = ?", (value, record_id))
+    cursor.execute(
+        f'UPDATE "{table}" SET "{field}" = ? WHERE id = ?',
+        (value, record_id)
+    )
 
     # Append to edit log only if value changed
     old_value = str(record.get(field))
