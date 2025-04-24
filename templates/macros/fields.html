@@ -1,5 +1,5 @@
 {% macro inline_input(field, update_endpoint, table, record_id, input_element) -%}
-{% import "tag_selector.js" as tag_selector %}
+{% import "macros/tag_selector.html" as tag_selector %}
   <form method="POST"
         action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}"
         class="inline">
