@@ -44,15 +44,15 @@
         {% elif field_type == "number" %}
           <input type="number" name="new_value" value="{{ value }}" class="border px-1 py-0.5 text-sm rounded">
 
-        {% elif field_type == "date" %}
-          <input type="date" name="new_value" value="{{ value }}" class="border px-1 py-0.5 text-sm rounded">
-
-        {% else %}
-          <input type="text" name="new_value" value="{{ value }}" class="border px-1 py-0.5 text-sm rounded">
+          {% elif field_type == "date" %}
+          <input type="date" name="new_value" value="{{ value }}" class="border px-1 py-0.5 text-sm rounded" onchange="this.form.submit()">
+        {% elif field_type == "text" %}
+          <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline">
+            <input type="hidden" name="field" value="{{ field }}">
+            <input type="text" name="new_value" value="{{ value }}" class="border px-1 py-0.5 text-sm rounded" onchange="this.form.submit()">
+          </form>
         {% endif %}
-
-        <button type="submit" class="text-blue-600 text-sm underline ml-1">Save</button>
-        <a href="{{ url_for(detail_endpoint, table=table, record_id=record_id) }}" class="text-gray-500 ml-2 text-sm">Cancel</a>
+        
       </form>
 
     {% else %}
@@ -161,9 +161,21 @@
                          {{ 'translate-x-5' if value in ('1', 1, True) else 'translate-x-1' }}"></span>
           </button>
         </form>
-      
+        {% elif field_type == "text" %}
+        <form method="POST"
+              action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}"
+              class="inline">
+          <input type="hidden" name="field" value="{{ field }}">
+          <input type="text"
+                 name="new_value"
+                 value="{{ value }}"
+                 class="border px-1 py-0.5 text-sm rounded"
+                 onchange="this.form.submit()">
+        </form>
       {% else %}
         <span class="ml-1">{{ value }}</span>
+        <a href="{{ url_for(detail_endpoint, table=table, record_id=record_id) }}?edit={{ field }}"
+           class="text-sm text-blue-600 underline ml-1">✏️</a>
       {% endif %}
       <a href="{{ url_for(detail_endpoint, table=table, record_id=record_id) }}?edit={{ field }}" class="text-sm text-blue-600 underline ml-1">✏️</a>
     {% endif %}
