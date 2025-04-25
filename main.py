@@ -18,6 +18,7 @@ logging.basicConfig(
 )
 
 def get_connection():
+    print(f"[DB] Opening database at: {DB_PATH}")
     return sqlite3.connect(DB_PATH)
 
 def get_all_records(table, search=None):
@@ -296,19 +297,35 @@ def delete_record(table, record_id):
     conn.close()
     return redirect(url_for('list_view', table=table))
 
+import logging
+
 @app.route("/<table>/layout", methods=["POST"])
 def update_layout(table):
-    data = request.get_json()
-    layout_items = data.get("layout", [])
+    logging.info(f"[LAYOUT] Received payload for table={table}: %s", request.get_data())
+    data = request.get_json(silent=True)
+    if data is None:
+        logging.error("[LAYOUT] JSON parse failed")
+        return jsonify({"error": "Bad JSON"}), 400
 
-    if not layout_items or table not in FIELD_SCHEMA:
-        return jsonify({"error": "Invalid data"}), 400
+    layout_items = data.get("layout")
+    if not isinstance(layout_items, list):
+        logging.error("[LAYOUT] Missing or invalid `layout` field: %r", layout_items)
+        return jsonify({"error": "Invalid layout format"}), 400
+
+    if table not in FIELD_SCHEMA:
+        logging.error("[LAYOUT] Unknown table: %s", table)
+        return jsonify({"error": "Unknown table"}), 400
 
     conn = get_connection()
     cur = conn.cursor()
+    updated = 0
 
     for item in layout_items:
         field = item.get("field")
+        if not field:
+            logging.warning("[LAYOUT] Skipping entry with no field: %r", item)
+            continue
+
         layout_data = {
             "x": item.get("x", 0),
             "y": item.get("y", 0),
@@ -316,18 +333,22 @@ def update_layout(table):
             "h": item.get("h", 1)
         }
 
-        if not field:
-            continue  # Skip broken entries
-
-        cur.execute("""
-            UPDATE field_schema
-            SET layout = ?
-            WHERE table_name = ? AND field_name = ?
-        """, (json.dumps(layout_data), table, field))
+        res = cur.execute(
+            "UPDATE field_schema SET layout = ? WHERE table_name = ? AND field_name = ?",
+            (json.dumps(layout_data), table, field)
+        )
+        if cur.rowcount:
+            updated += 1
+        else:
+            logging.warning("[LAYOUT] No row updated for %s.%s", table, field)
+        FIELD_SCHEMA[table][field]["layout"] = layout_data
 
     conn.commit()
     conn.close()
-    return jsonify({"success": True})
+
+    logging.info("[LAYOUT] Rows updated: %d", updated)
+    return jsonify({"success": True, "updated": updated})
+
 
 
 

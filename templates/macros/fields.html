@@ -96,7 +96,7 @@
       {% elif field_type == "number" %}
         {{ inline_input(field, update_endpoint, table, record_id,
         '<input type="number" name="new_value" value="' ~ value ~
-        '" class="border px-1 py-0.5 text-sm rounded" onchange="this.form.submit()">' ) }}
+        '" class="appearance-none border px-1 py-0.5 text-sm rounded"  onchange="this.form.submit()">' ) }}
     {% elif field_type == "date" %}
     {{ inline_input(field,update_endpoint,table,record_id,
          '<input type="date" name="new_value" value="' ~ value ~
