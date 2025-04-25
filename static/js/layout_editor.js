@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const GRID_SIZE = 40; // Size of each grid unit in pixels
+  const GRID_SIZE = 20; // Size of each grid unit in pixels
   let editMode = false;
 
   const layoutCache = {};        // Tracks last valid positions
@@ -120,21 +120,24 @@ document.addEventListener("DOMContentLoaded", () => {
     interact('.draggable-field').unset();
   }
 
-  // Restore original snapshot
   function resetLayout() {
-    console.log('🟡 Resetting layout');
-    Object.values(initialLayout).forEach(cfg => {
-      const el = document.querySelector(`.draggable-field[data-field="${cfg.field}"]`);
-      if (!el) return;
-      el.style.transform = `translate(${cfg.x * GRID_SIZE}px, ${cfg.y * GRID_SIZE}px)`;
-      el.style.width     = `${cfg.w * GRID_SIZE}px`;
-      el.style.height    = `${cfg.h * GRID_SIZE}px`;
-      el.setAttribute('data-x', cfg.x * GRID_SIZE);
-      el.setAttribute('data-y', cfg.y * GRID_SIZE);
-      layoutCache[cfg.field] = { ...cfg };
+    console.log('🟡 Resetting layout to one-field-per-row');
+    // For each field tile:
+    document.querySelectorAll('.draggable-field').forEach(el => {
+      // Remove any drag/resize transforms and sizing
+      el.style.transform = '';
+      el.style.width     = '';
+      el.style.height    = '';
+      // Make it occupy the full width (12 columns)
+      el.style.gridColumn = 'span 12';
+      el.style.gridRow    = 'auto';
+      // Clear the interact.js data attributes
+      el.removeAttribute('data-x');
+      el.removeAttribute('data-y');
     });
     console.log('✅ Layout reset complete');
   }
+  
 
   // Toggle handlers
   editBtn.addEventListener('click', () => {
