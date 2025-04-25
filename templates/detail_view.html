@@ -15,7 +15,7 @@
     <button id="reset-layout" class="px-4 py-2 bg-gray-300 text-black rounded hidden">Reset Layout</button>
   </div>  
     <!-- Grid layout  -->
-    <div id="layout-grid" class="grid grid-cols-12 gap-4 relative">
+      <div id="layout-grid" class="grid grid-cols-12 gap-4 relative">
       {% for field, value in record.items() %}
         {% if field_schema[table][field].type != 'hidden' %}
           {% set field_type = field_schema[table][field].type %}
