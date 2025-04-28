@@ -7,8 +7,7 @@ import json
 from db.database import get_connection
 from db.schema import load_field_schema, update_foreign_field_options, get_field_schema
 from db.records import get_all_records, get_record_by_id, update_field_value
-from db.relationships import get_related_records
-
+from db.relationships import get_related_records, add_relationship, remove_relationship
 
 app = Flask(__name__, static_url_path='/static')
 DB_PATH = os.path.join("data", "crossbook.db")
@@ -102,50 +101,28 @@ def update_field(table, record_id):
 
     return redirect(url_for('detail_view', table=table, record_id=record_id))
 
-
 @app.route('/relationship', methods=['POST'])
 def manage_relationship():
-    import json
-    from flask import request, jsonify
-
     data = request.get_json()
-    required_fields = {'table_a', 'id_a', 'table_b', 'id_b', 'action'}
-    if not data or not required_fields.issubset(data):
-        return jsonify({"error": "Missing required fields"}), 400
 
-    # Sort table names to match join table convention
-    table1, table2 = sorted([data["table_a"], data["table_b"]])
-    id1_field = f"{table1}_id"
-    id2_field = f"{table2}_id"
-    join_table = f"{table1}_{table2}"
+    action = data.get('action')
+    table_a = data.get('table_a')
+    id_a = data.get('id_a')
+    table_b = data.get('table_b')
+    id_b = data.get('id_b')
 
-    try:
-        conn = sqlite3.connect("data/crossbook.db")
-        cur = conn.cursor()
+    if action == 'add':
+        success = add_relationship(table_a, id_a, table_b, id_b)
+    elif action == 'remove':
+        success = remove_relationship(table_a, id_a, table_b, id_b)
+    else:
+        abort(400, "Invalid action")
 
-        if data["action"] == "add":
-            cur.execute(f"""
-                INSERT OR IGNORE INTO {join_table} ({id1_field}, {id2_field})
-                VALUES (?, ?)
-            """, (data["id_a"], data["id_b"]) if data["table_a"] == table1 else (data["id_b"], data["id_a"]))
+    if not success:
+        abort(500, "Failed to modify relationship")
 
-        elif data["action"] == "remove":
-            cur.execute(f"""
-                DELETE FROM {join_table}
-                WHERE {id1_field} = ? AND {id2_field} = ?
-            """, (data["id_a"], data["id_b"]) if data["table_a"] == table1 else (data["id_b"], data["id_a"]))
+    return {"success": True}
 
-        else:
-            return jsonify({"error": "Invalid action"}), 400
-
-        conn.commit()
-        return jsonify({"success": True}), 200
-
-    except sqlite3.OperationalError as e:
-        return jsonify({"error": f"Database error: {str(e)}"}), 500
-
-    finally:
-        conn.close()
 
 @app.route('/<table>/new', methods=['GET', 'POST'])
 def create_record(table):

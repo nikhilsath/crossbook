@@ -1,3 +1,4 @@
+import logging
 from db.database import get_connection
 
 def get_related_records(source_table, record_id):
@@ -43,3 +44,49 @@ def get_related_records(source_table, record_id):
 
     conn.close()
     return related
+
+def add_relationship(table_a, id_a, table_b, id_b):
+    join_table = "_".join(sorted([table_a, table_b]))
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    # Determine correct column names based on alphabetical sorting
+    sorted_tables = sorted([table_a, table_b])
+    first_column = f"{sorted_tables[0]}_id"
+    second_column = f"{sorted_tables[1]}_id"
+
+    try:
+        cursor.execute(
+            f"INSERT OR IGNORE INTO {join_table} ({first_column}, {second_column}) VALUES (?, ?)",
+            (id_a, id_b)
+        )
+        conn.commit()
+        return True
+    except Exception as e:
+        logging.warning(f"[RELATIONSHIP ADD ERROR] {e}")
+        return False
+    finally:
+        conn.close()
+
+
+def remove_relationship(table_a, id_a, table_b, id_b):
+    join_table = "_".join(sorted([table_a, table_b]))
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    sorted_tables = sorted([table_a, table_b])
+    first_column = f"{sorted_tables[0]}_id"
+    second_column = f"{sorted_tables[1]}_id"
+
+    try:
+        cursor.execute(
+            f"DELETE FROM {join_table} WHERE {first_column} = ? AND {second_column} = ?",
+            (id_a, id_b)
+        )
+        conn.commit()
+        return True
+    except Exception as e:
+        logging.warning(f"[RELATIONSHIP REMOVE ERROR] {e}")
+        return False
+    finally:
+        conn.close()
