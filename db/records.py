@@ -46,3 +46,16 @@ def get_record_by_id(table, record_id):
     if row:
         return dict(zip(fields, row))
     return None
+
+def update_field_value(table, record_id, field, new_value):
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(f"UPDATE {table} SET {field} = ? WHERE id = ?", (new_value, record_id))
+        conn.commit()
+        return True
+    except Exception as e:
+        logging.warning(f"[UPDATE ERROR] {e}")
+        return False
+    finally:
+        conn.close()

@@ -6,7 +6,7 @@ import logging
 import json
 from db.database import get_connection
 from db.schema import load_field_schema, update_foreign_field_options, get_field_schema
-from db.records import get_all_records, get_record_by_id
+from db.records import get_all_records, get_record_by_id, update_field_value
 from db.relationships import get_related_records
 
 
@@ -47,15 +47,12 @@ def list_view(table):
 @app.route("/<table>/<int:record_id>")
 def detail_view(table, record_id):
     conn = get_connection()
-
     # Get record
     record = get_record_by_id(table, record_id)
     if not record:
         abort(404)
-
     # Get related records
     related = get_related_records(table, record_id)
-
     # Load layout info
     cur = conn.execute("SELECT field_name, layout FROM field_schema WHERE table_name = ?", (table,))
     layout_by_field = {}
@@ -74,61 +71,37 @@ def detail_view(table, record_id):
     )
 
 
-@app.route("/<table>/<int:record_id>/update", methods=["POST"])
+@app.route('/<table>/<int:record_id>/update', methods=['POST'])
 def update_field(table, record_id):
-    if table not in CORE_TABLES:
-        abort(404)
+    field = request.form.get('field')
+    new_value = request.form.get('new_value') or request.form.get('new_value_override')
 
-    field = request.form.get("field")
-    raw_value = request.form.get("new_value_override") or request.form.get("new_value", "")
+    if not field:
+        abort(400, "Field missing")
 
-    if field in ["id", "edit_log"]:
-        abort(403)
+    # Validate field is allowed to update
+    if field not in get_field_schema().get(table, {}):
+        abort(400, "Invalid field")
 
-    record = get_record_by_id(table, record_id)
-    if not record:
-        abort(404)
+    # Type coercion (optional, depending how strict you want to be)
+    field_type = get_field_schema()[table][field]["type"]
 
-    table_schema = FIELD_SCHEMA.get(table, {})
-    entry = table_schema.get(field, {})
-    field_type = entry.get("type", "text")
+    if field_type == "boolean":
+        new_value = "1" if new_value in ("1", 1, "true", True) else "0"
+    elif field_type == "number":
+        try:
+            new_value = int(new_value)
+        except ValueError:
+            new_value = 0
+    # Other types (text, select, etc.) left as strings
 
+    success = update_field_value(table, record_id, field, new_value)
 
-    # Special handling for multi_select FIRST
-    if field_type in ("multi_select", "foreign_key"):
-        raw_values = request.form.getlist("new_value[]")
-        value = ", ".join(raw_values)  # override value
-        print(f"[DEBUG] Incoming multi_select update for {table}.{field}: {raw_values} -> {value}")
-    else:
-        # Coerce value based on field_type
-        if field_type == "boolean":
-            value = "1" if raw_value in ("on", "1", "true", "True") else "0"
-        elif field_type == "number":
-            try:
-                value = int(raw_value)
-            except ValueError:
-                value = 0
-        else:
-            value = raw_value
+    if not success:
+        abort(500, "Failed to update field")
 
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute(
-        f'UPDATE "{table}" SET "{field}" = ? WHERE id = ?',
-        (value, record_id)
-    )
+    return redirect(url_for('detail_view', table=table, record_id=record_id))
 
-    # Append to edit log only if value changed
-    old_value = str(record.get(field))
-    if str(value) != old_value:
-        timestamp = datetime.datetime.now().isoformat(timespec='seconds')
-        log_entry = f"[{timestamp}] Updated {field} from '{old_value}' to '{value}'"
-        new_log = (record.get("edit_log") or "") + "\n" + log_entry
-        cursor.execute(f"UPDATE {table} SET edit_log = ? WHERE id = ?", (new_log.strip(), record_id))
-
-    conn.commit()
-    conn.close()
-    return redirect(url_for("detail_view", table=table, record_id=record_id))
 
 @app.route('/relationship', methods=['POST'])
 def manage_relationship():
