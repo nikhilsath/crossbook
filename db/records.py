@@ -90,3 +90,17 @@ def create_record(table, form_data):
         return None
     finally:
         conn.close()
+
+def delete_record(table, record_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(f"DELETE FROM {table} WHERE id = ?", (record_id,))
+        conn.commit()
+        return True
+    except Exception as e:
+        import logging
+        logging.warning(f"[DELETE ERROR] {e}")
+        return False
+    finally:
+        conn.close()

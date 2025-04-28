@@ -6,7 +6,7 @@ import logging
 import json
 from db.database import get_connection
 from db.schema import load_field_schema, update_foreign_field_options, get_field_schema
-from db.records import get_all_records, get_record_by_id, update_field_value, create_record
+from db.records import get_all_records, get_record_by_id, update_field_value, create_record, delete_record
 from db.relationships import get_related_records, add_relationship, remove_relationship
 
 app = Flask(__name__, static_url_path='/static')
@@ -141,16 +141,14 @@ def create_record_route(table):
 
 
 @app.route('/<table>/<int:record_id>/delete', methods=['POST'])
-def delete_record(table, record_id):
+def delete_record_route(table, record_id):
     if table not in CORE_TABLES:
         abort(404)
-
-    conn = get_connection()
-    cur = conn.cursor()
-    cur.execute(f"DELETE FROM {table} WHERE id = ?", (record_id,))
-    conn.commit()
-    conn.close()
+    success = delete_record(table, record_id)
+    if not success:
+        abort(500, "Failed to delete record")
     return redirect(url_for('list_view', table=table))
+
 
 @app.route("/<table>/layout", methods=["POST"])
 def update_layout(table):
