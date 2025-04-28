@@ -1,34 +1,53 @@
 import logging
 from db.database import get_connection
 from db.schema import get_field_schema
+from db.validation import validate_table, validate_fields
 
 def get_all_records(table, search=None):
+    # 1) Validate the table name
+    validate_table(table)
+
     conn = get_connection()
     cursor = conn.cursor()
     try:
         if search:
             search = search.strip()
+
+            # 2) Determine which fields are searchable
+            all_fields    = get_field_schema()[table]
             search_fields = [
-                field for field, ftype in get_field_schema().get(table, {}).items()
-                if ftype["type"] in ("text", "textarea", "select", "single select", "multi select")
+                field
+                for field, meta in all_fields.items()
+                if meta["type"] in ("text", "textarea", "select", "multi select")
             ]
+
             if not search_fields:
                 return []
 
-            conditions = [f"{field} LIKE ?" for field in search_fields]
-            sql = f"SELECT * FROM {table} WHERE " + " OR ".join(conditions) + " LIMIT 1000"
-            params = [f"%{search}%"] * len(search_fields)
-            logging.info(f"[QUERY] SQL: {sql}")
+            # 3) Validate each field name
+            validate_fields(table, search_fields)
+
+            # 4) Build the safe SQL string with placeholders
+            conditions = [f"{fld} LIKE ?" for fld in search_fields]
+            sql        = (
+                f"SELECT * FROM {table} "
+                + "WHERE " + " OR ".join(conditions)
+                + " LIMIT 1000"
+            )
+            params     = [f"%{search}%"] * len(search_fields)
+
             cursor.execute(sql, params)
         else:
-            sql = f"SELECT * FROM {table} LIMIT 1000"
-            logging.info(f"[QUERY] SQL: {sql}")
-            cursor.execute(sql)
+            # No search term: just return the first 1,000 rows
+            cursor.execute(f"SELECT * FROM {table} LIMIT 1000")
 
-        rows = cursor.fetchall()
-        fields = [desc[0] for desc in cursor.description]
-        records = [dict(zip(fields, row)) for row in rows]
+        # 5) Hydrate the results
+        rows    = cursor.fetchall()
+        columns = [desc[0] for desc in cursor.description]
+        records = [dict(zip(columns, row)) for row in rows]
+
         return records
+
     except Exception as e:
         logging.warning(f"[QUERY ERROR] {e}")
         return []
