@@ -6,6 +6,7 @@ import logging
 import json
 from db.database import get_connection
 from db.schema import load_field_schema, update_foreign_field_options, get_field_schema
+from db.records import get_all_records
 
 
 app = Flask(__name__, static_url_path='/static')
@@ -16,39 +17,6 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(levelname)s:%(message)s"
 )
-
-
-def get_all_records(table, search=None):
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        if search:
-            search = search.strip()
-            search_fields = [
-                field for field, ftype in FIELD_SCHEMA.get(table, {}).items()
-                if ftype in ("text", "textarea", "select", "single select", "multi select")
-            ]
-            if not search_fields:
-                return []
-
-            conditions = [f"{field} LIKE ?" for field in search_fields]
-            sql = f"SELECT * FROM {table} WHERE " + " OR ".join(conditions) + " LIMIT 1000"
-            params = [f"%{search}%"] * len(search_fields)
-            cursor.execute(sql, params)
-        else:
-            sql = f"SELECT * FROM {table} LIMIT 1000"
-            logging.info(f"[QUERY] SQL: {sql}")
-            cursor.execute(sql)
-
-        rows = cursor.fetchall()
-        fields = [desc[0] for desc in cursor.description]
-        records = [dict(zip(fields, row)) for row in rows]
-        return records
-    except Exception as e:
-        logging.warning(f"[QUERY ERROR] {e}")
-        return []
-    finally:
-        conn.close()
 
 def get_record_by_id(table, record_id):
     conn = get_connection()
