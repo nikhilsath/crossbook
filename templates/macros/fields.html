@@ -10,6 +10,7 @@
 {% macro render_editable_field(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) %}
   <div class="mt-2">
     {% if field_type == "textarea" %}
+    <div id="save_status_{{ field }}" class="text-xs text-gray-500 mb-1"></div>
     <form method="POST"
           action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}"
           class="w-full mb-4"
@@ -31,17 +32,7 @@
     </form>
     <script type="module">
       import { initRichTextEditor } from '/static/js/editor.js';
-      initRichTextEditor("{{ field }}");
-    </script>
-    <script>
-      (function(){
-        const editor = document.getElementById('editor_{{ field }}');
-        const hidden = document.getElementById('hidden_{{ field }}');
-        editor.addEventListener('input', () => {
-          hidden.value = editor.innerHTML;
-          hidden.form.submit();
-        });
-      })();
+      initRichTextEditor("{{ field }}", "save_status_{{ field }}");
     </script>
       {% elif field_type == "select" %}
       <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline">
