@@ -4,22 +4,19 @@ import os
 import datetime
 import logging
 import json
-from schema_utils import load_field_schema, update_foreign_field_options
+from db.database import get_connection
+from db.schema import load_field_schema, update_foreign_field_options, get_field_schema
 
 
 app = Flask(__name__, static_url_path='/static')
 DB_PATH = os.path.join("data", "crossbook.db")
 CORE_TABLES = ["character", "thing", "location", "faction", "topic", "content"]
-FIELD_SCHEMA = load_field_schema()
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(levelname)s:%(message)s"
 )
 
-def get_connection():
-    print(f"[DB] Opening database at: {DB_PATH}")
-    return sqlite3.connect(DB_PATH)
 
 def get_all_records(table, search=None):
     conn = get_connection()
@@ -112,9 +109,12 @@ def get_related_records(source_table, record_id):
 
 @app.context_processor
 def inject_field_schema():
+    from db.schema import get_field_schema  
     return {
-        'field_schema': FIELD_SCHEMA,
+        'field_schema': get_field_schema(),
+        'update_foreign_field_options': update_foreign_field_options
     }
+
 
 @app.route("/")
 def home():
@@ -124,7 +124,7 @@ def home():
 def list_view(table):
     if table not in CORE_TABLES:
         abort(404)
-    fields = list(FIELD_SCHEMA.get(table, {}).keys())
+    fields = list(get_field_schema()[table].keys())
     search = request.args.get("search", "").strip()
     records = get_all_records(table, search=search)
     return render_template(
@@ -296,8 +296,6 @@ def delete_record(table, record_id):
     conn.commit()
     conn.close()
     return redirect(url_for('list_view', table=table))
-
-import logging
 
 @app.route("/<table>/layout", methods=["POST"])
 def update_layout(table):
