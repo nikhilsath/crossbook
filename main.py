@@ -69,36 +69,42 @@ def detail_view(table, record_id):
     )
 
 
-@app.route('/<table>/<int:record_id>/update', methods=['POST'])
+@app.route("/<table>/<int:record_id>/update", methods=["POST"])
 def update_field(table, record_id):
-    field = request.form.get('field')
-    new_value = request.form.get('new_value') or request.form.get('new_value_override')
-
+    # grab which column we’re editing
+    field = request.form.get("field")
     if not field:
         abort(400, "Field missing")
 
-    # Validate field is allowed to update
-    if field not in get_field_schema().get(table, {}):
-        abort(400, "Invalid field")
+    # figure out the declared type
+    fmeta = get_field_schema().get(table, {}).get(field)
+    if not fmeta:
+        abort(400, "Unknown field")
+    ftype = fmeta["type"]
 
-    # Type coercion (optional, depending how strict you want to be)
-    field_type = get_field_schema()[table][field]["type"]
+    # --- HANDLE MULTI-SELECT & FOREIGN-KEY AS A LIST ---
+    if ftype in ("multi_select", "foreign_key"):
+        # checkboxes all name="new_value[]"
+        vals      = request.form.getlist("new_value[]")
+        new_value = ", ".join(vals)
+    else:
+        # everything else uses a single input or override
+        raw = request.form.get("new_value_override") or request.form.get("new_value", "")
+        if ftype == "boolean":
+            new_value = "1" if raw.lower() in ("1","on","true") else "0"
+        elif ftype == "number":
+            try:
+                new_value = int(raw)
+            except ValueError:
+                new_value = 0
+        else:
+            new_value = raw
 
-    if field_type == "boolean":
-        new_value = "1" if new_value in ("1", 1, "true", True) else "0"
-    elif field_type == "number":
-        try:
-            new_value = int(new_value)
-        except ValueError:
-            new_value = 0
-    # Other types (text, select, etc.) left as strings
-
+    # Delegate to your existing DB helper
     success = update_field_value(table, record_id, field, new_value)
-
     if not success:
-        abort(500, "Failed to update field")
-
-    return redirect(url_for('detail_view', table=table, record_id=record_id))
+        abort(500, "Database update failed")
+    return redirect(url_for("detail_view", table=table, record_id=record_id))
 
 @app.route('/relationship', methods=['POST'])
 def manage_relationship():
