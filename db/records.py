@@ -59,3 +59,34 @@ def update_field_value(table, record_id, field, new_value):
         return False
     finally:
         conn.close()
+
+def create_record(table, form_data):
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        fields = get_field_schema().get(table, {})
+        if not fields:
+            return None
+
+        cursor.execute(f"PRAGMA table_info({table})")
+        columns = [col[1] for col in cursor.fetchall()]
+
+        insert_data = {f: form_data.get(f, '') for f in fields if f not in ('id', 'edit_log') and fields[f]['type'] != 'hidden'}
+        field_names = [f for f in insert_data if f in columns]
+
+        if not field_names:
+            return None
+
+        placeholders = ', '.join('?' for _ in field_names)
+        sql = f"INSERT INTO {table} ({', '.join(field_names)}) VALUES ({placeholders})"
+        cursor.execute(sql, [insert_data[f] for f in field_names])
+
+        record_id = cursor.lastrowid
+        conn.commit()
+        return record_id
+    except Exception as e:
+        import logging
+        logging.warning(f"[CREATE ERROR] {e}")
+        return None
+    finally:
+        conn.close()

@@ -6,7 +6,7 @@ import logging
 import json
 from db.database import get_connection
 from db.schema import load_field_schema, update_foreign_field_options, get_field_schema
-from db.records import get_all_records, get_record_by_id, update_field_value
+from db.records import get_all_records, get_record_by_id, update_field_value, create_record
 from db.relationships import get_related_records, add_relationship, remove_relationship
 
 app = Flask(__name__, static_url_path='/static')
@@ -27,7 +27,6 @@ def inject_field_schema():
         'field_schema': get_field_schema(),
         'update_foreign_field_options': update_foreign_field_options
     }
-
 
 @app.route("/")
 def home():
@@ -125,29 +124,21 @@ def manage_relationship():
 
 
 @app.route('/<table>/new', methods=['GET', 'POST'])
-def create_record(table):
+def create_record_route(table):
     if table not in CORE_TABLES:
         abort(404)
 
-    fields = FIELD_SCHEMA.get(table, {})
+    fields = get_field_schema().get(table, {})
+
     if request.method == 'POST':
-        data = {f: request.form.get(f, '') for f in fields if f not in ('id', 'edit_log') and fields[f] != 'hidden'}
-
-        conn = get_connection()
-        cur = conn.cursor()
-        cur.execute(f"PRAGMA table_info({table})")
-        columns = [col[1] for col in cur.fetchall()]
-        field_names = [f for f in data.keys() if f in columns]
-        placeholders = ', '.join('?' for _ in field_names)
-        sql = f"INSERT INTO {table} ({', '.join(field_names)}) VALUES ({placeholders})"
-        cur.execute(sql, [data[f] for f in field_names])
-        record_id = cur.lastrowid
-        conn.commit()
-        conn.close()
-
-        return redirect(f"/{table}/{record_id}")
+        record_id = create_record(table, request.form)
+        if record_id:
+            return redirect(f"/{table}/{record_id}")
+        else:
+            abort(500, "Failed to create record")
 
     return render_template('new_record.html', table=table, fields=fields)
+
 
 @app.route('/<table>/<int:record_id>/delete', methods=['POST'])
 def delete_record(table, record_id):
