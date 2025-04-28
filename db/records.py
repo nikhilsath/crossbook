@@ -1,7 +1,7 @@
 import logging
 from db.database import get_connection
 from db.schema import get_field_schema
-from db.validation import validate_table, validate_fields
+from db.validation import validate_table, validate_fields, validate_field
 
 def get_all_records(table, search=None):
     # 1) Validate the table name
@@ -80,45 +80,61 @@ def update_field_value(table, record_id, field, new_value):
         conn.close()
 
 def create_record(table, form_data):
-    conn = get_connection()
+    # 1) Validate the table name
+    validate_table(table)
+
+    conn   = get_connection()
     cursor = conn.cursor()
     try:
         fields = get_field_schema().get(table, {})
         if not fields:
             return None
 
+        # 2) Figure out real columns on the table
         cursor.execute(f"PRAGMA table_info({table})")
-        columns = [col[1] for col in cursor.fetchall()]
+        cols = [col[1] for col in cursor.fetchall()]
 
-        insert_data = {f: form_data.get(f, '') for f in fields if f not in ('id', 'edit_log') and fields[f]['type'] != 'hidden'}
-        field_names = [f for f in insert_data if f in columns]
+        # 3) Build insert_data, but only for known schema fields
+        insert_data = {}
+        for f, meta in fields.items():
+            if f in ("id", "edit_log") or meta["type"] == "hidden":
+                continue
+            # validate each column before we use it
+            if f not in cols:
+                continue
+            validate_field(table, f)
+            insert_data[f] = form_data.get(f, "")
 
-        if not field_names:
+        if not insert_data:
             return None
 
-        placeholders = ', '.join('?' for _ in field_names)
-        sql = f"INSERT INTO {table} ({', '.join(field_names)}) VALUES ({placeholders})"
-        cursor.execute(sql, [insert_data[f] for f in field_names])
+        field_names = list(insert_data.keys())
+        placeholders = ", ".join("?" for _ in field_names)
+        sql          = f"INSERT INTO {table} ({', '.join(field_names)}) VALUES ({placeholders})"
+        params       = [insert_data[f] for f in field_names]
 
+        cursor.execute(sql, params)
         record_id = cursor.lastrowid
         conn.commit()
         return record_id
+
     except Exception as e:
-        import logging
         logging.warning(f"[CREATE ERROR] {e}")
         return None
+
     finally:
         conn.close()
 
 def delete_record(table, record_id):
-    conn = get_connection()
+    validate_table(table)
+
+    conn   = get_connection()
     cursor = conn.cursor()
     try:
         cursor.execute(f"DELETE FROM {table} WHERE id = ?", (record_id,))
         conn.commit()
         return True
     except Exception as e:
-        import logging
         logging.warning(f"[DELETE ERROR] {e}")
         return False
     finally:
