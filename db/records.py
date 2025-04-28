@@ -34,3 +34,15 @@ def get_all_records(table, search=None):
         return []
     finally:
         conn.close()
+
+def get_record_by_id(table, record_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(f"PRAGMA table_info({table})")
+    fields = [row[1] for row in cursor.fetchall()]
+    cursor.execute(f"SELECT * FROM {table} WHERE id = ?", (record_id,))
+    row = cursor.fetchone()
+    conn.close()
+    if row:
+        return dict(zip(fields, row))
+    return None

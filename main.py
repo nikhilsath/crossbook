@@ -6,7 +6,8 @@ import logging
 import json
 from db.database import get_connection
 from db.schema import load_field_schema, update_foreign_field_options, get_field_schema
-from db.records import get_all_records
+from db.records import get_all_records, get_record_by_id
+from db.relationships import get_related_records
 
 
 app = Flask(__name__, static_url_path='/static')
@@ -18,61 +19,6 @@ logging.basicConfig(
     format="%(levelname)s:%(message)s"
 )
 
-def get_record_by_id(table, record_id):
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute(f"PRAGMA table_info({table})")
-    fields = [row[1] for row in cursor.fetchall()]
-    cursor.execute(f"SELECT * FROM {table} WHERE id = ?", (record_id,))
-    row = cursor.fetchone()
-    conn.close()
-    if row:
-        return dict(zip(fields, row))
-    return None
-
-def get_related_records(source_table, record_id):
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
-    all_tables = [row[0] for row in cursor.fetchall()]
-
-    related = {}
-    for join_table in all_tables:
-        parts = join_table.split("_")
-        if len(parts) != 2:
-            continue
-
-        table_a, table_b = parts
-        if source_table not in (table_a, table_b):
-            continue
-
-        if source_table == table_a:
-            target_table = table_b
-            source_field = f"{table_a}_id"
-            target_field = f"{table_b}_id"
-        else:
-            target_table = table_a
-            source_field = f"{table_b}_id"
-            target_field = f"{table_a}_id"
-
-        try:
-            cursor.execute(f"""
-                SELECT t.id, t.{target_table}
-                FROM {join_table} jt
-                JOIN {target_table} t ON jt.{target_field} = t.id
-                WHERE jt.{source_field} = ?
-            """, (record_id,))
-            rows = cursor.fetchall()
-            related[target_table] = {
-                "label": target_table.capitalize() + "s",
-                "items": [{"id": row[0], "name": row[1]} for row in rows]
-            }
-        except Exception:
-            continue
-
-    conn.close()
-    return related
 
 
 @app.context_processor
