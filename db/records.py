@@ -67,10 +67,17 @@ def get_record_by_id(table, record_id):
     return None
 
 def update_field_value(table, record_id, field, new_value):
+    validate_table(table)
+    validate_field(table, field)
+
     conn = get_connection()
     cursor = conn.cursor()
+
     try:
-        cursor.execute(f"UPDATE {table} SET {field} = ? WHERE id = ?", (new_value, record_id))
+        cursor.execute(
+            f"UPDATE {table} SET {field} = ? WHERE id = ?",  # identifiers are validated
+            (new_value, record_id)
+        )
         conn.commit()
         return True
     except Exception as e:

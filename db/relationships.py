@@ -1,40 +1,38 @@
 import logging
 from db.database import get_connection
-from db.validation   import validate_table
+from db.validation import validate_table
 
 
 def get_related_records(source_table, record_id):
-    # 0) Ensure the source table itself is known
+    # Ensure the source table is valid
     validate_table(source_table)
 
-    conn   = get_connection()
+    conn = get_connection()
     cursor = conn.cursor()
 
-    # 1) Grab all tables in the SQLite file
+    # Fetch all table names
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
     all_tables = [row[0] for row in cursor.fetchall()]
 
     related = {}
     for join_table in all_tables:
         parts = join_table.split("_")
-        # only consider the two-way joins
         if len(parts) != 2:
             continue
 
         table_a, table_b = parts
-
-        # 2) Skip any join tables involving unknown tables
+        # Validate each side of the join
         try:
             validate_table(table_a)
             validate_table(table_b)
         except ValueError:
             continue
 
-        # 3) Is this join relevant to our source?
+        # Check if this join involves our source table
         if source_table not in (table_a, table_b):
             continue
 
-        # 4) Determine the target side and the join columns
+        # Determine target table and join columns
         if source_table == table_a:
             target_table = table_b
             source_field = f"{table_a}_id"
@@ -44,7 +42,6 @@ def get_related_records(source_table, record_id):
             source_field = f"{table_b}_id"
             target_field = f"{table_a}_id"
 
-        # 5) Fetch the related rows safely
         try:
             sql = (
                 f"SELECT t.id, t.{target_table} "
@@ -67,20 +64,36 @@ def get_related_records(source_table, record_id):
     conn.close()
     return related
 
-def add_relationship(table_a, id_a, table_b, id_b):
-    join_table = "_".join(sorted([table_a, table_b]))
-    conn = get_connection()
-    cursor = conn.cursor()
 
-    # Determine correct column names based on alphabetical sorting
+def add_relationship(table_a, id_a, table_b, id_b):
+    # Validate entity tables
+    validate_table(table_a)
+    validate_table(table_b)
+
+    # Construct join table and column names
     sorted_tables = sorted([table_a, table_b])
+    join_table = f"{sorted_tables[0]}_{sorted_tables[1]}"
     first_column = f"{sorted_tables[0]}_id"
     second_column = f"{sorted_tables[1]}_id"
 
+    conn = get_connection()
+    cursor = conn.cursor()
     try:
+        # Ensure the join table exists
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+            (join_table,)
+        )
+        if not cursor.fetchone():
+            logging.warning(f"[RELATIONSHIP ADD ERROR] join table {join_table} not found")
+            return False
+
+        # Order IDs to match sorted table order
+        vals = (id_a, id_b) if table_a == sorted_tables[0] else (id_b, id_a)
+
         cursor.execute(
             f"INSERT OR IGNORE INTO {join_table} ({first_column}, {second_column}) VALUES (?, ?)",
-            (id_a, id_b)
+            vals
         )
         conn.commit()
         return True
@@ -92,18 +105,34 @@ def add_relationship(table_a, id_a, table_b, id_b):
 
 
 def remove_relationship(table_a, id_a, table_b, id_b):
-    join_table = "_".join(sorted([table_a, table_b]))
-    conn = get_connection()
-    cursor = conn.cursor()
+    # Validate entity tables
+    validate_table(table_a)
+    validate_table(table_b)
 
+    # Construct join table and column names
     sorted_tables = sorted([table_a, table_b])
+    join_table = f"{sorted_tables[0]}_{sorted_tables[1]}"
     first_column = f"{sorted_tables[0]}_id"
     second_column = f"{sorted_tables[1]}_id"
 
+    conn = get_connection()
+    cursor = conn.cursor()
     try:
+        # Ensure the join table exists
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+            (join_table,)
+        )
+        if not cursor.fetchone():
+            logging.warning(f"[RELATIONSHIP REMOVE ERROR] join table {join_table} not found")
+            return False
+
+        # Order IDs to match sorted table order
+        vals = (id_a, id_b) if table_a == sorted_tables[0] else (id_b, id_a)
+
         cursor.execute(
             f"DELETE FROM {join_table} WHERE {first_column} = ? AND {second_column} = ?",
-            (id_a, id_b)
+            vals
         )
         conn.commit()
         return True
