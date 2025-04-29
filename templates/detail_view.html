@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% import "macros/fields.html" as fields %}
-{% set title_display = record.get(table) or record.get("title") or record.get("name") or "Untitled" %}
+{% set title_display = record.get(table)%}
 {% block title %}{{ table|capitalize }} {{ title_display }}{% endblock %}
 
 {% block content %}
