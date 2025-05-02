@@ -7,27 +7,49 @@
   <h1 class="text-2xl font-bold mb-4">{{ table|capitalize }}s</h1>
 
   <!-- Search form -->
-  <form method="get" class="mb-4">
-    <input type="text" name="search" placeholder="Search..." value="{{ request.args.get('search', '') }}" class="border rounded px-2 py-1 w-64" />
-    <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded ml-2">Search</button>
-    <div id="filter-container" class="flex space-x-4 overflow-visible">
-      {% for field in fields if request.args.get(field) is not none %}
-        {% set val  = request.args.getlist(field) %}
-        {% set meta = field_schema[table][field] %}
-        {% if meta.type == 'boolean' %}
-          {{ filters.boolean_filter(field, request.args.get(field, '')) }}
-        {% elif meta.type in ['multi_select','foreign_key'] %}
-          {{ filters.multi_select_popover(field, request.args.getlist(field), meta.options) }}
-        {% elif meta.type == 'select' %}
-          {{ filters.select_filter(field, request.args.get(field,''), meta.options) }}
-        {% else %}
-          {{ filters.text_filter(field, request.args.get(field,''), request.args.get(field + '_op','contains')) }}
-        {% endif %}
-      {% endfor %}
-      <button type="button" id="reset-filters" class="text-sm text-red-600 underline">
+  <form method="get" class="mb-4 flex items-center justify-between">
+    {# Left side: Search input + button #}
+    <div class="flex items-center space-x-2">
+      <input
+        type="text"
+        name="search"
+        placeholder="Search..."
+        value="{{ request.args.get('search','') }}"
+        class="border rounded px-2 py-1 w-64"
+      />
+      <button
+        type="submit"
+        class="bg-blue-500 text-white px-3 py-1 rounded"
+      >
+        Search
+      </button>
+    </div>
+  
+    {# Right side: Active filters + Reset #}
+    <div class="flex items-center space-x-4">
+      <div id="filter-container" class="flex flex-wrap gap-x-4 gap-y-2 max-h-16">
+        {% for field in fields if request.args.get(field) is not none %}
+          {% set meta = field_schema[table][field] %}
+          {% if meta.type == 'boolean' %}
+            {{ filters.boolean_filter(field, request.args.get(field,'')) }}
+          {% elif meta.type in ['multi_select','foreign_key'] %}
+            {{ filters.multi_select_popover(field, request.args.getlist(field), meta.options) }}
+          {% elif meta.type == 'select' %}
+            {{ filters.select_filter(field, request.args.get(field,''), meta.options) }}
+          {% else %}
+            {{ filters.text_filter(field, request.args.get(field,''), request.args.get(field + '_op','contains')) }}
+          {% endif %}
+        {% endfor %}
+      </div>
+      <button
+        type="button"
+        id="reset-filters"
+        class="text-sm text-red-600 underline"
+      >
         Reset Filters
       </button>
-    </div>    
+    </div>
+  </form>  
   <!-- Visibility control -->
   <div class="relative inline-block text-left mb-4" id="column-visibility-wrapper">
     <button id="toggle-columns" type="button" class="px-2 py-1 bg-gray-200 rounded">
