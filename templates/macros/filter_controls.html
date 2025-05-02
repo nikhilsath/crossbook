@@ -69,3 +69,18 @@
   </div>
 </div>
 {%- endmacro -%}
+
+{% macro boolean_filter(field, value) %}
+  <div class="filter-chip flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1 border border-gray-300">
+    <select
+      name="{{ field }}"
+      class="bg-transparent text-sm rounded px-1 py-0.5"
+      title="{{ field | replace('_',' ') | capitalize }}"
+    >
+      <option value="" {% if value=='' %}selected{% endif %}>Any</option>
+      <option value="true" {% if value=='true' %}selected{% endif %}>Yes</option>
+      <option value="false" {% if value=='false' %}selected{% endif %}>No</option>
+    </select>
+    <input type="hidden" name="{{ field }}_op" value="equals" />
+  </div>
+{% endmacro %}

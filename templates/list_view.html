@@ -14,8 +14,10 @@
       {% for field in fields if request.args.get(field) is not none %}
         {% set val  = request.args.getlist(field) %}
         {% set meta = field_schema[table][field] %}
-        {% if meta.type in ['multi_select','foreign_key'] %}
-          {{ filters.multi_select_popover(field, val, meta.options) }}
+        {% if meta.type == 'boolean' %}
+          {{ filters.boolean_filter(field, request.args.get(field, '')) }}
+        {% elif meta.type in ['multi_select','foreign_key'] %}
+          {{ filters.multi_select_popover(field, request.args.getlist(field), meta.options) }}
         {% elif meta.type == 'select' %}
           {{ filters.select_filter(field, request.args.get(field,''), meta.options) }}
         {% else %}
