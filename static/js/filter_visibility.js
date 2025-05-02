@@ -94,6 +94,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const ops = document.querySelectorAll("#filter-container select.operator-select");
       ops.forEach(sel => sel.addEventListener("change", onOperatorChange));
     }
+    // Bind change handlers for non-operator selects (i.e. our select filters)
+    document.querySelectorAll("#filter-container select:not(.operator-select)")
+    .forEach(sel =>
+        sel.addEventListener("change", e => {
+        const params = new URLSearchParams(window.location.search);
+        params.set(sel.name, sel.value);
+        window.location.search = params.toString();
+        })
+    );
+
   
     // Toggle dropdown visibility
     toggleBtn.addEventListener("click", e => {

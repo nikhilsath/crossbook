@@ -1,6 +1,6 @@
 {# templates/macros/filter_controls.html #}
-{% macro text_filter(field, value, operator) %}
-  {# Wrapper to group operator and input as a single chip-like control #}
+
+{%- macro text_filter(field, value, operator) -%}
   <div class="filter-chip flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1 border border-gray-300">
     <select
       name="{{ field }}_op"
@@ -21,4 +21,21 @@
       class="bg-transparent focus:outline-none text-sm"
     />
   </div>
-{% endmacro %}
+{%- endmacro -%}
+
+{%- macro select_filter(field, value, options) -%}
+  <div class="filter-chip flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1 border border-gray-300">
+    <select
+      name="{{ field }}"
+      class="bg-transparent text-sm rounded px-1 py-0.5"
+      title="{{ field | replace('_',' ') | capitalize }}"
+    >
+      <option value="">Any</option>
+      {% for opt in options %}
+        <option value="{{ opt }}" {% if value==opt %}selected{% endif %}>
+          {{ opt }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+{%- endmacro -%}

@@ -10,20 +10,24 @@
   <form method="get" class="mb-4">
     <input type="text" name="search" placeholder="Search..." value="{{ request.args.get('search', '') }}" class="border rounded px-2 py-1 w-64" />
     <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded ml-2">Search</button>
-  <div id="filter-container" class="flex space-x-4 overflow-x-auto">
-    {% for field in fields if request.args.get(field) is not none %}
-    {%- set val = request.args.get(field, '') -%}
-    {%- set op  = request.args.get(field + '_op', 'contains') -%}
-    {{ filters.text_filter(field, val, op) }}
-  {% endfor %}
-  <button type="button" id="reset-filters" class="text-sm text-red-600 underline">
-    Reset Filters
-  </button>
-  </form>
-</div>
+    <div id="filter-container" class="flex space-x-4 overflow-x-auto">
+      {% for field in fields if request.args.get(field) is not none %}
+        {% set val  = request.args.get(field, '') %}
+        {% set meta = field_schema[table][field] %}
+        {% if meta.type == 'select' %}
+          {{ filters.select_filter(field, val, meta.options) }}
+        {% else %}
+          {% set op = request.args.get(field + '_op', 'contains') %}
+          {{ filters.text_filter(field, val, op) }}
+        {% endif %}
+      {% endfor %}
+      <button type="button"id="reset-filters" class="text-sm text-red-600 underline">
+        Reset Filters
+      </button>
+    </div>    
   <!-- Visibility control -->
   <div class="relative inline-block text-left mb-4" id="column-visibility-wrapper">
-    <button id="toggle-columns" class="px-2 py-1 bg-gray-200 rounded">
+    <button id="toggle-columns" type="button" class="px-2 py-1 bg-gray-200 rounded">
       Columns
     </button>
     <div id="column-dropdown" class="absolute z-10 mt-2 bg-white border rounded shadow hidden p-2 space-y-1 w-48">
@@ -36,7 +40,7 @@
     </div>
   <!-- Filters control -->
   <div class="relative inline-block text-left mb-4" id="filters-visibility-wrapper">
-    <button id="toggle-filters" class="px-2 py-1 bg-gray-200 rounded">
+    <button type="button" id="toggle-filters" class="px-2 py-1 bg-gray-200 rounded">
       Filters
     </button>
     <div id="filter-dropdown"
