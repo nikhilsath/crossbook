@@ -1,0 +1,14 @@
+{# templates/macros/filter_controls.html #}
+{% macro text_filter(field, value) %}
+  <div class="flex items-center space-x-1">
+    <label for="filter-{{ field }}" class="sr-only">{{ field }}</label>
+    <input
+      type="text"
+      id="filter-{{ field }}"
+      name="{{ field }}"
+      value="{{ value }}"
+      placeholder="Filter {{ field }}"
+      class="border rounded px-2 py-1"
+    />
+  </div>
+{% endmacro %}

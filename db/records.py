@@ -3,49 +3,66 @@ from db.database import get_connection
 from db.schema import get_field_schema
 from db.validation import validate_table, validate_fields, validate_field
 
-def get_all_records(table, search=None):
+def get_all_records(table, search=None, filters=None):
     # 1) Validate the table name
     validate_table(table)
 
     conn = get_connection()
     cursor = conn.cursor()
     try:
+        # Prepare WHERE clauses and params
+        clauses = []
+        params = []
+
+        # 2) Apply explicit URL filters (e.g. ?status=Active)
+        if filters:
+            # Ensure each filter key is a real column
+            validate_fields(table, filters.keys())
+            for fld, val in filters.items():
+                if val == "":
+                    continue  # empty value ⇒ skip
+                clauses.append(f"{fld} LIKE ?")
+                params.append(f"%{val}%")
+
+        # 3) Apply free-text search across text-like fields
         if search:
-            search = search.strip()
-
-            # 2) Determine which fields are searchable
-            all_fields    = get_field_schema()[table]
+            search_term = search.strip()
+            all_fields = get_field_schema()[table]
+            # Only search in text, textarea, select, single select, multi select
             search_fields = [
-                field
-                for field, meta in all_fields.items()
-                if meta["type"] in ("text", "textarea", "select", "multi select")
+                field for field, meta in all_fields.items()
+                if meta["type"] in ("text", "textarea", "select", "single select", "multi select")
             ]
-
-            if not search_fields:
+            if search_fields:
+                # Validate these field names too
+                validate_fields(table, search_fields)
+                # Build an OR‐group for the search
+                subconds = [f"{f} LIKE ?" for f in search_fields]
+                clauses.append("(" + " OR ".join(subconds) + ")")
+                params.extend([f"%{search_term}%"] * len(search_fields))
+            else:
+                # No searchable fields ⇒ return empty list
                 return []
 
-            # 3) Validate each field name
-            validate_fields(table, search_fields)
-
-            # 4) Build the safe SQL string with placeholders
-            conditions = [f"{fld} LIKE ?" for fld in search_fields]
-            sql        = (
+        # 4) Assemble and execute SQL
+        if clauses:
+            sql = (
                 f"SELECT * FROM {table} "
-                + "WHERE " + " OR ".join(conditions)
+                + "WHERE " + " AND ".join(clauses)
                 + " LIMIT 1000"
             )
-            params     = [f"%{search}%"] * len(search_fields)
-
+            logging.info(f"[QUERY] SQL: {sql} | params: {params}")
             cursor.execute(sql, params)
         else:
-            # No search term: just return the first 1,000 rows
-            cursor.execute(f"SELECT * FROM {table} LIMIT 1000")
+            # No filters or search ⇒ default fetch
+            sql = f"SELECT * FROM {table} LIMIT 1000"
+            logging.info(f"[QUERY] SQL: {sql}")
+            cursor.execute(sql)
 
-        # 5) Hydrate the results
-        rows    = cursor.fetchall()
-        columns = [desc[0] for desc in cursor.description]
-        records = [dict(zip(columns, row)) for row in rows]
-
+        # 5) Hydrate and return results
+        rows = cursor.fetchall()
+        cols = [desc[0] for desc in cursor.description]
+        records = [dict(zip(cols, row)) for row in rows]
         return records
 
     except Exception as e:
@@ -53,6 +70,7 @@ def get_all_records(table, search=None):
         return []
     finally:
         conn.close()
+
 
 def get_record_by_id(table, record_id):
     conn = get_connection()

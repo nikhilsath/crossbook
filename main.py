@@ -34,11 +34,29 @@ def home():
 def list_view(table):
     if table not in CORE_TABLES:
         abort(404)
+
+    # 1) All fields for validation
     fields = list(get_field_schema()[table].keys())
+
+
+    # 2) Extract free-text search term
     search = request.args.get("search", "").strip()
-    records = get_all_records(table, search=search)
+
+    # 3) Build filters dict: only params matching real fields
+    raw_args = request.args.to_dict()
+    filters  = {k: v for k, v in raw_args.items() if k in fields}
+
+    # 4) Fetch records with both search and filters
+    records = get_all_records(table, search=search, filters=filters)
+
     return render_template(
-        "list_view.html", table=table, fields=fields, records=records, request=request,)
+        "list_view.html",
+        table=table,
+        fields=fields,
+        records=records,
+        request=request,
+    )
+
 
 @app.route("/<table>/<int:record_id>")
 def detail_view(table, record_id):
