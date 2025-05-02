@@ -18,3 +18,8 @@ input[type=number] {
 #layout-grid.editing .draggable-field {
 padding:0 ;
 }
+
+/* Hide the arrow in IE/Edge */
+.operator-select::-ms-expand {
+  display: none;
+}

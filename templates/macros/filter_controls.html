@@ -1,27 +1,24 @@
 {# templates/macros/filter_controls.html #}
 {% macro text_filter(field, value, operator) %}
-  <div class="flex items-center space-x-1">
-    {# Operator dropdown #}
-    <select name="{{ field }}_op" class="operator-select border rounded px-2 py-1">
-      {% for op_label, op_val in [
-          ('contains','contains'),
-          ('equals','equals'),
-          ('starts with','starts_with'),
-          ('ends with','ends_with')
-        ] %}
-        <option value="{{ op_val }}" {% if operator==op_val %}selected{% endif %}>
-          {{ op_label }}
-        </option>
-      {% endfor %}
+  {# Wrapper to group operator and input as a single chip-like control #}
+  <div class="filter-chip flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1 border border-gray-300">
+    <select
+      name="{{ field }}_op"
+      class="operator-select appearance-none text-xs rounded-full border-0 bg-transparent text-center w-6"
+      title="Operator"
+    >
+      <option value="contains"    {% if operator=='contains'    %}selected{% endif %}>*</option>
+      <option value="equals"      {% if operator=='equals'      %}selected{% endif %}>=</option>
+      <option value="starts_with" {% if operator=='starts_with' %}selected{% endif %}>__*</option>
+      <option value="ends_with"   {% if operator=='ends_with'   %}selected{% endif %}>*__</option>
     </select>
-    {# Text input #}
     <input
       type="text"
       id="filter-{{ field }}"
       name="{{ field }}"
       value="{{ value }}"
-      placeholder="Filter {{ field }}"
-      class="border rounded px-2 py-1"
+      placeholder="{{ field | replace('_',' ') | capitalize }}"
+      class="bg-transparent focus:outline-none text-sm"
     />
   </div>
 {% endmacro %}
