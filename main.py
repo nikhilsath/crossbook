@@ -18,8 +18,6 @@ logging.basicConfig(
     format="%(levelname)s:%(message)s"
 )
 
-
-
 @app.context_processor
 def inject_field_schema():
     from db.schema import get_field_schema  
@@ -67,7 +65,6 @@ def detail_view(table, record_id):
         related=related,
         field_schema_layout=layout_by_field  
     )
-
 
 @app.route("/<table>/<int:record_id>/update", methods=["POST"])
 def update_field(table, record_id):
@@ -145,7 +142,6 @@ def create_record_route(table):
 
     return render_template('new_record.html', table=table, fields=fields)
 
-
 @app.route('/<table>/<int:record_id>/delete', methods=['POST'])
 def delete_record_route(table, record_id):
     if table not in CORE_TABLES:
@@ -154,7 +150,6 @@ def delete_record_route(table, record_id):
     if not success:
         abort(500, "Failed to delete record")
     return redirect(url_for('list_view', table=table))
-
 
 @app.route("/<table>/layout", methods=["POST"])
 def update_layout(table):
@@ -205,8 +200,6 @@ def update_layout(table):
 
     logging.info("[LAYOUT] Rows updated: %d", updated)
     return jsonify({"success": True, "updated": updated})
-
-
 
 
 if __name__ == "__main__":

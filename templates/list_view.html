@@ -12,12 +12,11 @@
     <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded ml-2">Search</button>
   </form>
 
-  <!-- Column visibility control -->
+  <!-- Visibility control -->
   <div class="relative inline-block text-left mb-4" id="column-visibility-wrapper">
     <button id="toggle-columns" class="px-2 py-1 bg-gray-200 rounded">
       Columns
     </button>
-
     <div id="column-dropdown" class="absolute z-10 mt-2 bg-white border rounded shadow hidden p-2 space-y-1 w-48">
       {% for field in fields if not field.startswith('_') %}
         <label class="flex items-center space-x-2">
@@ -26,8 +25,16 @@
         </label>
       {% endfor %}
     </div>
+  <!-- Filters control -->
+  <div class="relative inline-block text-left mb-4" id="filters-visibility-wrapper">
+    <button id="toggle-filters" class="px-2 py-1 bg-gray-200 rounded">
+      Filters
+    </button>
+    <div id="filter-dropdown"
+     class="absolute z-10 mt-2 bg-white border rounded shadow hidden p-2 space-y-1 w-48">
+    </div>
   </div>
-
+  
   {% if records %}
     <table class="min-w-full text-sm">
       <thead class="bg-gray-200">
@@ -62,4 +69,5 @@
 
 <!-- Include column visibility JS -->
 <script src="{{ url_for('static', filename='js/column_visibility.js') }}"></script>
+<script src="{{ url_for('static', filename='js/filter_visibility.js') }}"></script>
 {% endblock %}

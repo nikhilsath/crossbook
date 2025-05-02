@@ -8,6 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const editBtn = document.getElementById('toggle-edit-layout');
   const resetBtn = document.getElementById('reset-layout');
   const container = document.getElementById('layout-grid');
+  grid.classList.toggle('editing');
+  document.getElementById('reset-layout').classList.toggle('hidden');
 
   // Read element metrics and convert to grid units
   function getGridData(el) {

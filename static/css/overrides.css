@@ -7,3 +7,14 @@ input[type=number]::-webkit-inner-spin-button {
 input[type=number] {
   -moz-appearance: textfield;
 }
+/* 1) By default, strip away borders/shadows/backgrounds/padding */
+#layout-grid .draggable-field {
+  border: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+  padding: 0 !important;
+}
+
+#layout-grid.editing .draggable-field {
+padding:0 ;
+}
