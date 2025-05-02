@@ -38,16 +38,20 @@ def list_view(table):
     # 1) All fields for validation
     fields = list(get_field_schema()[table].keys())
 
-
     # 2) Extract free-text search term
     search = request.args.get("search", "").strip()
 
     # 3) Build filters dict: only params matching real fields
     raw_args = request.args.to_dict()
     filters  = {k: v for k, v in raw_args.items() if k in fields}
-
+    # Operators:
+    ops = {
+        k[:-3]: v
+        for k, v in raw_args.items()
+        if k.endswith("_op") and k[:-3] in fields
+        }
     # 4) Fetch records with both search and filters
-    records = get_all_records(table, search=search, filters=filters)
+    records = get_all_records(table, search=search, filters=filters, ops=ops)
 
     return render_template(
         "list_view.html",
@@ -56,7 +60,6 @@ def list_view(table):
         records=records,
         request=request,
     )
-
 
 @app.route("/<table>/<int:record_id>")
 def detail_view(table, record_id):

@@ -11,11 +11,11 @@
     <input type="text" name="search" placeholder="Search..." value="{{ request.args.get('search', '') }}" class="border rounded px-2 py-1 w-64" />
     <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded ml-2">Search</button>
   <div id="filter-container" class="flex space-x-4 overflow-x-auto">
-    {% for field, val in request.args.items() %}
-      {%- if field in fields %}
-        {{ filters.text_filter(field, val) }}
-      {%- endif %}
-    {% endfor %}
+    {% for field in fields if request.args.get(field) is not none %}
+    {%- set val = request.args.get(field, '') -%}
+    {%- set op  = request.args.get(field + '_op', 'contains') -%}
+    {{ filters.text_filter(field, val, op) }}
+  {% endfor %}
   <button type="button" id="reset-filters" class="text-sm text-red-600 underline">
     Reset Filters
   </button>

@@ -1,7 +1,20 @@
 {# templates/macros/filter_controls.html #}
-{% macro text_filter(field, value) %}
+{% macro text_filter(field, value, operator) %}
   <div class="flex items-center space-x-1">
-    <label for="filter-{{ field }}" class="sr-only">{{ field }}</label>
+    {# Operator dropdown #}
+    <select name="{{ field }}_op" class="operator-select border rounded px-2 py-1">
+      {% for op_label, op_val in [
+          ('contains','contains'),
+          ('equals','equals'),
+          ('starts with','starts_with'),
+          ('ends with','ends_with')
+        ] %}
+        <option value="{{ op_val }}" {% if operator==op_val %}selected{% endif %}>
+          {{ op_label }}
+        </option>
+      {% endfor %}
+    </select>
+    {# Text input #}
     <input
       type="text"
       id="filter-{{ field }}"

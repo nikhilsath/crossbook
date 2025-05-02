@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const dropdown   = document.getElementById("filter-dropdown");
     const clearBtn   = document.getElementById("reset-filters");
   
-    // Get currently visible columns (same as column_visibility.js)
+    // Utility: get columns currently visible
     const getSelectedFields = () =>
       Array.from(document.querySelectorAll(".column-toggle"))
            .filter(cb => cb.checked)
@@ -22,7 +22,6 @@ document.addEventListener("DOMContentLoaded", () => {
         .filter(cb => cb.checked)
         .forEach(cb => params.set(cb.value, ""));
   
-      // Reload with updated params
       window.location.search = params.toString();
     }
   
@@ -78,6 +77,24 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     }
   
+    // Handle operator dropdown changes
+    function onOperatorChange(e) {
+      const sel = e.target;
+      const params = new URLSearchParams(window.location.search);
+      const field = sel.name.replace(/_op$/, '');
+      const val   = params.get(field) || "";
+  
+      params.set(sel.name, sel.value);
+      params.set(field, val);
+      window.location.search = params.toString();
+    }
+  
+    // Bind operator change listeners
+    function bindOperatorListeners() {
+      const ops = document.querySelectorAll("#filter-container select.operator-select");
+      ops.forEach(sel => sel.addEventListener("change", onOperatorChange));
+    }
+  
     // Toggle dropdown visibility
     toggleBtn.addEventListener("click", e => {
       e.stopPropagation();
@@ -99,7 +116,8 @@ document.addEventListener("DOMContentLoaded", () => {
       cb.addEventListener("change", () => setTimeout(populateFilterDropdown, 0));
     });
   
-    // Bind debounced inputs on initial load
+    // Initial binding for inputs and operators
     bindDebounceToFilters();
+    bindOperatorListeners();
   });
   
