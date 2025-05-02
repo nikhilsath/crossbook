@@ -23,3 +23,10 @@ padding:0 ;
 .operator-select::-ms-expand {
   display: none;
 }
+
+/* Constrain each multi-select chip’s popover */
+.multi-select-popover {
+  width: 16rem !important;
+  max-height: 15rem !important;
+  overflow-y: auto !important;
+}
