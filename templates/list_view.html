@@ -10,18 +10,19 @@
   <form method="get" class="mb-4">
     <input type="text" name="search" placeholder="Search..." value="{{ request.args.get('search', '') }}" class="border rounded px-2 py-1 w-64" />
     <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded ml-2">Search</button>
-    <div id="filter-container" class="flex space-x-4 overflow-x-auto">
+    <div id="filter-container" class="flex space-x-4 overflow-visible">
       {% for field in fields if request.args.get(field) is not none %}
-        {% set val  = request.args.get(field, '') %}
+        {% set val  = request.args.getlist(field) %}
         {% set meta = field_schema[table][field] %}
-        {% if meta.type == 'select' %}
-          {{ filters.select_filter(field, val, meta.options) }}
+        {% if meta.type == 'multi_select' %}
+          {{ filters.multi_select_popover(field, val, meta.options) }}
+        {% elif meta.type == 'select' %}
+          {{ filters.select_filter(field, request.args.get(field,''), meta.options) }}
         {% else %}
-          {% set op = request.args.get(field + '_op', 'contains') %}
-          {{ filters.text_filter(field, val, op) }}
+          {{ filters.text_filter(field, request.args.get(field,''), request.args.get(field + '_op','contains')) }}
         {% endif %}
       {% endfor %}
-      <button type="button"id="reset-filters" class="text-sm text-red-600 underline">
+      <button type="button" id="reset-filters" class="text-sm text-red-600 underline">
         Reset Filters
       </button>
     </div>    

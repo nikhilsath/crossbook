@@ -131,3 +131,47 @@ document.addEventListener("DOMContentLoaded", () => {
     bindOperatorListeners();
   });
   
+    // Multi-select popover logic
+  function updateMultiSelect(field, values) {
+    const params = new URLSearchParams(window.location.search);
+    // Remove all previous entries for this field
+    params.delete(field);
+    // Add back each selected value
+    values.forEach(v => params.append(field, v));
+    window.location.search = params.toString();
+  }
+
+  function bindMultiSelectPopovers() {
+    // Toggle popover open/close
+    document.querySelectorAll(".multi-select-chip").forEach(btn => {
+      const field = btn.dataset.field;
+      const pop = document.querySelector(`.multi-select-popover[data-field="${field}"]`);
+
+      btn.addEventListener("click", e => {
+        e.stopPropagation();
+        // close others
+        document.querySelectorAll(".multi-select-popover")
+                .forEach(p => p !== pop && p.classList.add("hidden"));
+        pop.classList.toggle("hidden");
+      });
+
+      // Handle option changes inside this popover
+      pop.querySelectorAll(".multi-select-option").forEach(cb => {
+        cb.addEventListener("change", () => {
+          const selected = Array.from(
+            pop.querySelectorAll(".multi-select-option:checked")
+          ).map(c => c.value);
+          updateMultiSelect(field, selected);
+        });
+      });
+    });
+
+    // Close all popovers when clicking outside
+    document.addEventListener("click", () => {
+      document.querySelectorAll(".multi-select-popover")
+              .forEach(p => p.classList.add("hidden"));
+    });
+  }
+
+  // call it after your other binds
+  bindMultiSelectPopovers();

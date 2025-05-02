@@ -39,3 +39,33 @@
     </select>
   </div>
 {%- endmacro -%}
+
+{%- macro multi_select_popover(field, selected, options) -%}
+<div class="relative filter-chip flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1 border border-gray-300">
+  <button
+    type="button"
+    class="multi-select-chip bg-transparent text-sm focus:outline-none"
+    data-field="{{ field }}"
+  >
+    {{ field | replace('_',' ') | capitalize }}
+    {%- if selected|length %} ({{ selected|length }}){%- endif %}
+    <span class="ml-1">▾</span>
+  </button>
+
+  <div
+  class="multi-select-popover absolute z-20 mt-1 bg-white border rounded shadow p-2 hidden"
+  data-field="{{ field }}">
+    {% for opt in options %}
+      <label class="flex items-center space-x-2 mb-1">
+        <input
+          type="checkbox"
+          class="multi-select-option"
+          value="{{ opt }}"
+          {% if opt in selected %}checked{% endif %}
+        />
+        <span class="text-sm">{{ opt }}</span>
+      </label>
+    {% endfor %}
+  </div>
+</div>
+{%- endmacro -%}
