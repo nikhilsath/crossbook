@@ -41,14 +41,14 @@
 {%- endmacro -%}
 
 {%- macro multi_select_popover(field, selected, options) -%}
+    {% set actual = selected | reject('equalto', '') | list %}
 <div class="relative filter-chip flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1 border border-gray-300">
   <button
     type="button"
     class="multi-select-chip bg-transparent text-sm focus:outline-none"
-    data-field="{{ field }}"
-  >
+    data-field="{{ field }}">
     {{ field | replace('_',' ') | capitalize }}
-    {%- if selected|length %} ({{ selected|length }}){%- endif %}
+    {% if actual|length %} ({{ actual|length }}){% endif %}
     <span class="ml-1">▾</span>
   </button>
 
@@ -61,7 +61,7 @@
           type="checkbox"
           class="multi-select-option"
           value="{{ opt }}"
-          {% if opt in selected %}checked{% endif %}
+          {% if opt in actual %}checked{% endif %}
         />
         <span class="text-sm">{{ opt }}</span>
       </label>
