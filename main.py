@@ -8,6 +8,7 @@ from db.database import get_connection
 from db.schema import load_field_schema, update_foreign_field_options, get_field_schema
 from db.records import get_all_records, get_record_by_id, update_field_value, create_record, delete_record
 from db.relationships import get_related_records, add_relationship, remove_relationship
+from imports.import_csv import parse_csv
 
 app = Flask(__name__, static_url_path='/static')
 DB_PATH = os.path.join("data", "crossbook.db")
@@ -217,9 +218,21 @@ def update_layout(table):
     logging.info("[LAYOUT] Rows updated: %d", updated)
     return jsonify({"success": True, "updated": updated})
 
-@app.route("/import", methods=["GET"])
+@app.route("/import", methods=["GET", "POST"])
 def import_records():
     schema = load_field_schema()
+    selected_table = request.args.get("table") or request.form.get("table")
+    parsed_headers = []
+    rows = []
+    num_records = None
+
+    if request.method == "POST":
+        if "file" in request.files:
+            file = request.files["file"]
+            if file and file.filename.endswith(".csv"):
+                from imports.import_csv import parse_csv
+                parsed_headers, rows = parse_csv(file)
+                num_records = len(rows)
 
     table_fields = {
         table: [
@@ -230,13 +243,14 @@ def import_records():
         for table, fields in schema.items()
     }
 
-    selected_table = request.args.get("table")
-
     return render_template(
         "import_view.html",
         table_fields=table_fields,
-        selected_table=selected_table
+        selected_table=selected_table,
+        parsed_headers=parsed_headers,
+        num_records=num_records
     )
+
 
 
 

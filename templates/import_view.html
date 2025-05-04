@@ -5,31 +5,51 @@
 <div class="max-w-6xl mx-auto p-6">
   <h1 class="text-3xl font-bold mb-6">Import CSV</h1>
 
-  <!-- Upload + Table Selection Panel -->
-  <form method="GET" action="/import" class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-4 sm:space-y-0 mb-8">
-    <input type="file" name="file" accept=".csv" class="border rounded px-3 py-2">
+  <div class="mb-6">
+    <div class="flex items-center space-x-4">
+      <!-- Table Selection Form + File Upload Form (combined horizontally) -->
+      <form method="GET" action="/import" class="flex items-center space-x-2">
+        <label for="table" class="font-medium mr-2">Select Base Table</label>
+        <select name="table" id="table" class="border rounded px-3 py-2" onchange="this.form.submit()">
+          <option value="" disabled {% if not selected_table %}selected{% endif %}>Choose a table</option>
+          {% for table in table_fields.keys() %}
+            <option value="{{ table }}" {% if selected_table == table %}selected{% endif %}>{{ table|capitalize }}</option>
+          {% endfor %}
+        </select>
+      </form>
 
-    <select name="table" class="border rounded px-3 py-2" onchange="this.form.submit()">
-      <option value="" disabled {% if not selected_table %}selected{% endif %}>Select a base table</option>
-      {% for table in table_fields.keys() %}
-        <option value="{{ table }}" {% if selected_table == table %}selected{% endif %}>{{ table|capitalize }}</option>
-      {% endfor %}
-    </select>
+      {% if selected_table %}
+      <form method="POST" action="/import" enctype="multipart/form-data" class="flex items-center space-x-2">
+        <input type="hidden" name="table" value="{{ selected_table }}">
+        <input type="file" name="file" accept=".csv" class="border rounded px-3 py-2">
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Upload</button>
+      </form>
+      {% endif %}
 
-    {% if num_records is defined %}
-      <div class="bg-blue-100 text-blue-800 px-4 py-2 rounded">Total Records: {{ num_records }}</div>
-    {% endif %}
-  </form>
+      {% if num_records is defined %}
+      <div class="bg-blue-100 text-blue-800 px-4 py-2 rounded whitespace-nowrap">
+        Total Records: {{ num_records if num_records is not none else 'None' }}
+      </div>
+      {% endif %}
+    </div>
+  </div>
 
   {% if selected_table %}
-    <div class="mb-8">
-      <h2 class="text-xl font-semibold mb-2">Fields in '{{ selected_table }}'</h2>
-      <ul class="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm text-gray-700">
-        {% for field in table_fields[selected_table] %}
-          <li><strong>{{ field.name }}</strong> — {{ field.type }}</li>
-        {% endfor %}
-      </ul>
+  <div class="flex flex-col md:flex-row md:space-x-8">
+    <div class="md:w-1/2">
+      <!-- Placeholder: CSV column mapping will go here -->
     </div>
+    <div class="md:w-1/2">
+      <h2 class="text-xl font-semibold mb-2">Available Fields for '{{ selected_table }}'</h2>
+      <div class="grid grid-cols-1 gap-2 text-sm text-gray-700">
+        {% for field in table_fields[selected_table] %}
+          <div class="border px-3 py-2 rounded bg-gray-50">
+            <strong>{{ field.name }}</strong> — {{ field.type }}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
   {% endif %}
 </div>
 {% endblock %}
