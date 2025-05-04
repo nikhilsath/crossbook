@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Import Records{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto p-6">
+  <h1 class="text-3xl font-bold mb-6">Import CSV</h1>
+
+  <!-- Upload + Table Selection Panel -->
+  <form method="GET" action="/import" class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-4 sm:space-y-0 mb-8">
+    <input type="file" name="file" accept=".csv" class="border rounded px-3 py-2">
+
+    <select name="table" class="border rounded px-3 py-2" onchange="this.form.submit()">
+      <option value="" disabled {% if not selected_table %}selected{% endif %}>Select a base table</option>
+      {% for table in table_fields.keys() %}
+        <option value="{{ table }}" {% if selected_table == table %}selected{% endif %}>{{ table|capitalize }}</option>
+      {% endfor %}
+    </select>
+
+    {% if num_records is defined %}
+      <div class="bg-blue-100 text-blue-800 px-4 py-2 rounded">Total Records: {{ num_records }}</div>
+    {% endif %}
+  </form>
+
+  {% if selected_table %}
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold mb-2">Fields in '{{ selected_table }}'</h2>
+      <ul class="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm text-gray-700">
+        {% for field in table_fields[selected_table] %}
+          <li><strong>{{ field.name }}</strong> — {{ field.type }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -34,13 +34,10 @@ def home():
 def list_view(table):
     if table not in CORE_TABLES:
         abort(404)
-
     # 1) All fields for validation
     fields = list(get_field_schema()[table].keys())
-
     # 2) Extract free-text search term
     search = request.args.get("search", "").strip()
-
     # 3) Build filters dict: only params matching real fields
     raw_args = request.args.to_dict()
     filters  = {k: v for k, v in raw_args.items() if k in fields}
@@ -52,7 +49,6 @@ def list_view(table):
         }
     # 4) Fetch records with both search and filters
     records = get_all_records(table, search=search, filters=filters, ops=ops)
-
     return render_template(
         "list_view.html",
         table=table,
@@ -146,7 +142,6 @@ def manage_relationship():
 
     return {"success": True}
 
-
 @app.route('/<table>/new', methods=['GET', 'POST'])
 def create_record_route(table):
     if table not in CORE_TABLES:
@@ -221,6 +216,28 @@ def update_layout(table):
 
     logging.info("[LAYOUT] Rows updated: %d", updated)
     return jsonify({"success": True, "updated": updated})
+
+@app.route("/import", methods=["GET"])
+def import_records():
+    schema = load_field_schema()
+
+    table_fields = {
+        table: [
+            {"name": field, "type": meta["type"]}
+            for field, meta in fields.items()
+            if meta["type"] != "hidden"
+        ]
+        for table, fields in schema.items()
+    }
+
+    selected_table = request.args.get("table")
+
+    return render_template(
+        "import_view.html",
+        table_fields=table_fields,
+        selected_table=selected_table
+    )
+
 
 
 if __name__ == "__main__":
