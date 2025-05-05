@@ -10,6 +10,7 @@ function handleDropdownChange(event, headerName) {
   matchedFields[headerName] = selectedField;
   updateMatchedDisplay(headerName, selectedField);
   refreshDropdowns();
+  renderAvailableFields();
 }
 
 function updateMatchedDisplay(headerName, field) {
@@ -57,3 +58,18 @@ function generateDropdownHTML(headerName) {
 document.addEventListener("DOMContentLoaded", () => {
   refreshDropdowns();
 });
+
+function renderAvailableFields() {
+    const container = document.getElementById("available-fields-list");
+    if (!container) return;
+  
+    container.innerHTML = Object.entries(fieldSchema).map(([field, meta]) => {
+      const matched = Object.values(matchedFields).includes(field);
+      return `
+        <div class="border px-3 py-2 rounded bg-gray-50">
+          <strong>${field}</strong> — ${meta.type} — matched: ${matched}
+        </div>
+      `;
+    }).join("");
+  }
+  

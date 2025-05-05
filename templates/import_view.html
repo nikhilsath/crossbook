@@ -59,7 +59,7 @@
     </div>
     <div class="md:w-1/2">
       <h2 class="text-xl font-semibold mb-2">Available Fields for '{{ selected_table }}'</h2>
-      <div class="grid grid-cols-1 gap-2 text-sm text-gray-700">
+      <div id="available-fields-list" class="grid grid-cols-1 gap-2 text-sm text-gray-700">
         {% for field, data in field_status.items() %}
         <div class="border px-3 py-2 rounded bg-gray-50">
             <strong>{{ field }}</strong> — {{ data.type }} — matched: {{ data.matched }}
@@ -83,4 +83,7 @@
   
 </div>
 <script src="/static/imports/match_logic.js"></script>
+<script>
+    const fieldSchema = {{ field_status|tojson }};
+</script>  
 {% endblock %}
