@@ -225,6 +225,7 @@ def import_records():
     parsed_headers = []
     rows = []
     num_records = None
+    field_status = {}
 
     if request.method == "POST":
         if "file" in request.files:
@@ -243,12 +244,24 @@ def import_records():
         for table, fields in schema.items()
     }
 
+    if selected_table:
+        table_schema = schema[selected_table]
+        field_status = {
+            field: {
+                "type": meta["type"],
+                "matched": False
+            }
+            for field, meta in table_schema.items()
+            if meta["type"] != "hidden"
+        }
+
     return render_template(
         "import_view.html",
         table_fields=table_fields,
         selected_table=selected_table,
         parsed_headers=parsed_headers,
-        num_records=num_records
+        num_records=num_records,
+        field_status=field_status
     )
 
 
