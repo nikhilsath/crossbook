@@ -39,11 +39,19 @@
     <div class="md:w-1/2">
         <h2 class="text-xl font-semibold mb-2">Available Fields for Imported File</h2>
         <div class="grid grid-cols-1 gap-2 text-sm text-gray-700">
-        {% for header in parsed_headers %}
-            <div class="border px-3 py-2 rounded bg-gray-50">
-                <strong>{{ header }}</strong> 
+            {% for header in parsed_headers %}
+            <div class="border px-3 py-2 rounded bg-gray-50 flex justify-between items-center">
+              <strong>{{ header }}</strong>
+              <select name="match_{{ header }}" class="border rounded px-2 py-1 text-sm">
+                <option value="">Unmatched</option>
+                {% for field, data in field_status.items() %}
+                  {% if not data.matched %}
+                    <option value="{{ field }}">{{ field }} — {{ data.type }}</option>
+                  {% endif %}
+                {% endfor %}
+              </select>
             </div>
-        {% endfor %}
+          {% endfor %}          
         </div>
     </div>
     <div class="md:w-1/2">
