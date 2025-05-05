@@ -12,7 +12,7 @@
         <label for="table" class="font-medium mr-2">Select Base Table</label>
         <select name="table" id="table" class="border rounded px-3 py-2" onchange="this.form.submit()">
           <option value="" disabled {% if not selected_table %}selected{% endif %}>Choose a table</option>
-          {% for table in table_fields.keys() %}
+          {% for table in schema.keys() %}
             <option value="{{ table }}" {% if selected_table == table %}selected{% endif %}>{{ table|capitalize }}</option>
           {% endfor %}
         </select>
@@ -35,9 +35,16 @@
   </div>
 
   {% if selected_table %}
-  <div class="flex flex-col md:flex-row md:space-x-8">
+  <div class="flex flex-row space-x-4">
     <div class="md:w-1/2">
-      <!-- Placeholder: CSV column mapping will go here -->
+        <h2 class="text-xl font-semibold mb-2">Available Fields for Imported File</h2>
+        <div class="grid grid-cols-1 gap-2 text-sm text-gray-700">
+        {% for header in parsed_headers %}
+            <div class="border px-3 py-2 rounded bg-gray-50">
+                <strong>{{ header }}</strong> 
+            </div>
+        {% endfor %}
+        </div>
     </div>
     <div class="md:w-1/2">
       <h2 class="text-xl font-semibold mb-2">Available Fields for '{{ selected_table }}'</h2>

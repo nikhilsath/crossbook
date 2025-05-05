@@ -235,14 +235,6 @@ def import_records():
                 parsed_headers, rows = parse_csv(file)
                 num_records = len(rows)
 
-    table_fields = {
-        table: [
-            {"name": field, "type": meta["type"]}
-            for field, meta in fields.items()
-            if meta["type"] != "hidden"
-        ]
-        for table, fields in schema.items()
-    }
 
     if selected_table:
         table_schema = schema[selected_table]
@@ -257,11 +249,11 @@ def import_records():
 
     return render_template(
         "import_view.html",
-        table_fields=table_fields,
         selected_table=selected_table,
         parsed_headers=parsed_headers,
         num_records=num_records,
-        field_status=field_status
+        field_status=field_status,
+        schema=schema
     )
 
 
