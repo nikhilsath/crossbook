@@ -102,22 +102,32 @@ document.addEventListener("change", event => {
       if (!res.ok) throw new Error(`Validation failed: ${res.status}`);
       return res.json();
     })
-    .then(({ header: respHeader, results }) => {
-      const container = document.querySelector(`#match-container-${respHeader}`);
-      if (!container) return;
-
-      const oldResults = container.querySelector(".validation-results");
-      if (oldResults) oldResults.remove();
-
-      const block = document.createElement("div");
-      block.className = "text-xs mt-1 space-x-2 validation-results";
-      block.innerHTML = `
-        <span class="text-green-600">✅ ${results.valid} valid</span>
-        <span class="text-yellow-600">⚠️ ${results.warning} warnings</span>
-        <span class="text-red-600">❌ ${results.invalid} invalid</span>
-        <span class="text-black">⬛ ${results.blank} blank</span>
-      `;
-      container.appendChild(block);
-    })
+    .then(report => {
+        // report is { "<header>": { valid, invalid, warning, blank }, … }
+        Object.entries(report).forEach(([respHeader, results]) => {
+          const container = document.getElementById(`match-container-${respHeader}`);
+          if (!container) return;
+    
+          const oldResults = container.querySelector('.validation-results');
+          if (oldResults) oldResults.remove();
+    
+          const block = document.createElement('div');
+          block.className = 'text-xs ml-4 space-x-2 validation-results';
+          block.innerHTML = `
+            <span class="text-green-600">✅ ${results.valid} valid</span>
+            <span class="text-yellow-600">⚠️ ${results.warning} warnings</span>
+            <span class="text-red-600">❌ ${results.invalid} invalid</span>
+            <span class="text-black">⬛ ${results.blank} blank</span>
+          `;
+          container.appendChild(block);
+          const flexRow = container.querySelector('.flex.justify-between');
+          const selectWrapper = flexRow?.querySelector(`#select-wrapper-${respHeader}`);
+          if (flexRow && selectWrapper) {
+            flexRow.insertBefore(block, selectWrapper);
+        } else {
+            container.appendChild(block);
+        }
+        });
+      })    
     .catch(err => console.error(err));
 });

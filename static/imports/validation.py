@@ -6,6 +6,7 @@ def validation_sorter(table, field, header, fieldType, values):
     if fieldType == "text":
         print("Text Validation Triggered")
         validate_text_column(values)
+        return validate_text_column(values)
     elif fieldType == "boolean":
         print("Boolean Validation Triggered")
     elif fieldType == "foreign_key":
@@ -39,7 +40,6 @@ def validate_text_column(values):
             re.search(r"#+\s", v)                     # markdown headers
         ]):
             warning += 1
-
     return {
         "valid": valid,
         "invalid": invalid,

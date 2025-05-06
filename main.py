@@ -261,30 +261,26 @@ def import_records():
 @app.route("/trigger-validation", methods=["POST"])
 def trigger_validation():
     data = request.get_json(silent=True) or {}
-    # Require both keys in the payload
-    if "matchedFields" not in data or "rows" not in data:
-        return jsonify({"error": "Missing required data"}), 400
+    matched = data.get("matchedFields")
+    rows    = data.get("rows")
 
-    matched_fields = data["matchedFields"]
-    rows           = data["rows"]
+    if not isinstance(matched, dict) or not isinstance(rows, list):
+        return jsonify({"error": "Missing required data"}), 400
 
     schema = get_field_schema()
     report = {}
-    for header, info in matched_fields.items():
+
+    for header, info in matched.items():
         table = info.get("table")
         field = info.get("field")
-        # Skip bad mappings
         if not table or not field:
             continue
 
         field_type = schema[table][field]["type"]
-        # Pull the column values from each row object
-        values = [row.get(header, "") for row in rows]
+        values     = [row.get(header, "") for row in rows]
         report[header] = validation_sorter(table, field, header, field_type, values)
 
     return jsonify(report)
-
-
 
 if __name__ == "__main__":
     load_field_schema()
