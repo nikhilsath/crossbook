@@ -37,12 +37,12 @@
   <div class="flex flex-row space-x-4">
     <div class="md:w-1/2">
         <h2 class="text-xl font-semibold mb-2">Available Fields for Imported File</h2>
-        <div class="grid grid-cols-1 gap-2 text-sm text-gray-700">
+        <div class="grid grid-cols-1 gap-2 text-sm text-gray-700" id="imported-fields-container">
             {% for header in parsed_headers %}
             <div class="border px-3 py-2 rounded bg-gray-50" id="match-container-{{ header }}">
               <div class="flex justify-between items-center">
                 <strong>{{ header }}</strong>
-                <div id="select-wrapper-{{ header }}">
+                <div id="select-wrapper-{{ header }}" class="ml-auto">
                   <select name="match_{{ header }}" data-header="{{ header }}" class="border rounded px-2 py-1 text-sm" onchange="handleDropdownChange(event, '{{ header }}')">
                     <option value="">Unmatched</option>
                     {% for field, data in field_status.items() %}
@@ -53,13 +53,21 @@
                   </select>
                 </div>
               </div>
+              {% if validation_report and header in validation_report %}
+              <div class="text-xs mt-1 space-x-2">
+                <span class="text-green-600">✅ {{ validation_report[header].valid }} valid</span>
+                <span class="text-yellow-600">⚠️ {{ validation_report[header].warning }} warnings</span>
+                <span class="text-red-600">❌ {{ validation_report[header].invalid }} invalid</span>
+                <span class="text-black">⬛ {{ validation_report[header].blank }} blank</span>
+              </div>
+              {% endif %}
             </div>
           {% endfor %}          
         </div>
     </div>
     <div class="md:w-1/2">
       <h2 class="text-xl font-semibold mb-2">Available Fields for '{{ selected_table }}'</h2>
-      <div id="available-fields-list" class="grid grid-cols-1 gap-2 text-sm text-gray-700">
+      <div class="grid grid-cols-1 gap-2 text-sm text-gray-700" id="available-fields-list">
         {% for field, data in field_status.items() %}
         <div class="border px-3 py-2 rounded bg-gray-50">
             <strong>{{ field }}</strong> — {{ data.type }} — matched: {{ data.matched }}
@@ -80,10 +88,9 @@
       {% endfor %}
     </select>
   </template>
-  
 </div>
-<script src="/static/imports/match_logic.js"></script>
 <script>
-    const fieldSchema = {{ field_status|tojson }};
-</script>  
+  const fieldSchema = {{ field_status|tojson }};
+</script>
+<script src="/static/imports/match_logic.js"></script>
 {% endblock %}

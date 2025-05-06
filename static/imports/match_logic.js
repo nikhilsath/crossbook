@@ -11,6 +11,15 @@ function handleDropdownChange(event, headerName) {
   updateMatchedDisplay(headerName, selectedField);
   refreshDropdowns();
   renderAvailableFields();
+
+  fetch('/trigger-validation', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ field: headerName })  
+  });
+  
 }
 
 function updateMatchedDisplay(headerName, field) {
