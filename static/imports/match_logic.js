@@ -1,5 +1,3 @@
-// static/imports/match_logic.js
-
 // Global match tracker
 const matchedFields = {};
 
@@ -8,10 +6,12 @@ function handleDropdownChange(event, headerName) {
   if (!selectedField) return;
 
   matchedFields[headerName] = selectedField;
+  const table = event.target.dataset.table;
+  const fieldType = fieldSchema[selectedField]?.type || "unknown";
+  validation_sorter(table, selectedField, headerName, fieldType);
   updateMatchedDisplay(headerName, selectedField);
   refreshDropdowns();
   renderAvailableFields();
-
   fetch('/trigger-validation', {
     method: 'POST',
     headers: {
@@ -19,7 +19,6 @@ function handleDropdownChange(event, headerName) {
     },
     body: JSON.stringify({ field: headerName })  
   });
-  
 }
 
 function updateMatchedDisplay(headerName, field) {
@@ -81,4 +80,32 @@ function renderAvailableFields() {
       `;
     }).join("");
   }
+  
+  document.querySelectorAll('select[data-header][data-table]').forEach(select => {
+    select.addEventListener('change', event => {
+      const header = event.target.dataset.header;
+      const table = event.target.dataset.table;
+      const field = event.target.value;
+  
+      if (!field) return;
+  
+      matchedFields[header] = field;
+      updateMatchedDisplay(header, field);
+      refreshDropdowns();
+      renderAvailableFields();
+  
+      const fieldType = fieldSchema[field]?.type || "unknown";
+      fetch("/trigger-validation", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ table, field, header }),
+      })
+      .then(res => res.json())
+      .then(data => {
+        console.log("Server validation response:", data);
+      });      
+    });
+  });
   

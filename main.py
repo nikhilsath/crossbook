@@ -259,7 +259,12 @@ def import_records():
 
 @app.route("/trigger-validation", methods=["POST"])
 def trigger_validation():
-    validation_sorter()  
+    data = request.get_json()
+    table = data.get("table")
+    field = data.get("field")
+    header = data.get("header")
+    field_type = get_field_schema()[table][field]["type"]
+    validation_sorter(table, field, header, field_type)
     return jsonify({"status": "triggered"})
 
 

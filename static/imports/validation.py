@@ -1,7 +1,7 @@
 import json
 import re
 
-def validation_sorter():
+def validation_sorter(table, field, header, fieldType):
     print("✅ Validation function was triggered.")
 
 def validate_text_column(values):

@@ -9,7 +9,7 @@
     <div class="flex items-center space-x-4">
       <form method="GET" action="/import" class="flex items-center space-x-2">
         <label for="table" class="font-medium mr-2">Select Base Table</label>
-        <select name="table" id="table" class="border rounded px-3 py-2" onchange="this.form.submit()">
+        <select name="table" id="table" class="border rounded px-3 py-2">
           <option value="" disabled {% if not selected_table %}selected{% endif %}>Choose a table</option>
           {% for table in schema.keys() %}
             <option value="{{ table }}" {% if selected_table == table %}selected{% endif %}>{{ table|capitalize }}</option>
@@ -43,7 +43,7 @@
               <div class="flex justify-between items-center">
                 <strong>{{ header }}</strong>
                 <div id="select-wrapper-{{ header }}" class="ml-auto">
-                  <select name="match_{{ header }}" data-header="{{ header }}" class="border rounded px-2 py-1 text-sm" onchange="handleDropdownChange(event, '{{ header }}')">
+                  <select name="match_{{ header }}" data-header="{{ header }}" data-table="{{ selected_table }}" class="border rounded px-2 py-1 text-sm">
                     <option value="">Unmatched</option>
                     {% for field, data in field_status.items() %}
                       {% if not data.matched %}
@@ -79,7 +79,7 @@
   {% endif %}
 
   <template id="dropdown-template">
-    <select name="match___HEADER__" data-header="__HEADER__" class="border rounded px-2 py-1 text-sm" onchange="handleDropdownChange(event, '__HEADER__')">
+    <select name="match___HEADER__" data-header="__HEADER__" class="border rounded px-2 py-1 text-sm">
       <option value="">Unmatched</option>
       {% for field, data in field_status.items() %}
         {% if not data.matched %}
