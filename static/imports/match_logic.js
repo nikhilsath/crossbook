@@ -1,26 +1,8 @@
 // Global match tracker
 const matchedFields = {};
 
-function handleDropdownChange(event, headerName) {
-  const selectedField = event.target.value;
-  if (!selectedField) return;
 
-  matchedFields[headerName] = selectedField;
-  const table = event.target.dataset.table;
-  const fieldType = fieldSchema[selectedField]?.type || "unknown";
-  validation_sorter(table, selectedField, headerName, fieldType);
-  updateMatchedDisplay(headerName, selectedField);
-  refreshDropdowns();
-  renderAvailableFields();
-  fetch('/trigger-validation', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ field: headerName })  
-  });
-}
-
+// Update matched display inline card
 function updateMatchedDisplay(headerName, field) {
   const wrapper = document.getElementById(`select-wrapper-${headerName}`);
   if (!wrapper) return;
@@ -33,79 +15,109 @@ function updateMatchedDisplay(headerName, field) {
   `;
 }
 
+// Remove a match
 function unmatchField(headerName) {
   delete matchedFields[headerName];
   const wrapper = document.getElementById(`select-wrapper-${headerName}`);
   if (!wrapper) return;
   wrapper.innerHTML = generateDropdownHTML(headerName);
   refreshDropdowns();
+  renderAvailableFields();
 }
 
+// Hide already matched fields in other dropdowns
 function refreshDropdowns() {
   const selects = document.querySelectorAll("select[data-header]");
   selects.forEach(select => {
     const currentHeader = select.getAttribute("data-header");
-    const currentValue = matchedFields[currentHeader] || "";
+    const currentValue = matchedFields[currentHeader]?.field || "";
 
     Array.from(select.options).forEach(option => {
-      if (option.value === "") return; // skip unmatch option
-      const isMatched = Object.values(matchedFields).includes(option.value);
+      if (option.value === "") return; // skip the unmatch/placeholder option
+      const isMatched = Object.values(matchedFields).some(
+        mf => mf.field === option.value
+      );
       const isCurrent = option.value === currentValue;
       option.hidden = isMatched && !isCurrent;
     });
   });
 }
 
+// Generate the dropdown HTML from a template
 function generateDropdownHTML(headerName) {
   const options = document
-    .querySelector(`#dropdown-template`)?.innerHTML
+    .querySelector('#dropdown-template')
+    ?.innerHTML
     ?.replace(/__HEADER__/g, headerName) || "";
   return options;
 }
 
+// On load, hide matched options in initial dropdowns
 document.addEventListener("DOMContentLoaded", () => {
   refreshDropdowns();
+  renderAvailableFields();
 });
 
+// Render the list of available fields on the right
 function renderAvailableFields() {
-    const container = document.getElementById("available-fields-list");
-    if (!container) return;
-  
-    container.innerHTML = Object.entries(fieldSchema).map(([field, meta]) => {
-      const matched = Object.values(matchedFields).includes(field);
+  const container = document.getElementById("available-fields-list");
+  if (!container) return;
+
+  container.innerHTML = Object.entries(fieldSchema)
+    .map(([field, meta]) => {
+      const matched = Object.values(matchedFields).some(
+        mf => mf.field === field
+      );
       return `
         <div class="border px-3 py-2 rounded bg-gray-50">
           <strong>${field}</strong> — ${meta.type} — matched: ${matched}
         </div>
       `;
-    }).join("");
-  }
-  
-  document.querySelectorAll('select[data-header][data-table]').forEach(select => {
-    select.addEventListener('change', event => {
-      const header = event.target.dataset.header;
-      const table = event.target.dataset.table;
-      const field = event.target.value;
-  
-      if (!field) return;
-  
-      matchedFields[header] = field;
-      updateMatchedDisplay(header, field);
-      refreshDropdowns();
-      renderAvailableFields();
-  
-      const fieldType = fieldSchema[field]?.type || "unknown";
-      fetch("/trigger-validation", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ table, field, header }),
-      })
-      .then(res => res.json())
-      .then(data => {
-        console.log("Server validation response:", data);
-      });      
-    });
-  });
-  
+    })
+    .join("");
+}
+
+// Delegate change events to all dropdowns for matching and validation
+document.addEventListener("change", event => {
+  if (!event.target.matches("select[data-header][data-table]")) return;
+
+  const header = event.target.dataset.header;
+  const table = event.target.dataset.table;
+  const selectedField = event.target.value;
+  if (!selectedField) return;
+
+  // Map header to its table & field
+  matchedFields[header] = { table, field: selectedField };
+  updateMatchedDisplay(header, selectedField);
+  refreshDropdowns();
+  renderAvailableFields();
+
+  // Send full mapping + CSV rows to server for validation
+  fetch("/trigger-validation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ matchedFields, rows: importedRows })
+  })
+    .then(res => {
+      if (!res.ok) throw new Error(`Validation failed: ${res.status}`);
+      return res.json();
+    })
+    .then(({ header: respHeader, results }) => {
+      const container = document.querySelector(`#match-container-${respHeader}`);
+      if (!container) return;
+
+      const oldResults = container.querySelector(".validation-results");
+      if (oldResults) oldResults.remove();
+
+      const block = document.createElement("div");
+      block.className = "text-xs mt-1 space-x-2 validation-results";
+      block.innerHTML = `
+        <span class="text-green-600">✅ ${results.valid} valid</span>
+        <span class="text-yellow-600">⚠️ ${results.warning} warnings</span>
+        <span class="text-red-600">❌ ${results.invalid} invalid</span>
+        <span class="text-black">⬛ ${results.blank} blank</span>
+      `;
+      container.appendChild(block);
+    })
+    .catch(err => console.error(err));
+});

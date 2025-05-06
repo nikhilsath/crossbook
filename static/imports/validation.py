@@ -1,8 +1,26 @@
 import json
 import re
 
-def validation_sorter(table, field, header, fieldType):
+def validation_sorter(table, field, header, fieldType, values):
     print("✅ Validation function was triggered.")
+    if fieldType == "text":
+        print("Text Validation Triggered")
+        validate_text_column(values)
+    elif fieldType == "boolean":
+        print("Boolean Validation Triggered")
+    elif fieldType == "foreign_key":
+        print("FK Validation Triggered")
+    elif fieldType == "multi_select":
+        print("Multi Validation Triggered")
+    elif fieldType == "number":
+        print("Number Validation Triggered")
+    elif fieldType == "select":
+        print("Select Validation Triggered")
+    elif fieldType == "textarea":
+        print("Textarea Validation Triggered")
+    else:
+        print("no validation for this datatype")
+
 
 def validate_text_column(values):
     valid = invalid = blank = warning = 0

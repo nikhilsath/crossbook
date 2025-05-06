@@ -1,4 +1,4 @@
-from flask import Flask, render_template, abort, request, redirect, url_for, jsonify
+from flask import Flask, render_template, abort, request, redirect, url_for, jsonify, session
 import sqlite3
 import os
 import datetime
@@ -254,18 +254,35 @@ def import_records():
         parsed_headers=parsed_headers,
         num_records=num_records,
         field_status=field_status,
-        validation_report=validation_results
+        validation_report=validation_results,
+        rows=rows 
     )
 
 @app.route("/trigger-validation", methods=["POST"])
 def trigger_validation():
-    data = request.get_json()
-    table = data.get("table")
-    field = data.get("field")
-    header = data.get("header")
-    field_type = get_field_schema()[table][field]["type"]
-    validation_sorter(table, field, header, field_type)
-    return jsonify({"status": "triggered"})
+    data = request.get_json(silent=True) or {}
+    # Require both keys in the payload
+    if "matchedFields" not in data or "rows" not in data:
+        return jsonify({"error": "Missing required data"}), 400
+
+    matched_fields = data["matchedFields"]
+    rows           = data["rows"]
+
+    schema = get_field_schema()
+    report = {}
+    for header, info in matched_fields.items():
+        table = info.get("table")
+        field = info.get("field")
+        # Skip bad mappings
+        if not table or not field:
+            continue
+
+        field_type = schema[table][field]["type"]
+        # Pull the column values from each row object
+        values = [row.get(header, "") for row in rows]
+        report[header] = validation_sorter(table, field, header, field_type, values)
+
+    return jsonify(report)
 
 
 
