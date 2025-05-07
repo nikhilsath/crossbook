@@ -1,5 +1,6 @@
 import json
 import re
+import csv
 
 def validation_sorter(table, field, header, fieldType, values):
     print("✅ Validation function was triggered.")
@@ -19,6 +20,8 @@ def validation_sorter(table, field, header, fieldType, values):
         print("Select Validation Triggered")
     elif fieldType == "textarea":
         print("Textarea Validation Triggered")
+        validate_textarea_column(values)
+        return validate_textarea_column(values)
     else:
         print("no validation for this datatype")
 
@@ -40,6 +43,33 @@ def validate_text_column(values):
             re.search(r"#+\s", v)                     # markdown headers
         ]):
             warning += 1
+    return {
+        "valid": valid,
+        "invalid": invalid,
+        "blank": blank,
+        "warning": warning
+    }
+def validate_textarea_column(values):
+    # Use CSV module's default field size limit
+    max_size = csv.field_size_limit()  # default ~131072 bytes
+
+    valid = invalid = blank = warning = 0
+    for v in values:
+        # Blank or whitespace-only
+        if not v or v.strip() == "":
+            blank += 1
+            continue
+
+        # Invalid if over CSV field limit
+        if len(v) > max_size:
+            invalid += 1
+        else:
+            valid += 1
+
+        # Warning: JSON-like content
+        if re.search(r"\{.*?\}", v):
+            warning += 1
+
     return {
         "valid": valid,
         "invalid": invalid,
