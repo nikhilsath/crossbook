@@ -37,14 +37,18 @@ def validation_sorter(table, field, header, fieldType, values):
 
 def validate_text_column(values):
     valid = invalid = blank = warning = 0
-    for v in values:
+    details = {"blank": [],"invalid":[],"warning":[],"valid":[]}
+    for idx, v in enumerate(values, start=1):
         if not v or v.strip() == "":
             blank += 1
+            details["blank"].append(idx)
             continue
         if len(v) > 1000:
             invalid += 1
+            details["invalid"].append({"row": idx, "reason": "length exceeds 1000 characters"})
         else:
             valid += 1
+            details["valid"].append(idx)
         # warning check based on common identifiers 
         if any([
             re.search(r"\{.*?\}", v),                 # JSON
@@ -52,11 +56,13 @@ def validate_text_column(values):
             re.search(r"#+\s", v)                     # markdown headers
         ]):
             warning += 1
+            details["warning"].append({"row": idx, "reason": "contains JSON,HTML, or MD"})
     return {
         "valid": valid,
         "invalid": invalid,
         "blank": blank,
-        "warning": warning
+        "warning": warning,
+        "details": details
     }
 def validate_textarea_column(values):
     max_size = csv.field_size_limit()  # default ~131072 bytes
