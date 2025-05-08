@@ -114,7 +114,7 @@ document.addEventListener("change", event => {
           block.className = 'text-xs ml-4 space-x-2 validation-results';
           block.innerHTML = `
             <span class="text-green-600">✅ ${results.valid} valid</span>
-            <span class="text-yellow-600">⚠️ ${results.warning} warnings</span>
+            <span class="text-yellow-600">⚠️ ${results.warning ?? 0} warnings</span>
             <span class="text-red-600">❌ ${results.invalid} invalid</span>
             <span class="text-black">⬛ ${results.blank} blank</span>
           `;
