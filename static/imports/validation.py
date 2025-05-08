@@ -9,19 +9,18 @@ def validation_sorter(table, field, header, fieldType, values):
     print("✅ Validation function was triggered.")
     if fieldType == "text":
         print("Text Validation Triggered")
-        validate_text_column(values)
         return validate_text_column(values)
     elif fieldType == "boolean":
         print("Boolean Validation Triggered")
-        validate_boolean_column(values)
         return validate_boolean_column(values)
     elif fieldType == "foreign_key":
         print("FK Validation Triggered")
+        options = SCHEMA[table][field]["options"]
+        return validate_select_column(values, options)
     elif fieldType == "multi_select":
         print("Multi Validation Triggered")
     elif fieldType == "number":
         print("Number Validation Triggered")
-        validate_number_column(values)
         return validate_number_column(values)
     elif fieldType == "select":
         print("Select Validation Triggered")
@@ -29,7 +28,6 @@ def validation_sorter(table, field, header, fieldType, values):
         return validate_select_column(values, options)
     elif fieldType == "textarea":
         print("Textarea Validation Triggered")
-        validate_textarea_column(values)
         return validate_textarea_column(values)
     else:
         print("no validation for this datatype")
