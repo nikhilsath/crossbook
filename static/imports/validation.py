@@ -1,6 +1,9 @@
 import json
 import re
 import csv
+from db.schema import get_field_schema
+
+SCHEMA = get_field_schema()
 
 def validation_sorter(table, field, header, fieldType, values):
     print("✅ Validation function was triggered.")
@@ -22,6 +25,8 @@ def validation_sorter(table, field, header, fieldType, values):
         return validate_number_column(values)
     elif fieldType == "select":
         print("Select Validation Triggered")
+        options = SCHEMA[table][field]["options"]
+        return validate_select_column(values, options)
     elif fieldType == "textarea":
         print("Textarea Validation Triggered")
         validate_textarea_column(values)
@@ -110,6 +115,17 @@ def validate_boolean_column(values):
             continue
         s = str(v).strip().lower()
         if s in ("true", "false", "1", "0", "yes", "no"):
+            valid += 1
+        else:
+            invalid += 1
+    return {"valid": valid, "invalid": invalid, "blank": blank}
+def validate_select_column(values: list[str], options: list[str]) -> dict:
+    valid = invalid = blank = 0
+    normalized_options = {opt.lower() for opt in options}
+    for v in values:
+        if not v or not str(v).strip():
+            blank += 1
+        elif str(v).strip().lower() in normalized_options:
             valid += 1
         else:
             invalid += 1
