@@ -66,29 +66,30 @@ def validate_text_column(values):
     }
 def validate_textarea_column(values):
     max_size = csv.field_size_limit()  # default ~131072 bytes
-
+    details = {"blank": [],"invalid":[],"warning":[],"valid":[]}
     valid = invalid = blank = warning = 0
-    for v in values:
-        # Blank or whitespace-only
+    for idx, v in enumerate(values, start=1):
         if not v or v.strip() == "":
             blank += 1
+            details["blank"].append(idx)
             continue
-
         # Invalid if over CSV field limit
         if len(v) > max_size:
             invalid += 1
+            details["invalid"].append({"row": idx, "reason": "length exceeds 1000 characters"})
         else:
             valid += 1
-
+            details["valid"].append(idx)
         # Warning: JSON-like content
         if re.search(r"\{.*?\}", v):
             warning += 1
-
+            details["warning"].append({"row": idx, "reason": "Possibly contains JSON"})
     return {
         "valid": valid,
         "invalid": invalid,
         "blank": blank,
-        "warning": warning
+        "warning": warning,
+        "details": details
     }
 def validate_number_column(values, integer_only=False):
     valid = invalid = blank = 0
