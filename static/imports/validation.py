@@ -134,30 +134,50 @@ def validate_boolean_column(values):
 def validate_select_column(values: list[str], options: list[str]) -> dict:
     valid = invalid = blank = 0
     normalized_options = {opt.lower() for opt in options}
-    for v in values:
-        if not v or not str(v).strip():
+    details = {"blank": [],"invalid":[],"warning":[],"valid":[]}
+    for idx, v in enumerate(values, start=1):
+        if not v or v.strip() == "":
             blank += 1
+            details["blank"].append(idx)
         elif str(v).strip().lower() in normalized_options:
             valid += 1
+            details["valid"].append(idx)
         else:
             invalid += 1
-    return {"valid": valid, "invalid": invalid, "blank": blank}
+            details["invalid"].append({"row": idx, "reason": "does not match available options","value":v })
+    return {"valid": valid, "invalid": invalid, "blank": blank, "details":details}
+
 def validate_multi_select_column(values: list[str], options: list[str]) -> dict:
-    valid = invalid = blank = 0
+    valid = invalid = blank = warning = 0
+    details = {"valid": [],"invalid": [],"blank": [],"warning": []}
+    # Prepare lookup
     normalized_options = {opt.lower() for opt in options}
-
-    for cell in values:
-        cell_str = str(cell).strip()
-        if not cell_str:
+    for idx, raw in enumerate(values, start=1):
+        cell = str(raw).strip()
+        # Blank cell
+        if not cell:
             blank += 1
+            details["blank"].append(idx)
             continue
-
-        # Split on comma, then strip whitespace
-        tags = [tag.strip() for tag in cell_str.split(',')]
-        # Check every tag against allowed options
-        if all(tag.lower() in normalized_options for tag in tags):
+        # Split into individual tags
+        tags = [t.strip() for t in cell.split(',')]
+        # Identify any tags not in the allowed list
+        invalid_tags = [t for t in tags if t.lower() not in normalized_options]
+        if not invalid_tags:
             valid += 1
+            details["valid"].append(idx)
         else:
             invalid += 1
+            details["invalid"].append({
+                "row": idx,
+                "value": raw,
+                "reason": f"invalid tags: {invalid_tags}"
+            })
 
-    return {"valid": valid, "invalid": invalid, "blank": blank}
+    return {
+        "valid": valid,
+        "invalid": invalid,
+        "blank": blank,
+        "warning": warning,
+        "details": details
+    }
