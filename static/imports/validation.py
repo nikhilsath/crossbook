@@ -105,7 +105,7 @@ def validate_number_column(values, integer_only=False):
             num = int(s) if integer_only else float(s)
         except ValueError:
             invalid += 1
-            details["invalid"].append({"row": idx, "reason": "not a number"})
+            details["invalid"].append({"row": idx, "reason": "not a number", })
             continue
         else:
             valid += 1
@@ -118,16 +118,19 @@ def validate_number_column(values, integer_only=False):
     }
 def validate_boolean_column(values):
     valid = invalid = blank = 0
-    for v in values:
-        if not v or str(v).strip() == "":
+    details = {"blank": [],"invalid":[],"warning":[],"valid":[]}
+    for idx, v in enumerate(values, start=1):
+        if not v or v.strip() == "":
             blank += 1
-            continue
+            details["blank"].append(idx)
         s = str(v).strip().lower()
         if s in ("true", "false", "1", "0", "yes", "no"):
             valid += 1
+            details["valid"].append(idx)
         else:
             invalid += 1
-    return {"valid": valid, "invalid": invalid, "blank": blank}
+            details["invalid"].append({"row": idx, "reason": "invalid boolean value","value":v })
+    return {"valid": valid, "invalid": invalid, "blank": blank, "details":details}
 def validate_select_column(values: list[str], options: list[str]) -> dict:
     valid = invalid = blank = 0
     normalized_options = {opt.lower() for opt in options}
