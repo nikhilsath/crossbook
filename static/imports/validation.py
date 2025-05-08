@@ -93,26 +93,28 @@ def validate_textarea_column(values):
     }
 def validate_number_column(values, integer_only=False):
     valid = invalid = blank = 0
-    for v in values:
-        # Blank or whitespace-only
-        if v is None or str(v).strip() == "":
+    details = {"blank": [],"invalid":[],"warning":[],"valid":[]}
+    for idx, v in enumerate(values, start=1):
+        if not v or v.strip() == "":
             blank += 1
+            details["blank"].append(idx)
             continue
-
         s = str(v).strip()
         # Try to convert to number
         try:
             num = int(s) if integer_only else float(s)
         except ValueError:
             invalid += 1
+            details["invalid"].append({"row": idx, "reason": "not a number"})
             continue
         else:
             valid += 1
-
+            details["valid"].append(idx)
     return {
         "valid": valid,
         "invalid": invalid,
-        "blank": blank
+        "blank": blank,
+        "details": details
     }
 def validate_boolean_column(values):
     valid = invalid = blank = 0
