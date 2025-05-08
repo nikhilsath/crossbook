@@ -19,6 +19,8 @@ def validation_sorter(table, field, header, fieldType, values):
         return validate_select_column(values, options)
     elif fieldType == "multi_select":
         print("Multi Validation Triggered")
+        options = SCHEMA[table][field]["options"]
+        return validate_multi_select_column(values, options)
     elif fieldType == "number":
         print("Number Validation Triggered")
         return validate_number_column(values)
@@ -127,4 +129,23 @@ def validate_select_column(values: list[str], options: list[str]) -> dict:
             valid += 1
         else:
             invalid += 1
+    return {"valid": valid, "invalid": invalid, "blank": blank}
+def validate_multi_select_column(values: list[str], options: list[str]) -> dict:
+    valid = invalid = blank = 0
+    normalized_options = {opt.lower() for opt in options}
+
+    for cell in values:
+        cell_str = str(cell).strip()
+        if not cell_str:
+            blank += 1
+            continue
+
+        # Split on comma, then strip whitespace
+        tags = [tag.strip() for tag in cell_str.split(',')]
+        # Check every tag against allowed options
+        if all(tag.lower() in normalized_options for tag in tags):
+            valid += 1
+        else:
+            invalid += 1
+
     return {"valid": valid, "invalid": invalid, "blank": blank}
