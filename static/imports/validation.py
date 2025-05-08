@@ -16,6 +16,8 @@ def validation_sorter(table, field, header, fieldType, values):
         print("Multi Validation Triggered")
     elif fieldType == "number":
         print("Number Validation Triggered")
+        validate_number_column(values)
+        return validate_number_column(values)
     elif fieldType == "select":
         print("Select Validation Triggered")
     elif fieldType == "textarea":
@@ -75,4 +77,27 @@ def validate_textarea_column(values):
         "invalid": invalid,
         "blank": blank,
         "warning": warning
+    }
+def validate_number_column(values, integer_only=False):
+    valid = invalid = blank = 0
+    for v in values:
+        # Blank or whitespace-only
+        if v is None or str(v).strip() == "":
+            blank += 1
+            continue
+
+        s = str(v).strip()
+        # Try to convert to number
+        try:
+            num = int(s) if integer_only else float(s)
+        except ValueError:
+            invalid += 1
+            continue
+        else:
+            valid += 1
+
+    return {
+        "valid": valid,
+        "invalid": invalid,
+        "blank": blank
     }

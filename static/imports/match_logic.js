@@ -80,7 +80,6 @@ function renderAvailableFields() {
 // Delegate change events to all dropdowns for matching and validation
 document.addEventListener("change", event => {
   if (!event.target.matches("select[data-header][data-table]")) return;
-
   const header = event.target.dataset.header;
   const table = event.target.dataset.table;
   const selectedField = event.target.value;
@@ -131,3 +130,4 @@ document.addEventListener("change", event => {
       })    
     .catch(err => console.error(err));
 });
+
