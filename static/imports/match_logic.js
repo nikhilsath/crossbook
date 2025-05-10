@@ -76,21 +76,9 @@ function renderAvailableFields() {
     })
     .join("");
 }
+// static/imports/match_logic.js
 
 // Delegate change events to all dropdowns for matching and validation
-document.addEventListener("change", event => {
-  if (!event.target.matches("select[data-header][data-table]")) return;
-  const header = event.target.dataset.header;
-  const table = event.target.dataset.table;
-  const selectedField = event.target.value;
-  if (!selectedField) return;
-
-  // Map header to its table & field
-  matchedFields[header] = { table, field: selectedField };
-  updateMatchedDisplay(header, selectedField);
-  refreshDropdowns();
-  renderAvailableFields();
-
 document.addEventListener("change", event => {
     if (!event.target.matches("select[data-header][data-table]")) return;
     const header = event.target.dataset.header;
@@ -101,8 +89,6 @@ document.addEventListener("change", event => {
     // Map header to its table & field
     matchedFields[header] = { table, field: selectedField };
     updateMatchedDisplay(header, selectedField);
-    refreshDropdowns();
-    renderAvailableFields();
   
     // Send full mapping + CSV rows to server for validation
     fetch("/trigger-validation", {
@@ -118,7 +104,7 @@ document.addEventListener("change", event => {
         // Store the full validation report for popups
         window.validationReport = report;
   
-        // Render validation results
+        // Render validation results inline
         Object.entries(report).forEach(([respHeader, results]) => {
           const container = document.getElementById(`match-container-${respHeader}`);
           if (!container) return;
@@ -145,7 +131,11 @@ document.addEventListener("change", event => {
             container.appendChild(block);
           }
         });
+  
+        // After rendering validation, update UI and dropdowns
+        renderAvailableFields();
+        refreshDropdowns();
       })
       .catch(err => console.error(err));
   });
-})
+  

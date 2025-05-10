@@ -15,7 +15,7 @@ function showValidationPopup(header, htmlContent, x, y) {
   
     // Delegate clicks to blank-popup spans only
     container.addEventListener('click', event => {
-      const span = event.target.closest('span.blank-popup[data-popup-key]');
+      const span = event.target.closest('span.blank-popup');
       if (!span) return;
   
       const header = span.dataset.popupKey;
