@@ -55,6 +55,9 @@
             </div>
             {% endfor %}          
         </div>
+        <div id="validation-popup" class="hidden absolute bg-white rounded shadow p-4 z-50"></div>
+            <!-- Popup placeholder; initially hidden -->
+        </div>
     </div>
     <div class="md:w-1/3">
       <h2 class="text-xl font-semibold mb-2">Available Fields for '{{ selected_table }}'</h2>
@@ -82,5 +85,6 @@
 </div>
 <script> const fieldSchema = {{ field_status|tojson }};</script>
 <script src="/static/imports/match_logic.js"></script>
+<script src="/static/imports/validation_UI.js"></script>
 <script>window.importedRows = {{ rows | tojson }};</script>
 {% endblock %}

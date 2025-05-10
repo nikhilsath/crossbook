@@ -1,0 +1,6 @@
+.validation-results span {
+    cursor: pointer;
+}
+.validation-results span:hover {
+    text-decoration: underline;
+}
