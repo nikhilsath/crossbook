@@ -27,6 +27,64 @@ function showValidationPopup(header, htmlContent, x, y) {
   
       showValidationPopup(header, content, event.pageX, event.pageY);
     });
+     // Delegate clicks to warning-popup spans only
+  container.addEventListener('click', event => {
+    const span = event.target.closest('span.warning-popup');
+    if (!span) return;
+
+    const header = span.dataset.popupKey;
+    const warnings = window.validationReport?.[header]?.details?.warning || [];
+
+    let content;
+    if (warnings.length) {
+      // If warnings are objects with message/details
+      const items = warnings
+        .map(w => `<li>Row ${w.row}${w.message ? `: ${w.message}` : ''}${w.reason ? ` (${w.reason})` : ''}</li>`)
+        .join('');
+      content = `<p><strong>Warnings:</strong></p><ul>${items}</ul>`;
+    } else {
+      content = `<p>No warnings detected.</p>`;
+    }
+
+    showValidationPopup(header, content, event.pageX, event.pageY);
+  });
+    // Delegate clicks to valid-popup spans only
+  container.addEventListener('click', event => {
+    const span = event.target.closest('span.valid-popup');
+    if (!span) return;
+
+    const header = span.dataset.popupKey;
+    const validRows = window.validationReport?.[header]?.details?.valid || [];
+
+    const content = validRows.length
+      ? `<p><strong>Valid rows:</strong> ${validRows.join(', ')}</p>`
+      : `<p>No valid rows detected.</p>`;
+
+    showValidationPopup(header, content, event.pageX, event.pageY);
+  });
+    // Delegate clicks to invalid-popup spans only
+  container.addEventListener('click', event => {
+    const span = event.target.closest('span.invalid-popup[data-popup-key]');
+    if (!span) return;
+
+    const header = span.dataset.popupKey;
+    const invalidRows = window.validationReport?.[header]?.details?.invalid || [];
+
+    let content;
+    if (invalidRows.length) {
+      const items = invalidRows
+        .map(w => 
+          typeof w === 'object'
+            ? `<li>Row ${w.row}: ${w.reason}${w.value ? ` (value: ${w.value})` : ''}</li>`
+            : `<li>Row ${w}</li>`
+        )
+        .join('');
+      content = `<p><strong>Invalid rows:</strong></p><ul>${items}</ul>`;
+    } else {
+      content = `<p>No invalid rows detected.</p>`;
+    }
+    showValidationPopup(header, content, event.pageX, event.pageY);
+  });
   });
   
   // Hide the popup when clicking outside of a result span or the popup itself
