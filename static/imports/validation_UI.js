@@ -1,7 +1,8 @@
-function showValidationPopup(header, text, x, y) {
+
+function showValidationPopup(header, htmlContent, x, y) {
     const popup = document.getElementById('validation-popup');
     if (!popup) return;
-    popup.textContent = `${header}: ${text}`;
+    popup.innerHTML = `<strong>${header}:</strong> ${htmlContent}`;
     popup.style.top = `${y + 8}px`;
     popup.style.left = `${x + 8}px`;
     popup.classList.remove('hidden');
@@ -9,18 +10,31 @@ function showValidationPopup(header, text, x, y) {
   
   document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('imported-fields-container');
-    if (!container) return;
-  
     container.addEventListener('click', event => {
-      const span = event.target.closest('.validation-results span');
+      const span   = event.target.closest('span[data-popup-key]');
       if (!span) return;
-      const header = span.closest('[id^="match-container-"]')?.id.replace('match-container-', '');
-      const text = span.textContent.trim();
-      if (header && text) {
-        showValidationPopup(header, text, event.pageX, event.pageY);
+      const header = span.dataset.popupKey;
+      const rows   = window.importedRows || [];
+  
+      // Find all row indices where this header is blank
+      const blankRows = rows
+        .map((row, idx) => ({ value: row[header], rowNum: idx + 1 }))
+        .filter(({ value }) => value == null || String(value).trim() === '')
+        .map(({ rowNum }) => rowNum);
+  
+      // Build popup HTML
+      let content;
+      if (blankRows.length) {
+        content = `<p><strong>Blank rows:</strong> ${blankRows.join(', ')}</p>`;
+      } else {
+        content = '<p>No blanks detected.</p>';
       }
+  
+      // Show popup
+      showValidationPopup(header, content, event.pageX, event.pageY);
     });
   });
+  
   
   // Hide the popup when clicking outside of a result span or the popup itself
   document.addEventListener('click', event => {

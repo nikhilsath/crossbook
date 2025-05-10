@@ -113,10 +113,10 @@ document.addEventListener("change", event => {
           const block = document.createElement('div');
           block.className = 'text-xs ml-4 space-x-2 validation-results';
           block.innerHTML = `
-            <span class="text-green-600">✅ ${results.valid} valid</span>
-            <span class="text-yellow-600">⚠️ ${results.warning ?? 0} warnings</span>
-            <span class="text-red-600">❌ ${results.invalid} invalid</span>
-            <span class="text-black">⬛ ${results.blank} blank</span>
+            <span data-popup-key="${respHeader}"  class="text-green-600">✅ ${results.valid} valid</span>
+            <span data-popup-key="${respHeader}"  class="text-yellow-600">⚠️ ${results.warning ?? 0} warnings</span>
+            <span data-popup-key="${respHeader}"  class="text-red-600">❌ ${results.invalid} invalid</span>
+            <span data-popup-key="${respHeader}"  class="text-black">⬛ ${results.blank} blank</span>
           `;
           container.appendChild(block);
           const flexRow = container.querySelector('.flex.justify-between');
