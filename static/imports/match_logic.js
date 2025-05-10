@@ -91,43 +91,61 @@ document.addEventListener("change", event => {
   refreshDropdowns();
   renderAvailableFields();
 
-  // Send full mapping + CSV rows to server for validation
-  fetch("/trigger-validation", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ matchedFields, rows: importedRows })
-  })
-    .then(res => {
-      if (!res.ok) throw new Error(`Validation failed: ${res.status}`);
-      return res.json();
+document.addEventListener("change", event => {
+    if (!event.target.matches("select[data-header][data-table]")) return;
+    const header = event.target.dataset.header;
+    const table = event.target.dataset.table;
+    const selectedField = event.target.value;
+    if (!selectedField) return;
+  
+    // Map header to its table & field
+    matchedFields[header] = { table, field: selectedField };
+    updateMatchedDisplay(header, selectedField);
+    refreshDropdowns();
+    renderAvailableFields();
+  
+    // Send full mapping + CSV rows to server for validation
+    fetch("/trigger-validation", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ matchedFields, rows: window.importedRows })
     })
-    .then(report => {
-        // report is { "<header>": { valid, invalid, warning, blank }, … }
+      .then(res => {
+        if (!res.ok) throw new Error(`Validation failed: ${res.status}`);
+        return res.json();
+      })
+      .then(report => {
+        // Store the full validation report for popups
+        window.validationReport = report;
+  
+        // Render validation results
         Object.entries(report).forEach(([respHeader, results]) => {
           const container = document.getElementById(`match-container-${respHeader}`);
           if (!container) return;
-    
+  
+          // Remove previous results
           const oldResults = container.querySelector('.validation-results');
           if (oldResults) oldResults.remove();
-    
+  
+          // Create new block
           const block = document.createElement('div');
           block.className = 'text-xs ml-4 space-x-2 validation-results';
-          block.innerHTML = `
-            <span data-popup-key="${respHeader}"  class="text-green-600">✅ ${results.valid} valid</span>
-            <span data-popup-key="${respHeader}"  class="text-yellow-600">⚠️ ${results.warning ?? 0} warnings</span>
-            <span data-popup-key="${respHeader}"  class="text-red-600">❌ ${results.invalid} invalid</span>
-            <span data-popup-key="${respHeader}"  class="text-black">⬛ ${results.blank} blank</span>
-          `;
-          container.appendChild(block);
+          block.innerHTML =
+            `<span data-popup-key="${respHeader}" class="text-green-600 valid-popup">✅ ${results.valid} valid</span>` +
+            `<span data-popup-key="${respHeader}" class="text-yellow-600 warning-popup">⚠️ ${results.warning ?? 0} warnings</span>` +
+            `<span data-popup-key="${respHeader}" class="text-red-600 invalid-popup">❌ ${results.invalid} invalid</span>` +
+            `<span data-popup-key="${respHeader}" class="text-black blank-popup">⬛ ${results.blank} blank</span>`;
+  
+          // Insert into DOM, placing before select-wrapper if present
           const flexRow = container.querySelector('.flex.justify-between');
           const selectWrapper = flexRow?.querySelector(`#select-wrapper-${respHeader}`);
           if (flexRow && selectWrapper) {
             flexRow.insertBefore(block, selectWrapper);
-        } else {
+          } else {
             container.appendChild(block);
-        }
+          }
         });
-      })    
-    .catch(err => console.error(err));
-});
-
+      })
+      .catch(err => console.error(err));
+  });
+})

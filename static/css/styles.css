@@ -4,3 +4,24 @@
 .validation-results span:hover {
     text-decoration: underline;
 }
+
+  /* Valid – green background on hover */
+  .valid-popup:hover {
+    background-color: rgba(16, 185, 129, 0.1); /* tailwind emerald-500/10 */
+  }
+  
+  /* Warning – yellow background on hover */
+  .warning-popup:hover {
+    background-color: rgba(234, 179, 8, 0.1); /* tailwind amber-400/10 */
+  }
+  
+  /* Invalid – red background on hover */
+  .invalid-popup:hover {
+    background-color: rgba(239, 68, 68, 0.1); /* tailwind red-500/10 */
+  }
+  
+  /* Blank – gray background on hover */
+  .blank-popup:hover {
+    background-color: rgba(107, 114, 128, 0.1); /* tailwind gray-500/10 */
+  }
+  
