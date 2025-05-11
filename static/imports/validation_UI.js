@@ -104,15 +104,4 @@ function showValidationPopup(header, htmlContent) {
     }
   });
   
-  // Duplicate hide handler for .validation-results span detection
-  document.addEventListener('click', event => {
-    const overlay = document.getElementById('validationOverlay');
-    const popup   = document.getElementById('validation-popup');
-    if (!popup || !overlay) return;
-  
-    const isResult = !!event.target.closest('.validation-results span');
-    if (!isResult && !popup.contains(event.target)) {
-      overlay.classList.add('hidden');
-    }
-  });
   

@@ -7,32 +7,47 @@ SCHEMA = get_field_schema()
 
 def validation_sorter(table, field, header, fieldType, values):
     print("✅ Validation function was triggered.")
+    # Delegate to specific validator based on field type
     if fieldType == "text":
         print("Text Validation Triggered")
-        return validate_text_column(values)
+        result = validate_text_column(values)
     elif fieldType == "boolean":
         print("Boolean Validation Triggered")
-        return validate_boolean_column(values)
+        result = validate_boolean_column(values)
     elif fieldType == "foreign_key":
         print("FK Validation Triggered")
         options = SCHEMA[table][field]["options"]
-        return validate_select_column(values, options)
+        result = validate_select_column(values, options)
     elif fieldType == "multi_select":
         print("Multi Validation Triggered")
         options = SCHEMA[table][field]["options"]
-        return validate_multi_select_column(values, options)
+        result = validate_multi_select_column(values, options)
     elif fieldType == "number":
         print("Number Validation Triggered")
-        return validate_number_column(values)
+        result = validate_number_column(values)
     elif fieldType == "select":
         print("Select Validation Triggered")
         options = SCHEMA[table][field]["options"]
-        return validate_select_column(values, options)
+        result = validate_select_column(values, options)
     elif fieldType == "textarea":
         print("Textarea Validation Triggered")
-        return validate_textarea_column(values)
+        result = validate_textarea_column(values)
     else:
         print("no validation for this datatype")
+        # Return empty report when no validation is available
+        return {}
+
+    classes = []
+    if result.get("warning", 0) > 0:
+        classes.append("matched-warnings")
+    if result.get("invalid", 0) > 0:
+        classes.append("matched-invalid")
+    if classes:
+        # join into a space-delimited string so JS .classList.add() will handle both
+        result["cssClass"] = " ".join(classes)
+
+    return result
+        
 
 
 def validate_text_column(values):
@@ -146,7 +161,6 @@ def validate_select_column(values: list[str], options: list[str]) -> dict:
             invalid += 1
             details["invalid"].append({"row": idx, "reason": "does not match available options","value":v })
     return {"valid": valid, "invalid": invalid, "blank": blank, "details":details}
-
 def validate_multi_select_column(values: list[str], options: list[str]) -> dict:
     valid = invalid = blank = warning = 0
     details = {"valid": [],"invalid": [],"blank": [],"warning": []}

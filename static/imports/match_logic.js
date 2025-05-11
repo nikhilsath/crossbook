@@ -1,7 +1,6 @@
 // Global match tracker
 const matchedFields = {};
 
-
 // Update matched display inline card
 function updateMatchedDisplay(headerName, field) {
   const wrapper = document.getElementById(`select-wrapper-${headerName}`);
@@ -62,21 +61,20 @@ document.addEventListener("DOMContentLoaded", () => {
 function renderAvailableFields() {
   const container = document.getElementById("available-fields-list");
   if (!container) return;
-
   container.innerHTML = Object.entries(fieldSchema)
     .map(([field, meta]) => {
       const matched = Object.values(matchedFields).some(
         mf => mf.field === field
       );
       return `
-        <div class="border px-3 py-2 rounded bg-gray-50">
+        <div class="border px-3 py-2 available-field-${field} rounded bg-gray-50">
           <strong>${field}</strong> — ${meta.type} — matched: ${matched}
         </div>
       `;
     })
     .join("");
-}
-// static/imports/match_logic.js
+} 
+
 
 // Delegate change events to all dropdowns for matching and validation
 document.addEventListener("change", event => {
@@ -135,7 +133,32 @@ document.addEventListener("change", event => {
         // After rendering validation, update UI and dropdowns
         renderAvailableFields();
         refreshDropdowns();
+        console.group('applyCssFlags');
+        console.log('Full report:', report);
+        Object.entries(report).forEach(([respHeader, results]) => {
+          const container = document.getElementById(`match-container-${respHeader}`);
+          if (!container) return;
+        });
+        renderAvailableFields();
+        refreshDropdowns();
+        Object.entries(report).forEach(([header, entry]) => {
+          const cssClass = entry.cssClass;
+          if (!cssClass) return; 
+  
+          // Lookup what table-field this CSV header was matched to
+          const match      = matchedFields[header];
+          const fieldName  = match?.field;                  // e.g. "chapter", "source"
+          if (!fieldName) return;                          // no dropdown choice yet
+    
+          // Select that card by the class your renderAvailableFields adds:
+          // <div class="… available-field-<fieldName> …">
+          const card = document.querySelector(`.available-field-${fieldName}`);
+          if (card) {
+            cssClass.split(/\s+/).forEach(cls => {
+              if (cls) card.classList.add(cls);
+            });            
+          }
+        });
       })
       .catch(err => console.error(err));
-  });
-  
+    });
