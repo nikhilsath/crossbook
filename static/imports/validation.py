@@ -38,12 +38,16 @@ def validation_sorter(table, field, header, fieldType, values):
         return {}
 
     classes = []
+    if result.get("blank", 0) > 0:
+        classes.append("matched-blank")
+    if result.get("valid", 0) > 0:
+        classes.append("matched-valid")
     if result.get("warning", 0) > 0:
         classes.append("matched-warnings")
     if result.get("invalid", 0) > 0:
         classes.append("matched-invalid")
     if classes:
-        # join into a space-delimited string so JS .classList.add() will handle both
+        # Join into a space-delimited string so JS .classList.add() can apply all
         result["cssClass"] = " ".join(classes)
 
     return result

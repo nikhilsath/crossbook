@@ -25,3 +25,21 @@
     background-color: rgba(107, 114, 128, 0.1); /* tailwind gray-500/10 */
   }
   
+  #available-fields-list .matched-warnings {
+    background-color: #fef3c7;
+    border-color:   #fde68a;
+  }
+  
+  #available-fields-list .matched-invalid {
+    background-color: #fee2e2;
+    border-color:   #fecaca;
+  }
+#available-fields-list .matched-blank {
+  background-color: #f1f5f9;  
+  border-color:     #cbd5e1; 
+}
+
+#available-fields-list .matched-valid {
+  background-color: #dcfce7;  
+  border-color:     #86efac;  
+}
