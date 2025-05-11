@@ -228,6 +228,7 @@ def import_records():
     num_records = None
     field_status = {}
     validation_results = {}
+    file_name = None 
 
     if request.method == "POST":
         if "file" in request.files:
@@ -235,6 +236,7 @@ def import_records():
             if file and file.filename.endswith(".csv"):
                 parsed_headers, rows = parse_csv(file)
                 num_records = len(rows)
+                file_name = file.filename
 
     if selected_table:
         table_schema = schema[selected_table]
@@ -255,7 +257,8 @@ def import_records():
         num_records=num_records,
         field_status=field_status,
         validation_report=validation_results,
-        rows=rows 
+        rows=rows,
+        file_name=file_name 
     )
 
 @app.route("/trigger-validation", methods=["POST"])

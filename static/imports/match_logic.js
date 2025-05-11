@@ -159,6 +159,7 @@ document.addEventListener("change", event => {
             });            
           }
         });
+        updateImportButtonState();
       })
       .catch(err => console.error(err));
     });

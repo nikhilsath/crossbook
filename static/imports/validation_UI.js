@@ -104,4 +104,22 @@ function showValidationPopup(header, htmlContent) {
     }
   });
   
+  function updateImportButtonState() {
+    const invalidCount = document.querySelectorAll(
+      '#available-fields-list .matched-invalid'
+    ).length;
+    const validCount = document.querySelectorAll(
+      '#available-fields-list .matched-valid'
+    ).length;
+    const btn = document.getElementById('import-btn');
   
+    if (invalidCount === 0 && validCount > 0) {
+      btn.removeAttribute('disabled');
+      btn.classList.remove('opacity-50', 'cursor-not-allowed');
+    } else {
+      btn.setAttribute('disabled', '');
+      btn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+  }
+  document.addEventListener('DOMContentLoaded', updateImportButtonState);
+  updateImportButtonState();

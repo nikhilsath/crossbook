@@ -28,13 +28,17 @@
         Total Records: {{ num_records if num_records is not none else 'None' }}
       </div>
       {% endif %}
+      <!-- Import Records button, initially disabled -->
+    <button id="import-btn" type="button" disabled class="ml-auto bg-green-500 text-white px-4 py-2 rounded opacity-50 cursor-not-allowed">
+      Import Records
+    </button>
     </div>
   </div>
 
   {% if selected_table %}
   <div class="flex flex-row space-x-4">
     <div class="md:w-2/3">
-        <h2 class="text-xl font-semibold mb-2">Available Fields for Imported File</h2>
+        <h2 class="text-xl font-semibold mb-2">Available Fields for {{ file_name|default('Imported File') }}</h2>
         <div class="grid grid-cols-1 gap-2 text-sm text-gray-700" id="imported-fields-container">
             {% for header in parsed_headers %}
             <div class="border px-3 py-2 rounded bg-gray-50" id="match-container-{{ header }}">
