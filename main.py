@@ -10,6 +10,7 @@ from db.records import get_all_records, get_record_by_id, update_field_value, cr
 from db.relationships import get_related_records, add_relationship, remove_relationship
 from static.imports.validation import validation_sorter
 from imports.import_csv import parse_csv
+from imports.tasks import huey 
 
 app = Flask(__name__, static_url_path='/static')
 DB_PATH = os.path.join("data", "crossbook.db")
