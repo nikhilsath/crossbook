@@ -11,6 +11,7 @@ from db.relationships import get_related_records, add_relationship, remove_relat
 from static.imports.validation import validation_sorter
 from imports.import_csv import parse_csv
 from imports.tasks import huey 
+from db.edit_fields import add_column_to_table, add_field_to_schema
 
 app = Flask(__name__, static_url_path='/static')
 app.jinja_env.add_extension('jinja2.ext.do')
@@ -24,11 +25,13 @@ logging.basicConfig(
 
 @app.context_processor
 def inject_field_schema():
-    from db.schema import get_field_schema  
+    from db.schema import load_field_schema
+    from db.schema import update_foreign_field_options
     return {
-        'field_schema': get_field_schema(),
+        'field_schema': load_field_schema(),
         'update_foreign_field_options': update_foreign_field_options
     }
+
 
 @app.route("/")
 def home():
@@ -86,6 +89,36 @@ def detail_view(table, record_id):
         related=related,
         field_schema_layout=layout_by_field  
     )
+
+
+@app.route("/<table>/<int:record_id>/add-field", methods=["POST"])
+def add_field_route(table, record_id):
+    try:
+        field_name = request.form["field_name"]
+        field_type = request.form["field_type"]
+        field_options_raw = request.form.get("field_options", "")
+        foreign_key = request.form.get("foreign_key_target", None)
+
+        field_options = [opt.strip() for opt in field_options_raw.split(",") if opt.strip()] if field_options_raw else []
+        layout = {"x": 0, "y": 0, "w": 6, "h": 1}
+
+        add_column_to_table(table, field_name, field_type)
+
+        add_field_to_schema(
+            table=table,
+            field_name=field_name,
+            field_type=field_type,
+            field_options=field_options,
+            foreign_key=foreign_key,
+            layout=layout
+        )
+        print("🚀 Adding column to:", table, "field:", field_name, "type:", field_type)
+
+        return redirect(url_for("detail_view", table=table, record_id=record_id))
+
+    except Exception as e:
+        print("❌ Error:", e)
+        return "Server error", 500
 
 @app.route("/<table>/<int:record_id>/update", methods=["POST"])
 def update_field(table, record_id):
