@@ -112,6 +112,8 @@ def add_field_route(table, record_id):
             foreign_key=foreign_key,
             layout=layout
         )
+        from db import schema
+        schema.FIELD_SCHEMA = load_field_schema()
         print("🚀 Adding column to:", table, "field:", field_name, "type:", field_type)
 
         return redirect(url_for("detail_view", table=table, record_id=record_id))
