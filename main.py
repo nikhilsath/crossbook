@@ -13,6 +13,7 @@ from imports.import_csv import parse_csv
 from imports.tasks import huey 
 
 app = Flask(__name__, static_url_path='/static')
+app.jinja_env.add_extension('jinja2.ext.do')
 DB_PATH = os.path.join("data", "crossbook.db")
 CORE_TABLES = ["character", "thing", "location", "faction", "topic", "content"]
 
