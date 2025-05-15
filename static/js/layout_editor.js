@@ -7,9 +7,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const editBtn = document.getElementById('toggle-edit-layout');
   const resetBtn = document.getElementById('reset-layout');
+  const addFieldBtn = document.getElementById('add-field');
   const container = document.getElementById('layout-grid');
-  grid.classList.toggle('editing');
-  document.getElementById('reset-layout').classList.toggle('hidden');
+
+  editBtn.addEventListener('click', () => {
+    editMode = !editMode;
+    container.classList.toggle("editing");
+
+    resetBtn.classList.toggle("hidden");
+    addFieldBtn.classList.toggle("hidden");
+  });
+  
+});
+
 
   // Read element metrics and convert to grid units
   function getGridData(el) {
@@ -141,20 +151,3 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   
 
-  // Toggle handlers
-  editBtn.addEventListener('click', () => {
-    console.log('🔘 Toggled edit mode:', !editMode);
-    if (!editMode) {
-      enableLayoutEditing();
-      resetBtn.classList.remove('hidden');
-      editBtn.textContent = 'Stop Editing';
-    } else {
-      disableLayoutEditing();
-      resetBtn.classList.add('hidden');
-      editBtn.textContent = 'Edit Layout';
-    }
-    editMode = !editMode;
-  });
-
-  resetBtn.addEventListener('click', resetLayout);
-});
