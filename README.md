@@ -1,66 +1,121 @@
 
 # Crossbook
 
-**Crossbook** is a structured, browser-based knowledge interface for managing content and its related metadata. It provides an easy way to organize and cross-reference entities (for example: books or chapters of content, and related characters, locations, factions, etc.) along with their interrelationships. The application features a clean, Notion-inspired design and uses a normalized SQLite database (with join tables) to map many-to-many relationships between entities. 
+Crossbook is a structured, browser-based knowledge interface for managing content and its related metadata. It provides an easy way to organize and cross-reference entities (for example: books or chapters of content, and related characters, locations, factions, etc.) along with their interrelationships. The application features a clean design and uses a normalized SQLite database (with join tables) to map many-to-many relationships between entities.
 
 ## Project Summary
 
-- **Tech Stack:** Flask (Python web framework) with Jinja2 templating for the backend, Tailwind CSS for styling (loaded via CDN), and SQLite for the database. All components are open-source.
-- **Dynamic UI:** The app automatically provides list views and detail views for each core entity type (CORE_TABLES) by inspecting the database schema. 
-- **Inline Editing:** Entity details can be edited inline on the detail view pages. Changes are saved back to the database, and an edit log (`edit_log` field) tracks all modifications per record not including relationships(yet).
-- **Relationships Management:** Many-to-many relationships between entities are supported through join tables in the SQLite schema. Related items are displayed on each entity’s detail page, and users can add or remove relationships via a modal interface (no page reload needed for the action).
-- **Search & Visiblity in Table View:** Each list view includes a search box to filter records by text fields. List views also allow toggling the visibility of columns for easier reading.
-- **Navigation:** A fixed navigation bar provides links to all main entity sections. New entity types can be added by extending the database and configuration, but currently the core types are hardcoded. The homepage Index.html is also still hardcoded.
+* **Tech Stack:** Python 3.x, Flask (web framework), Jinja2 (templating), Tailwind CSS (styling via CDN), SQLite (relational database). JavaScript libraries include InteractJS for drag-and-drop layout editing and custom scripts under `static/js/` for validation and UI behavior.
+* **Dynamic UI Generation:** Automated list and detail views based on database schema introspection.
+* **CSV Import & Validation:** Import CSV files with field-matching dropdowns and instant client-side validation (`static/imports/match_logic.js`) plus server-side verification (`imports.import_csv.parse_csv`).
+* **Search & Visibility Controls:** Text-based search filters and toggleable columns for list views, with filter controls implemented via Jinja macros.
+* **Navigation:** Centralized in `templates/base.html`, providing consistent header navigation and action buttons across all entity pages.
+* **Database Layer:** Abstracted in the `db/` package (`database.py`, `schema.py`, `records.py`, `relationships.py`) for connection handling, schema loading, CRUD operations, and relationship management.
+* **Session Management & Logging:** Utilizes Flask session for stateful workflows and Python’s `logging` module for error and activity tracking.
+
+### Future Cloud Migration
+
+* **Move from SQLite to a managed cloud database** (e.g. PostgreSQL) to support scalability and multi-instance deployments.
+* **Integrate a task queue** (e.g. Google Cloud Tasks) for any long-running or background jobs (CSV import, relationship syncing, etc.).
+* **Adjust configuration and deployment** to read credentials and connection strings from environment variables or secret stores.
 
 ## Current Status
 
-### Implemented Features
+* **CSV Import & Field Mapping (In Progress):** refining dropdown matching logic, enhancing client/server validation feedback, and improving import performance.
+* **Detail View Resizing & Layout Editor (In Progress):** improving drag-and-drop interactions, grid responsiveness across screen sizes, and persisting custom layouts immediately on change.
 
-- **Dynamic Routing & Templates:** Generic Flask routes serve all core entities using shared templates for list and detail views, reducing duplicate code.
-- **Schema-Driven Fields:** The application reads a `field_schema` table from the database on startup to learn what fields each entity has and their data types (text, number, boolean, etc.). This drives form field types and display logic without hardcoding field names in the templates.
-- **List View with Search:** Each entity list page shows up to 1000 records in a table. A search form allows filtering results by text-based fields (partial match). Columns can be shown or hidden on the fly using the **Columns** dropdown.
-- **Detail View & Inline Edit:** The detail page for each record displays all its fields (except those marked as hidden in the schema) and allows inline editing:
-  - `multi_select` fields now use a tag-style interface with autosave, filtering, and click-to-remove behavior. The old `<select multiple>` dropdown has been replaced with a rich, interactive component.
-  - Clicking the ✏️ icon next to a field turns that field into an edit form (text input, date picker, checkbox, or rich text editor depending on field type).
-  - Edits are saved via a POST request, and changes are appended to an **edit log** visible on the page.  
-  - Boolean fields have a one-click toggle (a colored Yes/No button) that updates immediately without entering edit mode.
-- **Edit History:** Each record’s edit history is preserved in an `edit_log` text field. The detail page can display the full history (expandable via a toggle) so developers can track changes.
-- **Relationship Display:** The detail page also shows related records from other tables. For example, a Character page will list any related Things, Locations, etc. These relations are determined by presence of join tables in the database (e.g. a join table `character_location` would link characters and locations).
-- **Add/Remove Relationships:** Users can manage relationships on the detail page:
-  - A **+** button opens a modal listing all possible records from another category to relate to the current item. Selecting one and clicking Add will create the link (inserting a row into the appropriate join table).
-  - Each existing related item is shown with a **✖** remove button, which, when clicked, removes that relationship (deletes the join table entry).
-  - The relationship modal and remove buttons perform their actions via AJAX (using a single `/relationship` endpoint on the backend), and then refresh the page to show updates.
-- **Rich Text Support:** “Textarea” fields (intended for multi-paragraph text like descriptions or content) support basic rich text editing. In edit mode, a mini formatting toolbar (Bold, Italic, Underline, Link) is available, and the content is saved as HTML. On display, this HTML is rendered with proper styling (using Tailwind’s `prose` classes). The formatting logic is now modularized in `editor.js` and loaded per-field with ES6 imports.
-- **Navigation Bar:** A consistent hardcoded top navigation is present on all pages (via the base template), linking to Home and each core entity section for quick access.
+## Implemented Features
 
+* **List View with Search:** Each entity list page allows filtering records by text-based fields with a search box (`list_view.html`).
+* **Column Visibility:** Columns can be shown or hidden on the fly using the **Columns** dropdown (`column_visibility.js`).
+* **Detail View & Inline Edit:** Displays all fields on the detail page with inline editing via text input, date picker, checkbox, or rich text editor; edits are saved via POST and appended to the edit log.
+* **Relationship Management:** Displays related records and allows adding/removing relationships through a modal interface (+ to add, ✖ to remove), using AJAX to update join tables dynamically.
+* **Rich Text Support:** Textarea fields support basic formatting with buttons: Bold, Italic, Underline, Link.
+* **Edit History:** Tracks each record’s modifications in an `edit_log`, viewable via an expandable history section.
+* **Navigation Bar:** A consistent top navigation (`base.html`) links to Home and all core entity sections.
+* **Supported Field Types:** text, number, date, select, multi-select, foreign-key, boolean, and textarea, each rendered with the appropriate input control.
+* **Filter Macros:** Reusable Jinja macros for boolean, select, text, and multi-select filters (`templates/macros/filter_controls.html`).
+* **CSV Import (In Progress):** Validation logic (dropdown matching and error feedback) implemented; full import processing and record creation still under development.
 
 ## Project Structure
 
-The project is organized into a simple structure, separating the Flask app, templates, static files, and data:
-
-```
-.
-├── data/
-│   └── crossbook.db             # SQLite database with normalized schema (tables & join tables)
-├── templates/                   # Jinja2 templates for page rendering
-│   ├── base.html                # Base layout (navigation and common structure)
-│   ├── index.html               # Home page (links to all sections)
-│   ├── list_view.html           # Generic list view for any entity type
-│   ├── detail_view.html         # Generic detail view for a single record (with inline editing)
+```text
+/
+├── README.md                        # Project documentation and setup instructions
+├── main.py                          # Application entrypoint; Flask app setup and routes
+├── requirements.txt                 # Python dependencies
+├── db/                              # Database layer modules
+│   ├── database.py                  # Connection and session management
+│   ├── schema.py                    # Schema introspection and migrations
+│   ├── records.py                   # CRUD operations
+│   ├── relationships.py             # Many-to-many join helpers
+│   ├── validation.py                # Field and data validation logic
+│   └── edit_fields.py               # Field schema editing utilities
+├── imports/                         # Import and background task definitions
+│   ├── import_csv.py                # CSV parsing, validation, and import routines
+│   └── tasks.py                     # Background job definitions (e.g., Huey tasks)
+├── static/                          # Front-end assets
+│   ├── css/
+│   │   ├── overrides.css            # Tailwind override styles
+│   │   └── styles.css               # Additional global styles
+│   ├── js/
+│   │   ├── column_visibility.js     # Column toggle logic
+│   │   ├── editor.js                # Rich-text editor integration
+│   │   ├── edit_fields.js           # Client-side field schema editing
+│   │   ├── filter_visibility.js     # Show/hide filter controls
+│   │   ├── layout_editor.js         # Drag/drop & layout persistence
+│   │   ├── relations.js             # AJAX for add/remove relationships
+│   │   └── tag_selector.js          # Multi-select tag UI helper
+│   └── imports/
+│       └── match_logic.js           # Client-side CSV validation logic
+├── templates/                       # Jinja2 view templates
+│   ├── base.html
+│   ├── index.html
+│   ├── new_record.html
+│   ├── import_view.html
+│   ├── list_view.html
+│   ├── detail_view.html
 │   └── macros/
-│       └── fields.html          # Reusable Jinja macros for rendering form fields and values
-├── static/
-│   └── js/
-│       ├── column_visibility.js # Client-side logic for toggling list view columns
-│       ├── editor.js             # Handles formatting and autosave for rich text (textarea) fields
-│       └── relations.js         # Client-side logic for managing relationships (modal add/remove)
-├── main.py                      # Flask application (routes, database access, and core logic)
-└── README.md                    # Project documentation (you are reading this)
+│       ├── fields.html              # Field rendering macros
+│       ├── filter_controls.html     # Filter UI macros
+│       └── tag_selector.html        # Multi-select tag macros
+└── data/                            # Runtime and uploaded data
+    ├── crossbook.db                # Main application SQLite database
+    ├── huey.db                     # Task queue persistence database
+    └── uploads/                    # Imported CSV file storage
 ```
 
 ## Application Architecture and Code Overview
 
-Below is a breakdown of the key components of the codebase, including the purpose of each module and function. This is meant to help future developers quickly understand how everything works and identify places for improvement.
+* **Routing & Views:** Defined in `main.py` using Flask decorators; routes handle list, detail, new record, import, and error pages. A context processor (`@app.context_processor`) injects the `field_schema`—the in-memory representation of all table fields, types, options, and layout—into all templates and front-end scripts for dynamic form generation and validation. Error handlers (e.g., `@app.errorhandler(404)`) and `abort()` calls manage invalid requests.
+
+* **Configuration & Environment:** Dependencies listed in `requirements.txt`. Application configuration loads from environment variables or a `.env` file via `python-dotenv`. A `config.py` module organizes settings for development, testing, and production.
+
+* **Database Layer:** Uses Python’s built-in `sqlite3` in `db/database.py` for connection management. Schema introspection and migrations occur in `db/schema.py`. CRUD operations reside in `db/records.py`; many-to-many join logic in `db/relationships.py`. Validation rules live in `db/validation.py`, and field schema editing utilities in `db/edit_fields.py`.
+
+* **Validation & Import Pipeline:** CSV parsing and server-side validation in `imports/import_csv.py`, complemented by client-side matching logic in `static/imports/match_logic.js`. Field matching errors are surfaced back to the user before final import.
+
+* **Background Tasks:** Long-running jobs (e.g., CSV row processing) are defined as Huey tasks in `imports/tasks.py`. Tasks are queued and executed asynchronously to keep request-response cycles performant.
+
+* **Frontend Interaction:** Dynamic behaviors powered by JavaScript modules in `static/js/`:
+
+  * `layout_editor.js` for drag-and-drop and grid persistence
+  * `column_visibility.js` to toggle table columns
+  * `relations.js` for AJAX-based add/remove relationships
+  * `filter_visibility.js` for showing/hiding filter controls
+  * `tag_selector.js` (multi-select dropdown UI)
+  * `edit_fields.js` for client-side schema and field editing
+  * `editor.js` for rich-text formatting integration
+
+* **Static Assets & Styling:** Global styles in `static/css/styles.css`, with Tailwind overrides in `static/css/overrides.css`.
+
+* **Templating & Macros:** Jinja2 templates in `templates/` include `base.html`, `index.html`, `new_record.html`, `import_view.html`, `list_view.html`, and `detail_view.html`. Reusable macros live in `templates/macros/fields.html`, `filter_controls.html`, and `tag_selector.html`.
+
+* **Logging & Monitoring:** Basic logging configured via Python’s `logging` module in `main.py`. Logs capture errors, import operations, and user actions.
+
+* **Data Directory:** Runtime files under `data/`: `crossbook.db` (primary database), `huey.db` (task queue store), and `uploads/` for storing imported CSV files.
+
+
 
 ### **Main Application – `main.py`**
 

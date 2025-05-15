@@ -13,7 +13,7 @@
   <div class="flex space-x-2 mb-4">
     <button id="toggle-edit-layout" class="px-4 py-2 bg-blue-500 text-white rounded">Edit Layout</button>
     <button id="reset-layout" class="px-4 py-2 bg-gray-300 text-black rounded hidden">Reset Layout</button>
-    <button id="add-field" onclick="openLayoutModal()" class="ml-2 px-4 py-2 bg-green-500 text-white rounded">Add Field</button>
+    <button id="add-field" onclick="openLayoutModal()" class="ml-2 px-4 py-2 bg-green-500 text-white rounded">Edit Fields</button>
 
   </div>  
     <!-- Grid layout  -->
@@ -78,7 +78,7 @@
   </div>
 </div>
 
-<!-- Modals -->
+<!-- Relation Modal -->
 <div id="relationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50">
   <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full">
     <h3 class="text-lg font-bold mb-4">Add Relation</h3>
@@ -93,7 +93,7 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
 <script src="{{ url_for('static', filename='js/layout_editor.js') }}"></script>
-<!-- Layout Modal -->
+<!-- Edit Fields Modal -->
 <div id="layoutModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50">
   <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full">
     <h3 class="text-lg font-bold mb-4">Add Field to {{table}}</h3>
