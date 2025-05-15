@@ -103,7 +103,7 @@
       <input name="field_name" type="text" class="w-full border px-3 py-2 rounded mb-4" required>
       <label class="block mb-2 text-sm font-medium">Field Type</label>
       {% set types_seen = [] %}
-      <select name="field_type" class="...">
+      <select id="field_type" name="field_type" class="...">
         <option disabled selected>Select type</option>
         {% for table_fields in field_schema.values() %}
           {% for field, meta in table_fields.items() %}
@@ -114,12 +114,29 @@
           {% endfor %}
         {% endfor %}
       </select>
-      
+      <div id="field-options-container" class="hidden mb-4">
+        <label class="block mb-2 text-sm font-medium">Options (comma-separated)</label>
+        <textarea name="field_options" rows="3" class="w-full border px-3 py-2 rounded"></textarea>
+      </div>      
+      <div id="fk-select-container" class="hidden mb-4">
+        <label class="block mb-2 text-sm font-medium">Select linked field</label>
+        <select name="foreign_key_target" class="w-full border px-3 py-2 rounded">
+          <option value="" disabled selected>Select field</option>
+          {% for source_table, fields in field_schema.items() %}
+            {% for field, meta in fields.items() %}
+              {% if meta.type in ['select', 'multi_select'] %}
+                <option value="{{ source_table }}.{{ field }}">{{ source_table }} → {{ field }}</option>
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+        </select>
+      </div>          
       <div class="flex justify-end space-x-2 mt-4">
         <button type="button" onclick="closeLayoutModal()" class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Cancel</button>
         <button type="submit" class="px-4 py-2 rounded bg-green-500 text-white hover:bg-green-600">Submit</button>
       </div>
     </form>
+    <script src="{{ url_for('static', filename='js/edit_fields.js') }}"></script>
   </div>
 </div>
 
