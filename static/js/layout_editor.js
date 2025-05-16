@@ -56,24 +56,17 @@ function getGridData(el) {
   const w = Math.round(width / GRID_SIZE);
   const h = Math.round(height / GRID_SIZE);
 
-  return { field: el.dataset.field, x, y, w, h };
-}
-
-// Update layoutCache for a single element
-function updateCache(el) {
-  const data = getGridData(el);
-  layoutCache[data.field] = { ...data };
-  console.log(`🔁 updateCache: ${data.field}`, data);
+  const data = { field: el.dataset.field, x, y, w, h };
+  return data;
 }
 
 // Send full layout to server
 function captureAllLayout() {
-  console.log("🔄 Attempt to POST layout", layoutCache);
+  console.log("🔄 Attempt to POST layout");
   const layout = [];
   document.querySelectorAll('.draggable-field').forEach(el => {
     const data = getGridData(el);
     layout.push(data);
-    updateCache(el);
   });
   const table = window.location.pathname.split('/')[1];
 
@@ -89,22 +82,25 @@ function captureAllLayout() {
   .catch(err => console.error('❌ Layout save error:', err));
 }
 
-// Enable interact.js behaviors for drag & resize without overlap checks
+// Enable interact.js behaviors for drag & resize with boundary limits
 function enableLayoutEditing() {
   console.log('🟢 Enabling layout editing');
-  // Cache initial positions
-  document.querySelectorAll('.draggable-field').forEach(el => updateCache(el));
+  const container = document.getElementById('layout-grid');
 
   interact('.draggable-field')
     .draggable({
+      inertia: true,
       modifiers: [
         interact.modifiers.snap({
           targets: [ interact.snappers.grid({ x: GRID_SIZE, y: GRID_SIZE }) ],
           range: Infinity,
-          relativePoints: [ { x: 0, y: 0 } ]
+          relativePoints: [{ x: 0, y: 0 }]
+        }),
+        interact.modifiers.restrictRect({
+          restriction: container,
+          endOnly: true
         })
       ],
-      inertia: true,
       listeners: {
         move(event) {
           const target = event.target;
@@ -115,15 +111,31 @@ function enableLayoutEditing() {
           target.setAttribute('data-y', y);
         },
         end(event) {
-          updateCache(event.target);
+          const el = event.target;
+          // 1) Check for collision before committing
+          if (!validatePosition(el)) {
+            console.log(
+              `🔴 Overlap detected on “${el.dataset.field}”, reverting to last valid position.`
+            );
+            revertPosition(el);
+            return; // skip saving invalid layout
+          }
+          // 2) Safe: update cache & POST new layout
+          updateCache(el);
           setTimeout(captureAllLayout, 10);
-        }
+        }        
       }
     })
     .resizable({
       edges: { top: true, left: true, bottom: true, right: true },
       modifiers: [
-        interact.modifiers.snapSize({ targets: [ interact.snappers.grid({ width: GRID_SIZE, height: GRID_SIZE }) ] })
+        interact.modifiers.snapSize({
+          targets: [ interact.snappers.grid({ width: GRID_SIZE, height: GRID_SIZE }) ]
+        }),
+        interact.modifiers.restrictRect({
+          restriction: container,
+          endOnly: true
+        })
       ],
       listeners: {
         move(event) {
@@ -139,12 +151,22 @@ function enableLayoutEditing() {
           target.setAttribute('data-y', y);
         },
         end(event) {
-          updateCache(event.target);
+          const el = event.target;
+          if (!validatePosition(el)) {
+            console.log(
+              `🔴 Overlap detected on “${el.dataset.field}” during resize, reverting to last valid position.`
+            );
+            revertPosition(el);
+            return;
+          }
+          updateCache(el);
           setTimeout(captureAllLayout, 10);
         }
+        
       }
     });
 }
+
 
 // Disable interact.js behaviors
 function disableLayoutEditing() {
@@ -165,4 +187,39 @@ function resetLayout() {
     el.removeAttribute('data-y');
   });
   console.log('✅ Layout reset complete');
+}
+
+// Check for overlap after move/resize
+function intersect(a, b) {
+  return (
+    a.x < b.x + b.w &&
+    a.x + a.w > b.x &&
+    a.y < b.y + b.h &&
+    a.y + a.h > b.y
+  );
+}
+
+function validatePosition(movedEl) {
+  const moved = getGridData(movedEl);
+  const ok = !Array.from(document.querySelectorAll('.draggable-field')).some(el => {
+    if (el === movedEl) return false;
+    const other = getGridData(el);
+    return intersect(moved, other);
+  });
+  console.log(`🔍 validatePosition for: ${movedEl.dataset.field} => ${ok}`);
+  return ok;
+}
+// Restore element to last valid spot from layoutCache
+function revertPosition(el) {
+  const cfg = layoutCache[el.dataset.field];
+  console.log(`⚠️ revertPosition on: ${el.dataset.field}`, cfg);
+  if (!cfg) return;
+  // translate back to the saved X/Y in pixels
+  el.style.transform = `translate(${cfg.x * GRID_SIZE}px, ${cfg.y * GRID_SIZE}px)`;
+  // restore saved width/height in pixels
+  el.style.width     = `${cfg.w * GRID_SIZE}px`;
+  el.style.height    = `${cfg.h * GRID_SIZE}px`;
+  // update the data-attributes so future drags start from here
+  el.setAttribute('data-x', cfg.x * GRID_SIZE);
+  el.setAttribute('data-y', cfg.y * GRID_SIZE);
 }
