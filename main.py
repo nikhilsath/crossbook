@@ -21,7 +21,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(levelname)s:%(message)s"
 )
-# before rendering any template call this and inject the results into the template 
+# Before rendering any template call this and inject the results into the template 
 @app.context_processor
 def inject_field_schema():
     from db.schema import load_field_schema
@@ -30,7 +30,6 @@ def inject_field_schema():
         'field_schema': load_field_schema(),
         'update_foreign_field_options': update_foreign_field_options
     }
-
 
 @app.route("/")
 def home():
@@ -51,7 +50,7 @@ def list_view(table):
         for k, v in raw_args.items()
         if k.endswith("_op") and k[:-3] in fields
         }
-    # 4) Fetch records with both search and filters
+    # Fetch records with both search and filters
     records = get_all_records(table, search=search, filters=filters, ops=ops)
     return render_template(
         "list_view.html",
@@ -63,11 +62,9 @@ def list_view(table):
 
 @app.route("/<table>/<int:record_id>")
 def detail_view(table, record_id):
-    # Get record
     record = get_record_by_id(table, record_id)
     if not record:
         abort(404)
-    # Get related records
     related = get_related_records(table, record_id)
     # Load layout info
     conn = get_connection()
@@ -205,6 +202,7 @@ def delete_record_route(table, record_id):
 
 @app.route("/<table>/layout", methods=["POST"])
 def update_layout(table):
+    FIELD_SCHEMA = load_field_schema()
     logging.info(f"[LAYOUT] Received payload for table={table}: %s", request.get_data())
     data = request.get_json(silent=True)
     if data is None:
