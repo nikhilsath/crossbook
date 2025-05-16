@@ -103,3 +103,9 @@ def update_foreign_field_options():
 
 def get_field_schema():
     return FIELD_SCHEMA
+
+def load_core_tables(conn):
+    row = conn.execute(
+        "SELECT value FROM config WHERE key = ?", ("core_tables",)
+    ).fetchone()
+    return [t.strip() for t in row[0].split(",")] if row else []

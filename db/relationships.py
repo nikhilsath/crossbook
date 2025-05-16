@@ -6,20 +6,16 @@ from db.validation import validate_table
 def get_related_records(source_table, record_id):
     # Ensure the source table is valid
     validate_table(source_table)
-
     conn = get_connection()
     cursor = conn.cursor()
-
     # Fetch all table names
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
     all_tables = [row[0] for row in cursor.fetchall()]
-
     related = {}
     for join_table in all_tables:
         parts = join_table.split("_")
         if len(parts) != 2:
             continue
-
         table_a, table_b = parts
         # Validate each side of the join
         try:

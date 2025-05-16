@@ -1,11 +1,9 @@
 from flask import Flask, render_template, abort, request, redirect, url_for, jsonify, session
-import sqlite3
 import os
-import datetime
 import logging
 import json
 from db.database import get_connection
-from db.schema import load_field_schema, update_foreign_field_options, get_field_schema
+from db.schema import load_field_schema, update_foreign_field_options, get_field_schema, load_core_tables
 from db.records import get_all_records, get_record_by_id, update_field_value, create_record, delete_record
 from db.relationships import get_related_records, add_relationship, remove_relationship
 from static.imports.validation import validation_sorter
@@ -14,15 +12,16 @@ from imports.tasks import huey
 from db.edit_fields import add_column_to_table, add_field_to_schema
 
 app = Flask(__name__, static_url_path='/static')
-app.jinja_env.add_extension('jinja2.ext.do')
+app.jinja_env.add_extension('jinja2.ext.do') # for field type in detail_view
 DB_PATH = os.path.join("data", "crossbook.db")
-CORE_TABLES = ["character", "thing", "location", "faction", "topic", "content"]
+conn = get_connection()
+CORE_TABLES = load_core_tables(conn)
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(levelname)s:%(message)s"
 )
-
+# before rendering any template call this and inject the results into the template 
 @app.context_processor
 def inject_field_schema():
     from db.schema import load_field_schema
@@ -41,14 +40,12 @@ def home():
 def list_view(table):
     if table not in CORE_TABLES:
         abort(404)
-    # 1) All fields for validation
     fields = list(get_field_schema()[table].keys())
-    # 2) Extract free-text search term
-    search = request.args.get("search", "").strip()
-    # 3) Build filters dict: only params matching real fields
+    search = request.args.get("search", "").strip() 
+    # build filters dict
     raw_args = request.args.to_dict()
     filters  = {k: v for k, v in raw_args.items() if k in fields}
-    # Operators:
+    # Operators
     ops = {
         k[:-3]: v
         for k, v in raw_args.items()
@@ -66,7 +63,6 @@ def list_view(table):
 
 @app.route("/<table>/<int:record_id>")
 def detail_view(table, record_id):
-    conn = get_connection()
     # Get record
     record = get_record_by_id(table, record_id)
     if not record:
@@ -74,6 +70,7 @@ def detail_view(table, record_id):
     # Get related records
     related = get_related_records(table, record_id)
     # Load layout info
+    conn = get_connection()
     cur = conn.execute("SELECT field_name, layout FROM field_schema WHERE table_name = ?", (table,))
     layout_by_field = {}
     for field, layout_json in cur.fetchall():
