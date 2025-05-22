@@ -4,40 +4,54 @@ import json
 DB_PATH = "data/crossbook.db"
 FIELD_SCHEMA = {}
 
+DB_PATH = "data/crossbook.db"
 
+# Create library with field types and coordinate layouts
 def load_field_schema():
     """
-    Load field definitions from the field_schema table into a nested dict.
+    Load field definitions from the field_schema table into a nested dict
     """
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
+    # Select all schema columns including new coordinates
     cur.execute("""
-        SELECT table_name, field_name, field_type, field_options, foreign_key, layout
+        SELECT table_name,
+               field_name,
+               field_type,
+               field_options,
+               foreign_key,
+               x1,
+               y1,
+               x2,
+               y2
         FROM field_schema
     """)
     rows = cur.fetchall()
     schema = {}
 
-    for table, field, ftype, options, fk, layout_json in rows:
+    for table, field, ftype, options, fk, x1, y1, x2, y2 in rows:
+        # Initialize field schema entry
         schema.setdefault(table, {})[field] = {
             "type": ftype.strip(),
             "options": [],
             "foreign_key": fk,
-            "layout": {}
+            # Store layout as coordinate dict
+            "layout": {
+                "x1": x1,
+                "y1": y1,
+                "x2": x2,
+                "y2": y2
+            }
         }
-        # Parse options
+        # Parse options if present
         if options:
             try:
                 schema[table][field]["options"] = json.loads(options)
             except Exception:
                 schema[table][field]["options"] = []
-        # Parse layout
-        if layout_json:
-            try:
-                schema[table][field]["layout"] = json.loads(layout_json)
-            except Exception:
-                schema[table][field]["layout"] = {}
+    conn.close()
     return schema
+
 
 # Initialize in-memory cache
 try:

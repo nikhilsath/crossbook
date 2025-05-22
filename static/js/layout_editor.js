@@ -1,225 +1,171 @@
-// layout_editor.js
+const GRID_COLS = 12;
+const defaultFieldWidth = {
+  textarea:  12,
+  select: 5,
+  text: 12,
+  foreign_key: 5,
+  boolean: 3,
+  number: 4,
+  multi_select: 6
+};
+const defaultFieldHeight = {
+  textarea:  5,
+  select: 2,
+  text: 2,
+  foreign_key: 3,
+  boolean: 2,
+  number: 2,
+  multi_select: 3
+};
+let GRID_SIZE;
 
-// Global state for layout editing
-const GRID_SIZE = 20; // Size of each grid unit in pixels
-const layoutCache = {};        // Tracks last valid positions
-let editMode = false;
+function initLayout() {
+  // Grab the container we absolutely position into
+  const layoutGrid = document.getElementById('layout-grid');
+  // Compute the gap between columns
+  const gap = parseInt(getComputedStyle(layoutGrid).columnGap) || 0;
+    // Calculate one column’s pixel width
+    GRID_SIZE = Math.floor(
+      (layoutGrid.clientWidth - gap * (GRID_COLS - 1)) / GRID_COLS
+    );
+  }
 
-function setFieldsDisabled(disabled) {
-  document
-    .querySelectorAll('#layout-grid .draggable-field')
-    .forEach(card => {
-      // disable _all_ inputs, selects, textareas inside this card
-      card.querySelectorAll('input, select, textarea')
-          .forEach(ctrl => ctrl.disabled = disabled);
-    });
+function snapToGrid(value, gridSize) {
+  return Math.round(value / gridSize) * gridSize;
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  const editBtn    = document.getElementById('toggle-edit-layout');
-  const resetBtn   = document.getElementById('reset-layout');
-  const addFieldBtn= document.getElementById('add-field');
-  const container  = document.getElementById('layout-grid');
-
-  editBtn.addEventListener('click', () => {
-    editMode = !editMode;
-    container.classList.toggle("editing");
-    resetBtn.classList.toggle("hidden");
-    if (addFieldBtn) addFieldBtn.classList.toggle("hidden");
-
-    if (editMode) {
-      enableLayoutEditing();
-      editBtn.textContent = 'Stop Editing';
-      setFieldsDisabled(true);
-    } else {
-      disableLayoutEditing();
-      captureAllLayout();
-      editBtn.textContent = 'Edit Layout';
-      setFieldsDisabled(false);
+function buildOccupiedGrid() {
+  const grid = {};
+  Object.entries(layoutCache).forEach(([field, rect]) => {
+    for (let x = rect.x1; x < rect.x2; x++) {
+      for (let y = rect.y1; y < rect.y2; y++) {
+        grid[`${x},${y}`] = field;
+      }
     }
   });
-
-  resetBtn.addEventListener('click', () => {
-    resetLayout();
-  });
-});
-
-// Read element metrics and convert to grid units
-function getGridData(el) {
-  const rawX   = parseFloat(el.getAttribute('data-x')) || 0;
-  const rawY   = parseFloat(el.getAttribute('data-y')) || 0;
-  const width  = el.offsetWidth;
-  const height = el.offsetHeight;
-
-  const x = Math.round(rawX / GRID_SIZE);
-  const y = Math.round(rawY / GRID_SIZE);
-  const w = Math.round(width / GRID_SIZE);
-  const h = Math.round(height / GRID_SIZE);
-
-  const data = { field: el.dataset.field, x, y, w, h };
-  return data;
+  return grid;
 }
 
-// Send full layout to server
-function captureAllLayout() {
-  console.log("🔄 Attempt to POST layout");
-  const layout = [];
-  document.querySelectorAll('.draggable-field').forEach(el => {
-    const data = getGridData(el);
-    layout.push(data);
-  });
-  const table = window.location.pathname.split('/')[1];
-
-  fetch(`/${table}/layout`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ layout })
-  })
-  .then(res => {
-    if (!res.ok) throw new Error('Failed to save layout');
-    console.log('✅ Layout saved');
-  })
-  .catch(err => console.error('❌ Layout save error:', err));
-}
-
-// Enable interact.js behaviors for drag & resize with boundary limits
-function enableLayoutEditing() {
-  console.log('🟢 Enabling layout editing');
-  const container = document.getElementById('layout-grid');
-
-  interact('.draggable-field')
-    .draggable({
-      inertia: true,
-      modifiers: [
-        interact.modifiers.snap({
-          targets: [ interact.snappers.grid({ x: GRID_SIZE, y: GRID_SIZE }) ],
-          range: Infinity,
-          relativePoints: [{ x: 0, y: 0 }]
-        }),
-        interact.modifiers.restrictRect({
-          restriction: container,
-          endOnly: true
-        })
-      ],
-      listeners: {
-        move(event) {
-          const target = event.target;
-          const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-          const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
-          target.style.transform = `translate(${x}px, ${y}px)`;
-          target.setAttribute('data-x', x);
-          target.setAttribute('data-y', y);
-        },
-        end(event) {
-          const el = event.target;
-          // 1) Check for collision before committing
-          if (!validatePosition(el)) {
-            console.log(
-              `🔴 Overlap detected on “${el.dataset.field}”, reverting to last valid position.`
-            );
-            revertPosition(el);
-            return; // skip saving invalid layout
-          }
-          // 2) Safe: update cache & POST new layout
-          updateCache(el);
-          setTimeout(captureAllLayout, 10);
-        }        
+function collisionDetection(field) {
+  const grid = buildOccupiedGrid();
+  const { x1, y1, x2, y2 } = layoutCache[field];
+  for (let x = x1; x < x2; x++) {
+    for (let y = y1; y < y2; y++) {
+      const occupant = grid[`${x},${y}`];
+      if (occupant && occupant !== field) {
+        return true;
       }
+    }
+  }
+  return false;
+}
+
+function reset_layout() {
+  // Ensure GRID_SIZE is initialized
+  if (typeof GRID_SIZE !== 'number') {
+    initLayout();
+  }
+  console.group('reset_layout');
+  let curYUnits = 0; // current vertical offset in grid-units
+
+  // Debug: log all field keys in layoutCache before processing
+  console.log('Fields in cache:', Object.keys(layoutCache));
+
+  Object.keys(layoutCache).forEach(field => {
+    // Skip fields without a rendered element
+    const el = document.querySelector(`.draggable-field[data-field="${field}"]`);
+    if (!el) return;
+
+    // Skip hidden fields explicitly
+    const type = el.dataset.type;
+    if (type === 'hidden') return;
+
+    // Determine default size in grid-units
+    const widthUnits = defaultFieldWidth[type]  || defaultFieldWidth.text;
+    const heightUnits = defaultFieldHeight[type] || defaultFieldHeight.text;
+
+    // Calculate pixel positions
+    const x1 = 0;
+    // Debug: log GRID_SIZE to ensure it's defined
+    console.log('GRID_SIZE:', GRID_SIZE);
+    // Debug: log widthUnits and GRID_SIZE for x2 calculation
+    console.log('widthUnits:', widthUnits, 'GRID_SIZE:', GRID_SIZE);
+    const y1 = curYUnits * GRID_SIZE;
+    const x2 = x1 + widthUnits * GRID_SIZE;
+    const y2 = y1 + heightUnits * GRID_SIZE;
+
+    // Log placement details
+    console.log(`Field "${field}" [${type}]:`, { widthUnits, heightUnits, x1, y1, x2, y2 });
+
+    // Advance vertical cursor
+    curYUnits += heightUnits;
+
+    // Update in-memory cache
+    layoutCache[field] = { x1, y1, x2, y2 };
+
+    // Apply styles to DOM
+    el.style.left   = x1 + 'px';
+    el.style.top    = y1 + 'px';
+    el.style.width  = (x2 - x1) + 'px';
+    el.style.height = (y2 - y1) + 'px';
+  });
+
+  console.groupEnd();
+}
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Ensure GRID_SIZE is initialized before any layout actions
+  initLayout();
+
+  const toggleEditLayoutBtn = document.getElementById('toggle-edit-layout');
+  const resetLayoutBtn      = document.getElementById('reset-layout');
+  const addFieldBtn         = document.getElementById('add-field');
+  const saveLayoutBtn       = document.getElementById('save-layout');
+
+  // Enter edit mode
+  toggleEditLayoutBtn.addEventListener('click', function() {
+    resetLayoutBtn.classList.remove('hidden');
+    saveLayoutBtn.classList.remove('hidden');
+    addFieldBtn.classList.add('hidden');
+    toggleEditLayoutBtn.classList.add('hidden');
+  });
+
+  // Save layout changes to the server
+  saveLayoutBtn.addEventListener('click', function() {
+    // Toggle back the Edit Layout button
+    toggleEditLayoutBtn.classList.remove('hidden');
+
+    // Build payload from in-memory cache
+    const layoutGrid = document.getElementById('layout-grid');
+    const table = layoutGrid.dataset.table;
+    const payload = {
+      layout: Object.entries(layoutCache).map(([field, rect]) => ({
+        field,
+        x1: rect.x1,
+        y1: rect.y1,
+        x2: rect.x2,
+        y2: rect.y2
+      }))
+    };
+
+    fetch(`/${table}/layout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     })
-    .resizable({
-      edges: { top: true, left: true, bottom: true, right: true },
-      modifiers: [
-        interact.modifiers.snapSize({
-          targets: [ interact.snappers.grid({ width: GRID_SIZE, height: GRID_SIZE }) ]
-        }),
-        interact.modifiers.restrictRect({
-          restriction: container,
-          endOnly: true
-        })
-      ],
-      listeners: {
-        move(event) {
-          const target = event.target;
-          let x = parseFloat(target.getAttribute('data-x')) || 0;
-          let y = parseFloat(target.getAttribute('data-y')) || 0;
-          target.style.width  = `${event.rect.width}px`;
-          target.style.height = `${event.rect.height}px`;
-          x += event.deltaRect.left;
-          y += event.deltaRect.top;
-          target.style.transform = `translate(${x}px, ${y}px)`;
-          target.setAttribute('data-x', x);
-          target.setAttribute('data-y', y);
-        },
-        end(event) {
-          const el = event.target;
-          if (!validatePosition(el)) {
-            console.log(
-              `🔴 Overlap detected on “${el.dataset.field}” during resize, reverting to last valid position.`
-            );
-            revertPosition(el);
-            return;
-          }
-          updateCache(el);
-          setTimeout(captureAllLayout, 10);
-        }
-        
-      }
-    });
-}
-
-
-// Disable interact.js behaviors
-function disableLayoutEditing() {
-  console.log('🔴 Disabling layout editing');
-  interact('.draggable-field').unset();
-}
-
-// Reset layout to one-field-per-row
-function resetLayout() {
-  console.log('🟡 Resetting layout to one-field-per-row');
-  document.querySelectorAll('.draggable-field').forEach(el => {
-    el.style.transform = '';
-    el.style.width     = '';
-    el.style.height    = '';
-    el.style.gridColumn = 'span 12';
-    el.style.gridRow    = 'auto';
-    el.removeAttribute('data-x');
-    el.removeAttribute('data-y');
+    .then(response => response.json())
+    .then(data => {
+      console.log('Layout saved:', data);
+      // Optionally hide save/reset buttons
+      resetLayoutBtn.classList.add('hidden');
+      saveLayoutBtn.classList.add('hidden');
+      addFieldBtn.classList.remove('hidden');
+    })
+    .catch(error => console.error('Save layout failed:', error));
   });
-  console.log('✅ Layout reset complete');
-}
 
-// Check for overlap after move/resize
-function intersect(a, b) {
-  return (
-    a.x < b.x + b.w &&
-    a.x + a.w > b.x &&
-    a.y < b.y + b.h &&
-    a.y + a.h > b.y
-  );
-}
-
-function validatePosition(movedEl) {
-  const moved = getGridData(movedEl);
-  const ok = !Array.from(document.querySelectorAll('.draggable-field')).some(el => {
-    if (el === movedEl) return false;
-    const other = getGridData(el);
-    return intersect(moved, other);
-  });
-  console.log(`🔍 validatePosition for: ${movedEl.dataset.field} => ${ok}`);
-  return ok;
-}
-// Restore element to last valid spot from layoutCache
-function revertPosition(el) {
-  const cfg = layoutCache[el.dataset.field];
-  console.log(`⚠️ revertPosition on: ${el.dataset.field}`, cfg);
-  if (!cfg) return;
-  // translate back to the saved X/Y in pixels
-  el.style.transform = `translate(${cfg.x * GRID_SIZE}px, ${cfg.y * GRID_SIZE}px)`;
-  // restore saved width/height in pixels
-  el.style.width     = `${cfg.w * GRID_SIZE}px`;
-  el.style.height    = `${cfg.h * GRID_SIZE}px`;
-  // update the data-attributes so future drags start from here
-  el.setAttribute('data-x', cfg.x * GRID_SIZE);
-  el.setAttribute('data-y', cfg.y * GRID_SIZE);
-}
+  // Restore defaults
+  resetLayoutBtn.addEventListener('click', reset_layout);
+});

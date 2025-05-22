@@ -62,27 +62,37 @@ def list_view(table):
 
 @app.route("/<table>/<int:record_id>")
 def detail_view(table, record_id):
+    """
+    Renders the detail view for a given table and record
+    """
+    # Fetch the record or 404
     record = get_record_by_id(table, record_id)
     if not record:
         abort(404)
-    related = get_related_records(table, record_id)
-    # Load layout info
-    conn = get_connection()
-    cur = conn.execute("SELECT field_name, layout FROM field_schema WHERE table_name = ?", (table,))
-    layout_by_field = {}
-    for field, layout_json in cur.fetchall():
-        try:
-            layout_by_field[field] = json.loads(layout_json) if layout_json else {}
-        except Exception:
-            layout_by_field[field] = {}
 
+    # Fetch related items
+    related = get_related_records(table, record_id)
+
+    # Load full schema (including layout coords) via utility
+    FIELD_SCHEMA = load_field_schema()  
+
+    # Extract only the layout mapping for this table
+    raw_layout = FIELD_SCHEMA.get(table, {})
+    field_schema_layout = {
+        field: meta.get("layout", {})
+        for field, meta in raw_layout.items()
+    }
+
+    logging.debug(f"[DETAIL] Using layout: %s", field_schema_layout)
+    # Render template with layout coordinates available as `field_schema_layout`
     return render_template(
         "detail_view.html",
         table=table,
         record=record,
         related=related,
-        field_schema_layout=layout_by_field  
+        field_schema_layout=field_schema_layout
     )
+
 
 
 @app.route("/<table>/<int:record_id>/add-field", methods=["POST"])
@@ -202,7 +212,8 @@ def delete_record_route(table, record_id):
 
 @app.route("/<table>/layout", methods=["POST"])
 def update_layout(table):
-    FIELD_SCHEMA = load_field_schema()
+    FIELD_SCHEMA = load_field_schema()  
+
     logging.info(f"[LAYOUT] Received payload for table={table}: %s", request.get_data())
     data = request.get_json(silent=True)
     if data is None:
@@ -218,7 +229,7 @@ def update_layout(table):
         logging.error("[LAYOUT] Unknown table: %s", table)
         return jsonify({"error": "Unknown table"}), 400
 
-    conn = get_connection()
+    conn = get_connection()  # opens a sqlite3 connection
     cur = conn.cursor()
     updated = 0
 
@@ -228,22 +239,24 @@ def update_layout(table):
             logging.warning("[LAYOUT] Skipping entry with no field: %r", item)
             continue
 
-        layout_data = {
-            "x": item.get("x", 0),
-            "y": item.get("y", 0),
-            "w": item.get("w", 1),
-            "h": item.get("h", 1)
-        }
+       
+        x1 = item.get("x1", 0)
+        y1 = item.get("y1", 0)
+        x2 = item.get("x2", x1)  # fallback to x1 if missing
+        y2 = item.get("y2", y1)  # fallback to y1 if missing
 
+        # Persist coordinates into dedicated columns
         res = cur.execute(
-            "UPDATE field_schema SET layout = ? WHERE table_name = ? AND field_name = ?",
-            (json.dumps(layout_data), table, field)
+            "UPDATE field_schema SET x1 = ?, y1 = ?, x2 = ?, y2 = ? WHERE table_name = ? AND field_name = ?",
+            (x1, y1, x2, y2, table, field)
         )
         if cur.rowcount:
             updated += 1
         else:
             logging.warning("[LAYOUT] No row updated for %s.%s", table, field)
-        FIELD_SCHEMA[table][field]["layout"] = layout_data
+
+        # Update in-memory schema cache for consistency
+        FIELD_SCHEMA[table][field]["layout"] = {"x1": x1, "y1": y1, "x2": x2, "y2": y2}
 
     conn.commit()
     conn.close()
