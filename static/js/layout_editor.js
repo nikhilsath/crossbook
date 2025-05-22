@@ -164,4 +164,12 @@ document.addEventListener('DOMContentLoaded', function() {
     .catch(error => console.error('Save layout failed:', error));
   });
   resetLayoutBtn.addEventListener('click', reset_layout);
+  // Delegated listener for resize handles
+  layoutGrid.addEventListener('mousedown', function(e) {
+    const handle = e.target.closest('.resize-handle');
+    if (!handle) return;
+    const direction = handle.dataset.direction;
+    const field     = handle.closest('.draggable-field').dataset.field;
+    console.log(`Resize handle clicked: field=${field}, direction=${direction}`);
+  });
 });
