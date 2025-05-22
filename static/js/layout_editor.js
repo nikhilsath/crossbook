@@ -20,9 +20,7 @@ const defaultFieldHeight = {
 let GRID_SIZE;
 
 function initLayout() {
-  // Grab the container we absolutely position into
   const layoutGrid = document.getElementById('layout-grid');
-  // Compute the gap between columns
   const gap = parseInt(getComputedStyle(layoutGrid).columnGap) || 0;
     // Calculate one column’s pixel width
     GRID_SIZE = Math.floor(
@@ -114,7 +112,7 @@ function reset_layout() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  // Ensure GRID_SIZE is initialized before any layout actions
+  // initialized GRID_SIZE before layout actions
   initLayout();
 
   const toggleEditLayoutBtn = document.getElementById('toggle-edit-layout');
@@ -165,7 +163,5 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .catch(error => console.error('Save layout failed:', error));
   });
-
-  // Restore defaults
   resetLayoutBtn.addEventListener('click', reset_layout);
 });
