@@ -43,3 +43,33 @@
   background-color: #dcfce7;  
   border-color:     #86efac;  
 }
+
+
+/* Target the popover container on your multi-select form */
+.multiselect[data-multiselect-dropdown] .ms-dropdown {
+  /* make sure the inner list is laid out in a single column */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0.5rem 0;
+}
+
+/* Left-align each label+checkbox row */
+.multiselect[data-multiselect-dropdown] .ms-dropdown label {
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-start !important;
+  width: 100%;
+  padding: 0.25rem 1rem;
+}
+
+/* Give the checkbox a little breathing room */
+.multiselect[data-multiselect-dropdown] .ms-dropdown input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+
+/* Optional: ensure the label text itself is flush left */
+.multiselect[data-multiselect-dropdown] .ms-dropdown span {
+  text-align: left;
+  width: auto;
+}

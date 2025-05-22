@@ -13,8 +13,8 @@ const defaultFieldHeight = {
   select: 2,
   text: 2,
   foreign_key: 3,
-  boolean: 2,
-  number: 2,
+  boolean: 1,
+  number: 1,
   multi_select: 3
 };
 let GRID_SIZE;
@@ -113,8 +113,6 @@ function reset_layout() {
   console.groupEnd();
 }
 
-
-
 document.addEventListener('DOMContentLoaded', function() {
   // Ensure GRID_SIZE is initialized before any layout actions
   initLayout();
@@ -123,9 +121,11 @@ document.addEventListener('DOMContentLoaded', function() {
   const resetLayoutBtn      = document.getElementById('reset-layout');
   const addFieldBtn         = document.getElementById('add-field');
   const saveLayoutBtn       = document.getElementById('save-layout');
+  const layoutGrid          = document.getElementById('layout-grid');
 
   // Enter edit mode
   toggleEditLayoutBtn.addEventListener('click', function() {
+    layoutGrid.classList.add('editing');
     resetLayoutBtn.classList.remove('hidden');
     saveLayoutBtn.classList.remove('hidden');
     addFieldBtn.classList.add('hidden');
@@ -134,11 +134,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Save layout changes to the server
   saveLayoutBtn.addEventListener('click', function() {
-    // Toggle back the Edit Layout button
+    // Toggle buttons
     toggleEditLayoutBtn.classList.remove('hidden');
-
+    layoutGrid.classList.remove('editing');
     // Build payload from in-memory cache
-    const layoutGrid = document.getElementById('layout-grid');
+    
     const table = layoutGrid.dataset.table;
     const payload = {
       layout: Object.entries(layoutCache).map(([field, rect]) => ({

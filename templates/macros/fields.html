@@ -46,7 +46,7 @@
         </select>
       </form>
       {% elif field_type == "multi_select" %}
-      <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="relative w-full" data-multiselect-dropdown onsubmit="event.preventDefault();">
+      <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="relative w-full multiselect" data-multiselect-dropdown onsubmit="event.preventDefault();">
         <input type="hidden" name="field" value="{{ field }}">
         {% set selected_options = (value or '').split(', ') %}
 

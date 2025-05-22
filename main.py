@@ -213,38 +213,30 @@ def delete_record_route(table, record_id):
 @app.route("/<table>/layout", methods=["POST"])
 def update_layout(table):
     FIELD_SCHEMA = load_field_schema()  
-
     logging.info(f"[LAYOUT] Received payload for table={table}: %s", request.get_data())
     data = request.get_json(silent=True)
     if data is None:
         logging.error("[LAYOUT] JSON parse failed")
         return jsonify({"error": "Bad JSON"}), 400
-
     layout_items = data.get("layout")
     if not isinstance(layout_items, list):
         logging.error("[LAYOUT] Missing or invalid `layout` field: %r", layout_items)
         return jsonify({"error": "Invalid layout format"}), 400
-
     if table not in FIELD_SCHEMA:
         logging.error("[LAYOUT] Unknown table: %s", table)
         return jsonify({"error": "Unknown table"}), 400
-
     conn = get_connection()  # opens a sqlite3 connection
     cur = conn.cursor()
     updated = 0
-
     for item in layout_items:
         field = item.get("field")
         if not field:
             logging.warning("[LAYOUT] Skipping entry with no field: %r", item)
             continue
-
-       
         x1 = item.get("x1", 0)
         y1 = item.get("y1", 0)
         x2 = item.get("x2", x1)  # fallback to x1 if missing
         y2 = item.get("y2", y1)  # fallback to y1 if missing
-
         # Persist coordinates into dedicated columns
         res = cur.execute(
             "UPDATE field_schema SET x1 = ?, y1 = ?, x2 = ?, y2 = ? WHERE table_name = ? AND field_name = ?",
@@ -254,13 +246,10 @@ def update_layout(table):
             updated += 1
         else:
             logging.warning("[LAYOUT] No row updated for %s.%s", table, field)
-
         # Update in-memory schema cache for consistency
         FIELD_SCHEMA[table][field]["layout"] = {"x1": x1, "y1": y1, "x2": x2, "y2": y2}
-
     conn.commit()
     conn.close()
-
     logging.info("[LAYOUT] Rows updated: %d", updated)
     return jsonify({"success": True, "updated": updated})
 

@@ -22,7 +22,7 @@ input[type=number] {
 
 /* 3) In edit mode, show the outlines/shadows again */
 #layout-grid.editing .draggable-field {
-  border: 1px dashed #333 !important;
+  border: 1px blue dashed #333 !important;
   box-shadow: 0 0 0 2px rgba(0,0,0,0.1) !important;
   background-color: #fafafa !important;
 }
@@ -52,3 +52,4 @@ input[type=number] {
 #layout-grid .draggable-field textarea {
   height: 100% !important;
 }
+
