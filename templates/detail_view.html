@@ -55,6 +55,7 @@
                  width: {{ x2 - x1 }}px;
                  height: {{ y2 - y1 }}px;
                ">
+               {{ fields.render_resize_handles() }}
             <div class="text-sm font-bold capitalize mb-1">{{ field }}</div>
             <div>
               {{ fields.render_editable_field(

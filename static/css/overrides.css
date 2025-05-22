@@ -53,3 +53,22 @@ input[type=number] {
   height: 100% !important;
 }
 
+/* handles hidden by default */
+#layout-grid .resize-handle { display: none; position: absolute; }
+
+/* Only show in edit mode */
+#layout-grid.editing .resize-handle {
+  display: block;
+  width: 12px; height: 12px;
+  background: rgba(0,0,255,0.5);
+  z-index: 10;
+}
+/* Position each handle */
+.resize-n  { top: -6px; left: 50%; transform: translateX(-50%);   cursor: n-resize; }
+.resize-ne { top: -6px; right: -6px;                               cursor: ne-resize; }
+.resize-e  { top: 50%; right: -6px; transform: translateY(-50%);   cursor: e-resize; }
+.resize-se { bottom: -6px; right: -6px;                           cursor: se-resize; }
+.resize-s  { bottom: -6px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+.resize-sw { bottom: -6px; left: -6px;                            cursor: sw-resize; }
+.resize-w  { top: 50%; left: -6px; transform: translateY(-50%);    cursor: w-resize; }
+.resize-nw { top: -6px; left: -6px;                              cursor: nw-resize; }
