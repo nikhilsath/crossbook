@@ -28,34 +28,9 @@ function initLayout() {
     );
   }
 
-function snapToGrid(value, gridSize) {
-  return Math.round(value / gridSize) * gridSize;
-}
-
-function buildOccupiedGrid() {
-  const grid = {};
-  Object.entries(layoutCache).forEach(([field, rect]) => {
-    for (let x = rect.x1; x < rect.x2; x++) {
-      for (let y = rect.y1; y < rect.y2; y++) {
-        grid[`${x},${y}`] = field;
-      }
-    }
-  });
-  return grid;
-}
-
-function collisionDetection(field) {
-  const grid = buildOccupiedGrid();
-  const { x1, y1, x2, y2 } = layoutCache[field];
-  for (let x = x1; x < x2; x++) {
-    for (let y = y1; y < y2; y++) {
-      const occupant = grid[`${x},${y}`];
-      if (occupant && occupant !== field) {
-        return true;
-      }
-    }
-  }
-  return false;
+function intersects(a, b) {
+  return a.x1 < b.x2 && b.x1 < a.x2
+      && a.y1 < b.y2 && b.y1 < a.y2;
 }
 
 function reset_layout() {
@@ -81,7 +56,6 @@ function reset_layout() {
     // Determine default size in grid-units
     const widthUnits = defaultFieldWidth[type]  || defaultFieldWidth.text;
     const heightUnits = defaultFieldHeight[type] || defaultFieldHeight.text;
-
     // Calculate pixel positions
     const x1 = 0;
     // Debug: log GRID_SIZE to ensure it's defined
@@ -97,9 +71,9 @@ function reset_layout() {
 
     // Advance vertical cursor
     curYUnits += heightUnits;
-
+    console.log('Before update:', layoutCache[field]);
     // Update in-memory cache
-    layoutCache[field] = { x1, y1, x2, y2 };
+    layoutCache[field] = { x1, y1, x2, y2 }; 
 
     // Apply styles to DOM
     el.style.left   = x1 + 'px';
@@ -112,7 +86,7 @@ function reset_layout() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  // initialized GRID_SIZE before layout actions
+  // Initialize GRID_SIZE before layout actions
   initLayout();
 
   const toggleEditLayoutBtn = document.getElementById('toggle-edit-layout');
@@ -127,18 +101,73 @@ document.addEventListener('DOMContentLoaded', function() {
     resetLayoutBtn.classList.remove('hidden');
     saveLayoutBtn.classList.remove('hidden');
     addFieldBtn.classList.add('hidden');
-    toggleEditLayoutBtn.classList.add('hidden');
+    toggleEditLayoutBtn.classList.add('hidden'); 
+
     $('.draggable-field').resizable({
       handles: 'n, e, s, w, ne, se, sw, nw',
       create: function() {
-        console.log('Resizable created for', $(this).data('field'));
+        console.log('Resizable created for', $(this).data('field'));  // Fires when resizable initialized per field
+      },
+      start: function(e, ui) {
+        const f = $(this).data('field');
+        console.log('Resize start for', f, 'position:', ui.position, 'size:', ui.size);
+      },
+      stop: function(e, ui) {
+        const f = $(this).data('field');
+        console.group('🔚 Resize stop for', f);
+        console.log('Before cache:', layoutCache[f]);
+        layoutCache[f] = {
+          x1: ui.position.left,
+          y1: ui.position.top,
+          x2: ui.position.left + ui.size.width,
+          y2: ui.position.top  + ui.size.height
+        };
+        console.log('After cache:', layoutCache[f]);
+        const rect = layoutCache[f];
+        const hasOverlap = Object.entries(layoutCache).some(([other, r]) =>
+          other !== f && intersects(rect, r)
+        );
+        console.log(`Overlap? ${hasOverlap} for ${f}`);
+        if (hasOverlap) {
+          console.log(`Reverting ${f} due to overlap`);
+          revertPosition(event.target);
+        }
+        console.groupEnd();
       },
       grid: [GRID_SIZE, GRID_SIZE]
     }).draggable({
       containment: '#layout-grid',
       grid: [GRID_SIZE, GRID_SIZE],
-      cancel: '.ui-resizable-handle'  
+      cancel: '.ui-resizable-handle',
+      start: function(e, ui) {
+        const f = $(this).data('field');
+        console.log('Drag start for', f, 'position:', ui.position);
+      }, 
+      stop: function(e, ui) {
+        const f = $(this).data('field');
+        console.group('🔚 Drag stop for', f);
+        console.log('Before cache:', layoutCache[f]);
+        layoutCache[f] = {
+          x1: ui.position.left,
+          y1: ui.position.top,
+          x2: ui.position.left + $(this).width(),
+          y2: ui.position.top  + $(this).height()
+        };
+        console.log('After cache:', layoutCache[f]);
+        const rect = layoutCache[f];
+        const hasOverlap = Object.entries(layoutCache).some(([other, r]) =>
+          other !== f && intersects(rect, r)
+        );
+        console.log(`Overlap? ${hasOverlap} for ${f}`);
+        if (hasOverlap) {
+          console.log(`Reverting ${f} due to overlap`);
+          revertPosition(event.target);
+        }
+        console.groupEnd();
+      }
     });    
+
+    console.log('Initial layoutCache:', layoutCache);  // Fires on entering edit mode; shows starting coordinates
   });
 
   // Save layout changes to the server
@@ -148,48 +177,55 @@ document.addEventListener('DOMContentLoaded', function() {
     // Toggle buttons
     toggleEditLayoutBtn.classList.remove('hidden');
     layoutGrid.classList.remove('editing');
-    // Build payload from in-memory cache
+
+    // Build payload from in-memory cache, filtering hidden fields
     const table = layoutGrid.dataset.table;
     const payload = {
-      layout: Object.entries(layoutCache).map(([field, rect]) => ({
-        field,
-        x1: rect.x1,
-        y1: rect.y1,
-        x2: rect.x2,
-        y2: rect.y2
-      }))
+      layout: Object.entries(layoutCache)
+        .filter(([field]) => document.querySelector(`.draggable-field[data-field="${field}"]`))
+        .map(([field, rect]) => ({ field, x1: rect.x1, y1: rect.y1, x2: rect.x2, y2: rect.y2 }))
     };
+
+    console.log('Payload being sent:', JSON.stringify(payload, null, 2));  // Fires before network call; verify structure & values
+
     fetch(`/${table}/layout`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
-    .then(response => response.json())
+    .then(response => {
+      console.log('Server response status:', response.status);           // Fires on HTTP response; check status code
+      return response.json();
+    })
     .then(data => {
-      console.log('Layout saved:', data);
+      console.log('Save result:', data);                                // Fires after parsing JSON; inspect 'updated' field
       // Hide buttons
       resetLayoutBtn.classList.add('hidden');
       saveLayoutBtn.classList.add('hidden');
       addFieldBtn.classList.remove('hidden');
     })
-    .catch(error => console.error('Save layout failed:', error));
+    .catch(error => console.error('Save layout failed:', error));         // Fires on network or JSON errors
   });
+
   resetLayoutBtn.addEventListener('click', reset_layout);
+
   // Delegated listener for resize handles
   layoutGrid.addEventListener('mousedown', function(e) {
     const handle = e.target.closest('.ui-resizable-handle');
     if (!handle) return;
-    const direction = handle.dataset.direction;
+    const direction = Array.from(handle.classList)
+      .find(c => c.startsWith('ui-resizable-') && c !== 'ui-resizable-handle');
     const field     = handle.closest('.draggable-field').dataset.field;
-    console.log(`Resize handle clicked: field=${field}, direction=${direction}`);
+    console.log(`Resize handle clicked: field=${field}, direction=${direction}`);  // Fires on handle mousedown
   });
-  // Delegated listener for field drag start (excluding handles)
+
+  // Delegated listener for field click (drag start)
   layoutGrid.addEventListener('mousedown', function(e) {
-    // skip if clicking on a handle
-    if (e.target.closest('.resize-handle')) return;
+    if (e.target.closest('.ui-resizable-handle')) return;  // skip handle clicks
     const fieldEl = e.target.closest('.draggable-field');
     if (!fieldEl) return;
     const field = fieldEl.dataset.field;
-    console.log(`Field clicked for drag: ${field}`);
+    console.log(`Field clicked for drag: ${field}`);            // Fires on field mousedown outside handles
   });
 });
+

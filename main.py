@@ -242,6 +242,8 @@ def update_layout(table):
             "UPDATE field_schema SET x1 = ?, y1 = ?, x2 = ?, y2 = ? WHERE table_name = ? AND field_name = ?",
             (x1, y1, x2, y2, table, field)
         )
+        logging.info("[LAYOUT] SQL rowcount=%d for %s.%s with params x1=%s,y1=%s,x2=%s,y2=%s",
+                cur.rowcount, table, field, x1, y1, x2, y2)
         if cur.rowcount:
             updated += 1
         else:
