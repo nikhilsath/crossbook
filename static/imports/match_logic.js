@@ -133,8 +133,7 @@ document.addEventListener("change", event => {
         // After rendering validation, update UI and dropdowns
         renderAvailableFields();
         refreshDropdowns();
-        console.group('applyCssFlags');
-        console.log('Full report:', report);
+        console.log('Full report:', report);  
         Object.entries(report).forEach(([respHeader, results]) => {
           const container = document.getElementById(`match-container-${respHeader}`);
           if (!container) return;

@@ -33,6 +33,23 @@ function intersects(a, b) {
       && a.y1 < b.y2 && b.y1 < a.y2;
 }
 
+function revertPosition(el) {
+  const prev = el._prevRect;
+  if (!prev) {
+    console.warn('No previous rect to revert for', el.dataset.field);
+    return;
+  }
+  // Apply styles
+  el.style.left   = prev.x1 + 'px';
+  el.style.top    = prev.y1 + 'px';
+  el.style.width  = (prev.x2 - prev.x1) + 'px';
+  el.style.height = (prev.y2 - prev.y1) + 'px';
+  // Update cache to match
+  layoutCache[el.dataset.field] = { ...prev };
+  console.log('▶️ revertPosition called for', el.dataset.field, 'with _prevRect=', el._prevRect);
+}
+
+
 function reset_layout() {
   // Ensure GRID_SIZE is initialized
   if (typeof GRID_SIZE !== 'number') {
@@ -109,28 +126,36 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Resizable created for', $(this).data('field'));  // Fires when resizable initialized per field
       },
       start: function(e, ui) {
-        const f = $(this).data('field');
+        const el = this;
+        const f  = el.dataset.field;
+        // 1) store  layoutCache snapshot
+        el._prevRect = { ...layoutCache[f] };
+        console.log('🛫 Storing prevRect for', f, el._prevRect);
+        // 2) log the resize
         console.log('Resize start for', f, 'position:', ui.position, 'size:', ui.size);
       },
       stop: function(e, ui) {
         const f = $(this).data('field');
         console.group('🔚 Resize stop for', f);
-        console.log('Before cache:', layoutCache[f]);
         layoutCache[f] = {
           x1: ui.position.left,
           y1: ui.position.top,
           x2: ui.position.left + ui.size.width,
           y2: ui.position.top  + ui.size.height
         };
-        console.log('After cache:', layoutCache[f]);
-        const rect = layoutCache[f];
-        const hasOverlap = Object.entries(layoutCache).some(([other, r]) =>
-          other !== f && intersects(rect, r)
-        );
+              const rect = layoutCache[f];
+      // Only check against fields that are actually in the DOM and not hidden
+      const candidates = Object.entries(layoutCache).filter(([other, r]) => {
+        const el = document.querySelector(`.draggable-field[data-field="${other}"]`);
+        return el && el.dataset.type !== 'hidden';
+      });
+      const hasOverlap = candidates.some(([other, r]) =>
+        other !== f && intersects(rect, r)
+      );
         console.log(`Overlap? ${hasOverlap} for ${f}`);
         if (hasOverlap) {
           console.log(`Reverting ${f} due to overlap`);
-          revertPosition(event.target);
+          revertPosition(this);
         }
         console.groupEnd();
       },
@@ -141,10 +166,13 @@ document.addEventListener('DOMContentLoaded', function() {
       cancel: '.ui-resizable-handle',
       start: function(e, ui) {
         const f = $(this).data('field');
+        this._prevRect = { ...layoutCache[f] };
         console.log('Drag start for', f, 'position:', ui.position);
       }, 
       stop: function(e, ui) {
         const f = $(this).data('field');
+        this._prevRect = { ...layoutCache[f] };
+        console.log('🛫 Storing prevRect for drag', f, this._prevRect);
         console.group('🔚 Drag stop for', f);
         console.log('Before cache:', layoutCache[f]);
         layoutCache[f] = {
@@ -161,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log(`Overlap? ${hasOverlap} for ${f}`);
         if (hasOverlap) {
           console.log(`Reverting ${f} due to overlap`);
-          revertPosition(event.target);
+          revertPosition(this);
         }
         console.groupEnd();
       }
