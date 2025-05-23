@@ -117,6 +117,9 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 
 
 
+
+
+
 ### **Main Application – `main.py`**
 
 This is the core of the Flask application. It defines the web routes, handles database interactions, and implements the logic for listing records, showing details, editing fields, and managing relationships. The application uses a single Flask app instance and a single SQLite database file.

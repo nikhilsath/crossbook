@@ -172,4 +172,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const field     = handle.closest('.draggable-field').dataset.field;
     console.log(`Resize handle clicked: field=${field}, direction=${direction}`);
   });
+  // Delegated listener for field drag start (excluding handles)
+  layoutGrid.addEventListener('mousedown', function(e) {
+    // skip if clicking on a handle
+    if (e.target.closest('.resize-handle')) return;
+    const fieldEl = e.target.closest('.draggable-field');
+    if (!fieldEl) return;
+    const field = fieldEl.dataset.field;
+    console.log(`Field clicked for drag: ${field}`);
+  });
 });

@@ -76,7 +76,6 @@ def get_all_records(table, search=None, filters=None, ops=None):
     finally:
         conn.close()
 
-
 def get_record_by_id(table, record_id):
     conn = get_connection()
     cursor = conn.cursor()

@@ -9,12 +9,10 @@ function showValidationPopup(header, htmlContent) {
     popup.innerHTML = `<strong>${header}:</strong> ${htmlContent}`;
     overlay.classList.remove('hidden');
   }
-  
-  // Wait until the DOM is loaded
+  // Event listener for popups
   document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('imported-fields-container');
     if (!container) return;
-  
     // Delegate clicks to blank-popup spans only
     container.addEventListener('click', event => {
       const span = event.target.closest('span.blank-popup');
@@ -29,7 +27,6 @@ function showValidationPopup(header, htmlContent) {
   
       showValidationPopup(header, content);
     });
-  
     // Delegate clicks to warning-popup spans only
     container.addEventListener('click', event => {
       const span = event.target.closest('span.warning-popup');

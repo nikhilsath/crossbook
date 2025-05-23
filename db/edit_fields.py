@@ -2,9 +2,7 @@ import sqlite3
 import json
 from db.database import get_connection
 
-def add_field():
-    add_field_to_schema()
-    add_column_to_table()
+
 
 def add_field_to_schema(table, field_name, field_type, field_options=None, foreign_key=None, layout=None):
     conn = get_connection()
