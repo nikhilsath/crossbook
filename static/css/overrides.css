@@ -72,3 +72,12 @@ input[type=number] {
 #layout-grid.editing .resize-sw { bottom: 0; left: 0;                            cursor: sw-resize;   }
 #layout-grid.editing .resize-w  { top: 50%;  left: 0;    transform: translateY(-50%); cursor: w-resize;    }
 #layout-grid.editing .resize-nw { top: 0;    left: 0;                            cursor: nw-resize;   }
+
+/* In edit mode, disable pointer events on everything inside the field */
+#layout-grid.editing .draggable-field > *:not(.resize-handle) {
+  pointer-events: none;
+}
+/* Re-enable on handles */
+#layout-grid.editing .resize-handle {
+  pointer-events: all;
+}
