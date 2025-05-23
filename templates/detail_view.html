@@ -55,7 +55,6 @@
                  width: {{ x2 - x1 }}px;
                  height: {{ y2 - y1 }}px;
                ">
-               {{ fields.render_resize_handles() }} 
             <div class="text-sm font-bold capitalize mb-1">{{ field }}</div>
             <div>
               {{ fields.render_editable_field(
@@ -124,11 +123,11 @@
     </div>
   </div>
 </div>
-
-<script>
-  // Expose layoutCache from server
-  const layoutCache = {{ field_schema_layout | tojson }};
-</script>
+<!-- Load Scripts and layoutcache -->
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<script> const layoutCache = {{ field_schema_layout | tojson }};</script>
 <script src="{{ url_for('static', filename='js/layout_editor.js') }}"></script>
 
 <!-- Edit Fields Modal -->

@@ -22,7 +22,7 @@ input[type=number] {
 
 /* 3) In edit mode, show the outlines/shadows again */
 #layout-grid.editing .draggable-field {
-  border: 1px blue dashed #333 !important;
+  border: 1px blue dashed !important;
   box-shadow: 0 0 0 2px rgba(0,0,0,0.1) !important;
   background-color: #fafafa !important;
 }
@@ -57,27 +57,28 @@ input[type=number] {
 #layout-grid .resize-handle { display: none; position: absolute; }
 
 /* Only show in edit mode */
-#layout-grid.editing .resize-handle {
+#layout-grid.editing .ui-resizable-handle {
   display: block;
   width: 12px; height: 12px;
   background: rgba(0,0,255,0.5);
   z-index: 10;
 }
 /* Position each handle */
-#layout-grid.editing .resize-n  { top: 0;    left: 50%; transform: translateX(-50%); cursor: n-resize; }
-#layout-grid.editing .resize-ne { top: 0;    right: 0;                            cursor: ne-resize;   }
-#layout-grid.editing .resize-e  { top: 50%;  right: 0;    transform: translateY(-50%); cursor: e-resize;    }
-#layout-grid.editing .resize-se { bottom: 0; right: 0;                            cursor: se-resize;   }
-#layout-grid.editing .resize-s  { bottom: 0; left: 50%;  transform: translateX(-50%); cursor: s-resize;    }
-#layout-grid.editing .resize-sw { bottom: 0; left: 0;                            cursor: sw-resize;   }
-#layout-grid.editing .resize-w  { top: 50%;  left: 0;    transform: translateY(-50%); cursor: w-resize;    }
-#layout-grid.editing .resize-nw { top: 0;    left: 0;                            cursor: nw-resize;   }
+#layout-grid.editing .ui-resizable-n  { top: 0;    left: 50%; transform: translateX(-50%); cursor: n-resize; }
+#layout-grid.editing .ui-resizable-ne { top: 0;    right: 0;                            cursor: ne-resize;   }
+#layout-grid.editing .ui-resizable-e  { top: 50%;  right: 0;    transform: translateY(-50%); cursor: e-resize;    }
+#layout-grid.editing .ui-resizable-se { bottom: 0; right: 0;                            cursor: se-resize;   }
+#layout-grid.editing .ui-resizable-s  { bottom: 0; left: 50%;  transform: translateX(-50%); cursor: s-resize;    }
+#layout-grid.editing .ui-resizable-sw { bottom: 0; left: 0;                            cursor: sw-resize;   }
+#layout-grid.editing .ui-resizable-w  { top: 50%;  left: 0;    transform: translateY(-50%); cursor: w-resize;    }
+#layout-grid.editing .ui-resizable-nw { top: 0;    left: 0;                            cursor: nw-resize;   }
 
-/* In edit mode, disable pointer events on everything inside the field */
-#layout-grid.editing .draggable-field > *:not(.resize-handle) {
+/* Disable clicks on inner content, but keep handles active */
+#layout-grid.editing .draggable-field > *:not(.resize-handle):not(.ui-resizable-handle) {
   pointer-events: none;
 }
-/* Re-enable on handles */
-#layout-grid.editing .resize-handle {
-  pointer-events: all;
+
+#layout-grid.editing .ui-resizable-handle,
+#layout-grid.editing .draggable-field {
+  pointer-events: auto;
 }

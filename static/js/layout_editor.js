@@ -128,15 +128,27 @@ document.addEventListener('DOMContentLoaded', function() {
     saveLayoutBtn.classList.remove('hidden');
     addFieldBtn.classList.add('hidden');
     toggleEditLayoutBtn.classList.add('hidden');
+    $('.draggable-field').resizable({
+      handles: 'n, e, s, w, ne, se, sw, nw',
+      create: function() {
+        console.log('Resizable created for', $(this).data('field'));
+      },
+      grid: [GRID_SIZE, GRID_SIZE]
+    }).draggable({
+      containment: '#layout-grid',
+      grid: [GRID_SIZE, GRID_SIZE],
+      cancel: '.ui-resizable-handle'  
+    });    
   });
 
   // Save layout changes to the server
   saveLayoutBtn.addEventListener('click', function() {
+    // Destroy jQuery UI behaviors
+    $('.draggable-field').resizable('destroy').draggable('destroy');
     // Toggle buttons
     toggleEditLayoutBtn.classList.remove('hidden');
     layoutGrid.classList.remove('editing');
     // Build payload from in-memory cache
-    
     const table = layoutGrid.dataset.table;
     const payload = {
       layout: Object.entries(layoutCache).map(([field, rect]) => ({
@@ -147,7 +159,6 @@ document.addEventListener('DOMContentLoaded', function() {
         y2: rect.y2
       }))
     };
-
     fetch(`/${table}/layout`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -156,7 +167,7 @@ document.addEventListener('DOMContentLoaded', function() {
     .then(response => response.json())
     .then(data => {
       console.log('Layout saved:', data);
-      // Optionally hide save/reset buttons
+      // Hide buttons
       resetLayoutBtn.classList.add('hidden');
       saveLayoutBtn.classList.add('hidden');
       addFieldBtn.classList.remove('hidden');
@@ -166,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
   resetLayoutBtn.addEventListener('click', reset_layout);
   // Delegated listener for resize handles
   layoutGrid.addEventListener('mousedown', function(e) {
-    const handle = e.target.closest('.resize-handle');
+    const handle = e.target.closest('.ui-resizable-handle');
     if (!handle) return;
     const direction = handle.dataset.direction;
     const field     = handle.closest('.draggable-field').dataset.field;
