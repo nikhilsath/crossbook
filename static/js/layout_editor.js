@@ -12,8 +12,8 @@ const defaultFieldWidth = {
 };
 const defaultFieldHeight = {
   textarea:  5,
-  select: 2,
-  text: 2,
+  select: 4,
+  text: 4,
   foreign_key: 3,
   boolean: 1,
   number: 1,
@@ -126,6 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     $('.draggable-field')
   .resizable({
+    containment: '#layout-grid',
     handles: 'n, e, s, w, ne, se, sw, nw',
     start(e, ui) {
       // Save old percent/em rect so we can revert if overlap
@@ -139,7 +140,12 @@ document.addEventListener('DOMContentLoaded', function() {
     stop(e, ui) {
       const el = this;
       const f  = el.dataset.field;
-
+      console.log('[layout] drag stop raw px/size:', {
+              left:   ui.position.left,
+              top:    ui.position.top,
+              width:  $(el).width(),
+              height: $(el).height()
+            });
       // 1) px → percent snapped
       const leftPct  = Math.round( ui.position.left  / CONTAINER_WIDTH * 100 / PCT_SNAP ) * PCT_SNAP;
       const widthPct = Math.round( ui.size.width      / CONTAINER_WIDTH * 100 / PCT_SNAP ) * PCT_SNAP;
@@ -191,6 +197,9 @@ document.addEventListener('DOMContentLoaded', function() {
       const rowEm    = parseFloat(getComputedStyle(document.documentElement).fontSize);
       const topEm    = Math.floor( ui.position.top       / rowEm );
       const heightEm = Math.round( $(el).height()        / rowEm );
+      
+      console.log('[layout] prevRect:', el._prevRect,
+                          '→ snapped:', { leftPct, widthPct, topEm, heightEm });
 
       layoutCache[f] = { leftPct, widthPct, topEm, heightEm };
       console.log('🔚 drag stop – newRect:', layoutCache[f]);
@@ -204,6 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const colSpan  = widthPct / PCT_SNAP;
       const rowStart = topEm + 1;
       const rowSpan  = heightEm;
+      console.log('[layout] grid spans:', { colStart, colSpan, rowStart, rowSpan });
 
       el.style.gridColumn = `${colStart} / span ${colSpan}`;
       el.style.gridRow    = `${rowStart} / span ${rowSpan}`;
