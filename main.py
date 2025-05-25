@@ -212,48 +212,75 @@ def delete_record_route(table, record_id):
 
 @app.route("/<table>/layout", methods=["POST"])
 def update_layout(table):
-    FIELD_SCHEMA = load_field_schema()  
+    FIELD_SCHEMA = load_field_schema()
     logging.info(f"[LAYOUT] Received payload for table={table}: %s", request.get_data())
     data = request.get_json(silent=True)
     if data is None:
         logging.error("[LAYOUT] JSON parse failed")
         return jsonify({"error": "Bad JSON"}), 400
+
     layout_items = data.get("layout")
     if not isinstance(layout_items, list):
         logging.error("[LAYOUT] Missing or invalid `layout` field: %r", layout_items)
         return jsonify({"error": "Invalid layout format"}), 400
+
     if table not in FIELD_SCHEMA:
         logging.error("[LAYOUT] Unknown table: %s", table)
         return jsonify({"error": "Unknown table"}), 400
-    conn = get_connection()  # opens a sqlite3 connection
-    cur = conn.cursor()
+
+    conn = get_connection()
+    cur  = conn.cursor()
     updated = 0
+
     for item in layout_items:
         field = item.get("field")
         if not field:
             logging.warning("[LAYOUT] Skipping entry with no field: %r", item)
             continue
-        x1 = item.get("x1", 0)
-        y1 = item.get("y1", 0)
-        x2 = item.get("x2", x1)  # fallback to x1 if missing
-        y2 = item.get("y2", y1)  # fallback to y1 if missing
-        # Persist coordinates into dedicated columns
+
+        # pull our new keys (fall back to zero if missing)
+        left_pct  = float(item.get("leftPct",  0))
+        width_pct = float(item.get("widthPct", 0))
+        top_em    = float(item.get("topEm",    0))
+        height_em = float(item.get("heightEm", 0))
+
+        # persist into the new schema columns
         res = cur.execute(
-            "UPDATE field_schema SET x1 = ?, y1 = ?, x2 = ?, y2 = ? WHERE table_name = ? AND field_name = ?",
-            (x1, y1, x2, y2, table, field)
+            """
+            UPDATE field_schema
+               SET left_pct  = ?,
+                   width_pct = ?,
+                   top_em    = ?,
+                   height_em = ?
+             WHERE table_name = ? AND field_name = ?
+            """,
+            (left_pct, width_pct, top_em, height_em, table, field)
         )
-        logging.info("[LAYOUT] SQL rowcount=%d for %s.%s with params x1=%s,y1=%s,x2=%s,y2=%s",
-                cur.rowcount, table, field, x1, y1, x2, y2)
+        logging.info(
+            "[LAYOUT] SQL rowcount=%d for %s.%s with params "
+            "left_pct=%s,width_pct=%s,top_em=%s,height_em=%s",
+            cur.rowcount, table, field,
+            left_pct, width_pct, top_em, height_em
+        )
         if cur.rowcount:
             updated += 1
         else:
             logging.warning("[LAYOUT] No row updated for %s.%s", table, field)
-        # Update in-memory schema cache for consistency
-        FIELD_SCHEMA[table][field]["layout"] = {"x1": x1, "y1": y1, "x2": x2, "y2": y2}
+
+        # also update our in-memory schema so the page stays consistent
+        FIELD_SCHEMA[table][field]["layout"] = {
+            "leftPct":  left_pct,
+            "widthPct": width_pct,
+            "topEm":    top_em,
+            "heightEm": height_em
+        }
+
     conn.commit()
     conn.close()
+
     logging.info("[LAYOUT] Rows updated: %d", updated)
     return jsonify({"success": True, "updated": updated})
+
 
 @app.route("/import", methods=["GET", "POST"])
 def import_records():

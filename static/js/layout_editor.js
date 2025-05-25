@@ -1,4 +1,6 @@
-const GRID_COLS = 12;
+const PCT_SNAP = 5;                // snap to 5% steps
+let CONTAINER_WIDTH;
+
 const defaultFieldWidth = {
   textarea:  12,
   select: 5,
@@ -17,88 +19,84 @@ const defaultFieldHeight = {
   number: 1,
   multi_select: 3
 };
-let GRID_SIZE;
 
 function initLayout() {
   const layoutGrid = document.getElementById('layout-grid');
-  const gap = parseInt(getComputedStyle(layoutGrid).columnGap) || 0;
-    // Calculate one column’s pixel width
-    GRID_SIZE = Math.floor(
-      (layoutGrid.clientWidth - gap * (GRID_COLS - 1)) / GRID_COLS
-    );
+  CONTAINER_WIDTH = layoutGrid.clientWidth;
   }
 
 function intersects(a, b) {
-  return a.x1 < b.x2 && b.x1 < a.x2
-      && a.y1 < b.y2 && b.y1 < a.y2;
+  return (
+    a.leftPct <  b.leftPct + b.widthPct  &&
+    b.leftPct <  a.leftPct + a.widthPct  &&
+    a.topEm   <  b.topEm   + b.heightEm &&
+    b.topEm   <  a.topEm   + a.heightEm
+  );
 }
-
+  
+  
 function revertPosition(el) {
   const prev = el._prevRect;
   if (!prev) {
     console.warn('No previous rect to revert for', el.dataset.field);
     return;
   }
-  // Apply styles
-  el.style.left   = prev.x1 + 'px';
-  el.style.top    = prev.y1 + 'px';
-  el.style.width  = (prev.x2 - prev.x1) + 'px';
-  el.style.height = (prev.y2 - prev.y1) + 'px';
-  // Update cache to match
+  // 1️⃣ Restore horizontal (percent-based):
+  el.style.left  = prev.leftPct  + '%';
+  el.style.width = prev.widthPct + '%';
+  // 2️⃣ Clear any old top/height px:
+  el.style.top    = '';
+  el.style.height = '';
+  // 3️⃣ Restore vertical via CSS Grid row placement:
+  //    (grid rows are 1-based)
+  const rowStart = prev.topEm + 1;
+  const rowSpan  = prev.heightEm;
+  el.style.gridRowStart = rowStart;
+  el.style.gridRowEnd   = `span ${rowSpan}`;
+  // 4️⃣ Sync our in-memory cache back to prev:
   layoutCache[el.dataset.field] = { ...prev };
-  console.log('▶️ revertPosition called for', el.dataset.field, 'with _prevRect=', el._prevRect);
+  console.log(
+    '▶️ revertPosition called for',
+    el.dataset.field,
+    'with _prevRect=',
+    prev
+  );
 }
 
-
 function reset_layout() {
-  // Ensure GRID_SIZE is initialized
-  if (typeof GRID_SIZE !== 'number') {
-    initLayout();
-  }
   console.group('reset_layout');
-  let curYUnits = 0; // current vertical offset in grid-units
-
-  // Debug: log all field keys in layoutCache before processing
-  console.log('Fields in cache:', Object.keys(layoutCache));
-
-  Object.keys(layoutCache).forEach(field => {
-    // Skip fields without a rendered element
+  // Reset cursor in "row units"
+  let curRow = 1;
+  // For each field in cache
+  Object.entries(layoutCache).forEach(([field, rect]) => {
     const el = document.querySelector(`.draggable-field[data-field="${field}"]`);
     if (!el) return;
-
-    // Skip hidden fields explicitly
-    const type = el.dataset.type;
-    if (type === 'hidden') return;
-
+    // Skip hidden fields
+    if (el.dataset.type === 'hidden') return;
     // Determine default size in grid-units
-    const widthUnits = defaultFieldWidth[type]  || defaultFieldWidth.text;
-    const heightUnits = defaultFieldHeight[type] || defaultFieldHeight.text;
-    // Calculate pixel positions
-    const x1 = 0;
-    // Debug: log GRID_SIZE to ensure it's defined
-    console.log('GRID_SIZE:', GRID_SIZE);
-    // Debug: log widthUnits and GRID_SIZE for x2 calculation
-    console.log('widthUnits:', widthUnits, 'GRID_SIZE:', GRID_SIZE);
-    const y1 = curYUnits * GRID_SIZE;
-    const x2 = x1 + widthUnits * GRID_SIZE;
-    const y2 = y1 + heightUnits * GRID_SIZE;
+    const widthUnits  = defaultFieldWidth[el.dataset.type]  || defaultFieldWidth.text;
+    const heightUnits = defaultFieldHeight[el.dataset.type] || defaultFieldHeight.text;
+    // Compute percentage snap
+    // e.g. PCT_SNAP = 5 → each "unit" is 5% of the container
+    const colSpan  = widthUnits * PCT_SNAP;
+    const colStart = 1;              // you always start at left; could be more flexible later
+    // Compute CSS-Grid row placement
+    const rowStart = curRow;         // integer row index
+    const rowSpan  = heightUnits;    // integer number of rows (each row = 1em tall)
+    // Advance the cursor
+    curRow += heightUnits;
+    // Update cache in the new format
+    layoutCache[field] = { colStart, colSpan, rowStart, rowSpan };
+    // Apply via CSS Grid
+    el.style.gridColumn = `${colStart} / span ${colSpan}`;
+    el.style.gridRow    = `${rowStart} / span ${rowSpan}`;
 
-    // Log placement details
-    console.log(`Field "${field}" [${type}]:`, { widthUnits, heightUnits, x1, y1, x2, y2 });
-
-    // Advance vertical cursor
-    curYUnits += heightUnits;
-    console.log('Before update:', layoutCache[field]);
-    // Update in-memory cache
-    layoutCache[field] = { x1, y1, x2, y2 }; 
-
-    // Apply styles to DOM
-    el.style.left   = x1 + 'px';
-    el.style.top    = y1 + 'px';
-    el.style.width  = (x2 - x1) + 'px';
-    el.style.height = (y2 - y1) + 'px';
+    console.log(
+      `Field "${field}": col ${colStart}→span ${colSpan}%, ` +
+      `row ${rowStart}→span ${rowSpan}em`,
+      '→ cache:', layoutCache[field]
+    );
   });
-
   console.groupEnd();
 }
 
@@ -120,121 +118,134 @@ document.addEventListener('DOMContentLoaded', function() {
     addFieldBtn.classList.add('hidden');
     toggleEditLayoutBtn.classList.add('hidden'); 
 
-    $('.draggable-field').resizable({
-      handles: 'n, e, s, w, ne, se, sw, nw',
-      create: function() {
-        console.log('Resizable created for', $(this).data('field'));  // Fires when resizable initialized per field
-      },
-      start: function(e, ui) {
-        const el = this;
-        const f  = el.dataset.field;
-        // 1) store  layoutCache snapshot
-        el._prevRect = { ...layoutCache[f] };
-        console.log('🛫 Storing prevRect for', f, el._prevRect);
-        // 2) log the resize
-        console.log('Resize start for', f, 'position:', ui.position, 'size:', ui.size);
-      },
-      stop: function(e, ui) {
-        const f = $(this).data('field');
-        console.group('🔚 Resize stop for', f);
-        layoutCache[f] = {
-          x1: ui.position.left,
-          y1: ui.position.top,
-          x2: ui.position.left + ui.size.width,
-          y2: ui.position.top  + ui.size.height
-        };
-              const rect = layoutCache[f];
-      // Only check against fields that are actually in the DOM and not hidden
-      const candidates = Object.entries(layoutCache).filter(([other, r]) => {
-        const el = document.querySelector(`.draggable-field[data-field="${other}"]`);
-        return el && el.dataset.type !== 'hidden';
-      });
-      const hasOverlap = candidates.some(([other, r]) =>
-        other !== f && intersects(rect, r)
-      );
-        console.log(`Overlap? ${hasOverlap} for ${f}`);
-        if (hasOverlap) {
-          console.log(`Reverting ${f} due to overlap`);
-          revertPosition(this);
-        }
-        console.groupEnd();
-      },
-      grid: [GRID_SIZE, GRID_SIZE]
-    }).draggable({
-      containment: '#layout-grid',
-      grid: [GRID_SIZE, GRID_SIZE],
-      cancel: '.ui-resizable-handle',
-      start: function(e, ui) {
-        const f = $(this).data('field');
-        this._prevRect = { ...layoutCache[f] };
-        console.log('Drag start for', f, 'position:', ui.position);
-      }, 
-      stop: function(e, ui) {
-        const f = $(this).data('field');
-        this._prevRect = { ...layoutCache[f] };
-        console.log('🛫 Storing prevRect for drag', f, this._prevRect);
-        console.group('🔚 Drag stop for', f);
-        console.log('Before cache:', layoutCache[f]);
-        layoutCache[f] = {
-          x1: ui.position.left,
-          y1: ui.position.top,
-          x2: ui.position.left + $(this).width(),
-          y2: ui.position.top  + $(this).height()
-        };
-        console.log('After cache:', layoutCache[f]);
-        const rect = layoutCache[f];
-        const hasOverlap = Object.entries(layoutCache).some(([other, r]) =>
-          other !== f && intersects(rect, r)
-        );
-        console.log(`Overlap? ${hasOverlap} for ${f}`);
-        if (hasOverlap) {
-          console.log(`Reverting ${f} due to overlap`);
-          revertPosition(this);
-        }
-        console.groupEnd();
-      }
-    });    
+    $('.draggable-field')
+  .resizable({
+    handles: 'n, e, s, w, ne, se, sw, nw',
+    start(e, ui) {
+      // Save old percent/em rect so we can revert if overlap
+      const el = this;
+      const f  = el.dataset.field;
+      const prev = layoutCache[f];
+      // store leftPct, widthPct, topEm, heightEm from the old cache
+      el._prevRect = { ...prev };
+      console.log('🛫 resizable start – prevRect:', prev);
+    },
+    stop(e, ui) {
+      const el = this;
+      const f  = el.dataset.field;
 
+      // 1) px → percent snapped
+      const leftPct  = Math.round( ui.position.left  / CONTAINER_WIDTH * 100 / PCT_SNAP ) * PCT_SNAP;
+      const widthPct = Math.round( ui.size.width      / CONTAINER_WIDTH * 100 / PCT_SNAP ) * PCT_SNAP;
+
+      // 2) px → em snapped
+      const rowEm    = parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const topEm    = Math.floor( ui.position.top    / rowEm );
+      const heightEm = Math.round( ui.size.height     / rowEm );
+
+      // 3) update cache
+      layoutCache[f] = { leftPct, widthPct, topEm, heightEm };
+      console.log('🔚 resizable stop – newRect:', layoutCache[f]);
+
+      // 4) apply via CSS Grid
+      //    clear px styles
+      el.style.left   = '';
+      el.style.top    = '';
+      el.style.width  = '';
+      el.style.height = '';
+
+      //    set gridColumn / gridRow
+      //    NOTE: colStart = (leftPct / PCT_SNAP) + 1
+      const colStart = leftPct / PCT_SNAP + 1;
+      const colSpan  = widthPct / PCT_SNAP;
+      const rowStart = topEm + 1;      // CSS grid is 1-based
+      const rowSpan  = heightEm;
+
+      el.style.gridColumn = `${colStart} / span ${colSpan}`;
+      el.style.gridRow    = `${rowStart} / span ${rowSpan}`;
+    }
+  })
+  .draggable({
+    containment: '#layout-grid',
+    cancel:     '.ui-resizable-handle',
+    start(e, ui) {
+      const el = this;
+      const f  = el.dataset.field;
+      el._prevRect = { ...layoutCache[f] };
+      console.log('🛫 drag start – prevRect:', el._prevRect);
+    },
+    stop(e, ui) {
+      const el = this;
+      const f  = el.dataset.field;
+
+      // same px→% & px→em logic, but size from $(this)
+      const leftPct  = Math.round( ui.position.left     / CONTAINER_WIDTH * 100 / PCT_SNAP ) * PCT_SNAP;
+      const widthPct = Math.round( $(el).width()        / CONTAINER_WIDTH * 100 / PCT_SNAP ) * PCT_SNAP;
+
+      const rowEm    = parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const topEm    = Math.floor( ui.position.top       / rowEm );
+      const heightEm = Math.round( $(el).height()        / rowEm );
+
+      layoutCache[f] = { leftPct, widthPct, topEm, heightEm };
+      console.log('🔚 drag stop – newRect:', layoutCache[f]);
+
+      el.style.left   = '';
+      el.style.top    = '';
+      el.style.width  = '';
+      el.style.height = '';
+
+      const colStart = leftPct / PCT_SNAP + 1;
+      const colSpan  = widthPct / PCT_SNAP;
+      const rowStart = topEm + 1;
+      const rowSpan  = heightEm;
+
+      el.style.gridColumn = `${colStart} / span ${colSpan}`;
+      el.style.gridRow    = `${rowStart} / span ${rowSpan}`;
+    }
+  });
     console.log('Initial layoutCache:', layoutCache);  // Fires on entering edit mode; shows starting coordinates
   });
-
-  // Save layout changes to the server
   saveLayoutBtn.addEventListener('click', function() {
-    // Destroy jQuery UI behaviors
+    // tear down the jQuery-UI behaviors
     $('.draggable-field').resizable('destroy').draggable('destroy');
-    // Toggle buttons
+    // flip the buttons back
     toggleEditLayoutBtn.classList.remove('hidden');
     layoutGrid.classList.remove('editing');
-
-    // Build payload from in-memory cache, filtering hidden fields
+    // build the payload from our percent/em cache
     const table = layoutGrid.dataset.table;
-    const payload = {
-      layout: Object.entries(layoutCache)
-        .filter(([field]) => document.querySelector(`.draggable-field[data-field="${field}"]`))
-        .map(([field, rect]) => ({ field, x1: rect.x1, y1: rect.y1, x2: rect.x2, y2: rect.y2 }))
-    };
-
-    console.log('Payload being sent:', JSON.stringify(payload, null, 2));  // Fires before network call; verify structure & values
-
+    const layoutEntries = Object.entries(layoutCache)
+      // only include fields still rendered (auto-filters out hidden ones too)
+      .filter(([field]) => 
+        document.querySelector(`.draggable-field[data-field="${field}"]`)
+      )
+      .map(([field, rect]) => ({
+        field,
+        leftPct:  rect.leftPct,
+        widthPct: rect.widthPct,
+        topEm:    rect.topEm,
+        heightEm: rect.heightEm
+      }));
+    const payload = { layout: layoutEntries };
+    console.log('Payload being sent:', JSON.stringify(payload, null, 2));
     fetch(`/${table}/layout`, {
-      method: 'POST',
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body:    JSON.stringify(payload)
     })
     .then(response => {
-      console.log('Server response status:', response.status);           // Fires on HTTP response; check status code
+      console.log('Server response status:', response.status);
       return response.json();
     })
     .then(data => {
-      console.log('Save result:', data);                                // Fires after parsing JSON; inspect 'updated' field
-      // Hide buttons
+      console.log('Save result:', data);
+      // hide the “save/reset” buttons again
       resetLayoutBtn.classList.add('hidden');
       saveLayoutBtn.classList.add('hidden');
       addFieldBtn.classList.remove('hidden');
     })
-    .catch(error => console.error('Save layout failed:', error));         // Fires on network or JSON errors
+    .catch(err => console.error('Save layout failed:', err));
   });
-
+  
   resetLayoutBtn.addEventListener('click', reset_layout);
 
   // Delegated listener for resize handles

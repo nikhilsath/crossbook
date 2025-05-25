@@ -31,30 +31,29 @@
     </div>
 
     <!-- Layout container with computed initial height -->
-    {% set CONTAINER_MARGIN = 20 %}
-    {% set max_y2 = field_schema_layout.values() | map(attribute='y2') | max %}
     <div id="layout-grid"
-     class="relative w-full"
+     class="relative w-full grid"
      data-table="{{ table }}"
-     style="height:{{ max_y2 + CONTAINER_MARGIN }}px;">
+     style="
+        grid-template-columns: repeat(100 / 5, 1fr);
+        grid-auto-rows: 1em;
+        gap: 0.5em;
+      ">
       {% for field, value in record.items() %}
-        {% if field_schema[table][field].type != 'hidden' %}
-          {% set layout = field_schema_layout[field] %}
-          {% set x1 = layout.x1 or 0 %}
-          {% set y1 = layout.y1 or 0 %}
-          {% set x2 = layout.x2 or x1 %}
-          {% set y2 = layout.y2 or y1 %}
-
-          <div class="draggable-field border p-2 rounded shadow bg-gray-50"
-               data-field="{{ field }}"
-               data-type="{{ field_schema[table][field].type }}"
-               style="
-                 position:absolute;
-                 left: {{ x1 }}px;
-                 top: {{ y1 }}px;
-                 width: {{ x2 - x1 }}px;
-                 height: {{ y2 - y1 }}px;
-               ">
+      {% if field_schema[table][field].type != 'hidden' %}
+        {% set layout = field_schema_layout[field] %}
+        {# compute grid coords from new columns (PCT_SNAP = 5), with defaults #}
+        {% set col_start = ((layout.leftPct|default(0)) // 5) + 1 %}
+        {% set col_span  = ((layout.widthPct|default(5)) // 5) %}
+        {% set row_start = (layout.topEm|default(0)) + 1 %}
+        {% set row_span  = (layout.heightEm|default(1)) %}        
+        <div class="draggable-field border p-2 rounded shadow bg-gray-50"
+            data-field="{{ field }}"
+            data-type="{{ field_schema[table][field].type }}"
+            style="
+              grid-column: {{ col_start }} / span {{ col_span }};
+              grid-row:    {{ row_start }} / span {{ row_span }};
+            ">
             <div class="text-sm font-bold capitalize mb-1">{{ field }}</div>
             <div>
               {{ fields.render_editable_field(
@@ -127,7 +126,7 @@
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-<script> const layoutCache = {{ field_schema_layout | tojson }};</script>
+<script>const layoutCache = {{ field_schema_layout | tojson }};</script>
 <script src="{{ url_for('static', filename='js/layout_editor.js') }}"></script>
 
 <!-- Edit Fields Modal -->

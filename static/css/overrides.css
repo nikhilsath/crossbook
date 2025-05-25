@@ -82,3 +82,25 @@ input[type=number] {
 #layout-grid.editing .draggable-field {
   pointer-events: auto;
 }
+
+#layout-grid {
+  display: grid;
+  grid-template-columns: repeat(100 / PCT_SNAP, 1fr); /* e.g. 20 columns */
+  grid-auto-rows: 1em;
+  gap: .1em;
+}
+
+/* Show grid lines (every 5% width × every 1em height) in edit mode */
+#layout-grid.editing {
+  background-image:
+    /* vertical lines every 5% (PCT_SNAP = 5 from layout_editor.js :contentReference[oaicite:0]{index=0}) */
+    linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+    /* horizontal lines every 1em (grid-auto-rows: 1em) */
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+  background-size:
+    /* each column = 5% of container width */
+    5% 100%,
+    /* each row = 1em high */
+    100% 1em;
+  background-repeat: repeat, repeat;
+}

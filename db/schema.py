@@ -20,16 +20,16 @@ def load_field_schema():
                field_type,
                field_options,
                foreign_key,
-               x1,
-               y1,
-               x2,
-               y2
+               left_pct,
+               width_pct,
+               top_em,
+               height_em
         FROM field_schema
     """)
     rows = cur.fetchall()
     schema = {}
 
-    for table, field, ftype, options, fk, x1, y1, x2, y2 in rows:
+    for table, field, ftype, options, fk, left_pct, width_pct, top_em, height_em in rows:
         # Initialize field schema entry
         schema.setdefault(table, {})[field] = {
             "type": ftype.strip(),
@@ -37,10 +37,10 @@ def load_field_schema():
             "foreign_key": fk,
             # Store layout as coordinate dict
             "layout": {
-                "x1": x1,
-                "y1": y1,
-                "x2": x2,
-                "y2": y2
+                "leftPct":  left_pct,
+                "widthPct": width_pct,
+                "topEm":    top_em,
+                "heightEm": height_em
             }
         }
         # Parse options if present
@@ -67,7 +67,6 @@ def update_foreign_field_options():
 
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
-
     # Step 1: Get all foreign key definitions
     cur.execute("""
         SELECT table_name, field_name, field_type, foreign_key
@@ -79,14 +78,12 @@ def update_foreign_field_options():
     for table_name, field_name, field_type, foreign_table in rows:
         if not foreign_table:
             continue
-
         # Validate the foreign table
         try:
             validate_table(foreign_table)
         except ValueError as e:
             print(f"Skipping {table_name}.{field_name}: invalid table {foreign_table} ({e})")
             continue
-
         # Step 2: Inspect foreign table columns
         try:
             cur.execute(f"PRAGMA table_info({foreign_table})")
@@ -96,14 +93,12 @@ def update_foreign_field_options():
             label_field = cols[1] if len(cols) > 1 else cols[0]
             if label_field not in cols:
                 continue
-
             # Step 3: Fetch id, label pairs
             cur.execute(f"SELECT id, {label_field} FROM {foreign_table}")
             options = [r[1] for r in cur.fetchall()]
         except Exception as e:
             print(f"Skipping {table_name}.{field_name} → {foreign_table}: {e}")
             continue
-
         # Step 4: Update field_options JSON
         cur.execute("""
             UPDATE field_schema
