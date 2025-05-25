@@ -85,8 +85,14 @@ function reset_layout() {
     const rowSpan  = heightUnits;    // integer number of rows (each row = 1em tall)
     // Advance the cursor
     curRow += heightUnits;
-    // Update cache in the new format
-    layoutCache[field] = { colStart, colSpan, rowStart, rowSpan };
+    // Update cache 
+      layoutCache[field] = {
+        leftPct:  colStart,
+        widthPct: colSpan,
+        topEm:    rowStart,
+        heightEm: rowSpan
+      };
+    
     // Apply via CSS Grid
     el.style.gridColumn = `${colStart} / span ${colSpan}`;
     el.style.gridRow    = `${rowStart} / span ${rowSpan}`;
