@@ -201,57 +201,46 @@ document.addEventListener('DOMContentLoaded', function() {
   toggleEditLayoutBtn.addEventListener('click', function() {
     editModeButtons();
 
-    $('.draggable-field')
-  .resizable({
-    containment: '#layout-grid',
-    handles: 'n, e, s, w, ne, se, sw, nw',
-    start(e, ui) {
-      // Save old percent/em rect so we can revert if overlap
-      const el = this;
-      const f  = el.dataset.field;
-      const prev = layoutCache[f];
-      // store leftPct, widthPct, topEm, heightEm from the old cache
-      el._prevRect = { ...prev };
-      console.log('🛫 resizable start – prevRect:', prev);
-    },
-    stop(e, ui) {
-      const el = this;
-      const f  = el.dataset.field;
-      console.log('[layout] drag stop raw px/size:', {
-              left:   ui.position.left,
-              top:    ui.position.top,
-              width:  $(el).width(),
-              height: $(el).height()
-            });
-      const containerWidth = layoutGrid.clientWidth;
-      // 1) px → percent snapped
-      const leftPct  = Math.round(ui.position.left  / containerWidth * 100 / PCT_SNAP) * PCT_SNAP;
-      const widthPct = Math.round(ui.size.width      / containerWidth * 100 / PCT_SNAP) * PCT_SNAP;
-      // 2) px → em snapped
-      const rowEm    = parseFloat(getComputedStyle(document.documentElement).fontSize);
-      const topEm    = Math.floor( ui.position.top    / rowEm );
-      const heightEm = Math.round( ui.size.height     / rowEm );
-      // 3) update cache
-      layoutCache[f] = { leftPct, widthPct, topEm, heightEm };
-      console.log('🔚 resizable stop – newRect:', layoutCache[f]);
-      // 4) apply CSS Grid
-      //    clear px styles
-      el.style.left   = '';
-      el.style.top    = '';
-      el.style.width  = '';
-      el.style.height = '';
-      el.style.position  = '';
-
-      //    set gridColumn / gridRow
-      //    NOTE: colStart = (leftPct / PCT_SNAP) + 1
-      const colStart = leftPct / PCT_SNAP + 1;
-      const colSpan  = widthPct / PCT_SNAP;
-      const rowStart = topEm + 1;      // CSS grid is 1-based
-      const rowSpan  = heightEm;
-      el.style.gridColumn = `${colStart} / span ${colSpan}`;
-      el.style.gridRow    = `${rowStart} / span ${rowSpan}`;
-    }
-  })
+  $('.draggable-field')
+    .resizable({
+      containment: '#layout-grid',
+      handles: 'n, e, s, w, ne, se, sw, nw',
+      start(e, ui) {
+        // Save old percent/em rect
+        const el = this;
+        const f  = el.dataset.field;
+        el._prevRect = { ...layoutCache[f] };
+      },
+      stop(e, ui) {
+        const el = this;
+        const f  = el.dataset.field;
+        const prev     = el._prevRect || layoutCache[f];
+        const containerWidth = layoutGrid.clientWidth;
+        // Only update size; keep original position
+        const widthPct = Math.round(ui.size.width  / containerWidth * 100 / PCT_SNAP) * PCT_SNAP;
+        const rowEm    = parseFloat(getComputedStyle(document.documentElement).fontSize);
+        const heightEm = Math.round(ui.size.height / rowEm);
+        layoutCache[f] = {
+          leftPct:  prev.leftPct,
+          widthPct: widthPct,
+          topEm:    prev.topEm,
+          heightEm: heightEm
+        };
+        // Clear px styles
+        el.style.left   = '';
+        el.style.top    = '';
+        el.style.width  = '';
+        el.style.height = '';
+        el.style.position  = '';
+        // Re-apply CSS Grid with unchanged position
+        const colStart = prev.leftPct / PCT_SNAP + 1;
+        const colSpan  = widthPct / PCT_SNAP;
+        const rowStart = prev.topEm + 1;
+        const rowSpan  = heightEm;
+        el.style.gridColumn = `${colStart} / span ${colSpan}`;
+        el.style.gridRow    = `${rowStart} / span ${rowSpan}`;
+      }
+    })
   .draggable({
   stop: function(e, ui) {
     const el = ui.helper[0];
