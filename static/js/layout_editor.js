@@ -11,13 +11,13 @@ const defaultFieldWidth = {
   multi_select: 6
 };
 const defaultFieldHeight = {
-  textarea:  15,
+  textarea:  18,
   select: 4,
   text: 4,
-  foreign_key: 3,
-  boolean: 3,
+  foreign_key: 10,
+  boolean: 7,
   number: 3,
-  multi_select: 5
+  multi_select: 8
 };
 
 function initLayout() {
@@ -172,7 +172,19 @@ function handleSaveLayout() {
   .catch(err => console.error('Save layout failed:', err));
 }
 
-
+function editModeButtons() {
+  const toggleEditLayoutBtn = document.getElementById('toggle-edit-layout');
+  const resetLayoutBtn      = document.getElementById('reset-layout');
+  const addFieldBtn         = document.getElementById('add-field');
+  const saveLayoutBtn       = document.getElementById('save-layout');
+  const layoutGrid          = document.getElementById('layout-grid');
+  console.debug('editModeButtons: toggling edit-mode controls');
+  layoutGrid.classList.add('editing');
+  resetLayoutBtn.classList.remove('hidden');
+  saveLayoutBtn.classList.remove('hidden');
+  addFieldBtn.classList.add('hidden');
+  toggleEditLayoutBtn.classList.add('hidden');
+}
 
 document.addEventListener('DOMContentLoaded', function() {
   // Initialize GRID_SIZE before layout actions
@@ -182,17 +194,12 @@ document.addEventListener('DOMContentLoaded', function() {
   
   const toggleEditLayoutBtn = document.getElementById('toggle-edit-layout');
   const resetLayoutBtn      = document.getElementById('reset-layout');
-  const addFieldBtn         = document.getElementById('add-field');
   const saveLayoutBtn       = document.getElementById('save-layout');
   const layoutGrid          = document.getElementById('layout-grid');
 
   // Enter edit mode
   toggleEditLayoutBtn.addEventListener('click', function() {
-    layoutGrid.classList.add('editing');
-    resetLayoutBtn.classList.remove('hidden');
-    saveLayoutBtn.classList.remove('hidden');
-    addFieldBtn.classList.add('hidden');
-    toggleEditLayoutBtn.classList.add('hidden'); 
+    editModeButtons();
 
     $('.draggable-field')
   .resizable({
@@ -216,9 +223,10 @@ document.addEventListener('DOMContentLoaded', function() {
               width:  $(el).width(),
               height: $(el).height()
             });
+      const containerWidth = layoutGrid.clientWidth;
       // 1) px → percent snapped
-      const leftPct  = Math.round( ui.position.left  / CONTAINER_WIDTH * 100 / PCT_SNAP ) * PCT_SNAP;
-      const widthPct = Math.round( ui.size.width      / CONTAINER_WIDTH * 100 / PCT_SNAP ) * PCT_SNAP;
+      const leftPct  = Math.round(ui.position.left  / containerWidth * 100 / PCT_SNAP) * PCT_SNAP;
+      const widthPct = Math.round(ui.size.width      / containerWidth * 100 / PCT_SNAP) * PCT_SNAP;
       // 2) px → em snapped
       const rowEm    = parseFloat(getComputedStyle(document.documentElement).fontSize);
       const topEm    = Math.floor( ui.position.top    / rowEm );
@@ -226,8 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // 3) update cache
       layoutCache[f] = { leftPct, widthPct, topEm, heightEm };
       console.log('🔚 resizable stop – newRect:', layoutCache[f]);
-
-      // 4) apply via CSS Grid
+      // 4) apply CSS Grid
       //    clear px styles
       el.style.left   = '';
       el.style.top    = '';
@@ -266,10 +273,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return revertPosition(el);
       }
     }
-
     // No collision → commit
     layoutCache[f] = newRect;
-
     // Clear inline px styles
     el.style.left     = '';
     el.style.top      = '';
