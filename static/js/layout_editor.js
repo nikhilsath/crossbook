@@ -112,6 +112,11 @@ function handleResizeMouseDown(e) {
   console.log(`Resize handle clicked: field=${field}, direction=${direction}`);
 }
 
+function handleMouseUp(e) {
+  console.debug('Entering handleMouseUp', e);
+}
+
+
 function handleFieldMouseDown(e) {
   console.debug('Entering handleFieldMouseDown', e);
   // Skip clicks on resize handles
@@ -242,6 +247,12 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     })
   .draggable({
+    containment: '#layout-grid',
+    start: function(e, ui) {
+      const el = ui.helper[0];
+      const f  = el.dataset.field;
+      el._prevRect = { ...layoutCache[f] };
+    },
   stop: function(e, ui) {
     const el = ui.helper[0];
     const f  = el.dataset.field;
@@ -284,8 +295,13 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   saveLayoutBtn.addEventListener('click', handleSaveLayout);
   resetLayoutBtn.addEventListener('click', reset_layout);
-  layoutGrid.addEventListener('mousedown', handleResizeMouseDown);
+  // Only run resize logic if the click landed on one of the resize handles
+  layoutGrid.addEventListener('mousedown', e => {
+  if (!e.target.closest('.ui-resizable-handle')) return;
+  handleResizeMouseDown(e);
+  });
   layoutGrid.addEventListener('mousedown', handleFieldMouseDown);
+  layoutGrid.addEventListener('mouseup', handleMouseUp);
 
 });
 
