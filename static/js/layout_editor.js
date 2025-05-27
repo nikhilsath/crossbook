@@ -122,6 +122,58 @@ function handleFieldMouseDown(e) {
   console.log(`Field clicked for drag: ${field}`);
 }
 
+function handleSaveLayout() {
+  // re-fetch our DOM elements so they exist in this scope
+  const toggleEditLayoutBtn = document.getElementById('toggle-edit-layout');
+  const resetLayoutBtn      = document.getElementById('reset-layout');
+  const saveLayoutBtn       = document.getElementById('save-layout');
+  const addFieldBtn         = document.getElementById('add-field');
+  const layoutGrid          = document.getElementById('layout-grid');
+
+  // tear down the jQuery-UI behaviors
+  $('.draggable-field').resizable('destroy').draggable('destroy');
+
+  // flip the buttons/UI back
+  toggleEditLayoutBtn.classList.remove('hidden');
+  layoutGrid.classList.remove('editing');
+  addFieldBtn.classList.remove('hidden');
+
+  // build payload from our percent/em cache
+  const table = layoutGrid.dataset.table;
+  const layoutEntries = Object.entries(layoutCache)
+    .filter(([field]) =>
+      document.querySelector(`.draggable-field[data-field="${field}"]`)
+    )
+    .map(([field, rect]) => ({
+      field,
+      leftPct:  rect.leftPct,
+      widthPct: rect.widthPct,
+      topEm:    rect.topEm,
+      heightEm: rect.heightEm
+    }));
+  const payload = { layout: layoutEntries };
+
+  console.log('Payload being sent:', JSON.stringify(payload, null, 2));
+  fetch(`/${table}/layout`, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify(payload)
+  })
+  .then(response => {
+    console.log('Server response status:', response.status);
+    return response.json();
+  })
+  .then(data => {
+    console.log('Save result:', data);
+    // hide the “save/reset” buttons again
+    resetLayoutBtn.classList.add('hidden');
+    saveLayoutBtn.classList.add('hidden');
+  })
+  .catch(err => console.error('Save layout failed:', err));
+}
+
+
+
 document.addEventListener('DOMContentLoaded', function() {
   // Initialize GRID_SIZE before layout actions
   initLayout();
@@ -236,46 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
     console.log('Initial layoutCache:', layoutCache);  // Fires on entering edit mode; shows starting coordinates
   });
-  saveLayoutBtn.addEventListener('click', function() {
-    // tear down the jQuery-UI behaviors
-    $('.draggable-field').resizable('destroy').draggable('destroy');
-    // flip the buttons back
-    toggleEditLayoutBtn.classList.remove('hidden');
-    layoutGrid.classList.remove('editing');
-    // build the payload from our percent/em cache
-    const table = layoutGrid.dataset.table;
-    const layoutEntries = Object.entries(layoutCache)
-      // only include fields still rendered (auto-filters out hidden ones too)
-      .filter(([field]) => 
-        document.querySelector(`.draggable-field[data-field="${field}"]`)
-      )
-      .map(([field, rect]) => ({
-        field,
-        leftPct:  rect.leftPct,
-        widthPct: rect.widthPct,
-        topEm:    rect.topEm,
-        heightEm: rect.heightEm
-      }));
-    const payload = { layout: layoutEntries };
-    console.log('Payload being sent:', JSON.stringify(payload, null, 2));
-    fetch(`/${table}/layout`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload)
-    })
-    .then(response => {
-      console.log('Server response status:', response.status);
-      return response.json();
-    })
-    .then(data => {
-      console.log('Save result:', data);
-      // hide the “save/reset” buttons again
-      resetLayoutBtn.classList.add('hidden');
-      saveLayoutBtn.classList.add('hidden');
-      addFieldBtn.classList.remove('hidden');
-    })
-    .catch(err => console.error('Save layout failed:', err));
-  });
+  saveLayoutBtn.addEventListener('click', handleSaveLayout);
   resetLayoutBtn.addEventListener('click', reset_layout);
   layoutGrid.addEventListener('mousedown', handleResizeMouseDown);
   layoutGrid.addEventListener('mousedown', handleFieldMouseDown);
