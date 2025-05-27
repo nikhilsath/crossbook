@@ -37,7 +37,6 @@
      style="
         grid-template-columns: repeat(100 / 5, 1fr);
         grid-auto-rows: 1em;
-        gap: 0.5em;
       ">
       {% for field, value in record.items() %}
       {% if field_schema[table][field].type != 'hidden' %}

@@ -87,7 +87,6 @@ input[type=number] {
   display: grid;
   grid-template-columns: repeat(100 / PCT_SNAP, 1fr); /* e.g. 20 columns */
   grid-auto-rows: 1em;
-  gap: .1em;
 }
 
 /* Show grid lines (every 5% width × every 1em height) in edit mode */

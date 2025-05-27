@@ -11,13 +11,13 @@ const defaultFieldWidth = {
   multi_select: 6
 };
 const defaultFieldHeight = {
-  textarea:  5,
+  textarea:  15,
   select: 4,
   text: 4,
   foreign_key: 3,
-  boolean: 1,
-  number: 1,
-  multi_select: 3
+  boolean: 3,
+  number: 3,
+  multi_select: 5
 };
 
 function initLayout() {
@@ -73,32 +73,29 @@ function reset_layout() {
     if (!el) return;
     // Skip hidden fields
     if (el.dataset.type === 'hidden') return;
+
     // Determine default size in grid-units
     const widthUnits  = defaultFieldWidth[el.dataset.type]  || defaultFieldWidth.text;
     const heightUnits = defaultFieldHeight[el.dataset.type] || defaultFieldHeight.text;
-    // Compute percentage snap
-    // e.g. PCT_SNAP = 5 → each "unit" is 5% of the container
-    const colSpan  = widthUnits * PCT_SNAP;
-    const colStart = 1;              // you always start at left; could be more flexible later
-    // Compute CSS-Grid row placement
-    const rowStart = curRow;         // integer row index
-    const rowSpan  = heightUnits;    // integer number of rows (each row = 1em tall)
+
+    const colStart = 1;                // always start at left
+    const rowStart = curRow;           // integer row index
+    const rowSpan  = heightUnits;      // number of rows (1em each)
     // Advance the cursor
     curRow += heightUnits;
-    // Update cache 
-      layoutCache[field] = {
-        leftPct:  colStart,
-        widthPct: colSpan,
-        topEm:    rowStart,
-        heightEm: rowSpan
-      };
-    
-    // Apply via CSS Grid
-    el.style.gridColumn = `${colStart} / span ${colSpan}`;
+    // Update cache using percent/em for payload
+    layoutCache[field] = {
+      leftPct:  colStart,
+      widthPct: widthUnits * PCT_SNAP,
+      topEm:    rowStart,
+      heightEm: rowSpan
+    };
+    // Apply via CSS Grid using unit counts
+    el.style.gridColumn = `${colStart} / span ${widthUnits}`;
     el.style.gridRow    = `${rowStart} / span ${rowSpan}`;
 
     console.log(
-      `Field "${field}": col ${colStart}→span ${colSpan}%, ` +
+      `Field "${field}": col ${colStart}→span ${widthUnits}, ` +
       `row ${rowStart}→span ${rowSpan}em`,
       '→ cache:', layoutCache[field]
     );
@@ -106,10 +103,13 @@ function reset_layout() {
   console.groupEnd();
 }
 
+
 document.addEventListener('DOMContentLoaded', function() {
   // Initialize GRID_SIZE before layout actions
   initLayout();
-
+  const extraRows = Object.keys(layoutCache).length * 10;
+  $('#layout-grid').css('grid-template-rows', `repeat(${extraRows}, 1em)`);
+  
   const toggleEditLayoutBtn = document.getElementById('toggle-edit-layout');
   const resetLayoutBtn      = document.getElementById('reset-layout');
   const addFieldBtn         = document.getElementById('add-field');
@@ -149,12 +149,10 @@ document.addEventListener('DOMContentLoaded', function() {
       // 1) px → percent snapped
       const leftPct  = Math.round( ui.position.left  / CONTAINER_WIDTH * 100 / PCT_SNAP ) * PCT_SNAP;
       const widthPct = Math.round( ui.size.width      / CONTAINER_WIDTH * 100 / PCT_SNAP ) * PCT_SNAP;
-
       // 2) px → em snapped
       const rowEm    = parseFloat(getComputedStyle(document.documentElement).fontSize);
       const topEm    = Math.floor( ui.position.top    / rowEm );
       const heightEm = Math.round( ui.size.height     / rowEm );
-
       // 3) update cache
       layoutCache[f] = { leftPct, widthPct, topEm, heightEm };
       console.log('🔚 resizable stop – newRect:', layoutCache[f]);
@@ -165,6 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
       el.style.top    = '';
       el.style.width  = '';
       el.style.height = '';
+      el.style.position  = '';
 
       //    set gridColumn / gridRow
       //    NOTE: colStart = (leftPct / PCT_SNAP) + 1
@@ -172,53 +171,51 @@ document.addEventListener('DOMContentLoaded', function() {
       const colSpan  = widthPct / PCT_SNAP;
       const rowStart = topEm + 1;      // CSS grid is 1-based
       const rowSpan  = heightEm;
-
       el.style.gridColumn = `${colStart} / span ${colSpan}`;
       el.style.gridRow    = `${rowStart} / span ${rowSpan}`;
     }
   })
   .draggable({
-    containment: '#layout-grid',
-    cancel:     '.ui-resizable-handle',
-    start(e, ui) {
-      const el = this;
-      const f  = el.dataset.field;
-      el._prevRect = { ...layoutCache[f] };
-      console.log('🛫 drag start – prevRect:', el._prevRect);
-    },
-    stop(e, ui) {
-      const el = this;
-      const f  = el.dataset.field;
+  stop: function(e, ui) {
+    const el = ui.helper[0];
+    const f  = el.dataset.field;
 
-      // same px→% & px→em logic, but size from $(this)
-      const leftPct  = Math.round( ui.position.left     / CONTAINER_WIDTH * 100 / PCT_SNAP ) * PCT_SNAP;
-      const widthPct = Math.round( $(el).width()        / CONTAINER_WIDTH * 100 / PCT_SNAP ) * PCT_SNAP;
+    // Snap-to-grid calculations
+    const leftPct  = Math.round(ui.position.left  / CONTAINER_WIDTH * 100 / PCT_SNAP) * PCT_SNAP;
+    const widthPct = Math.round($(el).width()     / CONTAINER_WIDTH * 100 / PCT_SNAP) * PCT_SNAP;
+    const rowEm    = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const topEm    = Math.floor(ui.position.top    / rowEm);
+    const heightEm = Math.round($(el).height()    / rowEm);
 
-      const rowEm    = parseFloat(getComputedStyle(document.documentElement).fontSize);
-      const topEm    = Math.floor( ui.position.top       / rowEm );
-      const heightEm = Math.round( $(el).height()        / rowEm );
-      
-      console.log('[layout] prevRect:', el._prevRect,
-                          '→ snapped:', { leftPct, widthPct, topEm, heightEm });
-
-      layoutCache[f] = { leftPct, widthPct, topEm, heightEm };
-      console.log('🔚 drag stop – newRect:', layoutCache[f]);
-
-      el.style.left   = '';
-      el.style.top    = '';
-      el.style.width  = '';
-      el.style.height = '';
-
-      const colStart = leftPct / PCT_SNAP + 1;
-      const colSpan  = widthPct / PCT_SNAP;
-      const rowStart = topEm + 1;
-      const rowSpan  = heightEm;
-      console.log('[layout] grid spans:', { colStart, colSpan, rowStart, rowSpan });
-
-      el.style.gridColumn = `${colStart} / span ${colSpan}`;
-      el.style.gridRow    = `${rowStart} / span ${rowSpan}`;
+    // Collision detection against existing fields
+    const newRect = { leftPct, widthPct, topEm, heightEm };
+    for (const [other, otherRect] of Object.entries(layoutCache)) {
+      if (other === f) continue;
+      if (intersects(newRect, otherRect)) {
+        console.warn(`⚠️ Collision dragging ${f} vs ${other}`);
+        return revertPosition(el);
+      }
     }
-  });
+
+    // No collision → commit
+    layoutCache[f] = newRect;
+
+    // Clear inline px styles
+    el.style.left     = '';
+    el.style.top      = '';
+    el.style.width    = '';
+    el.style.height   = '';
+    el.style.position = '';
+
+    // Reapply grid spans
+    const colStart = leftPct / PCT_SNAP + 1;
+    const colSpan  = widthPct / PCT_SNAP;
+    const rowStart = topEm + 1;
+    const rowSpan  = heightEm;
+    el.style.gridColumn = `${colStart} / span ${colSpan}`;
+    el.style.gridRow    = `${rowStart} / span ${rowSpan}`;
+  }
+});
     console.log('Initial layoutCache:', layoutCache);  // Fires on entering edit mode; shows starting coordinates
   });
   saveLayoutBtn.addEventListener('click', function() {
