@@ -23,7 +23,7 @@ const defaultFieldHeight = {
 function initLayout() {
   const layoutGrid = document.getElementById('layout-grid');
   CONTAINER_WIDTH = layoutGrid.clientWidth;
-  }
+}
 
 function intersects(a, b) {
   return (
@@ -33,7 +33,6 @@ function intersects(a, b) {
     b.topEm   <  a.topEm   + a.heightEm
   );
 }
-  
   
 function revertPosition(el) {
   const prev = el._prevRect;
@@ -111,6 +110,16 @@ function handleResizeMouseDown(e) {
     .find(c => c.startsWith('ui-resizable-') && c !== 'ui-resizable-handle');
   const field = handle.closest('.draggable-field').dataset.field;
   console.log(`Resize handle clicked: field=${field}, direction=${direction}`);
+}
+
+function handleFieldMouseDown(e) {
+  console.debug('Entering handleFieldMouseDown', e);
+  // Skip clicks on resize handles
+  if (e.target.closest('.ui-resizable-handle')) return;
+  const fieldEl = e.target.closest('.draggable-field');
+  if (!fieldEl) return;
+  const field = fieldEl.dataset.field;
+  console.log(`Field clicked for drag: ${field}`);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -268,16 +277,8 @@ document.addEventListener('DOMContentLoaded', function() {
     .catch(err => console.error('Save layout failed:', err));
   });
   resetLayoutBtn.addEventListener('click', reset_layout);
-  // Delegated listener for resize handles
   layoutGrid.addEventListener('mousedown', handleResizeMouseDown);
+  layoutGrid.addEventListener('mousedown', handleFieldMouseDown);
 
-  // Delegated listener for field click (drag start)
-  layoutGrid.addEventListener('mousedown', function(e) {
-    if (e.target.closest('.ui-resizable-handle')) return;  // skip handle clicks
-    const fieldEl = e.target.closest('.draggable-field');
-    if (!fieldEl) return;
-    const field = fieldEl.dataset.field;
-    console.log(`Field clicked for drag: ${field}`);            // Fires on field mousedown outside handles
-  });
 });
 
