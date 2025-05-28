@@ -126,7 +126,7 @@ function reset_layout() {
     // Update cache using percent/em for payload
     layoutCache[field] = {
       colStart:  colStart,
-      colSpan: widthUnits * PCT_SNAP,
+      colSpan: widthUnits ,
       rowStart:    rowStart,
       rowSpan: rowSpan
     };
@@ -166,7 +166,7 @@ function handleSaveLayout() {
   const resetLayoutBtn = document.getElementById('reset-layout');
 
   // tear down the jQuery-UI behaviors
-  $('.draggable-field').resizable('destroy').draggable('destroy');
+
   // flip the buttons/UI back
   toggleEditLayoutBtn.classList.remove('hidden');
   layoutGrid.classList.remove('editing');
@@ -270,11 +270,11 @@ function enableVanillaDrag() {
 
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
-
     const containerWidth = layoutGrid.clientWidth;
     const rowEm = parseFloat(getComputedStyle(document.documentElement).fontSize);
-
-    const newColStart = Math.round((startRect.left + dx) / containerWidth * 100 / PCT_SNAP) * PCT_SNAP;
+    const gridCols = 20;
+    const gridCellWidth = containerWidth / gridCols;
+    const newColStart = Math.floor((startRect.left + dx) / gridCellWidth); // integer from 0 to 19
     const newRowStart = Math.round((startRect.top + dy) / rowEm);
 
     layoutCache[field] = {
