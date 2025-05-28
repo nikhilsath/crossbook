@@ -42,9 +42,9 @@
       {% if field_schema[table][field].type != 'hidden' %}
         {% set layout = field_schema_layout[field] %}
         {# compute grid coords from new columns (PCT_SNAP = 5), with defaults #}
-        {% set col_start = ((layout.leftPct|default(0)) // 5) + 1 %}
+        {% set col_start = ((layout.leftPct|default(0)) // 5)  %}
         {% set col_span  = ((layout.widthPct|default(5)) // 5) %}
-        {% set row_start = (layout.topEm|default(0)) + 1 %}
+        {% set row_start = (layout.topEm|default(0)) %}
         {% set row_span  = (layout.heightEm|default(1)) %}        
         <div class="draggable-field border p-2 rounded shadow bg-gray-50"
             data-field="{{ field }}"
