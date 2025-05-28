@@ -23,7 +23,7 @@ const defaultFieldHeight = {
 function initLayout() {
   const layoutGrid = document.getElementById('layout-grid');
   CONTAINER_WIDTH = layoutGrid.clientWidth;
-  console.log(CONTAINER_WIDTH)
+  console.log("Initialized container width:", CONTAINER_WIDTH);
 }
 
 function intersects(a, b) {
@@ -195,6 +195,11 @@ function editModeButtons() {
 document.addEventListener('DOMContentLoaded', function() {
   // Initialize GRID_SIZE before layout actions
   initLayout();
+  window.addEventListener('resize', () => {
+  const layoutGrid = document.getElementById('layout-grid');
+  CONTAINER_WIDTH = layoutGrid.clientWidth;
+  console.log("Updated container width:", CONTAINER_WIDTH);
+  });
   const extraRows = Object.keys(layoutCache).length * 10;
   $('#layout-grid').css('grid-template-rows', `repeat(${extraRows}, 1em)`);
   
