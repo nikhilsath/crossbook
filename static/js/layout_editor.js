@@ -32,9 +32,31 @@ function calculateGridRows() {
   console.log("Calculated grid rows",extraRows)
 }
 
+function setupResizeListener() {
+  window.addEventListener('resize', () => {
+    const layoutGrid = document.getElementById('layout-grid');
+    CONTAINER_WIDTH = layoutGrid.clientWidth;
+
+    $('.draggable-field').draggable('option', 'containment', '#layout-grid');
+
+    console.log("Updated container width and draggable containment:", CONTAINER_WIDTH);
+  });
+}
+
+function bindEventHandlers() {
+  const saveLayoutBtn  = document.getElementById('save-layout');
+  const resetLayoutBtn = document.getElementById('reset-layout');
+  saveLayoutBtn.addEventListener('click', handleSaveLayout);
+  resetLayoutBtn.addEventListener('click', reset_layout);
+  console.log("bindEventHandlers loaded ")
+}
+
+
 function onLoadJS(){
   initLayout();
   calculateGridRows();
+  setupResizeListener(); 
+  bindEventHandlers();
   console.log("onLoadJS wrapper log")
 }
 
@@ -136,22 +158,8 @@ function handleMouseUp(e) {
 }
 
 
-function handleFieldMouseDown(e) {
-  console.debug('Entering handleFieldMouseDown', e);
-  // Skip clicks on resize handles
-  if (e.target.closest('.ui-resizable-handle')) return;
-  const fieldEl = e.target.closest('.draggable-field');
-  if (!fieldEl) return;
-  const field = fieldEl.dataset.field;
-  console.log(`Field clicked for drag: ${field}`);
-}
-
 function handleSaveLayout() {
   // re-fetch our DOM elements so they exist in this scope
-  const toggleEditLayoutBtn = document.getElementById('toggle-edit-layout');
-  const resetLayoutBtn      = document.getElementById('reset-layout');
-  const saveLayoutBtn       = document.getElementById('save-layout');
-  const addFieldBtn         = document.getElementById('add-field');
   const layoutGrid          = document.getElementById('layout-grid');
 
   // tear down the jQuery-UI behaviors
@@ -200,38 +208,25 @@ function editModeButtons() {
   const toggleEditLayoutBtn = document.getElementById('toggle-edit-layout');
   const resetLayoutBtn      = document.getElementById('reset-layout');
   const addFieldBtn         = document.getElementById('add-field');
-  const saveLayoutBtn       = document.getElementById('save-layout');
+  const saveLayoutBtn       = document.getElementById('save-layout'); 
   const layoutGrid          = document.getElementById('layout-grid');
   console.debug('editModeButtons: toggling edit-mode controls');
   layoutGrid.classList.add('editing');
   resetLayoutBtn.classList.remove('hidden');
-  saveLayoutBtn.classList.remove('hidden');
   addFieldBtn.classList.add('hidden');
   toggleEditLayoutBtn.classList.add('hidden');
+  saveLayoutBtn.classList.remove('hidden');
 }
 
 document.addEventListener('DOMContentLoaded', function() {
   // Initialize GRID_SIZE before layout actions
   onLoadJS();
-  window.addEventListener('resize', () => {
-    const layoutGrid = document.getElementById('layout-grid');
-    CONTAINER_WIDTH = layoutGrid.clientWidth;
-
-    // CRITICAL FIX: Explicitly refresh containment boundaries
-    $('.draggable-field').draggable('option', 'containment', '#layout-grid');
-
-    console.log("Updated container width and draggable containment:", CONTAINER_WIDTH);
-  });
-
   const toggleEditLayoutBtn = document.getElementById('toggle-edit-layout');
-  const resetLayoutBtn      = document.getElementById('reset-layout');
-  const saveLayoutBtn       = document.getElementById('save-layout');
   const layoutGrid          = document.getElementById('layout-grid');
 
   // Enter edit mode
   toggleEditLayoutBtn.addEventListener('click', function() {
     editModeButtons();
-
   $('.draggable-field')
     .resizable({
       handles: 'n, e, s, w, ne, se, sw, nw',
@@ -256,7 +251,6 @@ document.addEventListener('DOMContentLoaded', function() {
           rowStart:  prev.rowStart,
           rowSpan:   computedRowSpan
         };
-
         // Clear px styles
         el.style.left = '';
         el.style.top = '';
@@ -340,14 +334,11 @@ document.addEventListener('DOMContentLoaded', function() {
 });
     console.log('Initial layoutCache:', layoutCache);  // Fires on entering edit mode; shows starting coordinates
   });
-  saveLayoutBtn.addEventListener('click', handleSaveLayout);
-  resetLayoutBtn.addEventListener('click', reset_layout);
   // Only run resize logic if the click landed on one of the resize handles
   layoutGrid.addEventListener('mousedown', e => {
   if (!e.target.closest('.ui-resizable-handle')) return;
   handleResizeMouseDown(e);
   });
-  layoutGrid.addEventListener('mousedown', handleFieldMouseDown);
   layoutGrid.addEventListener('mouseup', handleMouseUp);
 
 });
