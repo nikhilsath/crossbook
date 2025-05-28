@@ -157,19 +157,20 @@ function handleMouseUp(e) {
   console.debug('Entering handleMouseUp', e);
 }
 
-
 function handleSaveLayout() {
   // re-fetch our DOM elements so they exist in this scope
   const layoutGrid          = document.getElementById('layout-grid');
+  const toggleEditLayoutBtn = document.getElementById('toggle-edit-layout')
+  const addFieldBtn          = document.getElementById('add-field');
+  const saveLayoutBtn  = document.getElementById('save-layout');
+  const resetLayoutBtn = document.getElementById('reset-layout');
 
   // tear down the jQuery-UI behaviors
   $('.draggable-field').resizable('destroy').draggable('destroy');
-
   // flip the buttons/UI back
   toggleEditLayoutBtn.classList.remove('hidden');
   layoutGrid.classList.remove('editing');
   addFieldBtn.classList.remove('hidden');
-
   // build payload from our percent/em cache
   const table = layoutGrid.dataset.table;
   const layoutEntries = Object.entries(layoutCache)
@@ -223,7 +224,6 @@ document.addEventListener('DOMContentLoaded', function() {
   onLoadJS();
   const toggleEditLayoutBtn = document.getElementById('toggle-edit-layout');
   const layoutGrid          = document.getElementById('layout-grid');
-
   // Enter edit mode
   toggleEditLayoutBtn.addEventListener('click', function() {
     editModeButtons();
@@ -336,10 +336,13 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   // Only run resize logic if the click landed on one of the resize handles
   layoutGrid.addEventListener('mousedown', e => {
-  if (!e.target.closest('.ui-resizable-handle')) return;
-  handleResizeMouseDown(e);
-  });
+  const fieldEl = e.target.closest('.draggable-field');
+  const field = fieldEl?.dataset.field;
+  if (!fieldEl || !field) return;
+
+  console.log('Clicked inside field:', field);
+});
+
   layoutGrid.addEventListener('mouseup', handleMouseUp);
 
 });
-
