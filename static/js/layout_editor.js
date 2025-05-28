@@ -28,7 +28,6 @@ function initLayout() {
 
 function calculateGridRows() {
   const extraRows = Object.keys(layoutCache).length * 10;
-  $('#layout-grid').css('grid-template-rows', `repeat(${extraRows}, 1em)`);
   console.log("Calculated grid rows",extraRows)
 }
 
@@ -36,8 +35,6 @@ function setupResizeListener() {
   window.addEventListener('resize', () => {
     const layoutGrid = document.getElementById('layout-grid');
     CONTAINER_WIDTH = layoutGrid.clientWidth;
-
-    $('.draggable-field').draggable('option', 'containment', '#layout-grid');
 
     console.log("Updated container width and draggable containment:", CONTAINER_WIDTH);
   });
@@ -267,7 +264,6 @@ function enableVanillaDrag() {
   function onMouseUp(e) {
     if (!isDragging) return;
     isDragging = false;
-
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
     const containerWidth = layoutGrid.clientWidth;
@@ -276,14 +272,12 @@ function enableVanillaDrag() {
     const gridCellWidth = containerWidth / gridCols;
     const newColStart = Math.floor((startRect.left + dx) / gridCellWidth); // integer from 0 to 19
     const newRowStart = Math.round((startRect.top + dy) / rowEm);
-
     layoutCache[field] = {
       colStart: newColStart,
       colSpan:  startRect.colSpan,
       rowStart: newRowStart,
       rowSpan:  startRect.rowSpan
     };
-
     // Clean up absolute positioning
     fieldEl.style.left = '';
     fieldEl.style.top = '';
@@ -297,10 +291,9 @@ function enableVanillaDrag() {
     document.removeEventListener('mouseup', onMouseUp);
   }
 }
-
-
+// Main Listener, triggers on page load
 document.addEventListener('DOMContentLoaded', function() {
-  // Initialize GRID_SIZE before layout actions
+  // All onload functions 
   onLoadJS();
   const toggleEditLayoutBtn = document.getElementById('toggle-edit-layout');
   const layoutGrid          = document.getElementById('layout-grid');
@@ -308,51 +301,13 @@ document.addEventListener('DOMContentLoaded', function() {
   toggleEditLayoutBtn.addEventListener('click', function() {
     editModeButtons();
     enableVanillaDrag()
-  $('.draggable-field')
-    .resizable({
-      handles: 'n, e, s, w, ne, se, sw, nw',
-      start(e, ui) {
-        const el = this;
-        const f  = el.dataset.field;
-        el._prevRect = { ...layoutCache[f] };
-      },
-      stop(e, ui) {
-        const el = this;
-        const f  = el.dataset.field;
-        const prev = el._prevRect || layoutCache[f];
 
-        // Only update size; keep original position
-        const computedColSpan = Math.round(ui.size.width / CONTAINER_WIDTH * 100 / PCT_SNAP) * PCT_SNAP;
-        const rowEm = parseFloat(getComputedStyle(document.documentElement).fontSize);
-        const computedRowSpan = Math.round(ui.size.height / rowEm);
-
-        layoutCache[f] = {
-          colStart:  prev.colStart,
-          colSpan:   computedColSpan,
-          rowStart:  prev.rowStart,
-          rowSpan:   computedRowSpan
-        };
-        // Clear px styles
-        el.style.left = '';
-        el.style.top = '';
-        el.style.width = '';
-        el.style.height = '';
-        el.style.position = '';
-
-        // Apply grid
-        el.style.gridColumn = `${prev.colStart / PCT_SNAP + 1} / span ${computedColSpan / PCT_SNAP}`;
-        el.style.gridRow    = `${prev.rowStart + 1} / span ${computedRowSpan}`;
-      }
-    })
   layoutGrid.addEventListener('mousedown', function(e) {
     const fieldEl = e.target.closest('.draggable-field');
     const field = fieldEl?.dataset.field;
     if (!fieldEl || !field) return;
 
     console.log('Activating draggable for field:', field);
-    // Safe re-init
-    try { $(fieldEl).draggable('destroy'); } catch {}
-
   });
 
     console.log('Initial layoutCache:', layoutCache);  // Fires on entering edit mode; shows starting coordinates
