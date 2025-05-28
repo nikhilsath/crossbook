@@ -239,28 +239,28 @@ def update_layout(table):
             continue
 
         # pull our new keys (fall back to zero if missing)
-        left_pct  = float(item.get("leftPct",  0))
-        width_pct = float(item.get("widthPct", 0))
-        top_em    = float(item.get("topEm",    0))
-        height_em = float(item.get("heightEm", 0))
+        col_start  = float(item.get("colStart",  0))
+        col_span = float(item.get("colSpan", 0))
+        row_start    = float(item.get("rowStart",    0))
+        row_span = float(item.get("rowSpan", 0))
 
         # persist into the new schema columns
         res = cur.execute(
             """
             UPDATE field_schema
-               SET left_pct  = ?,
-                   width_pct = ?,
-                   top_em    = ?,
-                   height_em = ?
+               SET col_start  = ?,
+                   col_span = ?,
+                   row_start    = ?,
+                   row_span = ?
              WHERE table_name = ? AND field_name = ?
             """,
-            (left_pct, width_pct, top_em, height_em, table, field)
+            (col_start, col_span, row_start, row_span, table, field)
         )
         logging.info(
             "[LAYOUT] SQL rowcount=%d for %s.%s with params "
-            "left_pct=%s,width_pct=%s,top_em=%s,height_em=%s",
+            "col_start=%s,col_span=%s,row_start=%s,row_span=%s",
             cur.rowcount, table, field,
-            left_pct, width_pct, top_em, height_em
+            col_start, col_span, row_start, row_span
         )
         if cur.rowcount:
             updated += 1
@@ -269,10 +269,10 @@ def update_layout(table):
 
         # also update our in-memory schema so the page stays consistent
         FIELD_SCHEMA[table][field]["layout"] = {
-            "leftPct":  left_pct,
-            "widthPct": width_pct,
-            "topEm":    top_em,
-            "heightEm": height_em
+            "colStart":  col_start,
+            "colSpan": col_span,
+            "rowStart":    row_start,
+            "rowSpan": row_span
         }
 
     conn.commit()

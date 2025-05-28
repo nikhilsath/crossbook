@@ -20,16 +20,15 @@ def load_field_schema():
                field_type,
                field_options,
                foreign_key,
-               left_pct,
-               width_pct,
-               top_em,
-               height_em
+               col_start,
+               col_span,
+               row_start,
+               row_span
         FROM field_schema
     """)
     rows = cur.fetchall()
     schema = {}
-
-    for table, field, ftype, options, fk, left_pct, width_pct, top_em, height_em in rows:
+    for table, field, ftype, options, fk, col_start, col_span, row_start, row_span in rows:
         # Initialize field schema entry
         schema.setdefault(table, {})[field] = {
             "type": ftype.strip(),
@@ -37,10 +36,10 @@ def load_field_schema():
             "foreign_key": fk,
             # Store layout as coordinate dict
             "layout": {
-                "leftPct":  left_pct,
-                "widthPct": width_pct,
-                "topEm":    top_em,
-                "heightEm": height_em
+                "colStart":  col_start,
+                "colSpan": col_span,
+                "rowStart":    row_start,
+                "rowSpan": row_span
             }
         }
         # Parse options if present
