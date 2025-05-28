@@ -219,6 +219,86 @@ function editModeButtons() {
   saveLayoutBtn.classList.remove('hidden');
 }
 
+function enableVanillaDrag() {
+  const layoutGrid = document.getElementById('layout-grid');
+  let isDragging = false;
+  let startX, startY, startRect, field, fieldEl;
+
+  layoutGrid.addEventListener('mousedown', e => {
+    fieldEl = e.target.closest('.draggable-field');
+    field = fieldEl?.dataset.field;
+    if (!fieldEl || !field) return;
+
+    const rect = fieldEl.getBoundingClientRect();
+    const gridRect = layoutGrid.getBoundingClientRect();
+    startX = e.clientX;
+    startY = e.clientY;
+
+    startRect = {
+      left:   rect.left - gridRect.left,
+      top:    rect.top  - gridRect.top,
+      ...layoutCache[field]
+    };
+
+    // Temporarily lift from grid layout
+    fieldEl.style.gridColumn = '';
+    fieldEl.style.gridRow = '';
+    fieldEl.style.position = 'absolute';
+    fieldEl.style.left = `${startRect.left}px`;
+    fieldEl.style.top  = `${startRect.top}px`;
+
+    isDragging = true;
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  });
+
+  function onMouseMove(e) {
+    if (!isDragging) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+
+    const newLeft = startRect.left + dx;
+    const newTop  = startRect.top  + dy;
+
+    fieldEl.style.left = `${newLeft}px`;
+    fieldEl.style.top  = `${newTop}px`;
+  }
+
+  function onMouseUp(e) {
+    if (!isDragging) return;
+    isDragging = false;
+
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+
+    const containerWidth = layoutGrid.clientWidth;
+    const rowEm = parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+    const newColStart = Math.round((startRect.left + dx) / containerWidth * 100 / PCT_SNAP) * PCT_SNAP;
+    const newRowStart = Math.round((startRect.top + dy) / rowEm);
+
+    layoutCache[field] = {
+      colStart: newColStart,
+      colSpan:  startRect.colSpan,
+      rowStart: newRowStart,
+      rowSpan:  startRect.rowSpan
+    };
+
+    // Clean up absolute positioning
+    fieldEl.style.left = '';
+    fieldEl.style.top = '';
+    fieldEl.style.position = '';
+
+    // Re-apply grid layout
+    fieldEl.style.gridColumn = `${newColStart / PCT_SNAP + 1} / span ${startRect.colSpan / PCT_SNAP}`;
+    fieldEl.style.gridRow    = `${newRowStart + 1} / span ${startRect.rowSpan}`;
+
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+  }
+}
+
+
 document.addEventListener('DOMContentLoaded', function() {
   // Initialize GRID_SIZE before layout actions
   onLoadJS();
@@ -227,6 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Enter edit mode
   toggleEditLayoutBtn.addEventListener('click', function() {
     editModeButtons();
+    enableVanillaDrag()
   $('.draggable-field')
     .resizable({
       handles: 'n, e, s, w, ne, se, sw, nw',
@@ -263,85 +344,19 @@ document.addEventListener('DOMContentLoaded', function() {
         el.style.gridRow    = `${prev.rowStart + 1} / span ${computedRowSpan}`;
       }
     })
-  .draggable({
-  containment: '#layout-grid',
-  start: function(e, ui) {
-    const el = ui.helper[0];
-    const f  = el.dataset.field;
-    el._prevRect = { ...layoutCache[f] };
+  layoutGrid.addEventListener('mousedown', function(e) {
+    const fieldEl = e.target.closest('.draggable-field');
+    const field = fieldEl?.dataset.field;
+    if (!fieldEl || !field) return;
 
-    const gridRect = document.getElementById('layout-grid').getBoundingClientRect();
-    const elRect = el.getBoundingClientRect();
+    console.log('Activating draggable for field:', field);
+    // Safe re-init
+    try { $(fieldEl).draggable('destroy'); } catch {}
 
-    const offsetLeft = elRect.left - gridRect.left;
-    const offsetTop  = elRect.top  - gridRect.top;
+  });
 
-    el.style.left = `${offsetLeft}px`;
-    el.style.top  = `${offsetTop}px`;
-    el.style.position = 'absolute';
-
-    void el.offsetHeight;
-
-    console.log('▶️ Applied pixel offsets before drag:', offsetLeft, offsetTop);
-  },
-  stop: function(e, ui) {
-    const el = ui.helper[0];
-    console.log('Offset Parent:', ui.helper.offsetParent()[0]);
-    console.log('Raw ui.position.left:', ui.position.left);
-    console.log('Raw ui.position.top:', ui.position.top);
-    console.log('CONTAINER_WIDTH:', CONTAINER_WIDTH);
-    console.log('Container offset:', $('#layout-grid').offset());
-    console.log('Dragged element offset:', $(el).offset());
-    const f  = el.dataset.field;
-    console.log('After Move layoutCache:', layoutCache);
-
-    const computedColStart  = Math.round(ui.position.left  / CONTAINER_WIDTH * 100 / PCT_SNAP) * PCT_SNAP;
-    const computedColSpan   = Math.round($(el).width()     / CONTAINER_WIDTH * 100 / PCT_SNAP) * PCT_SNAP;
-    const rowEm             = parseFloat(getComputedStyle(document.documentElement).fontSize);
-    const computedRowStart  = Math.floor(ui.position.top    / rowEm);
-    const computedRowSpan   = Math.round($(el).height()    / rowEm);
-
-    const newRect = {
-      colStart:  computedColStart,
-      colSpan:   computedColSpan,
-      rowStart:  computedRowStart,
-      rowSpan:   computedRowSpan
-    };
-
-    console.log('Proposed newRect:', newRect);
-    console.log('Existing layoutCache:', layoutCache);
-
-    for (const [other, otherRect] of Object.entries(layoutCache)) {
-      if (other === f) continue;
-      console.log('Checking collision for:', newRect, 'against:', layoutCache);
-      if (intersects(newRect, otherRect)) {
-        console.warn(`⚠️ Collision dragging ${f} vs ${other}`);
-        return revertPosition(el);
-      }
-    }
-
-    layoutCache[f] = newRect;
-
-    el.style.left     = '';
-    el.style.top      = '';
-    el.style.width    = '';
-    el.style.height   = '';
-    el.style.position = '';
-
-    el.style.gridColumn = `${computedColStart / PCT_SNAP + 1} / span ${computedColSpan / PCT_SNAP}`;
-    el.style.gridRow    = `${computedRowStart + 1} / span ${computedRowSpan}`;
-  }
-});
     console.log('Initial layoutCache:', layoutCache);  // Fires on entering edit mode; shows starting coordinates
   });
-  // Only run resize logic if the click landed on one of the resize handles
-  layoutGrid.addEventListener('mousedown', e => {
-  const fieldEl = e.target.closest('.draggable-field');
-  const field = fieldEl?.dataset.field;
-  if (!fieldEl || !field) return;
-
-  console.log('Clicked inside field:', field);
-});
 
   layoutGrid.addEventListener('mouseup', handleMouseUp);
 
