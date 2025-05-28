@@ -26,6 +26,18 @@ function initLayout() {
   console.log("Initialized container width:", CONTAINER_WIDTH);
 }
 
+function calculateGridRows() {
+  const extraRows = Object.keys(layoutCache).length * 10;
+  $('#layout-grid').css('grid-template-rows', `repeat(${extraRows}, 1em)`);
+  console.log("Calculated grid rows",extraRows)
+}
+
+function onLoadJS(){
+  initLayout();
+  calculateGridRows();
+  console.log("onLoadJS wrapper log")
+}
+
 function intersects(a, b) {
   return (
     a.colStart <  b.colStart + b.colSpan  &&
@@ -68,7 +80,6 @@ function revertPosition(el) {
     prev
   );
 }
-
 
 function reset_layout() {
   console.group('reset_layout');
@@ -201,7 +212,7 @@ function editModeButtons() {
 
 document.addEventListener('DOMContentLoaded', function() {
   // Initialize GRID_SIZE before layout actions
-  initLayout();
+  onLoadJS();
   window.addEventListener('resize', () => {
     const layoutGrid = document.getElementById('layout-grid');
     CONTAINER_WIDTH = layoutGrid.clientWidth;
@@ -212,9 +223,6 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log("Updated container width and draggable containment:", CONTAINER_WIDTH);
   });
 
-  const extraRows = Object.keys(layoutCache).length * 10;
-  $('#layout-grid').css('grid-template-rows', `repeat(${extraRows}, 1em)`);
-  
   const toggleEditLayoutBtn = document.getElementById('toggle-edit-layout');
   const resetLayoutBtn      = document.getElementById('reset-layout');
   const saveLayoutBtn       = document.getElementById('save-layout');
