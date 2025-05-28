@@ -23,6 +23,7 @@ const defaultFieldHeight = {
 function initLayout() {
   const layoutGrid = document.getElementById('layout-grid');
   CONTAINER_WIDTH = layoutGrid.clientWidth;
+  console.log(CONTAINER_WIDTH)
 }
 
 function intersects(a, b) {
@@ -111,7 +112,7 @@ function handleResizeMouseDown(e) {
   const field = handle.closest('.draggable-field').dataset.field;
   console.log(`Resize handle clicked: field=${field}, direction=${direction}`);
 }
-
+// Just logging
 function handleMouseUp(e) {
   console.debug('Entering handleMouseUp', e);
 }
@@ -256,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function() {
   stop: function(e, ui) {
     const el = ui.helper[0];
     const f  = el.dataset.field;
-
+    console.log('After Move layoutCache:', layoutCache);
     // Snap-to-grid calculations
     const leftPct  = Math.round(ui.position.left  / CONTAINER_WIDTH * 100 / PCT_SNAP) * PCT_SNAP;
     const widthPct = Math.round($(el).width()     / CONTAINER_WIDTH * 100 / PCT_SNAP) * PCT_SNAP;
