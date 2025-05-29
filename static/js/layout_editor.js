@@ -31,14 +31,6 @@ function calculateGridRows() {
   console.log("Calculated grid rows",extraRows)
 }
 
-function setupResizeListener() {
-  window.addEventListener('resize', () => {
-    const layoutGrid = document.getElementById('layout-grid');
-    CONTAINER_WIDTH = layoutGrid.clientWidth;
-
-    console.log("Updated container width and draggable containment:", CONTAINER_WIDTH);
-  });
-}
 
 function bindEventHandlers() {
   const saveLayoutBtn  = document.getElementById('save-layout');
@@ -52,7 +44,6 @@ function bindEventHandlers() {
 function onLoadJS(){
   initLayout();
   calculateGridRows();
-  setupResizeListener(); 
   bindEventHandlers();
   console.log("onLoadJS wrapper log")
 }
@@ -140,19 +131,6 @@ function reset_layout() {
   console.groupEnd();
 }
 
-function handleResizeMouseDown(e) {
-  console.debug('Entering handleResizeMouseDown', e);
-  const handle = e.target.closest('.ui-resizable-handle');
-  if (!handle) return;
-  const direction = Array.from(handle.classList)
-    .find(c => c.startsWith('ui-resizable-') && c !== 'ui-resizable-handle');
-  const field = handle.closest('.draggable-field').dataset.field;
-  console.log(`Resize handle clicked: field=${field}, direction=${direction}`);
-}
-// Just logging
-function handleMouseUp(e) {
-  console.debug('Entering handleMouseUp', e);
-}
 
 function handleSaveLayout() {
   // re-fetch our DOM elements so they exist in this scope
@@ -227,6 +205,8 @@ function enableVanillaDrag() {
     if (!fieldEl || !field) return;
 
     const rect = fieldEl.getBoundingClientRect();
+    fieldEl.style.width  = `${rect.width}px`;
+    fieldEl.style.height = `${rect.height}px`;
     const gridRect = layoutGrid.getBoundingClientRect();
     startX = e.clientX;
     startY = e.clientY;
@@ -284,9 +264,8 @@ function enableVanillaDrag() {
     fieldEl.style.position = '';
 
     // Re-apply grid layout
-    fieldEl.style.gridColumn = `${newColStart / PCT_SNAP + 1} / span ${startRect.colSpan / PCT_SNAP}`;
+    fieldEl.style.gridColumn = `${newColStart + 1} / span ${startRect.colSpan}`;
     fieldEl.style.gridRow    = `${newRowStart + 1} / span ${startRect.rowSpan}`;
-
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
   }
@@ -312,7 +291,5 @@ document.addEventListener('DOMContentLoaded', function() {
 
     console.log('Initial layoutCache:', layoutCache);  // Fires on entering edit mode; shows starting coordinates
   });
-
-  layoutGrid.addEventListener('mouseup', handleMouseUp);
 
 });
