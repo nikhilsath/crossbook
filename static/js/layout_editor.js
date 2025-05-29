@@ -26,11 +26,6 @@ function initLayout() {
   console.log("Initialized container width:", CONTAINER_WIDTH);
 }
 
-function calculateGridRows() {
-  const extraRows = Object.keys(layoutCache).length * 10;
-  console.log("Calculated grid rows",extraRows)
-}
-
 
 function bindEventHandlers() {
   const saveLayoutBtn  = document.getElementById('save-layout');
@@ -40,10 +35,8 @@ function bindEventHandlers() {
   console.log("bindEventHandlers loaded ")
 }
 
-
 function onLoadJS(){
   initLayout();
-  calculateGridRows();
   bindEventHandlers();
   console.log("onLoadJS wrapper log")
 }
@@ -56,7 +49,38 @@ function intersects(a, b) {
     b.rowStart   <  a.rowStart   + a.rowSpan
   );
 }
-  
+ 
+// Create a collision overlay element in the grid
+function createCollisionOverlay(leftCol, topRow, overlapCols, overlapRows) {
+  const layoutGrid = document.getElementById('layout-grid');
+  const overlay = document.createElement('div');
+  overlay.classList.add('collision-overlay');
+  overlay.style.gridColumn = `${leftCol} / span ${overlapCols}`;
+  overlay.style.gridRow    = `${topRow}   / span ${overlapRows}`;
+  layoutGrid.appendChild(overlay);
+}
+
+function highlightCollisions(fieldKey) {
+  const a = layoutCache[fieldKey];
+  Object.entries(layoutCache).forEach(([otherKey, b]) => {
+    if (otherKey === fieldKey) return;
+    if (!intersects(a, b)) return;
+
+    // Compute overlap in grid units
+    const leftCol   = Math.max(a.colStart, b.colStart);
+    const rightCol  = Math.min(a.colStart + a.colSpan, b.colStart + b.colSpan);
+    const topRow    = Math.max(a.rowStart, b.rowStart);
+    const bottomRow = Math.min(a.rowStart + a.rowSpan, b.rowStart + b.rowSpan);
+    const overlapCols = rightCol - leftCol;
+    const overlapRows = bottomRow - topRow;
+    if (overlapCols > 0 && overlapRows > 0) {
+      // CSS Grid is 1-based for lines
+      createCollisionOverlay(leftCol + 1, topRow + 1, overlapCols, overlapRows);
+    }
+  });
+}
+
+
 function revertPosition(el) {
   const prev = el._prevRect;
   if (!prev) {
@@ -258,6 +282,8 @@ function enableVanillaDrag() {
       rowStart: newRowStart,
       rowSpan:  startRect.rowSpan
     };
+  // ▶️ Detect and highlight overlaps
+    highlightCollisions(field);
     // Clean up absolute positioning
     fieldEl.style.left = '';
     fieldEl.style.top = '';

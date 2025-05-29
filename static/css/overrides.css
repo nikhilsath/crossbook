@@ -100,7 +100,13 @@ input[type=number] {
   background-size:
     /* each column = 5% of container width */
     5% 100%,
-    /* each row = 1em high */
+    /* each row */
     100% 1em;
   background-repeat: repeat, repeat;
+}
+
+#layout-grid .collision-overlay {
+  background: rgba(255, 0, 0, 0.3);
+  pointer-events: none;
+  z-index: 100;
 }
