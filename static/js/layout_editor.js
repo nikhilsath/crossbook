@@ -195,6 +195,7 @@ function enableVanillaDrag() {
   let startX, startY, startRect, field, fieldEl;
 
   layoutGrid.addEventListener('mousedown', e => {
+    if (e.target.classList.contains('resize-handle')) return;
     fieldEl = e.target.closest('.draggable-field');
     field = fieldEl?.dataset.field;
     if (!fieldEl || !field) return;
@@ -278,6 +279,98 @@ function enableVanillaDrag() {
     document.removeEventListener('mouseup', onMouseUp);
   }
 }
+function enableVanillaResize() {
+  const layoutGrid = document.getElementById('layout-grid');
+  const handles = document.querySelectorAll('.resize-handle');
+  let isResizing = false;
+  let handleType, fieldEl, field, startX, startY, startRect;
+  if (layoutGrid.classList.contains('editing')) {
+  handles.forEach(h => h.classList.remove('hidden'));
+  } else {
+    handles.forEach(h => h.classList.add('hidden'));
+  }
+  layoutGrid.addEventListener('mousedown', e => {
+    if (!e.target.classList.contains('resize-handle')) return;
+    e.preventDefault();
+    // determine which corner was grabbed
+    handleType = ['top-left','top-right','bottom-left','bottom-right']
+                   .find(c => e.target.classList.contains(c));
+    fieldEl = e.target.closest('.draggable-field');
+    field   = fieldEl.dataset.field;
+    startX  = e.clientX;
+    startY  = e.clientY;
+    startRect = { ...layoutCache[field] };
+    fieldEl._prevRect = { ...startRect };
+    isResizing = true;
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  });
+
+  function onMouseMove(e) {
+    if (!isResizing) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    const containerWidth = layoutGrid.clientWidth;
+    const gridCols = 20;
+    const gridCellWidth = containerWidth / gridCols;
+    const deltaCols = Math.round(dx / gridCellWidth);
+    const rowEm = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const deltaRows = Math.round(dy / rowEm);
+
+    let { colStart, colSpan, rowStart, rowSpan } = startRect;
+    let newColStart = colStart, newRowStart = rowStart;
+    let newColSpan  = colSpan, newRowSpan  = rowSpan;
+
+    if (handleType === 'bottom-right') {
+      newColSpan = Math.max(1, colSpan + deltaCols);
+      newRowSpan = Math.max(1, rowSpan + deltaRows);
+    } else if (handleType === 'bottom-left') {
+      newColStart = Math.max(1, colStart + deltaCols);
+      newColSpan  = Math.max(1, colSpan - deltaCols);
+      newRowSpan  = Math.max(1, rowSpan + deltaRows);
+    } else if (handleType === 'top-right') {
+      newRowStart = Math.max(1, rowStart + deltaRows);
+      newRowSpan  = Math.max(1, rowSpan - deltaRows);
+      newColSpan  = Math.max(1, colSpan + deltaCols);
+    } else if (handleType === 'top-left') {
+      newColStart = Math.max(1, colStart + deltaCols);
+      newRowStart = Math.max(1, rowStart + deltaRows);
+      newColSpan  = Math.max(1, colSpan - deltaCols);
+      newRowSpan  = Math.max(1, rowSpan - deltaRows);
+    }
+
+    // apply live preview
+    fieldEl.style.gridColumn = `${newColStart} / span ${newColSpan}`;
+    fieldEl.style.gridRow    = `${newRowStart} / span ${newRowSpan}`;
+  }
+
+  function onMouseUp() {
+    if (!isResizing) return;
+    isResizing = false;
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+
+    // parse the new grid coords
+    const partsCol = fieldEl.style.gridColumn.split(' ');
+    const partsRow = fieldEl.style.gridRow.split(' ');
+    const newRect = {
+      colStart: parseInt(partsCol[0]),
+      colSpan:  parseInt(partsCol[3]),
+      rowStart: parseInt(partsRow[0]),
+      rowSpan:  parseInt(partsRow[3]),
+    };
+
+    // collision check
+    const hasOverlap = Object.entries(layoutCache).some(([key, rect]) =>
+      key !== field && intersects(newRect, rect)
+    );
+    if (hasOverlap) {
+      revertPosition(fieldEl);
+    } else {
+      layoutCache[field] = newRect;
+    }
+  }
+}
 // Main Listener, triggers on page load
 document.addEventListener('DOMContentLoaded', function() {
   // All onload functions 
@@ -288,6 +381,7 @@ document.addEventListener('DOMContentLoaded', function() {
   toggleEditLayoutBtn.addEventListener('click', function() {
     editModeButtons();
     enableVanillaDrag()
+    enableVanillaResize();
 
   layoutGrid.addEventListener('mousedown', function(e) {
     const fieldEl = e.target.closest('.draggable-field');
