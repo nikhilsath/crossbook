@@ -49,36 +49,6 @@ function intersects(a, b) {
     b.rowStart   <  a.rowStart   + a.rowSpan
   );
 }
- 
-// Create a collision overlay element in the grid
-function createCollisionOverlay(leftCol, topRow, overlapCols, overlapRows) {
-  const layoutGrid = document.getElementById('layout-grid');
-  const overlay = document.createElement('div');
-  overlay.classList.add('collision-overlay');
-  overlay.style.gridColumn = `${leftCol} / span ${overlapCols}`;
-  overlay.style.gridRow    = `${topRow}   / span ${overlapRows}`;
-  layoutGrid.appendChild(overlay);
-}
-
-function highlightCollisions(fieldKey) {
-  const a = layoutCache[fieldKey];
-  Object.entries(layoutCache).forEach(([otherKey, b]) => {
-    if (otherKey === fieldKey) return;
-    if (!intersects(a, b)) return;
-
-    // Compute overlap in grid units
-    const leftCol   = Math.max(a.colStart, b.colStart);
-    const rightCol  = Math.min(a.colStart + a.colSpan, b.colStart + b.colSpan);
-    const topRow    = Math.max(a.rowStart, b.rowStart);
-    const bottomRow = Math.min(a.rowStart + a.rowSpan, b.rowStart + b.rowSpan);
-    const overlapCols = rightCol - leftCol;
-    const overlapRows = bottomRow - topRow;
-    if (overlapCols > 0 && overlapRows > 0) {
-      // CSS Grid is 1-based for lines
-      createCollisionOverlay(leftCol + 1, topRow + 1, overlapCols, overlapRows);
-    }
-  });
-}
 
 
 function revertPosition(el) {
@@ -89,22 +59,20 @@ function revertPosition(el) {
   }
   
   // Calculate grid positions from percentage/em values
-  const startCol = prev.colStart + 1;
+  const startCol = prev.colStart;
   const spanCol  = prev.colSpan;
-  const startRow = prev.rowStart + 1;
+  const startRow = prev.rowStart;
   const spanRow  = prev.rowSpan;
   // Apply restored grid coordinates
   el.style.gridColumn = `${startCol} / span ${spanCol}`;
   el.style.gridRow    = `${startRow} / span ${spanRow}`;
   
   // Clear potentially conflicting inline styles
-  console.log('Before clear:', el.style.cssText);
   el.style.left     = '';
   el.style.width    = '';
   el.style.top      = '';
   el.style.height   = '';
   el.style.position = '';
-  console.log(' After clear:', el.style.cssText);
 
   // Sync cache
   layoutCache[el.dataset.field] = { ...prev };
@@ -280,9 +248,9 @@ function enableVanillaDrag() {
     const newColStart = Math.floor((startRect.left + dx) / gridCellWidth); // integer from 0 to 19
     const newRowStart = Math.round((startRect.top + dy) / rowEm);
     layoutCache[field] = {
-      colStart: newColStart,
+      colStart: newColStart + 1,
       colSpan:  startRect.colSpan,
-      rowStart: newRowStart,
+      rowStart: newRowStart + 1,
       rowSpan:  startRect.rowSpan
     };
   // ▶️ Detect and highlight overlaps
@@ -290,15 +258,11 @@ function enableVanillaDrag() {
     otherKey !== field && intersects(layoutCache[field], rect)
   );
   if (hasOverlap) {
-    // remove any overlays drawn by highlightCollisions
-    document.querySelectorAll('.collision-overlay').forEach(o => o.remove());
     // snap back
     revertPosition(fieldEl);
     return
   } else {
-    // only draw overlays if placement is valid
-    highlightCollisions(field);
-    // re‐apply grid positioning…
+
   }
     // Clean up absolute positioning
     fieldEl.style.left = '';

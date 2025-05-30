@@ -105,8 +105,3 @@ input[type=number] {
   background-repeat: repeat, repeat;
 }
 
-#layout-grid .collision-overlay {
-  background: rgba(255, 0, 0, 0.3);
-  pointer-events: none;
-  z-index: 100;
-}
