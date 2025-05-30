@@ -87,22 +87,24 @@ function revertPosition(el) {
     console.warn('No previous rect to revert for', el.dataset.field);
     return;
   }
+  
   // Calculate grid positions from percentage/em values
-  const colStart = (prev.colStart / PCT_SNAP) + 1;
-  const colSpan = prev.colSpan / PCT_SNAP;
-  const rowStart = prev.rowStart + 1;
-  const rowSpan = prev.rowSpan;
-
+  const startCol = prev.colStart + 1;
+  const spanCol  = prev.colSpan;
+  const startRow = prev.rowStart + 1;
+  const spanRow  = prev.rowSpan;
   // Apply restored grid coordinates
-  el.style.gridColumn = `${colStart} / span ${colSpan}`;
-  el.style.gridRow = `${rowStart} / span ${rowSpan}`;
-
+  el.style.gridColumn = `${startCol} / span ${spanCol}`;
+  el.style.gridRow    = `${startRow} / span ${spanRow}`;
+  
   // Clear potentially conflicting inline styles
-  el.style.left = '';
-  el.style.width = '';
-  el.style.top = '';
-  el.style.height = '';
+  console.log('Before clear:', el.style.cssText);
+  el.style.left     = '';
+  el.style.width    = '';
+  el.style.top      = '';
+  el.style.height   = '';
   el.style.position = '';
+  console.log(' After clear:', el.style.cssText);
 
   // Sync cache
   layoutCache[el.dataset.field] = { ...prev };
@@ -114,6 +116,7 @@ function revertPosition(el) {
     prev
   );
 }
+
 
 function reset_layout() {
   console.group('reset_layout');
@@ -227,7 +230,7 @@ function enableVanillaDrag() {
     fieldEl = e.target.closest('.draggable-field');
     field = fieldEl?.dataset.field;
     if (!fieldEl || !field) return;
-
+    fieldEl._prevRect = { ...layoutCache[field] };
     const rect = fieldEl.getBoundingClientRect();
     fieldEl.style.width  = `${rect.width}px`;
     fieldEl.style.height = `${rect.height}px`;
@@ -283,7 +286,20 @@ function enableVanillaDrag() {
       rowSpan:  startRect.rowSpan
     };
   // ▶️ Detect and highlight overlaps
+    const hasOverlap = Object.entries(layoutCache).some(([otherKey, rect]) =>
+    otherKey !== field && intersects(layoutCache[field], rect)
+  );
+  if (hasOverlap) {
+    // remove any overlays drawn by highlightCollisions
+    document.querySelectorAll('.collision-overlay').forEach(o => o.remove());
+    // snap back
+    revertPosition(fieldEl);
+    return
+  } else {
+    // only draw overlays if placement is valid
     highlightCollisions(field);
+    // re‐apply grid positioning…
+  }
     // Clean up absolute positioning
     fieldEl.style.left = '';
     fieldEl.style.top = '';
@@ -292,6 +308,8 @@ function enableVanillaDrag() {
     // Re-apply grid layout
     fieldEl.style.gridColumn = `${newColStart + 1} / span ${startRect.colSpan}`;
     fieldEl.style.gridRow    = `${newRowStart + 1} / span ${startRect.rowSpan}`;
+    console.log('After onMouseUp reapply:', fieldEl.style.gridColumn, fieldEl.style.gridRow);
+
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
   }
