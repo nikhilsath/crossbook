@@ -23,22 +23,22 @@ const defaultFieldHeight = {
 function initLayout() {
   const layoutGrid = document.getElementById('layout-grid');
   CONTAINER_WIDTH = layoutGrid.clientWidth;
-  console.log("Initialized container width:", CONTAINER_WIDTH);
+  console.info("[layout] initLayout → container width=", CONTAINER_WIDTH);
 }
-
 
 function bindEventHandlers() {
   const saveLayoutBtn  = document.getElementById('save-layout');
   const resetLayoutBtn = document.getElementById('reset-layout');
   saveLayoutBtn.addEventListener('click', handleSaveLayout);
   resetLayoutBtn.addEventListener('click', reset_layout);
-  console.log("bindEventHandlers loaded ")
+  console.debug("[layout] bindEventHandlers registered save+reset click");
 }
 
 function onLoadJS(){
+  console.info("[layout] onLoadJS start");
   initLayout();
   bindEventHandlers();
-  console.log("onLoadJS wrapper log")
+  console.info("[layout] onLoadJS end");
 }
 
 function intersects(a, b) {
@@ -50,138 +50,91 @@ function intersects(a, b) {
   );
 }
 
-
 function revertPosition(el) {
   const prev = el._prevRect;
   if (!prev) {
-    console.warn('No previous rect to revert for', el.dataset.field);
+    console.warn("[layout] revertPosition: no previous rect for", el.dataset.field);
     return;
   }
-  
-  // Calculate grid positions from percentage/em values
   const startCol = prev.colStart;
   const spanCol  = prev.colSpan;
   const startRow = prev.rowStart;
   const spanRow  = prev.rowSpan;
-  // Apply restored grid coordinates
   el.style.gridColumn = `${startCol} / span ${spanCol}`;
   el.style.gridRow    = `${startRow} / span ${spanRow}`;
-  
-  // Clear potentially conflicting inline styles
   el.style.left     = '';
   el.style.width    = '';
   el.style.top      = '';
   el.style.height   = '';
   el.style.position = '';
-
-  // Sync cache
   layoutCache[el.dataset.field] = { ...prev };
-
-  console.log(
-    '▶️ revertPosition called for',
-    el.dataset.field,
-    'with _prevRect=',
-    prev
-  );
+  console.info("[layout] revertPosition called for", el.dataset.field, "previous rect=", prev);
 }
 
-
 function reset_layout() {
-  console.group('reset_layout');
-  // Reset cursor in "row units"
+  console.groupCollapsed("[layout] resetLayout start");
   let curRow = 1;
-  // For each field in cache
   Object.entries(layoutCache).forEach(([field, rect]) => {
-    const el = document.querySelector(`.draggable-field[data-field="${field}"]`);
-    if (!el) return;
-    // Skip hidden fields
-    if (el.dataset.type === 'hidden') return;
-
-    // Determine default size in grid-units
+    const el = document.querySelector(`.draggable-field[data-field=\"${field}\"]`);
+    if (!el || el.dataset.type === 'hidden') return;
     const widthUnits  = defaultFieldWidth[el.dataset.type]  || defaultFieldWidth.text;
     const heightUnits = defaultFieldHeight[el.dataset.type] || defaultFieldHeight.text;
-
-    const colStart = 1;                // always start at left
-    const rowStart = curRow;           // integer row index
-    const rowSpan  = heightUnits;      // number of rows (1em each)
-    // Advance the cursor
+    const colStart = 1;
+    const rowStart = curRow;
+    const rowSpan  = heightUnits;
     curRow += heightUnits;
-    // Update cache using percent/em for payload
-    layoutCache[field] = {
-      colStart:  colStart,
-      colSpan: widthUnits ,
-      rowStart:    rowStart,
-      rowSpan: rowSpan
-    };
-    // Apply via CSS Grid using unit counts
+    layoutCache[field] = { colStart, colSpan: widthUnits, rowStart, rowSpan };
     el.style.gridColumn = `${colStart} / span ${widthUnits}`;
     el.style.gridRow    = `${rowStart} / span ${rowSpan}`;
-
-    console.log(
-      `Field "${field}": col ${colStart}→span ${widthUnits}, ` +
-      `row ${rowStart}→span ${rowSpan}em`,
-      '→ cache:', layoutCache[field]
-    );
+    console.debug(`[layout] resetLayout field "${field}": col ${colStart}→span ${widthUnits}, row ${rowStart}→span ${rowSpan}em → cache:`, layoutCache[field]);
   });
   console.groupEnd();
 }
 
-
 function handleSaveLayout() {
-  // re-fetch our DOM elements so they exist in this scope
+  console.groupCollapsed("[layout] saveLayout start");
   const layoutGrid          = document.getElementById('layout-grid');
-  const toggleEditLayoutBtn = document.getElementById('toggle-edit-layout')
-  const addFieldBtn          = document.getElementById('add-field');
-  const saveLayoutBtn  = document.getElementById('save-layout');
-  const resetLayoutBtn = document.getElementById('reset-layout');
-
-  // tear down the jQuery-UI behaviors
-
-  // flip the buttons/UI back
+  const toggleEditLayoutBtn = document.getElementById('toggle-edit-layout');
+  const addFieldBtn         = document.getElementById('add-field');
+  const saveLayoutBtn       = document.getElementById('save-layout');
+  const resetLayoutBtn      = document.getElementById('reset-layout');
   toggleEditLayoutBtn.classList.remove('hidden');
   layoutGrid.classList.remove('editing');
   addFieldBtn.classList.remove('hidden');
-  // build payload from our percent/em cache
+  document.querySelectorAll('.resize-handle').forEach(h => h.classList.add('hidden'));
   const table = layoutGrid.dataset.table;
   const layoutEntries = Object.entries(layoutCache)
-    .filter(([field]) =>
-      document.querySelector(`.draggable-field[data-field="${field}"]`)
-    )
-    .map(([field, rect]) => ({
-      field,
-      colStart:  rect.colStart,
-      colSpan: rect.colSpan,
-      rowStart:    rect.rowStart,
-      rowSpan: rect.rowSpan
-    }));
+    .filter(([field]) => document.querySelector(`.draggable-field[data-field=\"${field}\"]`))
+    .map(([field, rect]) => ({ field, colStart: rect.colStart, colSpan: rect.colSpan, rowStart: rect.rowStart, rowSpan: rect.rowSpan }));
   const payload = { layout: layoutEntries };
-
-  console.log('Payload being sent:', JSON.stringify(payload, null, 2));
+  console.debug("[layout] saveLayout payload", payload);
   fetch(`/${table}/layout`, {
-    method:  'POST',
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify(payload)
+    body: JSON.stringify(payload)
   })
-  .then(response => {
-    console.log('Server response status:', response.status);
-    return response.json();
-  })
-  .then(data => {
-    console.log('Save result:', data);
-    // hide the “save/reset” buttons again
-    resetLayoutBtn.classList.add('hidden');
-    saveLayoutBtn.classList.add('hidden');
-  })
-  .catch(err => console.error('Save layout failed:', err));
+    .then(response => {
+      console.info(`[layout] saveLayout response status: ${response.status}`);
+      if (!response.ok) console.warn("[layout] saveLayout non-OK status", response.status);
+      return response.json();
+    })
+    .then(data => {
+      console.debug("[layout] saveLayout result", data);
+      resetLayoutBtn.classList.add('hidden');
+      saveLayoutBtn.classList.add('hidden');
+      console.info("[layout] saveLayout end");
+      console.groupEnd();
+    })
+    .catch(err => { console.error("[layout] saveLayout error", err); console.groupEnd(); });
 }
 
 function editModeButtons() {
   const toggleEditLayoutBtn = document.getElementById('toggle-edit-layout');
   const resetLayoutBtn      = document.getElementById('reset-layout');
   const addFieldBtn         = document.getElementById('add-field');
-  const saveLayoutBtn       = document.getElementById('save-layout'); 
+  const saveLayoutBtn       = document.getElementById('save-layout');
   const layoutGrid          = document.getElementById('layout-grid');
-  console.debug('editModeButtons: toggling edit-mode controls');
+  console.debug("[layout] editModeButtons toggling edit-mode controls");
   layoutGrid.classList.add('editing');
   resetLayoutBtn.classList.remove('hidden');
   addFieldBtn.classList.add('hidden');
@@ -254,17 +207,17 @@ function enableVanillaDrag() {
       rowStart: newRowStart + 1,
       rowSpan:  startRect.rowSpan
     };
-  // ▶️ Detect and highlight overlaps
-    const hasOverlap = Object.entries(layoutCache).some(([otherKey, rect]) =>
-    otherKey !== field && intersects(layoutCache[field], rect)
-  );
-  if (hasOverlap) {
-    // snap back
-    revertPosition(fieldEl);
-    return
-  } else {
 
-  }
+    // ▶️ Detect and highlight overlaps
+    const hasOverlap = Object.entries(layoutCache).some(([otherKey, rect]) =>
+      otherKey !== field && intersects(layoutCache[field], rect)
+    );
+    if (hasOverlap) {
+      // snap back
+      revertPosition(fieldEl);
+      return;
+    }
+
     // Clean up absolute positioning
     fieldEl.style.left = '';
     fieldEl.style.top = '';
@@ -273,19 +226,20 @@ function enableVanillaDrag() {
     // Re-apply grid layout
     fieldEl.style.gridColumn = `${newColStart + 1} / span ${startRect.colSpan}`;
     fieldEl.style.gridRow    = `${newRowStart + 1} / span ${startRect.rowSpan}`;
-    console.log('After onMouseUp reapply:', fieldEl.style.gridColumn, fieldEl.style.gridRow);
+    console.debug("[layout] drag:end gridPos", fieldEl.style.gridColumn, fieldEl.style.gridRow);
 
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
   }
 }
+
 function enableVanillaResize() {
   const layoutGrid = document.getElementById('layout-grid');
   const handles = document.querySelectorAll('.resize-handle');
   let isResizing = false;
   let handleType, fieldEl, field, startX, startY, startRect;
   if (layoutGrid.classList.contains('editing')) {
-  handles.forEach(h => h.classList.remove('hidden'));
+    handles.forEach(h => h.classList.remove('hidden'));
   } else {
     handles.forEach(h => h.classList.add('hidden'));
   }
@@ -371,6 +325,7 @@ function enableVanillaResize() {
     }
   }
 }
+
 // Main Listener, triggers on page load
 document.addEventListener('DOMContentLoaded', function() {
   // All onload functions 
@@ -380,18 +335,17 @@ document.addEventListener('DOMContentLoaded', function() {
   // Enter edit mode
   toggleEditLayoutBtn.addEventListener('click', function() {
     editModeButtons();
-    enableVanillaDrag()
+    enableVanillaDrag();
     enableVanillaResize();
 
-  layoutGrid.addEventListener('mousedown', function(e) {
-    const fieldEl = e.target.closest('.draggable-field');
-    const field = fieldEl?.dataset.field;
-    if (!fieldEl || !field) return;
+    layoutGrid.addEventListener('mousedown', function(e) {
+      const fieldEl = e.target.closest('.draggable-field');
+      const field = fieldEl?.dataset.field;
+      if (!fieldEl || !field) return;
 
-    console.log('Activating draggable for field:', field);
+      console.debug("[layout] drag:activate", field);
+    });
+
+    console.debug("[layout] domContentLoaded initialCache", layoutCache);  // Fires on entering edit mode; shows starting coordinates
   });
-
-    console.log('Initial layoutCache:', layoutCache);  // Fires on entering edit mode; shows starting coordinates
-  });
-
 });
