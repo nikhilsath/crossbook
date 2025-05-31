@@ -101,7 +101,8 @@ function handleSaveLayout() {
   toggleEditLayoutBtn.classList.remove('hidden');
   layoutGrid.classList.remove('editing');
   addFieldBtn.classList.remove('hidden');
-  document.querySelectorAll('.resize-handle').forEach(h => h.classList.add('hidden'));
+    document.querySelectorAll('.resize-handle')
+.forEach(h => h.classList.add('hidden'));
   const table = layoutGrid.dataset.table;
   const layoutEntries = Object.entries(layoutCache)
     .filter(([field]) => document.querySelector(`.draggable-field[data-field=\"${field}\"]`))
@@ -185,7 +186,10 @@ function enableVanillaDrag() {
 
     const newLeft = startRect.left + dx;
     const newTop  = startRect.top  + dy;
-
+    console.log(
+      `[layout][drag–move] "${field}": dx=${dx}, dy=${dy}, `,
+      `pixelPos={ left: ${newLeft}, top: ${newTop} }`
+    );
     fieldEl.style.left = `${newLeft}px`;
     fieldEl.style.top  = `${newTop}px`;
   }
@@ -226,6 +230,9 @@ function enableVanillaDrag() {
     // Re-apply grid layout
     fieldEl.style.gridColumn = `${newColStart + 1} / span ${startRect.colSpan}`;
     fieldEl.style.gridRow    = `${newRowStart + 1} / span ${startRect.rowSpan}`;
+    // Clearing up the following is required to allow resize again
+    fieldEl.style.width  = '';
+    fieldEl.style.height = '';
     console.debug("[layout] drag:end gridPos", fieldEl.style.gridColumn, fieldEl.style.gridRow);
 
     document.removeEventListener('mousemove', onMouseMove);
@@ -296,6 +303,7 @@ function enableVanillaResize() {
     // apply live preview
     fieldEl.style.gridColumn = `${newColStart} / span ${newColSpan}`;
     fieldEl.style.gridRow    = `${newRowStart} / span ${newRowSpan}`;
+    
   }
 
   function onMouseUp() {
@@ -313,11 +321,13 @@ function enableVanillaResize() {
       rowStart: parseInt(partsRow[0]),
       rowSpan:  parseInt(partsRow[3]),
     };
+    console.log(`[layout][resize–end] "${field}": proposed newRect=`, newRect);
 
     // collision check
     const hasOverlap = Object.entries(layoutCache).some(([key, rect]) =>
       key !== field && intersects(newRect, rect)
     );
+    console.log(`[layout][resize–end] "${field}": hasOverlap=`, hasOverlap);
     if (hasOverlap) {
       revertPosition(fieldEl);
     } else {
