@@ -71,8 +71,7 @@
           name="field_name" 
           class="mt-1 block w-full border px-3 py-2 rounded" 
           onchange="fetchRemoveCount(this.value)"
-          required
-        >
+          required>
           <option value="" disabled selected>Select field</option>
           {% for field, fmeta in field_schema[table].items() %}
             {% if fmeta.type != "hidden" and field != "id" %}
@@ -100,8 +99,7 @@
             id="remove-submit-btn" 
             type="submit" 
             class="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50" 
-            disabled
-          >
+            disabled>
             Remove
           </button>
         </div>
