@@ -1,6 +1,7 @@
-from flask import Flask, render_template, abort, request, redirect, url_for, jsonify, session
+from flask import Flask, render_template, abort, request, redirect, url_for, jsonify, session, g
 import os
 import logging
+import time
 import json
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 from db.database import get_connection
@@ -56,6 +57,21 @@ handler.setLevel(level)
 app.logger.setLevel(level)
 app.logger.addHandler(handler)
 
+@app.before_request
+def start_timer():
+    g.start_time = time.time()
+    app.logger.info(f"[REQ] {request.method} {request.path} started")
+
+@app.after_request
+def log_request(response):
+    duration = time.time() - g.get("start_time", time.time())
+    app.logger.info(f"[REQ] {request.method} {request.path} completed in {duration:.3f}s with {response.status_code}")
+    return response
+
+@app.teardown_request
+def log_exception(exc):
+    if exc:
+        app.logger.exception(f"[ERROR] Unhandled exception during {request.method} {request.path}: {exc}")
 
 # Before rendering any template call this and inject the results into the template 
 @app.context_processor
