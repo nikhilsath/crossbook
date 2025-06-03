@@ -2,6 +2,7 @@ from flask import Flask, render_template, abort, request, redirect, url_for, jso
 import os
 import logging
 import json
+from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 from db.database import get_connection
 from db.schema import load_field_schema, update_foreign_field_options, get_field_schema, load_core_tables, update_layout
 from db.records import get_all_records, get_record_by_id, update_field_value, create_record, delete_record, count_nonnull
@@ -9,17 +10,53 @@ from db.relationships import get_related_records, add_relationship, remove_relat
 from static.imports.validation import validation_sorter
 from imports.import_csv import parse_csv
 from db.edit_fields import add_column_to_table, add_field_to_schema, drop_column_from_table, remove_field_from_schema
+from db.config import get_logging_config
+
 
 app = Flask(__name__, static_url_path='/static')
 app.jinja_env.add_extension('jinja2.ext.do') # for field type in detail_view
 DB_PATH = os.path.join("data", "crossbook.db")
 conn = get_connection()
 CORE_TABLES = load_core_tables(conn)
+cfg = get_logging_config()
+level_name = cfg.get("log_level", "INFO").upper()
+level = getattr(logging, level_name, logging.INFO)
+handler_type = cfg.get("handler_type", "stream")
+filename = cfg.get("filename", "logs/crossbook.log")
+max_bytes = int(cfg.get("max_file_size", 5 * 1024 * 1024))
+backup = int(cfg.get("backup_count", 3))
+when_interval = cfg.get("when_interval", "midnight")
+interval = int(cfg.get("interval_count", 1))
+log_fmt = cfg.get("log_format", "[%(asctime)s] %(levelname)s in %(module)s: %(message)s")
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(levelname)s:%(message)s"
-)
+if handler_type == "rotating":
+    import os
+    log_dir = os.path.dirname(filename)
+    if log_dir and not os.path.isdir(log_dir):
+        os.makedirs(log_dir, exist_ok=True)
+
+    handler = RotatingFileHandler(
+        filename,
+        maxBytes=max_bytes,
+        backupCount=backup
+    )
+elif handler_type == "timed":
+    handler = TimedRotatingFileHandler(
+        filename,
+        when=when_interval,
+        interval=interval,
+        backupCount=backup
+    )
+else:  # default to 'stream'
+    handler = logging.StreamHandler()
+
+formatter = logging.Formatter(log_fmt)
+handler.setFormatter(formatter)
+handler.setLevel(level)
+app.logger.setLevel(level)
+app.logger.addHandler(handler)
+
+
 # Before rendering any template call this and inject the results into the template 
 @app.context_processor
 def inject_field_schema():

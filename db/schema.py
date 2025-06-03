@@ -4,8 +4,6 @@ import json
 DB_PATH = "data/crossbook.db"
 FIELD_SCHEMA = {}
 
-DB_PATH = "data/crossbook.db"
-
 # Create library with field types and coordinate layouts
 def load_field_schema():
     """
