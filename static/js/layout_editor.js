@@ -186,10 +186,6 @@ function enableVanillaDrag() {
 
     const newLeft = startRect.left + dx;
     const newTop  = startRect.top  + dy;
-    console.log(
-      `[layout][drag–move] "${field}": dx=${dx}, dy=${dy}, `,
-      `pixelPos={ left: ${newLeft}, top: ${newTop} }`
-    );
     fieldEl.style.left = `${newLeft}px`;
     fieldEl.style.top  = `${newTop}px`;
   }

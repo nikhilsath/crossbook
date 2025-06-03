@@ -117,3 +117,61 @@ def load_core_tables(conn):
         "SELECT value FROM config WHERE key = ?", ("core_tables",)
     ).fetchone()
     return [t.strip() for t in row[0].split(",")] if row else []
+
+def update_layout(table: str, layout_items: list[dict]) -> int:
+    current_schema = load_field_schema()
+
+    if table not in current_schema:
+        raise ValueError(f"Unknown table: {table}")
+
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    updated = 0
+
+    for item in layout_items:
+        field = item.get("field")
+        if not field:
+            # Skip items without a "field" key
+            continue
+
+        # Safely parse numeric layout values (defaults to 0.0)
+        try:
+            col_start = float(item.get("colStart", 0))
+            col_span  = float(item.get("colSpan", 0))
+            row_start = float(item.get("rowStart", 0))
+            row_span  = float(item.get("rowSpan", 0))
+        except (TypeError, ValueError):
+            # Skip this item if conversion fails
+            continue
+
+        # Perform the SQL UPDATE
+        cur.execute(
+            """
+            UPDATE field_schema
+               SET col_start  = ?,
+                   col_span   = ?,
+                   row_start  = ?,
+                   row_span   = ?
+             WHERE table_name  = ? AND field_name = ?
+            """,
+            (col_start, col_span, row_start, row_span, table, field)
+        )
+        if cur.rowcount:
+            updated += 1
+            # Also update the in-memory copy immediately
+            current_schema[table][field]["layout"] = {
+                "colStart": col_start,
+                "colSpan":  col_span,
+                "rowStart": row_start,
+                "rowSpan":  row_span
+            }
+        # If rowcount == 0, quietly skip (no such field or no change)
+
+    conn.commit()
+    conn.close()
+
+    # Refresh the global FIELD_SCHEMA cache
+    global FIELD_SCHEMA
+    FIELD_SCHEMA = current_schema
+
+    return updated

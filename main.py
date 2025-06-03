@@ -3,12 +3,11 @@ import os
 import logging
 import json
 from db.database import get_connection
-from db.schema import load_field_schema, update_foreign_field_options, get_field_schema, load_core_tables
-from db.records import get_all_records, get_record_by_id, update_field_value, create_record, delete_record
+from db.schema import load_field_schema, update_foreign_field_options, get_field_schema, load_core_tables, update_layout
+from db.records import get_all_records, get_record_by_id, update_field_value, create_record, delete_record, count_nonnull
 from db.relationships import get_related_records, add_relationship, remove_relationship
 from static.imports.validation import validation_sorter
 from imports.import_csv import parse_csv
-from imports.tasks import huey 
 from db.edit_fields import add_column_to_table, add_field_to_schema, drop_column_from_table, remove_field_from_schema
 
 app = Flask(__name__, static_url_path='/static')
@@ -93,7 +92,6 @@ def detail_view(table, record_id):
         field_schema_layout=field_schema_layout
     )
 
-
 @app.route("/<table>/<int:record_id>/add-field", methods=["POST"])
 def add_field_route(table, record_id):
     try:
@@ -131,20 +129,12 @@ def add_field_route(table, record_id):
 @app.route("/<table>/count-nonnull")
 def count_nonnull(table):
     field = request.args.get("field")
-    # Validate that field exists and is not hidden or "id"
-    fmeta = get_field_schema().get(table, {}).get(field)
-    if not field or fmeta is None or fmeta["type"] == "hidden" or field == "id":
-        return jsonify({"count": 0}), 400
-    conn = get_connection()
-    cursor = conn.cursor()
     try:
-        sql = f'SELECT COUNT(*) FROM "{table}" WHERE "{field}" IS NOT NULL'
-        cursor.execute(sql)
-        count = cursor.fetchone()[0] or 0
-    except:
-        count = 0
-    finally:
-        conn.close()
+        from db.records import count_nonnull as _count_nonnull
+        count = _count_nonnull(table, field)
+    except ValueError:
+        return jsonify({"count": 0}), 400
+
     return jsonify({"count": count})
 
 @app.route("/<table>/<int:record_id>/remove-field", methods=["POST"])
@@ -162,7 +152,6 @@ def remove_field_route(table, record_id):
     from db import schema
     schema.FIELD_SCHEMA = load_field_schema()
     return redirect(url_for("detail_view", table=table, record_id=record_id))
-
 
 @app.route("/<table>/<int:record_id>/update", methods=["POST"])
 def update_field(table, record_id):
@@ -250,73 +239,17 @@ def delete_record_route(table, record_id):
 
 @app.route("/<table>/layout", methods=["POST"])
 def update_layout(table):
-    FIELD_SCHEMA = load_field_schema()
-    logging.info(f"[LAYOUT] Received payload for table={table}: %s", request.get_data())
     data = request.get_json(silent=True)
-    if data is None:
-        logging.error("[LAYOUT] JSON parse failed")
-        return jsonify({"error": "Bad JSON"}), 400
+    if not data or not isinstance(data.get("layout"), list):
+        return jsonify({"error": "Invalid JSON or missing `layout`"}), 400
 
-    layout_items = data.get("layout")
-    if not isinstance(layout_items, list):
-        logging.error("[LAYOUT] Missing or invalid `layout` field: %r", layout_items)
-        return jsonify({"error": "Invalid layout format"}), 400
+    layout_items = data["layout"]
+    try:
+        from db.schema import update_layout as _update_layout
+        updated = _update_layout(table, layout_items)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
 
-    if table not in FIELD_SCHEMA:
-        logging.error("[LAYOUT] Unknown table: %s", table)
-        return jsonify({"error": "Unknown table"}), 400
-
-    conn = get_connection()
-    cur  = conn.cursor()
-    updated = 0
-
-    for item in layout_items:
-        field = item.get("field")
-        if not field:
-            logging.warning("[LAYOUT] Skipping entry with no field: %r", item)
-            continue
-
-        # pull our new keys (fall back to zero if missing)
-        col_start  = float(item.get("colStart",  0))
-        col_span = float(item.get("colSpan", 0))
-        row_start    = float(item.get("rowStart",    0))
-        row_span = float(item.get("rowSpan", 0))
-
-        # persist into the new schema columns
-        res = cur.execute(
-            """
-            UPDATE field_schema
-               SET col_start  = ?,
-                   col_span = ?,
-                   row_start    = ?,
-                   row_span = ?
-             WHERE table_name = ? AND field_name = ?
-            """,
-            (col_start, col_span, row_start, row_span, table, field)
-        )
-        logging.info(
-            "[LAYOUT] SQL rowcount=%d for %s.%s with params "
-            "col_start=%s,col_span=%s,row_start=%s,row_span=%s",
-            cur.rowcount, table, field,
-            col_start, col_span, row_start, row_span
-        )
-        if cur.rowcount:
-            updated += 1
-        else:
-            logging.warning("[LAYOUT] No row updated for %s.%s", table, field)
-
-        # also update our in-memory schema so the page stays consistent
-        FIELD_SCHEMA[table][field]["layout"] = {
-            "colStart":  col_start,
-            "colSpan": col_span,
-            "rowStart":    row_start,
-            "rowSpan": row_span
-        }
-
-    conn.commit()
-    conn.close()
-
-    logging.info("[LAYOUT] Rows updated: %d", updated)
     return jsonify({"success": True, "updated": updated})
 
 @app.route("/import", methods=["GET", "POST"])
