@@ -9,7 +9,7 @@ from db.relationships import get_related_records, add_relationship, remove_relat
 from static.imports.validation import validation_sorter
 from imports.import_csv import parse_csv
 from imports.tasks import huey 
-from db.edit_fields import add_column_to_table, add_field_to_schema
+from db.edit_fields import add_column_to_table, add_field_to_schema, drop_column_from_table, remove_field_from_schema
 
 app = Flask(__name__, static_url_path='/static')
 app.jinja_env.add_extension('jinja2.ext.do') # for field type in detail_view
@@ -94,11 +94,11 @@ def detail_view(table, record_id):
     )
 
 
-
 @app.route("/<table>/<int:record_id>/add-field", methods=["POST"])
 def add_field_route(table, record_id):
     try:
         field_name = request.form["field_name"]
+        print(f"[LOG] Entering add_field_route: table={table!r}, record_id={record_id!r}, form={dict(request.form)!r}")
         field_type = request.form["field_type"]
         field_options_raw = request.form.get("field_options", "")
         foreign_key = request.form.get("foreign_key_target", None)
@@ -106,15 +106,17 @@ def add_field_route(table, record_id):
         field_options = [opt.strip() for opt in field_options_raw.split(",") if opt.strip()] if field_options_raw else []
         layout = {"x": 0, "y": 0, "w": 6, "h": 1}
 
+        print(f"[LOG] About to call add_column_to_table(table={table!r}, field_name={field_name!r}, field_type={field_type!r})")
         add_column_to_table(table, field_name, field_type)
+        print(f"[LOG] Returned from add_column_to_table for field {field_name!r}")
+        print(f"[LOG] About to call add_field_to_schema(table={table!r}, field_name={field_name!r}, field_type={field_type!r}, options={field_options!r}, fk={foreign_key!r})")
 
         add_field_to_schema(
             table=table,
             field_name=field_name,
             field_type=field_type,
             field_options=field_options,
-            foreign_key=foreign_key,
-            layout=layout
+            foreign_key=foreign_key
         )
         from db import schema
         schema.FIELD_SCHEMA = load_field_schema()
@@ -125,6 +127,42 @@ def add_field_route(table, record_id):
     except Exception as e:
         print("❌ Error:", e)
         return "Server error", 500
+
+@app.route("/<table>/count-nonnull")
+def count_nonnull(table):
+    field = request.args.get("field")
+    # Validate that field exists and is not hidden or "id"
+    fmeta = get_field_schema().get(table, {}).get(field)
+    if not field or fmeta is None or fmeta["type"] == "hidden" or field == "id":
+        return jsonify({"count": 0}), 400
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        sql = f'SELECT COUNT(*) FROM "{table}" WHERE "{field}" IS NOT NULL'
+        cursor.execute(sql)
+        count = cursor.fetchone()[0] or 0
+    except:
+        count = 0
+    finally:
+        conn.close()
+    return jsonify({"count": count})
+
+@app.route("/<table>/<int:record_id>/remove-field", methods=["POST"])
+def remove_field_route(table, record_id):
+    field_name = request.form.get("field_name")
+    # Validate it again
+    fmeta = get_field_schema().get(table, {}).get(field_name)
+    if not field_name or fmeta is None or fmeta["type"] == "hidden" or field_name == "id":
+        abort(400, "Invalid field")
+    # 1) Drop column from DB and remove from schema
+    from db.edit_fields import drop_column_from_table, remove_field_from_schema
+    drop_column_from_table(table, field_name)
+    remove_field_from_schema(table, field_name)
+    # 2) Reload FIELD_SCHEMA in memory
+    from db import schema
+    schema.FIELD_SCHEMA = load_field_schema()
+    return redirect(url_for("detail_view", table=table, record_id=record_id))
+
 
 @app.route("/<table>/<int:record_id>/update", methods=["POST"])
 def update_field(table, record_id):
@@ -280,7 +318,6 @@ def update_layout(table):
 
     logging.info("[LAYOUT] Rows updated: %d", updated)
     return jsonify({"success": True, "updated": updated})
-
 
 @app.route("/import", methods=["GET", "POST"])
 def import_records():

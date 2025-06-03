@@ -46,35 +46,41 @@ function initEditFieldsTabs() {
     tabAdd.classList.remove("border-blue-600", "text-blue-600");
     paneRemove.classList.remove("hidden");
     paneAdd.classList.add("hidden");
-    preloadRemoveCounts();
   });
 }
 
 // Store fetched counts here
 let removeCounts = {};
+function fetchRemoveCount(field) {
+  const gridWrapper = document.getElementById("layout-grid");
+  const table = gridWrapper ? gridWrapper.dataset.table : "";
 
-// Once-per-modal-session: fetch non-null counts for every deletable field
-function preloadRemoveCounts() {
-  if (Object.keys(removeCounts).length > 0) return;
-  const table = "{{ table }}"; // rendered by Jinja
-  const selectEl = document.getElementById("field-to-remove");
-  Array.from(selectEl.options).forEach(opt => {
-    const field = opt.value;
-    if (!field) return;
-    fetch(`/${table}/count-nonnull?field=${field}`)
-      .then(res => res.json())
-      .then(data => {
-        removeCounts[field] = data.count || 0;
-      })
-      .catch(() => {
-        removeCounts[field] = 0;
-      });
-  });
+  // Show “Checking…” immediately
+  const removeCountP = document.getElementById("remove-count");
+  removeCountP.textContent = "Checking…";
+  document.getElementById("confirm-delete-checkbox").classList.add("hidden");
+  document.getElementById("remove-submit-btn").disabled = true;
+
+  // One-off fetch for this field
+  fetch(`/${table}/count-nonnull?field=${field}`)
+    .then(res => res.json())
+    .then(data => {
+      const count = data.count || 0;
+      updateRemoveInfo(count);
+    })
+    .catch(() => {
+      updateRemoveInfo(0);
+    });
 }
 
-// When user picks a field in “Remove Field” pane
-function fetchRemoveCount(field) {
-  const count = removeCounts[field] ?? 0;
+// Enable “Remove” button only if the confirmation checkbox is checked
+function toggleRemoveButton() {
+  const confirmCheckbox = document.getElementById("confirm-delete-checkbox");
+  const removeBtn = document.getElementById("remove-submit-btn");
+  removeBtn.disabled = !confirmCheckbox.checked;
+}
+
+function updateRemoveInfo(count) {
   const removeInfoDiv = document.getElementById("remove-info");
   const removeCountP = document.getElementById("remove-count");
   const checkboxLabel = document.getElementById("checkbox-label");
@@ -94,13 +100,6 @@ function fetchRemoveCount(field) {
     removeInfoDiv.classList.remove("hidden");
     removeBtn.disabled = false;
   }
-}
-
-// Enable “Remove” button only if the confirmation checkbox is checked
-function toggleRemoveButton() {
-  const confirmCheckbox = document.getElementById("confirm-delete-checkbox");
-  const removeBtn = document.getElementById("remove-submit-btn");
-  removeBtn.disabled = !confirmCheckbox.checked;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
