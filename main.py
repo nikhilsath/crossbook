@@ -28,7 +28,10 @@ max_bytes = int(cfg.get("max_file_size", 5 * 1024 * 1024))
 backup = int(cfg.get("backup_count", 3))
 when_interval = cfg.get("when_interval", "midnight")
 interval = int(cfg.get("interval_count", 1))
-log_fmt = cfg.get("log_format", "[%(asctime)s] %(levelname)s in %(module)s: %(message)s")
+log_fmt = cfg.get(
+    "log_format",
+    "[%(asctime)s] %(levelname)s in %(module)s:%(funcName)s: %(message)s",
+)
 
 if handler_type == "rotating":
     import os
@@ -149,7 +152,12 @@ def detail_view(table, record_id):
 def add_field_route(table, record_id):
     try:
         field_name = request.form["field_name"]
-        print(f"[LOG] Entering add_field_route: table={table!r}, record_id={record_id!r}, form={dict(request.form)!r}")
+        app.logger.info(
+            "table=%s record_id=%s form=%s",
+            table,
+            record_id,
+            dict(request.form),
+        )
         field_type = request.form["field_type"]
         field_options_raw = request.form.get("field_options", "")
         foreign_key = request.form.get("foreign_key_target", None)
@@ -157,10 +165,22 @@ def add_field_route(table, record_id):
         field_options = [opt.strip() for opt in field_options_raw.split(",") if opt.strip()] if field_options_raw else []
         layout = {"x": 0, "y": 0, "w": 6, "h": 1}
 
-        print(f"[LOG] About to call add_column_to_table(table={table!r}, field_name={field_name!r}, field_type={field_type!r})")
+        app.logger.info(
+            "Calling add_column_to_table table=%s field_name=%s field_type=%s",
+            table,
+            field_name,
+            field_type,
+        )
         add_column_to_table(table, field_name, field_type)
-        print(f"[LOG] Returned from add_column_to_table for field {field_name!r}")
-        print(f"[LOG] About to call add_field_to_schema(table={table!r}, field_name={field_name!r}, field_type={field_type!r}, options={field_options!r}, fk={foreign_key!r})")
+        app.logger.info("Returned from add_column_to_table for field %s", field_name)
+        app.logger.info(
+            "Calling add_field_to_schema table=%s field_name=%s field_type=%s options=%s fk=%s",
+            table,
+            field_name,
+            field_type,
+            field_options,
+            foreign_key,
+        )
 
         add_field_to_schema(
             table=table,
@@ -171,12 +191,17 @@ def add_field_route(table, record_id):
         )
         from db import schema
         schema.FIELD_SCHEMA = load_field_schema()
-        print("🚀 Adding column to:", table, "field:", field_name, "type:", field_type)
+        app.logger.info(
+            "🚀 Added column: table=%s field=%s type=%s",
+            table,
+            field_name,
+            field_type,
+        )
 
         return redirect(url_for("detail_view", table=table, record_id=record_id))
 
     except Exception as e:
-        print("❌ Error:", e)
+        app.logger.exception("Error adding field")
         return "Server error", 500
 
 @app.route("/<table>/count-nonnull")
