@@ -87,7 +87,7 @@
       {% elif field_type == "number" %}
         {{ inline_input(field, update_endpoint, table, record_id,
         '<input type="number" name="new_value" value="' ~ value ~
-        '" class="appearance-none border px-1 py-0.5 text-sm rounded"  onchange="this.form.submit()">' ) }}
+        '" class="appearance-none border px-1 py-0.5 text-sm rounded"  onchange="submitFieldAjax(this.form)"><span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>' ) }}
     {% elif field_type == "date" %}
     {{ inline_input(field,update_endpoint,table,record_id,
          '<input type="date" name="new_value" value="' ~ value ~
@@ -146,7 +146,7 @@
         {% elif field_type == "text" %}
         {{ inline_input(field, update_endpoint, table, record_id,
              '<input type="text" name="new_value" value="' ~ value ~
-             '" class="border px-1 py-0.5 text-sm rounded" onchange="this.form.submit()">' ) }}      
+             '" class="border px-1 py-0.5 text-sm rounded" onchange="this.form.submit()">' ) }}
       {% else %}
         <span class="ml-1">{{ value }}</span>
       {% endif %}
