@@ -98,6 +98,12 @@ def inject_field_schema():
 def home():
     return render_template("index.html")
 
+
+@app.route("/dashboard")
+def dashboard():
+    """Render the dashboard page."""
+    return render_template("dashboard.html")
+
 @app.route("/<table>")
 def list_view(table):
     if table not in CORE_TABLES:
