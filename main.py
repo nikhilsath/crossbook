@@ -6,7 +6,15 @@ import json
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 from db.database import get_connection
 from db.schema import load_field_schema, update_foreign_field_options, get_field_schema, load_core_tables, update_layout
-from db.records import get_all_records, get_record_by_id, update_field_value, create_record, delete_record, count_nonnull
+from db.records import (
+    get_all_records,
+    get_record_by_id,
+    update_field_value,
+    create_record,
+    delete_record,
+    count_nonnull,
+    append_edit_log,
+)
 from db.relationships import get_related_records, add_relationship, remove_relationship
 from static.imports.validation import validation_sorter
 from imports.import_csv import parse_csv
@@ -149,7 +157,9 @@ def detail_view(table, record_id):
 def add_field_route(table, record_id):
     try:
         field_name = request.form["field_name"]
-        print(f"[LOG] Entering add_field_route: table={table!r}, record_id={record_id!r}, form={dict(request.form)!r}")
+        app.logger.debug(
+            f"add_field_route start: table={table!r}, record_id={record_id!r}, form={dict(request.form)!r}"
+        )
         field_type = request.form["field_type"]
         field_options_raw = request.form.get("field_options", "")
         foreign_key = request.form.get("foreign_key_target", None)
@@ -157,10 +167,16 @@ def add_field_route(table, record_id):
         field_options = [opt.strip() for opt in field_options_raw.split(",") if opt.strip()] if field_options_raw else []
         layout = {"x": 0, "y": 0, "w": 6, "h": 1}
 
-        print(f"[LOG] About to call add_column_to_table(table={table!r}, field_name={field_name!r}, field_type={field_type!r})")
+        app.logger.debug(
+            f"add_field_route calling add_column_to_table table={table!r} field_name={field_name!r} field_type={field_type!r}"
+        )
         add_column_to_table(table, field_name, field_type)
-        print(f"[LOG] Returned from add_column_to_table for field {field_name!r}")
-        print(f"[LOG] About to call add_field_to_schema(table={table!r}, field_name={field_name!r}, field_type={field_type!r}, options={field_options!r}, fk={foreign_key!r})")
+        app.logger.debug(
+            f"add_field_route returned from add_column_to_table for {field_name!r}"
+        )
+        app.logger.debug(
+            f"add_field_route calling add_field_to_schema table={table!r} field_name={field_name!r} field_type={field_type!r} options={field_options!r} fk={foreign_key!r}"
+        )
 
         add_field_to_schema(
             table=table,
@@ -171,12 +187,14 @@ def add_field_route(table, record_id):
         )
         from db import schema
         schema.FIELD_SCHEMA = load_field_schema()
-        print("🚀 Adding column to:", table, "field:", field_name, "type:", field_type)
+        app.logger.info(
+            f"Added column to {table}: field={field_name!r} type={field_type!r}"
+        )
 
         return redirect(url_for("detail_view", table=table, record_id=record_id))
 
     except Exception as e:
-        print("❌ Error:", e)
+        app.logger.exception("add_field_route error: %s", e)
         return "Server error", 500
 
 @app.route("/<table>/count-nonnull")
@@ -237,15 +255,24 @@ def update_field(table, record_id):
         else:
             new_value = raw
 
+    app.logger.debug(
+        f"update_field: table={table}, id={record_id}, field={field}, value={new_value!r}"
+    )
+
     # Delegate to your existing DB helper
     success = update_field_value(table, record_id, field, new_value)
     if not success:
         abort(500, "Database update failed")
+    app.logger.info(
+        f"Field updated for {table} id={record_id}: {field} -> {new_value!r}"
+    )
     return redirect(url_for("detail_view", table=table, record_id=record_id))
 
 @app.route('/relationship', methods=['POST'])
 def manage_relationship():
     data = request.get_json()
+
+    app.logger.debug(f"manage_relationship request: {data}")
 
     action = data.get('action')
     table_a = data.get('table_a')
@@ -255,13 +282,32 @@ def manage_relationship():
 
     if action == 'add':
         success = add_relationship(table_a, id_a, table_b, id_b)
+        if success:
+            append_edit_log(
+                table_a,
+                id_a,
+                f"Added relation to {table_b} {id_b}",
+            )
     elif action == 'remove':
         success = remove_relationship(table_a, id_a, table_b, id_b)
+        if success:
+            append_edit_log(
+                table_a,
+                id_a,
+                f"Removed relation to {table_b} {id_b}",
+            )
     else:
         abort(400, "Invalid action")
 
     if not success:
+        app.logger.error(
+            f"manage_relationship failed action={action} {table_a}:{id_a} -> {table_b}:{id_b}"
+        )
         abort(500, "Failed to modify relationship")
+    else:
+        app.logger.info(
+            f"manage_relationship {action} {table_a}:{id_a} {table_b}:{id_b}"
+        )
 
     return {"success": True}
 
