@@ -142,6 +142,7 @@ def validate_boolean_column(values):
         if not v or v.strip() == "":
             blank += 1
             details["blank"].append(idx)
+            continue
         s = str(v).strip().lower()
         if s in ("true", "false", "1", "0", "yes", "no"):
             valid += 1
