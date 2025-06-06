@@ -186,6 +186,7 @@
   window.openLayoutModal = () => document.getElementById("layoutModal").classList.remove("hidden");
   window.closeLayoutModal = () => document.getElementById("layoutModal").classList.add("hidden");
 </script>
+<script type="module" src="{{ url_for('static', filename='js/field_ajax.js') }}"></script>
 
 {% include "edit_fields_modal.html" %}
 
