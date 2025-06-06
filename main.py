@@ -6,7 +6,15 @@ import json
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 from db.database import get_connection
 from db.schema import load_field_schema, update_foreign_field_options, get_field_schema, load_core_tables, update_layout
-from db.records import get_all_records, get_record_by_id, update_field_value, create_record, delete_record, count_nonnull
+from db.records import (
+    get_all_records,
+    get_record_by_id,
+    update_field_value,
+    create_record,
+    delete_record,
+    count_nonnull,
+    append_edit_log,
+)
 from db.relationships import get_related_records, add_relationship, remove_relationship
 from static.imports.validation import validation_sorter
 from imports.import_csv import parse_csv
@@ -255,8 +263,20 @@ def manage_relationship():
 
     if action == 'add':
         success = add_relationship(table_a, id_a, table_b, id_b)
+        if success:
+            append_edit_log(
+                table_a,
+                id_a,
+                f"Added relation to {table_b} {id_b}",
+            )
     elif action == 'remove':
         success = remove_relationship(table_a, id_a, table_b, id_b)
+        if success:
+            append_edit_log(
+                table_a,
+                id_a,
+                f"Removed relation to {table_b} {id_b}",
+            )
     else:
         abort(400, "Invalid action")
 
