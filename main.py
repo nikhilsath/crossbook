@@ -162,6 +162,7 @@ def add_field_route(table, record_id):
         field_name = request.form["field_name"]
         app.logger.debug(
             f"add_field_route start: table={table!r}, record_id={record_id!r}, form={dict(request.form)!r}"
+        )
         app.logger.info(
             "table=%s record_id=%s form=%s",
             table,
@@ -184,6 +185,7 @@ def add_field_route(table, record_id):
         )
         app.logger.debug(
             f"add_field_route calling add_field_to_schema table={table!r} field_name={field_name!r} field_type={field_type!r} options={field_options!r} fk={foreign_key!r}"
+        )
         app.logger.info(
             "Calling add_column_to_table table=%s field_name=%s field_type=%s",
             table,
@@ -288,12 +290,26 @@ def update_field(table, record_id):
     )
 
     # Delegate to your existing DB helper
+    # First fetch the previous value so we can record changes
+    prev_record = get_record_by_id(table, record_id)
+    prev_value = prev_record.get(field) if prev_record else None
+
     success = update_field_value(table, record_id, field, new_value)
     if not success:
         abort(500, "Database update failed")
+
     app.logger.info(
         f"Field updated for {table} id={record_id}: {field} -> {new_value!r}"
     )
+
+    # Append to the edit log if the value actually changed
+    if prev_record is not None and str(prev_value) != str(new_value):
+        append_edit_log(
+            table,
+            record_id,
+            f"Updated {field}: {prev_value!r} -> {new_value!r}",
+        )
+
     return redirect(url_for("detail_view", table=table, record_id=record_id))
 
 @app.route('/relationship', methods=['POST'])
