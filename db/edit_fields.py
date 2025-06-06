@@ -102,6 +102,7 @@ def add_column_to_table(table_name, field_name, field_type):
     cur = conn.cursor()
     cur.execute(f'ALTER TABLE "{table_name}" ADD COLUMN "{field_name}" {sql_type}')
     conn.commit()
+    conn.close()
 
 def drop_column_from_table(table, field_name):
  
