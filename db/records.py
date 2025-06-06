@@ -1,4 +1,5 @@
 import logging
+import datetime
 from db.database import get_connection
 from db.schema import get_field_schema
 from db.validation import validate_table, validate_fields, validate_field
@@ -96,15 +97,53 @@ def update_field_value(table, record_id, field, new_value):
     cursor = conn.cursor()
 
     try:
+        logging.debug(
+            f"update_field_value: table={table}, id={record_id}, field={field}, value={new_value!r}"
+        )
         cursor.execute(
             f"UPDATE {table} SET {field} = ? WHERE id = ?",  # identifiers are validated
             (new_value, record_id)
         )
         conn.commit()
+        logging.info(
+            f"Updated {table}.{field} for id={record_id} to {new_value!r}"
+        )
         return True
     except Exception as e:
-        logging.warning(f"[UPDATE ERROR] {e}")
+        logging.error(f"[UPDATE ERROR] {e}")
         return False
+    finally:
+        conn.close()
+
+
+def append_edit_log(table: str, record_id: int, message: str) -> None:
+    """Append a single entry to the record's edit_log field."""
+    validate_table(table)
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        logging.debug(
+            f"append_edit_log: table={table}, id={record_id}, message={message}"
+        )
+        cursor.execute(f"SELECT edit_log FROM {table} WHERE id = ?", (record_id,))
+        row = cursor.fetchone()
+        current_log = row[0] if row else ""
+
+        timestamp = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
+        entry = f"[{timestamp}] {message}"
+        new_log = f"{current_log}\n{entry}" if current_log else entry
+
+        cursor.execute(
+            f"UPDATE {table} SET edit_log = ? WHERE id = ?",
+            (new_log, record_id),
+        )
+        conn.commit()
+        logging.info(
+            f"Appended edit log for {table} id={record_id}: {message}"
+        )
+    except Exception as e:
+        logging.warning(f"[EDIT LOG ERROR] {e}")
     finally:
         conn.close()
 
