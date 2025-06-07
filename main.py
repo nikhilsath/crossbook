@@ -5,7 +5,14 @@ import time
 import json
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 from db.database import get_connection
-from db.schema import load_field_schema, update_foreign_field_options, get_field_schema, load_core_tables, update_layout
+from db.schema import (
+    load_field_schema,
+    update_foreign_field_options,
+    get_field_schema,
+    load_core_tables,
+    load_card_info,
+    update_layout,
+)
 from db.records import (
     get_all_records,
     get_record_by_id,
@@ -26,7 +33,8 @@ app = Flask(__name__, static_url_path='/static')
 app.jinja_env.add_extension('jinja2.ext.do') # for field type in detail_view
 DB_PATH = os.path.join("data", "crossbook.db")
 conn = get_connection()
-CORE_TABLES = load_core_tables(conn)
+CARD_INFO = load_card_info(conn)
+CORE_TABLES = [c["table_name"] for c in CARD_INFO if c["table_name"] != "dashboard"]
 cfg = get_logging_config()
 app.logger.handlers.clear()
 level_name = cfg.get("log_level", "INFO").upper()
@@ -109,12 +117,13 @@ def inject_field_schema():
     from db.schema import update_foreign_field_options
     return {
         'field_schema': load_field_schema(),
-        'update_foreign_field_options': update_foreign_field_options
+        'update_foreign_field_options': update_foreign_field_options,
+        'nav_cards': CARD_INFO,
     }
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    return render_template("index.html", cards=CARD_INFO)
 
 
 @app.route("/dashboard")
