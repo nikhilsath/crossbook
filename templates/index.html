@@ -16,8 +16,23 @@
     <p class="text-gray-600">{{ card.description }}</p>
   </a>
   {% endfor %}
-  <a href="#" class="bg-white rounded-xl shadow-md p-6 hover:bg-gray-50 transition flex items-center justify-center">
+  <a href="#" onclick="openAddTableModal()" class="bg-white rounded-xl shadow-md p-6 hover:bg-gray-50 transition flex items-center justify-center">
     <span class="text-blue-500 text-5xl font-bold">+</span>
   </a>
 </div>
+
+<!-- Add Table Modal -->
+<div id="addTableModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full">
+    <h3 class="text-lg font-bold mb-4">Add new base table</h3>
+    <div class="flex justify-end">
+      <button onclick="closeAddTableModal()" class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Close</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  window.openAddTableModal = () => document.getElementById('addTableModal').classList.remove('hidden');
+  window.closeAddTableModal = () => document.getElementById('addTableModal').classList.add('hidden');
+</script>
 {% endblock %}
