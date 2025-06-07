@@ -191,14 +191,10 @@ def add_field_route(table, record_id):
         layout = {"x": 0, "y": 0, "w": 6, "h": 1}
 
         app.logger.debug(
-            f"add_field_route calling add_column_to_table table={table!r} field_name={field_name!r} field_type={field_type!r}"
-        )
-        add_column_to_table(table, field_name, field_type)
-        app.logger.debug(
-            f"add_field_route returned from add_column_to_table for {field_name!r}"
-        )
-        app.logger.debug(
-            f"add_field_route calling add_field_to_schema table={table!r} field_name={field_name!r} field_type={field_type!r} options={field_options!r} fk={foreign_key!r}"
+            "add_field_route calling add_column_to_table table=%r field_name=%r field_type=%r",
+            table,
+            field_name,
+            field_type,
         )
         app.logger.info(
             "Calling add_column_to_table table=%s field_name=%s field_type=%s",
@@ -208,6 +204,14 @@ def add_field_route(table, record_id):
         )
         add_column_to_table(table, field_name, field_type)
         app.logger.info("Returned from add_column_to_table for field %s", field_name)
+        app.logger.debug(
+            "add_field_route calling add_field_to_schema table=%r field_name=%r field_type=%r options=%r fk=%r",
+            table,
+            field_name,
+            field_type,
+            field_options,
+            foreign_key,
+        )
         app.logger.info(
             "Calling add_field_to_schema table=%s field_name=%s field_type=%s options=%s fk=%s",
             table,

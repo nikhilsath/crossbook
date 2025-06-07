@@ -85,6 +85,7 @@ def add_column_to_table(table_name, field_name, field_type):
         "number": "REAL",
         "date": "TEXT",
         "boolean": "INTEGER",
+        "textarea": "TEXT",
         "select": "TEXT",
         "multi_select": "TEXT",
         "foreign_key": "TEXT"
