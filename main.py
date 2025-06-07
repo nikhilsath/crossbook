@@ -73,6 +73,7 @@ console_handler.setLevel(logging.WARNING)
 
 app.logger.setLevel(level)
 app.logger.addHandler(file_handler)
+logging.getLogger().addHandler(file_handler)
 app.logger.addHandler(console_handler)
 app.logger.propagate = False
 
