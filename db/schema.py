@@ -125,7 +125,79 @@ def update_foreign_field_options():
 def get_field_schema():
     return FIELD_SCHEMA
 
+def load_card_info(conn):
+    """Ensure the core_table_info table exists and return card metadata."""
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS core_table_info (
+            table_name   TEXT PRIMARY KEY,
+            display_name TEXT NOT NULL,
+            description  TEXT,
+            sort_order   INTEGER DEFAULT 0
+        )
+        """
+    )
+
+    cur = conn.execute("SELECT COUNT(*) FROM core_table_info")
+    count = cur.fetchone()[0]
+    if count == 0:
+        conn.executemany(
+            """
+            INSERT INTO core_table_info (table_name, display_name, description, sort_order)
+            VALUES (?, ?, ?, ?)
+            """,
+            [
+                ("dashboard", "Dashboard", "Overview of recent activity", 0),
+                ("content", "Content", "Content Index", 1),
+                (
+                    "character",
+                    "Characters",
+                    "View all known characters in Alagaesia",
+                    2,
+                ),
+                ("thing", "Things", "Artifacts, tools, and curiosities", 3),
+                (
+                    "faction",
+                    "Factions",
+                    "Factions, cultures, and organizations",
+                    4,
+                ),
+                (
+                    "location",
+                    "Locations",
+                    "Important places throughout the land",
+                    5,
+                ),
+                (
+                    "topic",
+                    "Lore Topics",
+                    "Themes, magic systems, and unanswered questions",
+                    6,
+                ),
+            ],
+        )
+        conn.commit()
+
+    rows = conn.execute(
+        """SELECT table_name, display_name, description
+           FROM core_table_info
+           ORDER BY sort_order"""
+    ).fetchall()
+    return [
+        {
+            "table_name": r[0],
+            "display_name": r[1],
+            "description": r[2],
+        }
+        for r in rows
+    ]
+
+
 def load_core_tables(conn):
+    cards = load_card_info(conn)
+    tables = [c["table_name"] for c in cards if c["table_name"] != "dashboard"]
+    if tables:
+        return tables
     row = conn.execute(
         "SELECT value FROM config WHERE key = ?", ("core_tables",)
     ).fetchone()

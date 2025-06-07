@@ -129,7 +129,7 @@ This is the core of the Flask application. It defines the web routes, handles da
 
 - **Flask App Initialization:** The Flask app is created with `static_url_path='/static'` so that files in the `static/` directory are served at the `/static` URL path.
 - **`DB_PATH`:** Path to the SQLite database file, set to `data/crossbook.db`. (This is currently hardcoded; the database must reside at this path relative to the app.)
-- **`CORE_TABLES`:** A list of the primary entity tables in the database: `["character", "thing", "location", "faction", "topic", "content"]`. This list is used to validate route parameters and to build navigation links. *(If new core tables are added to the database, this list must be updated in code for the app to recognize them.)*
+- **`CORE_TABLES`:** Derived from the `core_table_info` table via `load_core_tables()`. It contains all entity table names except the special `dashboard` entry and is used to validate route parameters.
 - **`FIELD_SCHEMA`:** A global dictionary that will hold the schema definition for fields of each table. It’s populated at startup by reading the `field_schema` table from the database. The structure is: `FIELD_SCHEMA = { table_name: { field_name: field_type, ... }, ... }`. This lets the templates and logic know how to treat each field (e.g., as text, number, boolean, etc., and whether to render it or hide it).
 - **`field_options`:** A field_options column in the field_schema table contains a JSON-encoded list of options for select fields (e.g., ["Elf", "Human"]).
 - These options are not loaded into FIELD_SCHEMA.
@@ -240,7 +240,7 @@ The Flask Jinja2 templates define the structure of the HTML pages. The templates
 **Layout and Features:**
 
 - **Tailwind Inclusion:** Loads Tailwind CSS from the official CDN for styling. No separate CSS files are used; styles are from Tailwind utility classes.
-- **Navigation Bar:** A responsive `<nav>` bar at the top contains links to Home and each core section. These links are currently hardcoded to the known sections: Home (`/`), Content, Characters, Things, Factions, Locations, Lore Topics (each link goes to the list view of the respective table). The link labels are prettified (e.g., `"Lore Topics"` for `topic`). *(In the current implementation, this nav does not auto-update if `CORE_TABLES` changes; it must be edited manually to add new sections.)*
+- **Navigation Bar:** A responsive `<nav>` bar at the top lists sections from the `core_table_info` table (plus Home). This means new tables automatically appear in the nav with their configured display names.
 - **Content Block:** Uses Jinja `{% block content %}{% endblock %}` to define where child templates insert their page-specific content. Similarly, a `{% block title %}` sets the `<title>` tag for each page (so pages can specify a custom title, like “Characters List” or “Character 5”). The base provides a padded container `<div class="p-6">` around the content block for consistent spacing.
 - **Global Context:** Thanks to the `inject_field_schema` context processor, every template extending base.html automatically has access to `field_schema` (the schema dict) as well as other Flask globals like `request`. This base does not itself display dynamic data (aside from the nav links), but it provides the framework within which other templates render their content.
 
@@ -248,12 +248,7 @@ The Flask Jinja2 templates define the structure of the HTML pages. The templates
 
 **Purpose:** Home page, providing a quick entry point to each section of the application.
 
-**Content:** The index extends `base.html` and fills the content block with a title and a grid of cards linking to each entity’s list page. Each card has:
-- A heading (e.g., "Characters", "Locations") and 
-- A brief description or tagline (e.g., "View all known characters in Alagaesia" for Characters, or "Important places throughout the land" for Locations). These descriptions are specific to the example dataset (Alagaësia lore) and can be adjusted for other use cases.
-- The cards are wrapped in anchor `<a>` tags linking to the respective list view (e.g., `/character`).
-
-This page is static in content (no dynamic looping; the sections are explicitly written out for the core tables).
+**Content:** The index extends `base.html` and renders a grid of cards from the `core_table_info` table. Each card specifies a `display_name`, `description`, and destination link (`/dashboard` or `/<table>`). New rows added to this table automatically appear on the home page.
 
 #### 📄 **`list_view.html`**
 
