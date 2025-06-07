@@ -5,7 +5,10 @@ export function openAddTableModal() {
 export function closeAddTableModal() {
   document.getElementById('addTableModal').classList.add('hidden');
   const err = document.getElementById('tableError');
-  if (err) err.textContent = '';
+  if (err) {
+    err.textContent = '';
+    err.classList.add('hidden');
+  }
 }
 
 export function submitNewTable(event) {
@@ -20,13 +23,17 @@ export function submitNewTable(event) {
     .then(res => res.json())
     .then(data => {
       if (data.error) {
-        document.getElementById('tableError').textContent = data.error;
+        const err = document.getElementById('tableError');
+        err.textContent = data.error;
+        err.classList.remove('hidden');
       } else {
         window.location.reload();
       }
     })
     .catch(() => {
-      document.getElementById('tableError').textContent = 'Failed to create table';
+      const err = document.getElementById('tableError');
+      err.textContent = 'Failed to create table';
+      err.classList.remove('hidden');
     });
 }
 
