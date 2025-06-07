@@ -76,6 +76,13 @@ app.logger.addHandler(file_handler)
 app.logger.addHandler(console_handler)
 app.logger.propagate = False
 
+
+# Disable Werkzeug's default request logging
+werk_logger = logging.getLogger("werkzeug")
+werk_logger.disabled = True
+
+
+
 @app.before_request
 def start_timer():
     g.start_time = time.time()
