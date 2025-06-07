@@ -28,7 +28,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Column Visibility:** Columns can be shown or hidden on the fly using the **Columns** dropdown (`column_visibility.js`).
 * **Detail View & Inline Edit:** Displays all fields on the detail page with inline editing via text input, date picker, checkbox, or rich text editor. Numeric field changes now save via AJAX and append to the edit log without reloading the page.
 * **Relationship Management:** Displays related records and allows adding/removing relationships through a modal interface (+ to add, ✖ to remove), using AJAX to update join tables dynamically.
-* **Rich Text Support:** Textarea fields support formatting with buttons: Bold, Italic, Underline, Link, and text color.
+* **Rich Text Support:** Textarea fields now use the Quill editor for formatting.
 * **Edit History:** Tracks each record’s modifications in an `edit_log`, viewable via an expandable history section.
 * **Navigation Bar:** A consistent top navigation (`base.html`) links to Home and all core entity sections.
 * **Supported Field Types:** text, number, date, select, multi-select, foreign-key, boolean, and textarea, each rendered with the appropriate input control.
@@ -107,7 +107,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
   * `filter_visibility.js` for showing/hiding filter controls
   * `tag_selector.js` (multi-select dropdown UI)
   * `edit_fields.js` for client-side schema and field editing
-  * `editor.js` for rich-text formatting integration
+  * `editor.js` for Quill-based rich-text integration
   * `field_ajax.js` for inline field updates without page reloads (imported by `detail_view.html`)
 
 * **Static Assets & Styling:** Global styles in `static/css/styles.css`, with Tailwind overrides in `static/css/overrides.css`.
@@ -170,14 +170,14 @@ All routes and functions above are actively used by the application (there is no
 
 #### 📄 `editor.js`
 
-**Purpose:** Initializes rich text formatting controls for `textarea` fields rendered as contenteditable HTML blocks.
+**Purpose:** Wraps the Quill rich-text editor and wires up autosave for `textarea` fields.
 
 **Key Features:**
-- Hooks up toolbar buttons (`B`, `I`, `U`) to `execCommand(...)`
-- Keeps a hidden `<input>` in sync with the editor’s `.innerHTML`
-- Uses `initRichTextEditor(field)` called inline by the template
+- Creates a Quill instance with basic formatting options (bold, italic, underline, link and color)
+- Keeps a hidden `<input>` synchronized with the editor HTML
+- Exposes `initQuillEditor(field)` used by `fields.html` to enable autosave
 
-**How it’s used in the app:** This module is imported in `fields.html` whenever a `textarea` field is edited.
+**How it’s used in the app:** This module is imported in `fields.html` for each textarea field being edited.
 
 The front-end JavaScript files enhance the user experience by adding interactivity for column toggling and relationship management. They are written as modular ES6 modules and are imported in the templates where needed.
 
@@ -302,7 +302,7 @@ Key features of the detail view:
     - Text fields -> a simple text input.
     - Number fields -> a number input.
     - Date fields -> an HTML date picker.
-    - Textarea (long text) -> a rich text editor area (actually an editable `<div>` with formatting toolbar, plus a hidden field to capture the formatted content as HTML).
+    - Textarea (long text) -> a Quill editor instance storing HTML in a hidden input.
     - Boolean fields -> a toggle checkbox input.
     - `multi_select` fields now render as searchable dropdowns with checkboxes and tag-style badges for selected values. Users can filter options live, deselect tags with ✖, and all changes autosave automatically. A Tailwind-styled dropdown appears inline with live filtering and closing behavior.
   - If the field is **not** in edit mode, the macro will display the value in a read-only format:
@@ -340,7 +340,7 @@ Overall, `detail_view.html` works in tandem with `macros/fields.html` and the JS
 - If the current request’s query param `edit` matches this field’s name, it means the user is editing this field. The macro will produce an `<form>` element targeting the `update_field` route (using `url_for(update_endpoint, table=..., record_id=...)`). 
   - It always includes a hidden `<input name="field">` with the field’s name (so the backend knows which field to update).
   - Then, depending on `field_type`, it renders an appropriate input:
-    - **textarea:** It creates a rich text editor interface. Instead of a plain `<textarea>`, it uses a contenteditable `<div>` (with id `editor_<field>`), and a hidden input `new_value`. It also injects a small toolbar with buttons (Bold, Italic, Underline, Link) that use `document.execCommand` to format the content in the editable div. A script is included in this macro to handle the toolbar actions and to copy the edited HTML into the hidden input whenever changes occur. The current value (which is HTML) is inserted into the editable div for editing. This allows the user to format text and the formatted HTML is sent on form submit.
+    - **textarea:** Uses Quill to provide rich-text editing. The editor’s HTML is stored in a hidden `new_value` input so it can be submitted.
     - **boolean:** Renders a checkbox input (styled as a toggle switch via CSS classes). It’s checked if the current value is truthy ( "1", 1, or True). This lets the user change the boolean value. (Note: in edit mode, this is a single checkbox inside the form; in view mode, booleans are handled differently as described below).
     - **number:** Renders a numeric input (`<input type="number">`) with the current value.
     - **date:** Renders a date picker (`<input type="date">`) with the current value.
