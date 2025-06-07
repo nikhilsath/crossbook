@@ -1,39 +1,43 @@
 import json
 import re
 import csv
+import logging
 from db.schema import get_field_schema
+
+# Module-level logger
+logger = logging.getLogger(__name__)
 
 SCHEMA = get_field_schema()
 
 def validation_sorter(table, field, header, fieldType, values):
-    print("✅ Validation function was triggered.")
+    logger.debug("✅ Validation function was triggered.")
     # Delegate to specific validator based on field type
     if fieldType == "text":
-        print("Text Validation Triggered")
+        logger.debug("Text Validation Triggered")
         result = validate_text_column(values)
     elif fieldType == "boolean":
-        print("Boolean Validation Triggered")
+        logger.debug("Boolean Validation Triggered")
         result = validate_boolean_column(values)
     elif fieldType == "foreign_key":
-        print("FK Validation Triggered")
+        logger.debug("FK Validation Triggered")
         options = SCHEMA[table][field]["options"]
         result = validate_select_column(values, options)
     elif fieldType == "multi_select":
-        print("Multi Validation Triggered")
+        logger.debug("Multi Validation Triggered")
         options = SCHEMA[table][field]["options"]
         result = validate_multi_select_column(values, options)
     elif fieldType == "number":
-        print("Number Validation Triggered")
+        logger.debug("Number Validation Triggered")
         result = validate_number_column(values)
     elif fieldType == "select":
-        print("Select Validation Triggered")
+        logger.debug("Select Validation Triggered")
         options = SCHEMA[table][field]["options"]
         result = validate_select_column(values, options)
     elif fieldType == "textarea":
-        print("Textarea Validation Triggered")
+        logger.debug("Textarea Validation Triggered")
         result = validate_textarea_column(values)
     else:
-        print("no validation for this datatype")
+        logger.debug("no validation for this datatype")
         # Return empty report when no validation is available
         return {}
 
