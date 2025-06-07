@@ -12,6 +12,7 @@ from db.schema import (
     load_base_tables,
     load_card_info,
     update_layout,
+    create_base_table,
 )
 from db.records import (
     get_all_records,
@@ -431,6 +432,34 @@ def update_layout(table):
         return jsonify({"error": str(e)}), 400
 
     return jsonify({"success": True, "updated": updated})
+
+
+@app.route("/add-table", methods=["POST"])
+def add_table():
+    """Create a new base table using JSON input."""
+    data = request.get_json(silent=True) or {}
+    table_name = (data.get("table_name") or "").strip()
+    description = (data.get("description") or "").strip()
+
+    if not table_name:
+        return jsonify({"error": "table_name is required"}), 400
+
+    if table_name in BASE_TABLES:
+        return jsonify({"error": "Table already exists"}), 400
+
+    if not table_name.isidentifier():
+        return jsonify({"error": "Invalid table name"}), 400
+
+    try:
+        success = create_base_table(table_name, description)
+    except Exception as exc:
+        app.logger.exception("Failed to create table %s: %s", table_name, exc)
+        return jsonify({"error": str(exc)}), 400
+
+    if not success:
+        return jsonify({"error": "Failed to create table"}), 400
+
+    return jsonify({"success": True})
 
 @app.route("/import", methods=["GET", "POST"])
 def import_records():
