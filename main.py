@@ -98,6 +98,12 @@ def inject_field_schema():
 def home():
     return render_template("index.html")
 
+
+@app.route("/dashboard")
+def dashboard():
+    """Render the dashboard page."""
+    return render_template("dashboard.html")
+
 @app.route("/<table>")
 def list_view(table):
     if table not in CORE_TABLES:
@@ -160,6 +166,9 @@ def detail_view(table, record_id):
 def add_field_route(table, record_id):
     try:
         field_name = request.form["field_name"]
+        app.logger.debug(
+            f"add_field_route start: table={table!r}, record_id={record_id!r}, form={dict(request.form)!r}"
+        )
         app.logger.info(
             "table=%s record_id=%s form=%s",
             table,
@@ -173,6 +182,16 @@ def add_field_route(table, record_id):
         field_options = [opt.strip() for opt in field_options_raw.split(",") if opt.strip()] if field_options_raw else []
         layout = {"x": 0, "y": 0, "w": 6, "h": 1}
 
+        app.logger.debug(
+            f"add_field_route calling add_column_to_table table={table!r} field_name={field_name!r} field_type={field_type!r}"
+        )
+        add_column_to_table(table, field_name, field_type)
+        app.logger.debug(
+            f"add_field_route returned from add_column_to_table for {field_name!r}"
+        )
+        app.logger.debug(
+            f"add_field_route calling add_field_to_schema table={table!r} field_name={field_name!r} field_type={field_type!r} options={field_options!r} fk={foreign_key!r}"
+        )
         app.logger.info(
             "Calling add_column_to_table table=%s field_name=%s field_type=%s",
             table,
@@ -200,6 +219,7 @@ def add_field_route(table, record_id):
         from db import schema
         schema.FIELD_SCHEMA = load_field_schema()
         app.logger.info(
+            f"Added column to {table}: field={field_name!r} type={field_type!r}"
             "🚀 Added column: table=%s field=%s type=%s",
             table,
             field_name,
@@ -209,6 +229,7 @@ def add_field_route(table, record_id):
         return redirect(url_for("detail_view", table=table, record_id=record_id))
 
     except Exception as e:
+        app.logger.exception("add_field_route error: %s", e)
         app.logger.exception("Error adding field")
         return "Server error", 500
 
@@ -270,15 +291,38 @@ def update_field(table, record_id):
         else:
             new_value = raw
 
+    app.logger.debug(
+        f"update_field: table={table}, id={record_id}, field={field}, value={new_value!r}"
+    )
+
     # Delegate to your existing DB helper
+    # First fetch the previous value so we can record changes
+    prev_record = get_record_by_id(table, record_id)
+    prev_value = prev_record.get(field) if prev_record else None
+
     success = update_field_value(table, record_id, field, new_value)
     if not success:
         abort(500, "Database update failed")
+
+    app.logger.info(
+        f"Field updated for {table} id={record_id}: {field} -> {new_value!r}"
+    )
+
+    # Append to the edit log if the value actually changed
+    if prev_record is not None and str(prev_value) != str(new_value):
+        append_edit_log(
+            table,
+            record_id,
+            f"Updated {field}: {prev_value!r} -> {new_value!r}",
+        )
+
     return redirect(url_for("detail_view", table=table, record_id=record_id))
 
 @app.route('/relationship', methods=['POST'])
 def manage_relationship():
     data = request.get_json()
+
+    app.logger.debug(f"manage_relationship request: {data}")
 
     action = data.get('action')
     table_a = data.get('table_a')
@@ -306,7 +350,14 @@ def manage_relationship():
         abort(400, "Invalid action")
 
     if not success:
+        app.logger.error(
+            f"manage_relationship failed action={action} {table_a}:{id_a} -> {table_b}:{id_b}"
+        )
         abort(500, "Failed to modify relationship")
+    else:
+        app.logger.info(
+            f"manage_relationship {action} {table_a}:{id_a} {table_b}:{id_b}"
+        )
 
     return {"success": True}
 

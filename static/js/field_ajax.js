@@ -25,6 +25,7 @@ export function submitFieldAjax(formEl) {
 }
 window.submitFieldAjax = submitFieldAjax;
 
+
 export function toggleBooleanAjax(formEl) {
   const statusEl = formEl.querySelector('.ajax-status');
   const btn = formEl.querySelector('button');

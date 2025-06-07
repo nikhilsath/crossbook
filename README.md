@@ -28,7 +28,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 
 * **List View with Search:** Each entity list page allows filtering records by text-based fields with a search box (`list_view.html`).
 * **Column Visibility:** Columns can be shown or hidden on the fly using the **Columns** dropdown (`column_visibility.js`).
-* **Detail View & Inline Edit:** Displays all fields on the detail page with inline editing via text input, date picker, checkbox, or rich text editor. Numeric and boolean field changes now save via AJAX and append to the edit log without reloading the page.
+* **Detail View & Inline Edit:** Displays all fields on the detail page with inline editing via text input, date picker, checkbox, or rich text editor. Numeric field changes now save via AJAX and append to the edit log without reloading the page.
 * **Relationship Management:** Displays related records and allows adding/removing relationships through a modal interface (+ to add, ✖ to remove), using AJAX to update join tables dynamically.
 * **Rich Text Support:** Textarea fields support basic formatting with buttons: Bold, Italic, Underline, Link.
 * **Edit History:** Tracks each record’s modifications in an `edit_log`, viewable via an expandable history section.
