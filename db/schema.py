@@ -237,11 +237,17 @@ def create_base_table(table_name: str, description: str) -> bool:
             f"""
             CREATE TABLE {table_name} (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                {table_name} TEXT,
-                edit_log TEXT
+                {table_name} TEXT
             )
             """
         )
+
+        # Always ensure the edit_log column exists
+        try:
+            cur.execute(f"ALTER TABLE {table_name} ADD COLUMN edit_log TEXT")
+        except sqlite3.OperationalError as exc:
+            if "duplicate column name" not in str(exc).lower():
+                raise
 
         # Insert default field schema rows
         defaults = [
@@ -251,7 +257,7 @@ def create_base_table(table_name: str, description: str) -> bool:
         ]
         cur.executemany(
             """
-            INSERT INTO field_schema
+            INSERT OR IGNORE INTO field_schema
               (table_name, field_name, field_type, field_options, foreign_key,
                col_start, col_span, row_start, row_span)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
