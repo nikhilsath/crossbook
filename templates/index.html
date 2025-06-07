@@ -25,14 +25,23 @@
 <div id="addTableModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50">
   <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full">
     <h3 class="text-lg font-bold mb-4">Add new base table</h3>
-    <div class="flex justify-end">
-      <button onclick="closeAddTableModal()" class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Close</button>
-    </div>
+    <div id="tableError" class="text-red-600 mb-2"></div>
+    <form onsubmit="submitNewTable(event)" class="space-y-4">
+      <div>
+        <label for="tableName" class="block mb-1">Table Name</label>
+        <input id="tableName" type="text" class="w-full border rounded p-2" />
+      </div>
+      <div>
+        <label for="tableDescription" class="block mb-1">Description</label>
+        <textarea id="tableDescription" class="w-full border rounded p-2"></textarea>
+      </div>
+      <div class="flex justify-end space-x-2">
+        <button type="button" onclick="closeAddTableModal()" class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Cancel</button>
+        <button type="submit" class="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600">Add</button>
+      </div>
+    </form>
   </div>
 </div>
 
-<script type="module">
-  window.openAddTableModal = () => document.getElementById('addTableModal').classList.remove('hidden');
-  window.closeAddTableModal = () => document.getElementById('addTableModal').classList.add('hidden');
-</script>
+<script type="module" src="{{ url_for('static', filename='js/add_table.js') }}"></script>
 {% endblock %}
