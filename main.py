@@ -1,5 +1,6 @@
 from flask import Flask, render_template, abort, request, redirect, url_for, jsonify, session, g
 import os
+import sqlite3
 import logging
 import time
 import json
@@ -437,6 +438,7 @@ def update_layout(table):
 @app.route("/add-table", methods=["POST"])
 def add_table():
     """Create a new base table using JSON input."""
+    global CARD_INFO, BASE_TABLES
     data = request.get_json(silent=True) or {}
     table_name = (data.get("table_name") or "").strip()
     description = (data.get("description") or "").strip()
@@ -458,6 +460,10 @@ def add_table():
 
     if not success:
         return jsonify({"error": "Failed to create table"}), 400
+
+    with sqlite3.connect(DB_PATH) as c:
+        CARD_INFO = load_card_info(c)
+        BASE_TABLES = load_base_tables(c)
 
     return jsonify({"success": True})
 
