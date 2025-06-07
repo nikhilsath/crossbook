@@ -87,7 +87,7 @@
       {% elif field_type == "number" %}
         {{ inline_input(field, update_endpoint, table, record_id,
         '<input type="number" name="new_value" value="' ~ value ~
-        '" class="appearance-none border px-1 py-0.5 text-sm rounded"  onchange="this.form.submit()">' ) }}
+        '" class="appearance-none border px-1 py-0.5 text-sm rounded"  onchange="submitFieldAjax(this.form)"><span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>' ) }}
     {% elif field_type == "date" %}
     {{ inline_input(field,update_endpoint,table,record_id,
          '<input type="date" name="new_value" value="' ~ value ~
@@ -133,20 +133,21 @@
         </div>
       </form>
         {% elif field_type == "boolean" %}
-        <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline-flex items-center space-x-2">
+        <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline-flex items-center space-x-2" onsubmit="event.preventDefault(); toggleBooleanAjax(this);">
           <input type="hidden" name="field" value="{{ field }}">
           <input type="hidden" name="new_value_override" value="{{ '0' if value in ('1', 1, True) else '1' }}">
-          <button type="submit" class="relative inline-flex items-center w-10 h-6 rounded-full transition-colors duration-300 
+          <button type="submit" class="relative inline-flex items-center w-10 h-6 rounded-full transition-colors duration-300
                           {{ 'bg-green-500' if value in ('1', 1, True) else 'bg-red-500' }}">
             <span class="sr-only">{{ 'Yes' if value in ('1', 1, True) else 'No' }}</span>
-            <span class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform duration-300 
+            <span class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform duration-300
                           {{ 'translate-x-5' if value in ('1', 1, True) else 'translate-x-1' }}"></span>
           </button>
+          <span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>
         </form>
         {% elif field_type == "text" %}
         {{ inline_input(field, update_endpoint, table, record_id,
              '<input type="text" name="new_value" value="' ~ value ~
-             '" class="border px-1 py-0.5 text-sm rounded" onchange="this.form.submit()">' ) }}      
+             '" class="border px-1 py-0.5 text-sm rounded" onchange="this.form.submit()">' ) }}
       {% else %}
         <span class="ml-1">{{ value }}</span>
       {% endif %}

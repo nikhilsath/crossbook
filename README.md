@@ -28,7 +28,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 
 * **List View with Search:** Each entity list page allows filtering records by text-based fields with a search box (`list_view.html`).
 * **Column Visibility:** Columns can be shown or hidden on the fly using the **Columns** dropdown (`column_visibility.js`).
-* **Detail View & Inline Edit:** Displays all fields on the detail page with inline editing via text input, date picker, checkbox, or rich text editor; edits are saved via POST and appended to the edit log.
+* **Detail View & Inline Edit:** Displays all fields on the detail page with inline editing via text input, date picker, checkbox, or rich text editor. Numeric and boolean field changes now save via AJAX and append to the edit log without reloading the page.
 * **Relationship Management:** Displays related records and allows adding/removing relationships through a modal interface (+ to add, ✖ to remove), using AJAX to update join tables dynamically.
 * **Rich Text Support:** Textarea fields support basic formatting with buttons: Bold, Italic, Underline, Link.
 * **Edit History:** Tracks each record’s modifications in an `edit_log`, viewable via an expandable history section.
@@ -106,6 +106,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
   * `tag_selector.js` (multi-select dropdown UI)
   * `edit_fields.js` for client-side schema and field editing
   * `editor.js` for rich-text formatting integration
+  * `field_ajax.js` for inline field updates without page reloads (imported by `detail_view.html`)
 
 * **Static Assets & Styling:** Global styles in `static/css/styles.css`, with Tailwind overrides in `static/css/overrides.css`.
 
@@ -343,6 +344,7 @@ Overall, `detail_view.html` works in tandem with `macros/fields.html` and the JS
     - **number:** Renders a numeric input (`<input type="number">`) with the current value.
     - **date:** Renders a date picker (`<input type="date">`) with the current value.
     - **default (text):** Renders a basic text input for any other field type (e.g., simple text or unrecognized types).
+    - For number fields, the input’s `onchange` handler calls `field_ajax.js` to save the new value via `fetch`, displaying a short “Saved” indicator without refreshing the page.
   - After the input, a "Save" submit button and a "Cancel" link are provided. The Cancel link leads back to the detail view of the record (without the `edit` param), effectively canceling edit mode.
 - If the field is **not** being edited (normal display mode):
   - For **textarea** fields (which contain HTML content), it wraps the value in a `<div class="prose">` and marks it safe, so the HTML formatting is rendered. This nicely displays paragraphs, links, etc., with Tailwind’s typography styles.
