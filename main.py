@@ -9,7 +9,7 @@ from db.schema import (
     load_field_schema,
     update_foreign_field_options,
     get_field_schema,
-    load_core_tables,
+    load_base_tables,
     load_card_info,
     update_layout,
 )
@@ -34,7 +34,7 @@ app.jinja_env.add_extension('jinja2.ext.do') # for field type in detail_view
 DB_PATH = os.path.join("data", "crossbook.db")
 conn = get_connection()
 CARD_INFO = load_card_info(conn)
-CORE_TABLES = [c["table_name"] for c in CARD_INFO if c["table_name"] != "dashboard"]
+BASE_TABLES = load_base_tables(conn)
 cfg = get_logging_config()
 app.logger.handlers.clear()
 level_name = cfg.get("log_level", "INFO").upper()
@@ -133,7 +133,7 @@ def dashboard():
 
 @app.route("/<table>")
 def list_view(table):
-    if table not in CORE_TABLES:
+    if table not in BASE_TABLES:
         abort(404)
     fields = list(get_field_schema()[table].keys())
     search = request.args.get("search", "").strip() 
@@ -394,7 +394,7 @@ def manage_relationship():
 
 @app.route('/<table>/new', methods=['GET', 'POST'])
 def create_record_route(table):
-    if table not in CORE_TABLES:
+    if table not in BASE_TABLES:
         abort(404)
 
     fields = get_field_schema().get(table, {})
@@ -410,7 +410,7 @@ def create_record_route(table):
 
 @app.route('/<table>/<int:record_id>/delete', methods=['POST'])
 def delete_record_route(table, record_id):
-    if table not in CORE_TABLES:
+    if table not in BASE_TABLES:
         abort(404)
     success = delete_record(table, record_id)
     if not success:

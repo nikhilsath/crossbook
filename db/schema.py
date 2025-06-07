@@ -144,7 +144,8 @@ def load_card_info(conn):
     ]
 
 
-def load_core_tables(conn):
+def load_base_tables(conn):
+    """Return the list of base table names used by the application."""
     cards = load_card_info(conn)
     tables = [c["table_name"] for c in cards if c["table_name"] != "dashboard"]
     if tables:
