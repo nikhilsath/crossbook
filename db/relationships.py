@@ -1,4 +1,6 @@
 import logging
+
+logger = logging.getLogger(__name__)
 from db.database import get_connection
 from db.validation import validate_table
 
@@ -54,7 +56,7 @@ def get_related_records(source_table, record_id):
                 "items": [{"id": r[0], "name": r[1]} for r in rows]
             }
         except Exception as e:
-            logging.warning(f"[RELATED QUERY ERROR on {join_table}] {e}")
+            logger.warning(f"[RELATED QUERY ERROR on {join_table}] {e}")
             continue
 
     conn.close()
@@ -81,7 +83,7 @@ def add_relationship(table_a, id_a, table_b, id_b):
             (join_table,)
         )
         if not cursor.fetchone():
-            logging.warning(f"[RELATIONSHIP ADD ERROR] join table {join_table} not found")
+            logger.warning(f"[RELATIONSHIP ADD ERROR] join table {join_table} not found")
             return False
 
         # Order IDs to match sorted table order
@@ -94,7 +96,7 @@ def add_relationship(table_a, id_a, table_b, id_b):
         conn.commit()
         return True
     except Exception as e:
-        logging.warning(f"[RELATIONSHIP ADD ERROR] {e}")
+        logger.warning(f"[RELATIONSHIP ADD ERROR] {e}")
         return False
     finally:
         conn.close()
@@ -120,7 +122,7 @@ def remove_relationship(table_a, id_a, table_b, id_b):
             (join_table,)
         )
         if not cursor.fetchone():
-            logging.warning(f"[RELATIONSHIP REMOVE ERROR] join table {join_table} not found")
+            logger.warning(f"[RELATIONSHIP REMOVE ERROR] join table {join_table} not found")
             return False
 
         # Order IDs to match sorted table order
@@ -133,7 +135,7 @@ def remove_relationship(table_a, id_a, table_b, id_b):
         conn.commit()
         return True
     except Exception as e:
-        logging.warning(f"[RELATIONSHIP REMOVE ERROR] {e}")
+        logger.warning(f"[RELATIONSHIP REMOVE ERROR] {e}")
         return False
     finally:
         conn.close()
