@@ -113,6 +113,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 
 * **Logging & Monitoring:** Basic logging configured via Python’s `logging` module in `main.py`. A rotating/timed file handler uses the configured level, while console output logs only warnings and above. Werkzeug request logs are disabled. Logs capture errors, import operations, and user actions.
 
+
 * **Data Directory:** Runtime files under `data/`: `crossbook.db` (primary database), `huey.db` (task queue store), and `uploads/` for storing imported CSV files.
 
 
