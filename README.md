@@ -5,13 +5,12 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 
 ## Project Summary
 
-* **Tech Stack:** Python 3.x, Flask (web framework), Jinja2 (templating), Tailwind CSS (styling via CDN), SQLite (relational database). JavaScript libraries include InteractJS for drag-and-drop layout editing and custom scripts under `static/js/` for validation and UI behavior.
+* **Tech Stack:** Python 3.x, Flask (web framework), Jinja2 (templating), Tailwind CSS (styling via CDN), SQLite (relational database). JavaScript libraries include custom JavaScript for layout editing and custom scripts under `static/js/` for validation and UI behavior.
 * **Dynamic UI Generation:** Automated list and detail views based on database schema introspection.
-* **CSV Import & Validation:** Import CSV files with field-matching dropdowns and instant client-side validation (`static/imports/match_logic.js`) plus server-side verification (`imports.import_csv.parse_csv`).
 * **Search & Visibility Controls:** Text-based search filters and toggleable columns for list views, with filter controls implemented via Jinja macros.
 * **Navigation:** Centralized in `templates/base.html`, providing consistent header navigation and action buttons across all entity pages.
 * **Database Layer:** Abstracted in the `db/` package (`database.py`, `schema.py`, `records.py`, `relationships.py`) for connection handling, schema loading, CRUD operations, and relationship management.
-* **Session Management & Logging:** Utilizes Flask session for stateful workflows and Python’s `logging` module for error and activity tracking.
+* **Logging:** Python’s `logging` module tracks errors and activity. Flask session is not currently used.
 
 ### Future Cloud Migration
 
@@ -21,7 +20,6 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 
 ## Current Status
 
-* **CSV Import & Field Mapping (In Progress):** refining dropdown matching logic, enhancing client/server validation feedback, and improving import performance.
 * **Detail View Resizing & Layout Editor (In Progress):** improving drag-and-drop interactions, grid responsiveness across screen sizes, and persisting custom layouts immediately on change.
 
 ## Implemented Features
@@ -35,7 +33,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Navigation Bar:** A consistent top navigation (`base.html`) links to Home and all core entity sections.
 * **Supported Field Types:** text, number, date, select, multi-select, foreign-key, boolean, and textarea, each rendered with the appropriate input control.
 * **Filter Macros:** Reusable Jinja macros for boolean, select, text, and multi-select filters (`templates/macros/filter_controls.html`).
-* **CSV Import (In Progress):** Validation logic (dropdown matching and error feedback) implemented; full import processing and record creation still under development.
+* **Field Schema Editing:** New endpoints allow adding or removing columns at runtime (`/<table>/<id>/add-field`, `/<table>/<id>/remove-field`) and counting non-null values (`/<table>/count-nonnull`).
 
 ## Project Structure
 
@@ -45,15 +43,16 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 ├── main.py                          # Application entrypoint; Flask app setup and routes
 ├── requirements.txt                 # Python dependencies
 ├── db/                              # Database layer modules
+│   ├── config.py                    # Database-backed configuration helper
 │   ├── database.py                  # Connection and session management
 │   ├── schema.py                    # Schema introspection and migrations
 │   ├── records.py                   # CRUD operations
 │   ├── relationships.py             # Many-to-many join helpers
 │   ├── validation.py                # Field and data validation logic
 │   └── edit_fields.py               # Field schema editing utilities
-├── imports/                         # Import and background task definitions
-│   ├── import_csv.py                # CSV parsing, validation, and import routines
-│   └── tasks.py                     # Background job definitions (e.g., Huey tasks)
+├── imports/                         # CSV utilities and task queue setup (WIP)
+│   ├── import_csv.py                # CSV parsing helpers (not yet enabled)
+│   └── tasks.py                     # Huey instance (no tasks defined yet)
 ├── static/                          # Front-end assets
 │   ├── css/
 │   │   ├── overrides.css            # Tailwind override styles
@@ -62,18 +61,24 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 │   │   ├── column_visibility.js     # Column toggle logic
 │   │   ├── editor.js                # Rich-text editor integration
 │   │   ├── edit_fields.js           # Client-side field schema editing
+│   │   ├── field_ajax.js            # Inline updates via fetch
 │   │   ├── filter_visibility.js     # Show/hide filter controls
 │   │   ├── layout_editor.js         # Drag/drop & layout persistence
 │   │   ├── relations.js             # AJAX for add/remove relationships
 │   │   └── tag_selector.js          # Multi-select tag UI helper
 │   └── imports/
-│       └── match_logic.js           # Client-side CSV validation logic
+│       ├── import_start.js          # Import page bootstrap (unused)
+│       ├── progress_bar.js          # Progress bar helper (unused)
+│       ├── validation_UI.js         # Client-side validation widgets
+│       ├── match_logic.js           # CSV field matcher
+│       └── validation.py            # Import form validation helpers
 ├── templates/                       # Jinja2 view templates
 │   ├── base.html
+│   ├── dashboard.html               # (WIP) summary page
+│   ├── edit_fields_modal.html       # Modal partial for field editing
 │   ├── index.html
-│   ├── new_record.html
-│   ├── import_view.html
 │   ├── list_view.html
+│   ├── new_record.html
 │   ├── detail_view.html
 │   └── macros/
 │       ├── fields.html              # Field rendering macros
@@ -81,20 +86,18 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 └── data/                            # Runtime and uploaded data
     ├── crossbook.db                # Main application SQLite database
     ├── huey.db                     # Task queue persistence database
-    └── uploads/                    # Imported CSV file storage
+    └── uploads/                    # Placeholder for future uploads
 ```
 
 ## Application Architecture and Code Overview
 
-* **Routing & Views:** Defined in `main.py` using Flask decorators; routes handle list, detail, new record, import, and error pages. A context processor (`@app.context_processor`) injects the `field_schema`—the in-memory representation of all table fields, types, options, and layout—into all templates and front-end scripts for dynamic form generation and validation. Error handlers (e.g., `@app.errorhandler(404)`) and `abort()` calls manage invalid requests.
+* **Routing & Views:** Defined in `main.py` using Flask decorators; routes handle list, detail, new record, and error pages. A context processor (`@app.context_processor`) injects the `field_schema`—the in-memory representation of all table fields, types, options, and layout—into all templates and front-end scripts for dynamic form generation and validation. Error handlers (e.g., `@app.errorhandler(404)`) and `abort()` calls manage invalid requests.
 
-* **Configuration & Environment:** Dependencies listed in `requirements.txt`. Application configuration loads from environment variables or a `.env` file via `python-dotenv`. A `config.py` module organizes settings for development, testing, and production.
+* **Configuration & Environment:** Dependencies listed in `requirements.txt`. Configuration values such as the database path are defined directly in `main.py`.
 
 * **Database Layer:** Uses Python’s built-in `sqlite3` in `db/database.py` for connection management. Schema introspection and migrations occur in `db/schema.py`. CRUD operations reside in `db/records.py`; many-to-many join logic in `db/relationships.py`. Validation rules live in `db/validation.py`, and field schema editing utilities in `db/edit_fields.py`.
 
-* **Validation & Import Pipeline:** CSV parsing and server-side validation in `imports/import_csv.py`, complemented by client-side matching logic in `static/imports/match_logic.js`. Field matching errors are surfaced back to the user before final import.
-
-* **Background Tasks:** Long-running jobs (e.g., CSV row processing) are defined as Huey tasks in `imports/tasks.py`. Tasks are queued and executed asynchronously to keep request-response cycles performant.
+* **Background Tasks:** The Huey queue is initialized in `imports/tasks.py`, but no tasks are currently defined.
 
 * **Frontend Interaction:** Dynamic behaviors powered by JavaScript modules in `static/js/`:
 
@@ -109,12 +112,12 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 
 * **Static Assets & Styling:** Global styles in `static/css/styles.css`, with Tailwind overrides in `static/css/overrides.css`.
 
-* **Templating & Macros:** Jinja2 templates in `templates/` include `base.html`, `index.html`, `new_record.html`, `import_view.html`, `list_view.html`, and `detail_view.html`. Reusable macros live in `templates/macros/fields.html`, `filter_controls.html`.
+* **Templating & Macros:** Jinja2 templates in `templates/` include `base.html`, `dashboard.html`, `index.html`, `new_record.html`, `list_view.html`, `detail_view.html`, and a modal partial `edit_fields_modal.html`. Reusable macros live in `templates/macros/fields.html` and `filter_controls.html`.
 
-* **Logging & Monitoring:** Basic logging configured via Python’s `logging` module in `main.py`. A rotating/timed file handler uses the configured level, while console output logs only warnings and above. Werkzeug request logs are disabled. Logs capture errors, import operations, and user actions.
+* **Logging & Monitoring:** Basic logging configured via Python’s `logging` module in `main.py`. A rotating/timed file handler uses the configured level, while console output logs only warnings and above. Werkzeug request logs are disabled. Logs capture errors and user actions.
 
 
-* **Data Directory:** Runtime files under `data/`: `crossbook.db` (primary database), `huey.db` (task queue store), and `uploads/` for storing imported CSV files.
+* **Data Directory:** Runtime files under `data/`: `crossbook.db` (primary database), `huey.db` (task queue store), and an `uploads/` directory reserved for future files.
 
 
 
@@ -133,7 +136,7 @@ This is the core of the Flask application. It defines the web routes, handles da
 - **`FIELD_SCHEMA`:** A global dictionary that will hold the schema definition for fields of each table. It’s populated at startup by reading the `field_schema` table from the database. The structure is: `FIELD_SCHEMA = { table_name: { field_name: field_type, ... }, ... }`. This lets the templates and logic know how to treat each field (e.g., as text, number, boolean, etc., and whether to render it or hide it).
 - **`field_options`:** A field_options column in the field_schema table contains a JSON-encoded list of options for select fields (e.g., ["Elf", "Human"]).
 - These options are not loaded into FIELD_SCHEMA.
-- Instead, the app uses a dynamic template-accessible helper:
+ - Instead, templates call the `get_field_options(table, field)` helper to fetch options at render time.
 
 
 ### Functions in `main.py`:
@@ -154,7 +157,11 @@ The following functions encapsulate the application logic:
 | `detail_view(table, record_id)`               | **Route:** GET `/<table>/<int:record_id>` – Renders the **detail view page** for a single record. If the table is not in `CORE_TABLES`, or the record with that ID doesn’t exist, it aborts with 404. Otherwise, it fetches the record via `get_record_by_id` and all related records via `get_related_records`. It then renders `detail_view.html`, providing the table name, the record dict, and the related records dict to the template. |
 | `update_field(table, record_id)`              | **Route:** POST `/<table>/<int:record_id>/update` – Handles inline edits from the detail page. This is called when a user submits a field edit form. It first ensures the table is valid and the record exists. It then reads `field` (the field name to update) and the new value from the form data (`new_value` or `new_value_override`). Certain fields are protected: attempting to edit the primary `id` or the `edit_log` directly will result in a 403 Forbidden. For other fields, it determines the expected data type from `FIELD_SCHEMA` and **coerces** the input accordingly: booleans are converted to "1" or "0", numbers to int (default 0 if parse fails), and all other types are treated as strings. It then executes an `UPDATE ... SET field = ?` query to save the new value. If the value changed, it appends a timestamped entry describing the change to the record’s `edit_log` field (this is done by concatenating text). After updating, it commits the transaction and redirects the user back to the detail view page for that record. |
 | `manage_relationship()`                       | **Route:** POST `/relationship` – AJAX endpoint for adding or removing a relationship (join table entry) between two records. It expects a JSON payload with `table_a`, `id_a`, `table_b`, `id_b`, and an `action` ("add" or "remove"). The two table names are sorted alphabetically to determine the join table name (e.g., `character` + `thing` -> join table **character_thing**). Depending on the action, it either inserts a new row (with the two IDs) into the join table or deletes the matching row. It uses `INSERT OR IGNORE` for adds (to avoid duplicates) and a straightforward DELETE for removal. On success, returns JSON `{"success": True}` (HTTP 200). If the join table doesn’t exist or another database error occurs, it returns an error message JSON with status 500. If required fields are missing or an invalid action is given, it returns a 400 error. *(Note: This function uses a direct sqlite3 connection separate from `get_connection()` for convenience and does not explicitly reuse the app’s global connection helper.)* |
+| `dashboard()` | **Route:** GET `/dashboard` – Displays the dashboard page (work in progress). |
 
+| `add_field_route(table, record_id)` | **Route:** POST `/<table>/<int:record_id>/add-field` – Adds a new column to the table and updates the field schema. |
+| `remove_field_route(table, record_id)` | **Route:** POST `/<table>/<int:record_id>/remove-field` – Removes a column from the table and refreshes the schema. |
+| `count_nonnull(table)` | **Route:** GET `/<table>/count-nonnull?field=<name>` – Returns a JSON count of non-null values for the specified field. |
 
 
 All routes and functions above are actively used by the application (there is no dead code in `main.py`). The file concludes by calling `load_field_schema()` and then `app.run(debug=True)` if executed directly, to initialize the schema and start the development server.
@@ -171,7 +178,6 @@ All routes and functions above are actively used by the application (there is no
 - Uses `initRichTextEditor(field)` called inline by the template
 
 **How it’s used in the app:** This module is imported in `fields.html` whenever a `textarea` field is edited.
-**
 
 The front-end JavaScript files enhance the user experience by adding interactivity for column toggling and relationship management. They are written as modular ES6 modules and are imported in the templates where needed.
 
