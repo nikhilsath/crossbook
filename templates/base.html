@@ -10,8 +10,8 @@
   <nav class="bg-gray-200 p-4 flex justify-between items-center">
     <div class="flex space-x-4">
       <a href="/" class="text-blue-600 font-semibold">Home</a>
-      {% for nav in nav_cards %}
-        <a href="{{ '/' if nav.table_name == 'dashboard' else '/' + nav.table_name }}" class="text-blue-600">{{ nav.display_name }}</a>
+      {% for nav in nav_cards if nav.table_name != 'dashboard' %}
+        <a href="/{{ nav.table_name }}" class="text-blue-600">{{ nav.display_name }}</a>
       {% endfor %}
     </div>
 
