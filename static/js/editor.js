@@ -8,13 +8,20 @@ export function initRichTextEditor(field, statusId) {
 
   if (!editor || !hidden) return;
 
-  // Formatting buttons (bold, italic, underline)
+  // Formatting buttons (bold, italic, underline, color)
   const container = editor.closest('.mb-4');
   const buttons = container.querySelectorAll('[data-command]');
   buttons.forEach(btn => {
-    btn.addEventListener('click', () => {
+    const eventType = (btn.tagName === 'INPUT' && btn.type === 'color') ? 'input' : 'click';
+    btn.addEventListener(eventType, () => {
       const cmd = btn.getAttribute('data-command');
-      document.execCommand(cmd, false, null);
+      let value = null;
+      if (btn.hasAttribute('data-value')) {
+        value = btn.getAttribute('data-value');
+      } else if (btn.tagName === 'INPUT' && btn.type === 'color') {
+        value = btn.value;
+      }
+      document.execCommand(cmd, false, value);
       editor.focus();
     });
   });
