@@ -30,7 +30,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Relationship Management:** Displays related records and allows adding/removing relationships through a modal interface (+ to add, ✖ to remove), using AJAX to update join tables dynamically.
 * **Rich Text Support:** Textarea fields now use the Quill editor for formatting.
 * **Edit History:** Tracks each record’s modifications in an `edit_log`, viewable via an expandable history section.
-* **Navigation Bar:** A consistent top navigation (`base.html`) links to Home and all core entity sections.
+* **Navigation Bar:** A consistent top navigation (`base.html`) links to Home and all base table sections.
 * **Supported Field Types:** text, number, date, select, multi-select, foreign-key, boolean, and textarea, each rendered with the appropriate input control.
 * **Filter Macros:** Reusable Jinja macros for boolean, select, text, and multi-select filters (`templates/macros/filter_controls.html`).
 * **Field Schema Editing:** New endpoints allow adding or removing columns at runtime (`/<table>/<id>/add-field`, `/<table>/<id>/remove-field`) and counting non-null values (`/<table>/count-nonnull`).
