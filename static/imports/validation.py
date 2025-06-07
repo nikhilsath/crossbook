@@ -3,9 +3,7 @@ import re
 import csv
 import logging
 from db.schema import get_field_schema
-
 logger = logging.getLogger(__name__)
-
 SCHEMA = get_field_schema()
 
 def validation_sorter(table, field, header, fieldType, values):
