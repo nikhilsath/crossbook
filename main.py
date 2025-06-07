@@ -28,6 +28,7 @@ DB_PATH = os.path.join("data", "crossbook.db")
 conn = get_connection()
 CORE_TABLES = load_core_tables(conn)
 cfg = get_logging_config()
+app.logger.handlers.clear()
 level_name = cfg.get("log_level", "INFO").upper()
 level = getattr(logging, level_name, logging.INFO)
 handler_type = cfg.get("handler_type", "stream")
@@ -47,26 +48,37 @@ if handler_type == "rotating":
     if log_dir and not os.path.isdir(log_dir):
         os.makedirs(log_dir, exist_ok=True)
 
-    handler = RotatingFileHandler(
+    file_handler = RotatingFileHandler(
         filename,
         maxBytes=max_bytes,
         backupCount=backup
     )
 elif handler_type == "timed":
-    handler = TimedRotatingFileHandler(
+    file_handler = TimedRotatingFileHandler(
         filename,
         when=when_interval,
         interval=interval,
         backupCount=backup
     )
 else:  # default to 'stream'
-    handler = logging.StreamHandler()
+    file_handler = logging.StreamHandler()
 
 formatter = logging.Formatter(log_fmt)
-handler.setFormatter(formatter)
-handler.setLevel(level)
+file_handler.setFormatter(formatter)
+file_handler.setLevel(level)
+
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(formatter)
+console_handler.setLevel(logging.WARNING)
+
 app.logger.setLevel(level)
-app.logger.addHandler(handler)
+app.logger.addHandler(file_handler)
+app.logger.addHandler(console_handler)
+app.logger.propagate = False
+
+# Disable Werkzeug's default request logging
+werk_logger = logging.getLogger("werkzeug")
+werk_logger.disabled = True
 
 @app.before_request
 def start_timer():
