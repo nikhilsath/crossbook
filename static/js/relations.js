@@ -83,15 +83,6 @@ export function removeRelation(tableA, idA, tableB, idB) {
   }).then(() => location.reload()); // Refresh to reflect removal
 }
 
-// Autosave handler for multi_select checkboxes
-export function submitMultiSelectAuto(formEl) {
-  const formData = new FormData(formEl);
-  fetch(formEl.action, {
-    method: 'POST',
-    body: formData
-  }).then(() => location.reload());
-}
-
 // Add support for closing dropdowns on outside click
 document.addEventListener('click', (e) => {
   document.querySelectorAll('[data-multiselect-dropdown]').forEach(dropdown => {
@@ -100,5 +91,3 @@ document.addEventListener('click', (e) => {
     }
   });
 });
-
-window.submitMultiSelectAuto = submitMultiSelectAuto;
