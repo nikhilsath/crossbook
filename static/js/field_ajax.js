@@ -64,3 +64,44 @@ export function toggleBooleanAjax(formEl) {
     });
 }
 window.toggleBooleanAjax = toggleBooleanAjax;
+
+// Autosave handler for multi_select checkboxes
+export function submitMultiSelectAuto(formEl) {
+  const formData = new FormData(formEl);
+  fetch(formEl.action, {
+    method: 'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    body: formData
+  })
+    .then(resp => {
+      if (!resp.ok) throw new Error('Network response was not ok');
+      updateSelectedTagsDOM(formEl);
+    })
+    .catch(err => console.error('submitMultiSelectAuto failed', err));
+}
+
+function updateSelectedTagsDOM(formEl) {
+  const container = formEl.querySelector('div.flex.flex-wrap');
+  if (!container) return;
+  container.innerHTML = '';
+  const checkboxes = formEl.querySelectorAll('input[name="new_value[]"]');
+  checkboxes.forEach(cb => {
+    if (cb.checked) {
+      const span = document.createElement('span');
+      span.className = 'inline-flex items-center bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full';
+      span.textContent = cb.value;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'ml-1 text-blue-500 hover:text-red-500';
+      btn.textContent = '×';
+      btn.onclick = () => {
+        cb.checked = false;
+        submitMultiSelectAuto(formEl);
+      };
+      span.appendChild(btn);
+      container.appendChild(span);
+    }
+  });
+}
+
+window.submitMultiSelectAuto = submitMultiSelectAuto;

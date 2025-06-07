@@ -201,7 +201,7 @@ The front-end JavaScript files enhance the user experience by adding interactivi
 
 **Purpose:** Manages the relationship-addition modal on detail pages and handles sending add/remove requests for relationships. This script enables users to link existing records together without leaving the detail view.
 
-As of April 2025, `relations.js` also includes `submitMultiSelectAuto(form)` to support autosaving changes from `multi_select` fields, and logic to automatically close dropdowns when clicking outside them.
+As of April 2025, `field_ajax.js` includes `submitMultiSelectAuto(form)` to autosave changes from `multi_select` fields and update the selected tags without a full page reload. Dropdowns still close automatically when clicking outside them (handled in `relations.js`).
 
 **Exported Functions:**
 
