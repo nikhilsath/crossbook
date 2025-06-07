@@ -1,4 +1,6 @@
 import logging
+
+logger = logging.getLogger(__name__)
 import datetime
 from db.database import get_connection
 from db.schema import get_field_schema
@@ -59,11 +61,11 @@ def get_all_records(table, search=None, filters=None, ops=None):
                 + "WHERE " + " AND ".join(clauses)
                 + " LIMIT 1000"
             )
-            logging.info(f"[QUERY] SQL: {sql} | params: {params}")
+            logger.info(f"[QUERY] SQL: {sql} | params: {params}")
             cursor.execute(sql, params)
         else:
             sql = f"SELECT * FROM {table} LIMIT 1000"
-            logging.info(f"[QUERY] SQL: {sql}")
+            logger.info(f"[QUERY] SQL: {sql}")
             cursor.execute(sql)
 
         # 5) Hydrate and return results
@@ -72,7 +74,7 @@ def get_all_records(table, search=None, filters=None, ops=None):
         return [dict(zip(cols, row)) for row in rows]
 
     except Exception as e:
-        logging.warning(f"[QUERY ERROR] {e}")
+        logger.warning(f"[QUERY ERROR] {e}")
         return []
     finally:
         conn.close()
@@ -97,7 +99,7 @@ def update_field_value(table, record_id, field, new_value):
     cursor = conn.cursor()
 
     try:
-        logging.debug(
+        logger.debug(
             f"update_field_value: table={table}, id={record_id}, field={field}, value={new_value!r}"
         )
         cursor.execute(
@@ -105,12 +107,12 @@ def update_field_value(table, record_id, field, new_value):
             (new_value, record_id)
         )
         conn.commit()
-        logging.info(
+        logger.info(
             f"Updated {table}.{field} for id={record_id} to {new_value!r}"
         )
         return True
     except Exception as e:
-        logging.error(f"[UPDATE ERROR] {e}")
+        logger.error(f"[UPDATE ERROR] {e}")
         return False
     finally:
         conn.close()
@@ -123,7 +125,7 @@ def append_edit_log(table: str, record_id: int, message: str) -> None:
     conn = get_connection()
     cursor = conn.cursor()
     try:
-        logging.debug(
+        logger.debug(
             f"append_edit_log: table={table}, id={record_id}, message={message}"
         )
         cursor.execute(f"SELECT edit_log FROM {table} WHERE id = ?", (record_id,))
@@ -139,11 +141,11 @@ def append_edit_log(table: str, record_id: int, message: str) -> None:
             (new_log, record_id),
         )
         conn.commit()
-        logging.info(
+        logger.info(
             f"Appended edit log for {table} id={record_id}: {message}"
         )
     except Exception as e:
-        logging.warning(f"[EDIT LOG ERROR] {e}")
+        logger.warning(f"[EDIT LOG ERROR] {e}")
     finally:
         conn.close()
 
@@ -187,7 +189,7 @@ def create_record(table, form_data):
         return record_id
 
     except Exception as e:
-        logging.warning(f"[CREATE ERROR] {e}")
+        logger.warning(f"[CREATE ERROR] {e}")
         return None
 
     finally:
@@ -203,14 +205,14 @@ def delete_record(table, record_id):
         conn.commit()
         return True
     except Exception as e:
-        logging.warning(f"[DELETE ERROR] {e}")
+        logger.warning(f"[DELETE ERROR] {e}")
         return False
     finally:
         conn.close()
 
 def count_nonnull(table: str, field: str) -> int:
     validate_table(table)
-    logging.info(f"count_nonnull kickoff")
+    logger.info(f"count_nonnull kickoff")
     # Verify that the field exists and is not hidden or "id"
     fmeta = get_field_schema().get(table, {}).get(field)
     if fmeta is None or fmeta.get("type") == "hidden" or field == "id":
@@ -222,7 +224,7 @@ def count_nonnull(table: str, field: str) -> int:
         cursor.execute(sql)
         return cursor.fetchone()[0] or 0
     except Exception as e:
-        logging.warning(f"[count_nonnull] SQL error for {table}.{field}: {e}")
+        logger.warning(f"[count_nonnull] SQL error for {table}.{field}: {e}")
         return 0
     finally:
         conn.close()

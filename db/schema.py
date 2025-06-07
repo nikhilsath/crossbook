@@ -2,6 +2,8 @@ import sqlite3
 import json
 import logging
 
+logger = logging.getLogger(__name__)
+
 DB_PATH = "data/crossbook.db"
 FIELD_SCHEMA = {}
 
@@ -55,7 +57,7 @@ def load_field_schema():
 try:
     FIELD_SCHEMA = load_field_schema()
 except Exception as e:
-    logging.exception("Error loading FIELD_SCHEMA: %s", e)
+    logger.exception("Error loading FIELD_SCHEMA: %s", e)
 
 
 def update_foreign_field_options():
@@ -80,7 +82,7 @@ def update_foreign_field_options():
         try:
             validate_table(foreign_table)
         except ValueError as e:
-            logging.warning(
+            logger.warning(
                 "Skipping %s.%s: invalid table %s (%s)",
                 table_name,
                 field_name,
@@ -101,7 +103,7 @@ def update_foreign_field_options():
             cur.execute(f"SELECT id, {label_field} FROM {foreign_table}")
             options = [r[1] for r in cur.fetchall()]
         except Exception as e:
-            logging.warning(
+            logger.warning(
                 "Skipping %s.%s → %s: %s",
                 table_name,
                 field_name,
