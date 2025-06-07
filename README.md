@@ -77,8 +77,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 │   ├── detail_view.html
 │   └── macros/
 │       ├── fields.html              # Field rendering macros
-│       ├── filter_controls.html     # Filter UI macros
-│       └── tag_selector.html        # Multi-select tag macros
+│       └── filter_controls.html     # Filter UI macros
 └── data/                            # Runtime and uploaded data
     ├── crossbook.db                # Main application SQLite database
     ├── huey.db                     # Task queue persistence database
@@ -110,7 +109,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 
 * **Static Assets & Styling:** Global styles in `static/css/styles.css`, with Tailwind overrides in `static/css/overrides.css`.
 
-* **Templating & Macros:** Jinja2 templates in `templates/` include `base.html`, `index.html`, `new_record.html`, `import_view.html`, `list_view.html`, and `detail_view.html`. Reusable macros live in `templates/macros/fields.html`, `filter_controls.html`, and `tag_selector.html`.
+* **Templating & Macros:** Jinja2 templates in `templates/` include `base.html`, `index.html`, `new_record.html`, `import_view.html`, `list_view.html`, and `detail_view.html`. Reusable macros live in `templates/macros/fields.html`, `filter_controls.html`.
 
 * **Logging & Monitoring:** Basic logging configured via Python’s `logging` module in `main.py`. Logs capture errors, import operations, and user actions.
 
