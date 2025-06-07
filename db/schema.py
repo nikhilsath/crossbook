@@ -212,3 +212,106 @@ def update_layout(table: str, layout_items: list[dict]) -> int:
     FIELD_SCHEMA = current_schema
 
     return updated
+
+
+def create_base_table(table_name: str, description: str) -> bool:
+    """Create a new base table and associated metadata."""
+    if not table_name.isidentifier():
+        logger.error("Invalid table name: %s", table_name)
+        return False
+
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    try:
+        # Ensure the table does not already exist
+        cur.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+            (table_name,),
+        )
+        if cur.fetchone():
+            logger.error("Table %s already exists", table_name)
+            return False
+
+        # Create the base table
+        cur.execute(
+            f"""
+            CREATE TABLE {table_name} (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                {table_name} TEXT,
+                edit_log TEXT
+            )
+            """
+        )
+
+        # Insert default field schema rows
+        defaults = [
+            (table_name, "id", "hidden", None, None, 0, 0, 0, 0),
+            (table_name, table_name, "text", None, None, 0, 0, 0, 0),
+            (table_name, "edit_log", "hidden", None, None, 0, 0, 0, 0),
+        ]
+        cur.executemany(
+            """
+            INSERT INTO field_schema
+              (table_name, field_name, field_type, field_options, foreign_key,
+               col_start, col_span, row_start, row_span)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            defaults,
+        )
+
+        # Determine next sort_order value
+        cur.execute("SELECT COALESCE(MAX(sort_order), 0) + 1 FROM config_base_tables")
+        next_order = cur.fetchone()[0]
+
+        # Insert into config_base_tables
+        cur.execute(
+            """
+            INSERT INTO config_base_tables
+              (table_name, display_name, description, sort_order)
+            VALUES (?, ?, ?, ?)
+            """,
+            (table_name, table_name, description, next_order),
+        )
+
+        # Build join tables against existing base tables (excluding the new one)
+        cur.execute(
+            "SELECT table_name FROM config_base_tables WHERE table_name != ?",
+            (table_name,),
+        )
+        existing = [r[0] for r in cur.fetchall()]
+        for other in existing:
+            a, b = sorted([table_name, other])
+            join_table = f"{a}_{b}"
+            first = f"{a}_id"
+            second = f"{b}_id"
+            cur.execute(
+                f"""
+                CREATE TABLE IF NOT EXISTS {join_table} (
+                    {first} INTEGER,
+                    {second} INTEGER,
+                    UNIQUE({first}, {second})
+                )
+                """
+            )
+
+        conn.commit()
+    except Exception as exc:
+        logger.exception("Error creating base table %s: %s", table_name, exc)
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
+
+    # Refresh in-memory caches
+    global FIELD_SCHEMA
+    FIELD_SCHEMA = load_field_schema()
+    try:
+        import main
+
+        with sqlite3.connect(DB_PATH) as c:
+            main.CARD_INFO = load_card_info(c)
+            main.BASE_TABLES = load_base_tables(c)
+    except Exception as exc:
+        logger.exception("Failed to refresh global caches: %s", exc)
+
+    return True
