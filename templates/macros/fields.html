@@ -9,7 +9,6 @@
 {% macro render_editable_field(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) %}
   <div class="mt-2">
     {% if field_type == "textarea" %}
-    {# Use unpkg for CORS-friendly stylesheet loading #}
     <link rel="stylesheet" href="https://unpkg.com/quill@2.0.3/dist/quill.snow.css">
     <div id="save_status_{{ field }}" class="text-xs text-gray-500 mb-1"></div>
     <form method="POST"
