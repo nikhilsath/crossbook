@@ -125,7 +125,7 @@ def update_foreign_field_options():
 def get_field_schema():
     return FIELD_SCHEMA
 
-def load_card_info(conn):
+def load_base_tables(conn):
     """Return card metadata from the config_base_tables table."""
     rows = conn.execute(
         """
@@ -142,12 +142,6 @@ def load_card_info(conn):
         }
         for r in rows
     ]
-
-
-def load_base_tables(conn):
-    """Return the list of base table names used by the application."""
-    cards = load_card_info(conn)
-    return [c["table_name"] for c in cards if c["table_name"] != "dashboard"]
 
 def update_layout(table: str, layout_items: list[dict]) -> int:
     current_schema = load_field_schema()

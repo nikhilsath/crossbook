@@ -11,7 +11,6 @@ from db.schema import (
     update_foreign_field_options,
     get_field_schema,
     load_base_tables,
-    load_card_info,
     update_layout,
     create_base_table,
 )
@@ -34,8 +33,8 @@ app = Flask(__name__, static_url_path='/static')
 app.jinja_env.add_extension('jinja2.ext.do') # for field type in detail_view
 DB_PATH = os.path.join("data", "crossbook.db")
 conn = get_connection()
-CARD_INFO = load_card_info(conn)
-BASE_TABLES = load_base_tables(conn)
+CARD_INFO = load_base_tables(conn)
+BASE_TABLES = [c["table_name"] for c in CARD_INFO if c["table_name"] != "dashboard"]
 
 # Configure logging using helper function
 configure_logging(app)
@@ -413,8 +412,8 @@ def add_table():
         return jsonify({"error": "Failed to create table"}), 400
 
     with sqlite3.connect(DB_PATH) as c:
-        CARD_INFO = load_card_info(c)
-        BASE_TABLES = load_base_tables(c)
+        CARD_INFO = load_base_tables(c)
+        BASE_TABLES = [card["table_name"] for card in CARD_INFO if card["table_name"] != "dashboard"]
 
     return jsonify({"success": True})
 
