@@ -3,6 +3,26 @@
 
 Crossbook is a structured, browser-based knowledge interface for managing content and its related metadata. It provides an easy way to organize and cross-reference entities (for example: books or chapters of content, and related characters, locations, factions, etc.) along with their interrelationships. The application features a clean design and uses a normalized SQLite database (with join tables) to map many-to-many relationships between entities.
 
+## Table of Contents
+- [Project Summary](#project-summary)
+  - [Future Cloud Migration](#future-cloud-migration)
+- [Current Status](#current-status)
+- [Implemented Features](#implemented-features)
+- [Project Structure](#project-structure)
+- [Application Architecture and Code Overview](#application-architecture-and-code-overview)
+  - [Main Application – `main.py`](#main-application-mainpy)
+  - [Functions in `main.py`](#functions-in-mainpy)
+  - [Front-End Scripts – `static/js/`](#front-end-scripts-staticjs)
+    - [editor.js](#editorjs)
+    - [column_visibility.js](#columnvisibilityjs)
+    - [relations.js](#relationsjs)
+  - [Templates – `templates/`](#templates-templates)
+    - [base.html](#basehtml)
+    - [index.html](#indexhtml)
+    - [list_view.html](#listviewhtml)
+    - [detail_view.html](#detailviewhtml)
+    - [macros/fields.html](#macrosfieldshtml)
+
 ## Project Summary
 
 * **Tech Stack:** Python 3.x, Flask (web framework), Jinja2 (templating), Tailwind CSS (styling via CDN), SQLite (relational database). JavaScript libraries include custom JavaScript for layout editing and custom scripts under `static/js/` for validation and UI behavior.
