@@ -1,6 +1,5 @@
 from flask import Flask, render_template, abort, request, redirect, url_for, jsonify, session, g
 import os
-import sqlite3
 import logging
 import time
 import json
@@ -14,6 +13,7 @@ from db.schema import (
     load_card_info,
     update_layout,
     create_base_table,
+    refresh_card_cache,
 )
 from db.records import (
     get_all_records,
@@ -412,9 +412,7 @@ def add_table():
     if not success:
         return jsonify({"error": "Failed to create table"}), 400
 
-    with sqlite3.connect(DB_PATH) as c:
-        CARD_INFO = load_card_info(c)
-        BASE_TABLES = load_base_tables(c)
+    CARD_INFO, BASE_TABLES = refresh_card_cache()
 
     return jsonify({"success": True})
 

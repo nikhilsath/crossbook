@@ -149,6 +149,17 @@ def load_base_tables(conn):
     cards = load_card_info(conn)
     return [c["table_name"] for c in cards if c["table_name"] != "dashboard"]
 
+
+def refresh_card_cache():
+    """Return updated CARD_INFO and BASE_TABLES lists."""
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        card_info = load_card_info(conn)
+        base_tables = load_base_tables(conn)
+    finally:
+        conn.close()
+    return card_info, base_tables
+
 def update_layout(table: str, layout_items: list[dict]) -> int:
     current_schema = load_field_schema()
 
