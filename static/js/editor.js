@@ -1,8 +1,13 @@
+// Import Quill from a CDN that serves the module with CORS headers enabled.
+// The previous cdn.quilljs.com source blocked cross-origin module loading,
+// resulting in a CORS error in browsers. Using unpkg fixes this.
+import Quill from 'https://unpkg.com/quill@2.0.3/dist/quill.js';
+
 export function initQuillEditor(field, statusId) {
   const container = document.getElementById(`editor_${field}`);
   const hidden = document.getElementById(`hidden_${field}`);
   const statusEl = statusId ? document.getElementById(statusId) : null;
-  if (!container || !hidden || typeof Quill === 'undefined') return;
+  if (!container || !hidden) return;
 
   const quill = new Quill(container, {
     theme: 'snow',
