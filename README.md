@@ -376,3 +376,9 @@ Overall, `detail_view.html` works in tandem with `macros/fields.html` and the JS
 - The macro also prints a small debug line in edit mode (`[DEBUG: field → field_type]` in gray, small text) to show the field name and type. This is helpful for developers to see what type the system thinks the field is. (This line could be removed or hidden in a production setting if desired.)
 
 By using this macro in `detail_view.html`, the template stays cleaner and any changes to how fields are rendered (view or edit) can be made in one place. For example, when select fields are implemented, the macro can be updated to handle `field_type == "select"` differently (perhaps render a dropdown with options) without having to touch the main template logic.
+
+## License
+
+This software is provided for evaluation and internal use only.
+Modification, redistribution, or commercial deployment is prohibited without written permission.
+
