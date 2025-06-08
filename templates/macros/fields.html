@@ -9,20 +9,15 @@
 {% macro render_editable_field(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) %}
   <div class="mt-2">
     {% if field_type == "textarea" %}
-    <link rel="stylesheet" href="https://unpkg.com/quill@2.0.3/dist/quill.snow.css">
-    <div id="save_status_{{ field }}" class="text-xs text-gray-500 mb-1"></div>
     <form method="POST"
           action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}"
-          class="w-full mb-4"
-          onsubmit="event.preventDefault()">
+          class="w-full mb-2">
       <input type="hidden" name="field" value="{{ field }}">
-      <div id="editor_{{ field }}" class="bg-white" style="min-height:200px;">{{ value|safe }}</div>
-      <input type="hidden" name="new_value" id="hidden_{{ field }}" value="{{ value|e }}">
+      <textarea name="new_value" rows="6"
+                class="w-full border px-2 py-1 text-sm rounded"
+                onchange="submitFieldAjax(this.form)">{{ value }}</textarea>
+      <span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>
     </form>
-    <script type="module">
-      import { initQuillEditor } from '/static/js/editor.js';
-      initQuillEditor("{{ field }}", "save_status_{{ field }}");
-    </script>
       {% elif field_type == "select" %}
       <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline">
         <input type="hidden" name="field" value="{{ field }}">

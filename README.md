@@ -13,7 +13,6 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
   - [Main Application – `main.py`](#main-application-mainpy)
   - [Functions in `main.py`](#functions-in-mainpy)
   - [Front-End Scripts – `static/js/`](#front-end-scripts-staticjs)
-    - [editor.js](#editorjs)
     - [column_visibility.js](#columnvisibilityjs)
     - [relations.js](#relationsjs)
   - [Templates – `templates/`](#templates-templates)
@@ -46,9 +45,9 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 
 * **List View with Search:** Each entity list page allows filtering records by text-based fields with a search box (`list_view.html`).
 * **Column Visibility:** Columns can be shown or hidden on the fly using the **Columns** dropdown (`column_visibility.js`).
-* **Detail View & Inline Edit:** Displays all fields on the detail page with inline editing via text input, date picker, checkbox, or rich text editor. Numeric field changes now save via AJAX and append to the edit log without reloading the page.
+* **Detail View & Inline Edit:** Displays all fields on the detail page with inline editing via text inputs, date pickers, checkboxes, or textareas. Numeric field changes now save via AJAX and append to the edit log without reloading the page.
 * **Relationship Management:** Displays related records and allows adding/removing relationships through a modal interface (+ to add, ✖ to remove), using AJAX to update join tables dynamically.
-* **Rich Text Support:** Textarea fields now use the Quill editor (v2.0.3) for formatting. The script and stylesheet are loaded from **unpkg.com**. The editor is imported with `import Quill from 'https://unpkg.com/quill@2.0.3?module'` so browsers can fetch the ES module build with CORS enabled.
+* **Rich Text Support:** Textarea fields accept HTML markup directly using a standard `<textarea>` element.
 * **Edit History:** Tracks each record’s modifications in an `edit_log`, viewable via an expandable history section.
 * **Navigation Bar:** A consistent top navigation (`base.html`) links to Home and all base table sections.
 * **Supported Field Types:** text, number, date, select, multi-select, foreign-key, boolean, and textarea, each rendered with the appropriate input control.
@@ -79,7 +78,6 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 │   │   └── styles.css               # Additional global styles
 │   ├── js/
 │   │   ├── column_visibility.js     # Column toggle logic
-│   │   ├── editor.js                # Rich-text editor integration
 │   │   ├── edit_fields.js           # Client-side field schema editing
 │   │   ├── field_ajax.js            # Inline updates via fetch
 │   │   ├── filter_visibility.js     # Show/hide filter controls
@@ -126,7 +124,6 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
   * `filter_visibility.js` for showing/hiding filter controls
   * `tag_selector.js` (multi-select dropdown UI)
   * `edit_fields.js` for client-side schema and field editing
-  * `editor.js` for Quill-based rich-text integration
   * `field_ajax.js` for inline field updates without page reloads (imported by `detail_view.html`)
 
 * **Static Assets & Styling:** Global styles in `static/css/styles.css`, with Tailwind overrides in `static/css/overrides.css`.
@@ -186,19 +183,6 @@ The following functions encapsulate the application logic:
 All routes and functions above are actively used by the application (there is no dead code in `main.py`). The file concludes by calling `load_field_schema()` and then `app.run(debug=True)` if executed directly, to initialize the schema and start the development server.
 
 ### **Front-End Scripts – `static/js/`
-
-#### 📄 `editor.js`
-
-**Purpose:** Wraps the Quill rich-text editor and wires up autosave for `textarea` fields.
-
-**Key Features:**
-- Creates a Quill instance with basic formatting options (bold, italic, underline, link and color)
-- Keeps a hidden `<input>` synchronized with the editor HTML
-- Exposes `initQuillEditor(field)` used by `fields.html` to enable autosave
-
-**How it’s used in the app:** This module is imported in `fields.html` for each textarea field being edited.
-
-The front-end JavaScript files enhance the user experience by adding interactivity for column toggling and relationship management. They are written as modular ES6 modules and are imported in the templates where needed.
 
 #### 📄 **`column_visibility.js`**
 
@@ -321,7 +305,7 @@ Key features of the detail view:
     - Text fields -> a simple text input.
     - Number fields -> a number input.
     - Date fields -> an HTML date picker.
-    - Textarea (long text) -> a Quill editor instance storing HTML in a hidden input.
+    - Textarea (long text) -> a standard `<textarea>` element for HTML content.
     - Boolean fields -> a toggle checkbox input.
     - `multi_select` fields now render as searchable dropdowns with checkboxes and tag-style badges for selected values. Users can filter options live, deselect tags with ✖, and all changes autosave automatically. A Tailwind-styled dropdown appears inline with live filtering and closing behavior.
   - If the field is **not** in edit mode, the macro will display the value in a read-only format:
@@ -359,7 +343,7 @@ Overall, `detail_view.html` works in tandem with `macros/fields.html` and the JS
 - If the current request’s query param `edit` matches this field’s name, it means the user is editing this field. The macro will produce an `<form>` element targeting the `update_field` route (using `url_for(update_endpoint, table=..., record_id=...)`). 
   - It always includes a hidden `<input name="field">` with the field’s name (so the backend knows which field to update).
   - Then, depending on `field_type`, it renders an appropriate input:
-    - **textarea:** Uses Quill to provide rich-text editing. The editor’s HTML is stored in a hidden `new_value` input so it can be submitted.
+    - **textarea:** Uses a plain `<textarea>` element. The HTML is stored directly in the `new_value` field.
     - **boolean:** Renders a checkbox input (styled as a toggle switch via CSS classes). It’s checked if the current value is truthy ( "1", 1, or True). This lets the user change the boolean value. (Note: in edit mode, this is a single checkbox inside the form; in view mode, booleans are handled differently as described below).
     - **number:** Renders a numeric input (`<input type="number">`) with the current value.
     - **date:** Renders a date picker (`<input type="date">`) with the current value.
