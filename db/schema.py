@@ -147,13 +147,7 @@ def load_card_info(conn):
 def load_base_tables(conn):
     """Return the list of base table names used by the application."""
     cards = load_card_info(conn)
-    tables = [c["table_name"] for c in cards if c["table_name"] != "dashboard"]
-    if tables:
-        return tables
-    row = conn.execute(
-        "SELECT value FROM config WHERE key = ?", ("core_tables",)
-    ).fetchone()
-    return [t.strip() for t in row[0].split(",")] if row else []
+    return [c["table_name"] for c in cards if c["table_name"] != "dashboard"]
 
 def update_layout(table: str, layout_items: list[dict]) -> int:
     current_schema = load_field_schema()
