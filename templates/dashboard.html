@@ -3,10 +3,20 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block nav_buttons %}
-<button id="dashboard_add" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">+ Add</button>
+<button id="dashboard_add" onclick="openDashboardModal()" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">+ Add</button>
 {% endblock %}
 
 {% block content %}
 <h1 class="text-3xl font-bold mb-4">Dashboard</h1>
 <p class="text-gray-600">This page is under construction.</p>
 {% endblock %}
+
+<!-- Dashboard Add Modal -->
+<div id="dashboardModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden flex justify-center items-center z-50">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full text-center">
+    <p class="mb-4">Add dashboard feature coming soon.</p>
+    <button onclick="closeDashboardModal()" class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Close</button>
+  </div>
+</div>
+
+<script type="module" src="{{ url_for('static', filename='js/dashboard_modal.js') }}"></script>
