@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block content %}
-<h1 class="text-4xl font-bold text-center mb-10">Load the Glass Cannon</h1>
+<h1 class="text-4xl font-bold text-center mb-10">{{ heading }}</h1>
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
   {% for card in cards %}
   <a href="{{ '/dashboard' if card.table_name == 'dashboard' else '/' + card.table_name }}"

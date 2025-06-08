@@ -17,3 +17,16 @@ def get_logging_config():
         subkey = full_key.split(".", 1)[1]
         config[subkey] = val
     return config
+
+
+def get_config_value(key: str, default=None):
+    """Return the configuration value for a given key."""
+
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT value FROM config WHERE key = ?", (key,))
+    row = cur.fetchone()
+    conn.close()
+    if row is None:
+        return default
+    return row[0]

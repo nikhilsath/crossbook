@@ -28,7 +28,7 @@ from db.relationships import get_related_records, add_relationship, remove_relat
 from static.imports.validation import validation_sorter
 from imports.import_csv import parse_csv
 from db.edit_fields import add_column_to_table, add_field_to_schema, drop_column_from_table, remove_field_from_schema
-from db.config import get_logging_config
+from db.config import get_logging_config, get_config_value
 
 
 app = Flask(__name__, static_url_path='/static')
@@ -125,7 +125,8 @@ def inject_field_schema():
 
 @app.route("/")
 def home():
-    return render_template("index.html", cards=CARD_INFO)
+    heading = get_config_value("index.heading", "Load the Glass Cannon")
+    return render_template("index.html", cards=CARD_INFO, heading=heading)
 
 
 @app.route("/dashboard")
