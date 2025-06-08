@@ -83,10 +83,9 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 │   └── macros/
 │       ├── fields.html              # Field rendering macros
 │       └── filter_controls.html     # Filter UI macros
-└── data/                            # Runtime and uploaded data
+└── data/                            # Runtime data directory
     ├── crossbook.db                # Main application SQLite database
-    ├── huey.db                     # Task queue persistence database
-    └── uploads/                    # Placeholder for future uploads
+    └── huey.db                     # Task queue persistence database
 ```
 
 ## Application Architecture and Code Overview
@@ -117,7 +116,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Logging & Monitoring:** Basic logging configured via Python’s `logging` module in `main.py`. A rotating/timed file handler uses the configured level, while console output logs only warnings and above. Werkzeug request logs are disabled. Logs capture errors and user actions.
 
 
-* **Data Directory:** Runtime files under `data/`: `crossbook.db` (primary database), `huey.db` (task queue store), and an `uploads/` directory reserved for future files.
+* **Data Directory:** Runtime files under `data/`: `crossbook.db` (primary database) and `huey.db` (task queue store).
 
 
 
