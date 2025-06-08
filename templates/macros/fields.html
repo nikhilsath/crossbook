@@ -11,11 +11,11 @@
     {% if field_type == "textarea" %}
     <form method="POST"
           action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}"
-          class="w-full mb-2">
+          class="w-full mb-2"
+          data-autosave>
       <input type="hidden" name="field" value="{{ field }}">
-      <textarea name="new_value" rows="6"
-                class="w-full border px-2 py-1 text-sm rounded"
-                onchange="submitFieldAjax(this.form)">{{ value }}</textarea>
+      <input type="hidden" name="new_value" value="{{ value|e }}">
+      <div class="quill-editor" data-quill>{{ value|safe }}</div>
       <span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>
     </form>
       {% elif field_type == "select" %}

@@ -47,7 +47,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Column Visibility:** Columns can be shown or hidden on the fly using the **Columns** dropdown (`column_visibility.js`).
 * **Detail View & Inline Edit:** Displays all fields on the detail page with inline editing via text inputs, date pickers, checkboxes, or textareas. Numeric field changes now save via AJAX and append to the edit log without reloading the page.
 * **Relationship Management:** Displays related records and allows adding/removing relationships through a modal interface (+ to add, ✖ to remove), using AJAX to update join tables dynamically.
-* **Rich Text Support:** Textarea fields accept HTML markup directly using a standard `<textarea>` element.
+* **Rich Text Support:** Textareas are enhanced with [Quill](https://quilljs.com/) for WYSIWYG editing.
 * **Edit History:** Tracks each record’s modifications in an `edit_log`, viewable via an expandable history section.
 * **Navigation Bar:** A consistent top navigation (`base.html`) links to Home and all base table sections.
 * **Supported Field Types:** text, number, date, select, multi-select, foreign-key, boolean, and textarea, each rendered with the appropriate input control.
@@ -125,6 +125,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
   * `tag_selector.js` (multi-select dropdown UI)
   * `edit_fields.js` for client-side schema and field editing
   * `field_ajax.js` for inline field updates without page reloads (imported by `detail_view.html`)
+  * `editor.js` initializes Quill editors for textarea fields (see the [Quill documentation](https://quilljs.com/docs/quickstart/) for editor usage)
 
 * **Static Assets & Styling:** Global styles in `static/css/styles.css`, with Tailwind overrides in `static/css/overrides.css`.
 
@@ -305,7 +306,7 @@ Key features of the detail view:
     - Text fields -> a simple text input.
     - Number fields -> a number input.
     - Date fields -> an HTML date picker.
-    - Textarea (long text) -> a standard `<textarea>` element for HTML content.
+    - Textarea (long text) -> a Quill-powered editor for HTML content.
     - Boolean fields -> a toggle checkbox input.
     - `multi_select` fields now render as searchable dropdowns with checkboxes and tag-style badges for selected values. Users can filter options live, deselect tags with ✖, and all changes autosave automatically. A Tailwind-styled dropdown appears inline with live filtering and closing behavior.
   - If the field is **not** in edit mode, the macro will display the value in a read-only format:
@@ -343,7 +344,7 @@ Overall, `detail_view.html` works in tandem with `macros/fields.html` and the JS
 - If the current request’s query param `edit` matches this field’s name, it means the user is editing this field. The macro will produce an `<form>` element targeting the `update_field` route (using `url_for(update_endpoint, table=..., record_id=...)`). 
   - It always includes a hidden `<input name="field">` with the field’s name (so the backend knows which field to update).
   - Then, depending on `field_type`, it renders an appropriate input:
-    - **textarea:** Uses a plain `<textarea>` element. The HTML is stored directly in the `new_value` field.
+    - **textarea:** Uses a Quill editor with the HTML stored in a hidden `new_value` input.
     - **boolean:** Renders a checkbox input (styled as a toggle switch via CSS classes). It’s checked if the current value is truthy ( "1", 1, or True). This lets the user change the boolean value. (Note: in edit mode, this is a single checkbox inside the form; in view mode, booleans are handled differently as described below).
     - **number:** Renders a numeric input (`<input type="number">`) with the current value.
     - **date:** Renders a date picker (`<input type="date">`) with the current value.

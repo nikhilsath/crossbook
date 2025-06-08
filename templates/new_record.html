@@ -10,7 +10,8 @@
       <div>
         <label class="block text-sm font-medium capitalize mb-1">{{ field }}</label>
         {% if ftype == "textarea" %}
-          <textarea name="{{ field }}" rows="4" class="w-full border rounded p-2 text-sm"></textarea>
+          <input type="hidden" name="{{ field }}">
+          <div class="quill-editor" data-quill></div>
         {% elif ftype == "boolean" %}
           <input type="checkbox" name="{{ field }}" value="1">
         {% elif ftype == "number" %}
@@ -26,4 +27,5 @@
 
   <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Create</button>
 </form>
+<script type="module" src="{{ url_for('static', filename='js/editor.js') }}"></script>
 {% endblock %}
