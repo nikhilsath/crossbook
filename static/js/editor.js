@@ -1,8 +1,10 @@
+import Quill from 'https://cdn.quilljs.com/2.0.3/quill.js';
+
 export function initQuillEditor(field, statusId) {
   const container = document.getElementById(`editor_${field}`);
   const hidden = document.getElementById(`hidden_${field}`);
   const statusEl = statusId ? document.getElementById(statusId) : null;
-  if (!container || !hidden || typeof Quill === 'undefined') return;
+  if (!container || !hidden) return;
 
   const quill = new Quill(container, {
     theme: 'snow',

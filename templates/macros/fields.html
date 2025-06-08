@@ -10,7 +10,6 @@
   <div class="mt-2">
     {% if field_type == "textarea" %}
     <link rel="stylesheet" href="https://cdn.quilljs.com/2.0.3/quill.snow.css">
-    <script src="https://cdn.quilljs.com/2.0.3/quill.min.js"></script>
     <div id="save_status_{{ field }}" class="text-xs text-gray-500 mb-1"></div>
     <form method="POST"
           action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}"
