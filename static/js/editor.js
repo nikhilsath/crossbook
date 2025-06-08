@@ -1,5 +1,22 @@
 import { submitFieldAjax } from './field_ajax.js';
 
+// Intercept deprecated DOMNodeInserted listeners that Quill adds and replace
+// them with a no-op MutationObserver. This avoids Chrome deprecation warnings.
+(function() {
+  const originalAdd = Element.prototype.addEventListener;
+  Element.prototype.addEventListener = function(type, listener, options) {
+    if (type === 'DOMNodeInserted') {
+      new MutationObserver(() => {}).observe(this, { childList: true });
+      return;
+    }
+    return originalAdd.call(this, type, listener, options);
+  };
+  // Helper to restore the native method after editors initialize
+  window.restoreAddEventListener = () => {
+    Element.prototype.addEventListener = originalAdd;
+  };
+})();
+
 function initEditors() {
   document.querySelectorAll('[data-quill]').forEach(el => {
     const form = el.closest('form');
@@ -20,6 +37,11 @@ function initEditors() {
       }
     });
   });
+
+  // Restore default addEventListener after Quill initialization
+  if (typeof window.restoreAddEventListener === 'function') {
+    window.restoreAddEventListener();
+  }
 }
 
 document.addEventListener('DOMContentLoaded', initEditors);
