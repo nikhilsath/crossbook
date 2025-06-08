@@ -45,6 +45,7 @@ function initTableSelect() {
   const columnContainer = document.getElementById('selectedColumns');
   const columnToggleBtn = document.getElementById('columnSelectToggle');
   const columnDropdown = document.getElementById('columnSelectOptions');
+  const divider = document.getElementById('columnDivider');
   if (!container || !toggleBtn || !dropdown) return;
 
   const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
@@ -82,8 +83,14 @@ function initTableSelect() {
     if (tables.length === 0) {
       selectedColumn = null;
       refreshColumnTags();
+      if (columnToggleBtn) columnToggleBtn.classList.add('hidden');
+      if (divider) divider.classList.add('hidden');
+      columnDropdown.classList.add('hidden');
       return;
     }
+
+    if (columnToggleBtn) columnToggleBtn.classList.remove('hidden');
+    if (divider) divider.classList.remove('hidden');
 
     const search = document.createElement('input');
     search.type = 'text';
