@@ -37,11 +37,9 @@ conn = get_connection()
 CARD_INFO = load_card_info(conn)
 BASE_TABLES = load_base_tables(conn)
 
-# Configure logging using helper function
 configure_logging(app)
 
 
-# Disable Werkzeug's default request logging
 werk_logger = logging.getLogger("werkzeug")
 werk_logger.disabled = True
 
@@ -63,7 +61,6 @@ def log_exception(exc):
     if exc:
         app.logger.exception(f"[ERROR] Unhandled exception during {request.method} {request.path}: {exc}")
 
-# Before rendering any template call this and inject the results into the template 
 @app.context_processor
 def inject_field_schema():
     from db.schema import load_field_schema
@@ -91,16 +88,13 @@ def list_view(table):
         abort(404)
     fields = list(get_field_schema()[table].keys())
     search = request.args.get("search", "").strip() 
-    # build filters dict
     raw_args = request.args.to_dict()
     filters  = {k: v for k, v in raw_args.items() if k in fields}
-    # Operators
     ops = {
         k[:-3]: v
         for k, v in raw_args.items()
         if k.endswith("_op") and k[:-3] in fields
         }
-    # Fetch records with both search and filters
     records = get_all_records(table, search=search, filters=filters, ops=ops)
     return render_template(
         "list_view.html",
@@ -115,18 +109,14 @@ def detail_view(table, record_id):
     """
     Renders the detail view for a given table and record
     """
-    # Fetch the record or 404
     record = get_record_by_id(table, record_id)
     if not record:
         abort(404)
 
-    # Fetch related items
     related = get_related_records(table, record_id)
 
-    # Load full schema (including layout coords) via utility
-    FIELD_SCHEMA = load_field_schema()  
+    FIELD_SCHEMA = load_field_schema()
 
-    # Extract only the layout mapping for this table
     raw_layout = FIELD_SCHEMA.get(table, {})
     field_schema_layout = {
         field: meta.get("layout", {})
@@ -134,7 +124,6 @@ def detail_view(table, record_id):
     }
 
     logging.debug(f"[DETAIL] Using layout: %s", field_schema_layout)
-    # Render template with layout coordinates available as `field_schema_layout`
     return render_template(
         "detail_view.html",
         table=table,
@@ -247,24 +236,19 @@ def remove_field_route(table, record_id):
 
 @app.route("/<table>/<int:record_id>/update", methods=["POST"])
 def update_field(table, record_id):
-    # grab which column we’re editing
     field = request.form.get("field")
     if not field:
         abort(400, "Field missing")
 
-    # figure out the declared type
     fmeta = get_field_schema().get(table, {}).get(field)
     if not fmeta:
         abort(400, "Unknown field")
     ftype = fmeta["type"]
 
-    # --- HANDLE MULTI-SELECT & FOREIGN-KEY AS A LIST ---
     if ftype in ("multi_select", "foreign_key"):
-        # checkboxes all name="new_value[]"
         vals      = request.form.getlist("new_value[]")
         new_value = ", ".join(vals)
     else:
-        # everything else uses a single input or override
         raw = request.form.get("new_value_override") or request.form.get("new_value", "")
         if ftype == "boolean":
             new_value = "1" if raw.lower() in ("1","on","true") else "0"
@@ -280,8 +264,6 @@ def update_field(table, record_id):
         f"update_field: table={table}, id={record_id}, field={field}, value={new_value!r}"
     )
 
-    # Delegate to your existing DB helper
-    # First fetch the previous value so we can record changes
     prev_record = get_record_by_id(table, record_id)
     prev_value = prev_record.get(field) if prev_record else None
 
@@ -293,7 +275,6 @@ def update_field(table, record_id):
         f"Field updated for {table} id={record_id}: {field} -> {new_value!r}"
     )
 
-    # Append to the edit log if the value actually changed
     if prev_record is not None and str(prev_value) != str(new_value):
         append_edit_log(
             table,

@@ -11,6 +11,10 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 - [Project Structure](#project-structure)
 - [Application Architecture and Code Overview](#application-architecture-and-code-overview)
   - [Main Application – `main.py`](#main-application-mainpy)
+    - [Request Logging](#request-logging)
+    - [Field Schema Injection](#field-schema-injection)
+    - [Record Fetching](#record-fetching)
+    - [Update Logic](#update-logic)
   - [Functions in `main.py`](#functions-in-mainpy)
   - [Front-End Scripts – `static/js/`](#front-end-scripts-staticjs)
     - [column_visibility.js](#columnvisibilityjs)
@@ -155,6 +159,17 @@ This is the core of the Flask application. It defines the web routes, handles da
 - These options are not loaded into FIELD_SCHEMA.
  - Instead, templates call the `get_field_options(table, field)` helper to fetch options at render time.
 
+#### Request Logging
+The application logs each request's start, completion time, and status code. `start_timer` stores the start time, `log_request` records the duration, and `log_exception` captures uncaught errors. Werkzeug's default logging is disabled so only these messages appear.
+
+#### Field Schema Injection
+The context processor `inject_field_schema` loads the field schema and navigation card data before rendering templates, exposing them and `update_foreign_field_options` globally.
+
+#### Record Fetching
+`list_view` builds filter and operator dictionaries from query parameters and then calls `get_all_records`. `detail_view` obtains a record with `get_record_by_id`, gathers relationships via `get_related_records`, and loads layout info from the schema.
+
+#### Update Logic
+`update_field` interprets the field type, handles lists for multi-select and foreign keys, coerces booleans and numbers, writes changes with `update_field_value`, and appends a note to `edit_log` when a value changes.
 
 ### Functions in `main.py`:
 
