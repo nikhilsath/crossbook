@@ -67,10 +67,10 @@ input[type=number] {
   display: block;
 }
 /* Position each handle */
-#layout-grid.editing .resize-handle.top-left     { top: 0;    left: 0; cursor: nwse-resize !important; ; }
-#layout-grid.editing .resize-handle.top-right    { top: 0;    right: 0; cursor: nesw-resize !important; ; }
-#layout-grid.editing .resize-handle.bottom-left { bottom: 0; left: 0; cursor: nesw-resize !important; ; }
-#layout-grid.editing .resize-handle.bottom-right { bottom: 0; right: 0; cursor: nwse-resize  !important; ; }
+#layout-grid.editing .resize-handle.top-left { top: 0; left: 0; cursor: nwse-resize !important; }
+#layout-grid.editing .resize-handle.top-right { top: 0; right: 0; cursor: nesw-resize !important; }
+#layout-grid.editing .resize-handle.bottom-left { bottom: 0; left: 0; cursor: nesw-resize !important; }
+#layout-grid.editing .resize-handle.bottom-right { bottom: 0; right: 0; cursor: nwse-resize !important; }
 
 /* Disable clicks on inner content, but keep handles active */
 #layout-grid.editing .draggable-field > *:not(.resize-handle):not(.ui-resizable-handle) {
