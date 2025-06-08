@@ -72,6 +72,7 @@ def inject_field_schema():
         'field_schema': load_field_schema(),
         'update_foreign_field_options': update_foreign_field_options,
         'nav_cards': CARD_INFO,
+        'base_tables': BASE_TABLES,
     }
 
 @app.route("/")
