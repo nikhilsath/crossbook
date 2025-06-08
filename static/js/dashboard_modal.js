@@ -48,16 +48,13 @@ function initTableSelect() {
   if (!container || !toggleBtn || !dropdown) return;
 
   const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
-  let selectedColumns = new Set();
+  let selectedColumn = null;
 
   function refreshColumnTags() {
     if (!columnContainer || !columnDropdown) return;
     columnContainer.innerHTML = '';
-    Array.from(columnDropdown.querySelectorAll('input[type="checkbox"]')).forEach(cb => {
-      if (cb.checked) selectedColumns.add(cb.value); else selectedColumns.delete(cb.value);
-    });
-    selectedColumns.forEach(val => {
-      const [table, field] = val.split(':');
+    if (selectedColumn) {
+      const [table, field] = selectedColumn.split(':');
       const span = document.createElement('span');
       span.className = 'inline-flex items-center bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full';
       span.innerHTML = `<strong>${table}</strong>: ${field}`;
@@ -66,14 +63,14 @@ function initTableSelect() {
       btn.className = 'ml-1 text-blue-500 hover:text-red-500';
       btn.textContent = '×';
       btn.addEventListener('click', () => {
-        const cb = columnDropdown.querySelector(`input[value="${val}"]`);
+        const cb = columnDropdown.querySelector(`input[value="${selectedColumn}"]`);
         if (cb) cb.checked = false;
-        selectedColumns.delete(val);
+        selectedColumn = null;
         refreshColumnTags();
       });
       span.appendChild(btn);
       columnContainer.appendChild(span);
-    });
+    }
   }
 
   function updateColumnOptions() {
@@ -83,7 +80,7 @@ function initTableSelect() {
 
     columnDropdown.innerHTML = '';
     if (tables.length === 0) {
-      selectedColumns.clear();
+      selectedColumn = null;
       refreshColumnTags();
       return;
     }
@@ -106,11 +103,12 @@ function initTableSelect() {
         const label = document.createElement('label');
         label.className = 'flex items-center space-x-2';
         const input = document.createElement('input');
-        input.type = 'checkbox';
+        input.type = 'radio';
+        input.name = 'columnSelect';
         input.value = val;
         input.className = 'rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500';
-        if (selectedColumns.has(val)) input.checked = true;
-        input.addEventListener('change', refreshColumnTags);
+        if (selectedColumn === val) input.checked = true;
+        input.addEventListener('change', () => { selectedColumn = val; refreshColumnTags(); });
         const span = document.createElement('span');
         span.className = 'text-sm';
         span.innerHTML = `<strong>${table}</strong>: ${field}`;
@@ -120,7 +118,7 @@ function initTableSelect() {
       });
     });
 
-    selectedColumns.forEach(val => { if (!valid.has(val)) selectedColumns.delete(val); });
+    if (!valid.has(selectedColumn)) selectedColumn = null;
     refreshColumnTags();
   }
 
