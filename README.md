@@ -131,7 +131,7 @@ This is the core of the Flask application. It defines the web routes, handles da
 
 - **Flask App Initialization:** The Flask app is created with `static_url_path='/static'` so that files in the `static/` directory are served at the `/static` URL path.
 - **`DB_PATH`:** Path to the SQLite database file, set to `data/crossbook.db`. (This is currently hardcoded; the database must reside at this path relative to the app.)
-- **`BASE_TABLES`:** Derived from the `config_base_tables` table via `load_base_tables()`. It contains all entity table names except the special `dashboard` entry and is used to validate route parameters.
+- **`BASE_TABLES`:** Derived from the `config_base_tables` table via `load_base_tables()`. It contains all entity table names and is used to validate route parameters.
 - **`FIELD_SCHEMA`:** A global dictionary that will hold the schema definition for fields of each table. It’s populated at startup by reading the `field_schema` table from the database. The structure is: `FIELD_SCHEMA = { table_name: { field_name: field_type, ... }, ... }`. This lets the templates and logic know how to treat each field (e.g., as text, number, boolean, etc., and whether to render it or hide it).
 - **`field_options`:** A field_options column in the field_schema table contains a JSON-encoded list of options for select fields (e.g., ["Elf", "Human"]).
 - These options are not loaded into FIELD_SCHEMA.
@@ -253,7 +253,7 @@ The Flask Jinja2 templates define the structure of the HTML pages. The templates
 
 **Purpose:** Home page, providing a quick entry point to each section of the application.
 
-**Content:** The index extends `base.html` and renders a grid of cards from the `config_base_tables` table. Each card specifies a `display_name`, `description`, and destination link (`/dashboard` or `/<table>`). New rows added to this table automatically appear on the home page.
+**Content:** The index extends `base.html` and renders a grid of cards. A static dashboard card links to `/dashboard`, followed by cards loaded from the `config_base_tables` table. Each table card specifies a `display_name`, `description`, and links to `/<table>`. New rows added to this table automatically appear on the home page.
 
 #### 📄 **`list_view.html`**
 

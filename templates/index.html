@@ -9,8 +9,12 @@
 {% block content %}
 <h1 class="text-4xl font-bold text-center mb-10">Load the Glass Cannon</h1>
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+  <a href="/dashboard" class="bg-white rounded-xl shadow-md p-6 hover:bg-gray-50 transition">
+    <h2 class="text-2xl font-bold mb-2">Dashboard</h2>
+    <p class="text-gray-600">View overall summary and stats</p>
+  </a>
   {% for card in cards %}
-  <a href="{{ '/dashboard' if card.table_name == 'dashboard' else '/' + card.table_name }}"
+  <a href="/{{ card.table_name }}"
      class="bg-white rounded-xl shadow-md p-6 hover:bg-gray-50 transition">
     <h2 class="text-2xl font-bold mb-2">{{ card.display_name }}</h2>
     <p class="text-gray-600">{{ card.description }}</p>
