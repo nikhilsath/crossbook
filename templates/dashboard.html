@@ -12,9 +12,32 @@
 
 <!-- Dashboard Add Modal -->
 <div id="dashboardModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden flex justify-center items-center z-50">
-  <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full text-center">
-    <p class="mb-4">Add dashboard feature coming soon.</p>
-    <button onclick="closeDashboardModal()" class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Close</button>
+  <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full">
+    <div class="mb-4">
+      <ul class="flex border-b border-gray-200">
+        <li class="-mb-px mr-1">
+          <button id="tab-value" class="bg-white inline-block py-2 px-4 font-semibold border-b-2 border-blue-600">Value</button>
+        </li>
+        <li class="-mb-px mr-1">
+          <button id="tab-table" class="bg-white inline-block py-2 px-4 font-semibold text-gray-600 hover:text-gray-800 border-b-2 border-transparent">Table</button>
+        </li>
+        <li class="-mb-px">
+          <button id="tab-chart" class="bg-white inline-block py-2 px-4 font-semibold text-gray-600 hover:text-gray-800 border-b-2 border-transparent">Chart</button>
+        </li>
+      </ul>
+    </div>
+    <div id="pane-value">
+      <p class="mb-4">Value tab content coming soon.</p>
+    </div>
+    <div id="pane-table" class="hidden">
+      <p class="mb-4">Table tab content coming soon.</p>
+    </div>
+    <div id="pane-chart" class="hidden">
+      <p class="mb-4">Chart tab content coming soon.</p>
+    </div>
+    <div class="text-center">
+      <button onclick="closeDashboardModal()" class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Close</button>
+    </div>
   </div>
 </div>
 
