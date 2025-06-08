@@ -44,7 +44,7 @@ def get_all_records(table, search=None, filters=None, ops=None):
             all_fields = get_field_schema()[table]
             search_fields = [
                 field for field, meta in all_fields.items()
-                if meta['type'] in ('text', 'textarea', 'select', 'single select', 'multi select')
+                if meta['type'] in ('text', 'textarea', 'select', 'multi_select')
             ]
             if search_fields:
                 validate_fields(table, search_fields)
