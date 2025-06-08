@@ -308,16 +308,8 @@ def create_base_table(table_name: str, description: str) -> bool:
     finally:
         conn.close()
 
-    # Refresh in-memory caches
+    # Refresh the in-memory FIELD_SCHEMA cache
     global FIELD_SCHEMA
     FIELD_SCHEMA = load_field_schema()
-    try:
-        import main
-
-        with sqlite3.connect(DB_PATH) as c:
-            main.CARD_INFO = load_card_info(c)
-            main.BASE_TABLES = load_base_tables(c)
-    except Exception as exc:
-        logger.exception("Failed to refresh global caches: %s", exc)
 
     return True
