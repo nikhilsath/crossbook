@@ -1,4 +1,4 @@
-import Quill from 'https://unpkg.com/quill@2.0.3/dist/quill.js';
+import Quill from 'https://unpkg.com/quill@2.0.3/dist/quill.js?module';
 
 
 export function initQuillEditor(field, statusId) {
