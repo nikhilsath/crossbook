@@ -100,11 +100,14 @@
         {% endfor %}
       </tbody>
     </table>
-  </div>
-  {% else %}
-    <p class="text-gray-600">No records found.</p>
-  {% endif %}
 </div>
+{% else %}
+  <p class="text-gray-600">No records found.</p>
+{% endif %}
+</div>
+
+{% include "bulk_edit_modal.html" %}
+<script type="module" src="{{ url_for('static', filename='js/bulk_edit_modal.js') }}"></script>
 
 <!-- Include column visibility JS -->
 <script src="{{ url_for('static', filename='js/column_visibility.js') }}"></script>
