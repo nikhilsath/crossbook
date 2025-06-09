@@ -27,14 +27,14 @@ function makeEditable(displayEl) {
 
   const finish = () => {
     submitFieldAjax(form);
-    const newDiv = document.createElement('div');
-    newDiv.className = 'autosize-text';
-    newDiv.dataset.field = displayEl.dataset.field;
-    newDiv.dataset.recordId = displayEl.dataset.recordId;
-    newDiv.dataset.updateUrl = displayEl.dataset.updateUrl;
-    newDiv.textContent = input.value;
-    form.replaceWith(newDiv);
-    attach(newDiv);
+    const newEl = document.createElement(displayEl.tagName.toLowerCase());
+    newEl.className = displayEl.className;
+    newEl.dataset.field = displayEl.dataset.field;
+    newEl.dataset.recordId = displayEl.dataset.recordId;
+    newEl.dataset.updateUrl = displayEl.dataset.updateUrl;
+    newEl.textContent = input.value;
+    form.replaceWith(newEl);
+    attach(newEl);
   };
 
   input.addEventListener('blur', finish, { once: true });

@@ -11,8 +11,14 @@
   <!-- Left: Main Details -->
   <div class="flex-1">
     {% set display_value = record.get(table) or record.get("title") or record.get("name") or "Untitled" %}
-    <h1 class="text-2xl font-bold mb-4">
-      {{ display_value }}
+    {% set title_field = (table if record.get(table) is not none else ( 'title' if record.get('title') is not none else 'name' )) %}
+    <h1 class="font-bold text-2xl mb-4 flex items-center space-x-2">
+      <span class="autosize-text" style="width:auto; display:inline-flex;"
+            data-field="{{ title_field }}"
+            data-record-id="{{ record.id }}"
+            data-update-url="{{ url_for('update_field', table=table, record_id=record.id) }}">
+        {{ display_value }}
+      </span>
       <span class="text-gray-500 text-base">(ID {{ record.id }})</span>
     </h1>
 
