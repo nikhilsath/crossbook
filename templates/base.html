@@ -28,7 +28,6 @@
           <form method="post" action="/{{ current_table }}/{{ current_id }}/delete" onsubmit="return confirm('Are you sure?')">
             <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Delete</button>
           </form>
-          <a href="/{{ current_table }}/{{ current_id }}/bulk-edit" class="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600">Bulk Edit</a>
         {% endif %}
       {% endif %}
       {% block nav_buttons %}{% endblock %}
