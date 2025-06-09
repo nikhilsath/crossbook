@@ -156,6 +156,7 @@ function enableVanillaDrag() {
 
   layoutGrid.addEventListener('mousedown', e => {
     if (e.target.classList.contains('resize-handle')) return;
+    if (e.target.closest('input, select, textarea, button, label')) return;
     fieldEl = e.target.closest('.draggable-field');
     field = fieldEl?.dataset.field;
     if (!fieldEl || !field) return;

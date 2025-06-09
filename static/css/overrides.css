@@ -77,7 +77,8 @@ input[type=number] {
 
 /* Disable clicks on inner content, but keep handles active */
 #layout-grid.editing .draggable-field > *:not(.resize-handle):not(.ui-resizable-handle) {
-  pointer-events: none;
+  /* allow interaction with form controls while editing */
+  pointer-events: auto;
 }
 
 #layout-grid.editing .ui-resizable-handle,
