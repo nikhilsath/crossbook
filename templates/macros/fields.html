@@ -46,7 +46,7 @@
         </div>
 
         <!-- Toggle & search -->
-        <button type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-left focus:outline-none focus:ring-2 focus:ring-blue-500" onclick="this.nextElementSibling.classList.toggle('hidden')">
+        <button type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-left focus:outline-none focus:ring-2 focus:ring-blue-500" onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('hidden')">
           Choose Tags
         </button>
 
@@ -94,7 +94,7 @@
         </div>
 
         <!-- Toggle & search -->
-        <button type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-left focus:outline-none focus:ring-2 focus:ring-blue-500" onclick="this.nextElementSibling.classList.toggle('hidden')">
+        <button type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-left focus:outline-none focus:ring-2 focus:ring-blue-500" onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('hidden')">
           Choose Tags
         </button>
 
