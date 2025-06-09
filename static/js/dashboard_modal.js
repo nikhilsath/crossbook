@@ -41,102 +41,31 @@ function initDashboardTabs() {
 }
 
 function initTableSelect() {
-  const columnContainer = document.getElementById('selectedColumns');
-  const columnSelectDashboardToggle = document.getElementById('columnSelectDashboardToggle');
-  const columnSelectDashboardOptions = document.getElementById('columnSelectDashboardOptions');
-  if (!columnContainer || !columnSelectDashboardToggle || !columnSelectDashboardOptions) return;
+  const selectEl = document.getElementById('columnSelectDashboard');
+  if (!selectEl) return;
 
-  let selectedColumn = null;
-
-  function refreshColumnTags() {
-    if (!columnContainer || !columnSelectDashboardOptions) return;
-    columnContainer.innerHTML = '';
-    if (selectedColumn) {
-      const [table, field] = selectedColumn.split(':');
-      const span = document.createElement('span');
-      span.className = 'inline-flex items-center bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full';
-      span.innerHTML = `<strong>${table}</strong>: ${field}`;
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'ml-1 text-blue-500 hover:text-red-500';
-      btn.textContent = '×';
-      btn.addEventListener('click', () => {
-        const cb = columnSelectDashboardOptions.querySelector(`input[value="${selectedColumn}"]`);
-        if (cb) cb.checked = false;
-        selectedColumn = null;
-        refreshColumnTags();
-      });
-      span.appendChild(btn);
-      columnContainer.appendChild(span);
-    }
-  }
-
-  function populateColumnOptions() {
-    columnSelectDashboardOptions.innerHTML = '';
-    const search = document.createElement('input');
-    search.type = 'text';
-    search.placeholder = 'Search...';
-    search.className = 'w-full px-2 py-1 border rounded text-sm mb-2';
-    search.addEventListener('input', function() {
-      const v = this.value.toLowerCase();
-      [...columnSelectDashboardOptions.querySelectorAll('label')].forEach(l => l.classList.toggle('hidden', !l.textContent.toLowerCase().includes(v)));
+  selectEl.innerHTML = '<option value="" disabled selected>Select Field</option>';
+  Object.keys(FIELD_SCHEMA).forEach(table => {
+    const fields = FIELD_SCHEMA[table] ? Object.keys(FIELD_SCHEMA[table]) : [];
+    fields.forEach(field => {
+      const type = FIELD_SCHEMA[table][field] ? FIELD_SCHEMA[table][field].type : '';
+      const opt = document.createElement('option');
+      opt.value = `${table}:${field}`;
+      opt.textContent = `${table}: ${field} (${type})`;
+      selectEl.appendChild(opt);
     });
-    columnSelectDashboardOptions.appendChild(search);
-
-    const valid = new Set();
-    Object.keys(FIELD_SCHEMA).forEach(table => {
-      const fields = FIELD_SCHEMA[table] ? Object.keys(FIELD_SCHEMA[table]) : [];
-      fields.forEach(field => {
-        const val = `${table}:${field}`;
-        valid.add(val);
-        const label = document.createElement('label');
-        label.className = 'flex items-center space-x-2';
-        const input = document.createElement('input');
-        input.type = 'radio';
-        input.name = 'columnSelect';
-        input.value = val;
-        input.className = 'rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500';
-        if (selectedColumn === val) input.checked = true;
-        input.addEventListener('change', () => { selectedColumn = val; refreshColumnTags(); });
-        const span = document.createElement('span');
-        span.className = 'text-sm';
-        const type = FIELD_SCHEMA[table] && FIELD_SCHEMA[table][field] ? FIELD_SCHEMA[table][field].type : '';
-        span.innerHTML = `<strong>${table}</strong>: ${field} <span class="text-blue-600 text-xs">(${type})</span>`;
-        label.appendChild(input);
-        label.appendChild(span);
-        columnSelectDashboardOptions.appendChild(label);
-      });
-    });
-
-    if (!valid.has(selectedColumn)) selectedColumn = null;
-    refreshColumnTags();
-  }
-
-  if (columnSelectDashboardToggle && columnSelectDashboardOptions) {
-    columnSelectDashboardToggle.addEventListener('click', e => {
-      e.stopPropagation();
-      columnSelectDashboardOptions.classList.toggle('hidden');
-    });
-    document.addEventListener('click', e => {
-      if (!columnSelectDashboardOptions.contains(e.target) && e.target !== columnSelectDashboardToggle) {
-        columnSelectDashboardOptions.classList.add('hidden');
-      }
-    });
-    columnSelectDashboardOptions.addEventListener('click', e => e.stopPropagation());
-  }
-
-  populateColumnOptions();
+  });
 }
 
 function initOperationSelect() {
   const opSelect = document.getElementById('dashboardOperation');
-  const columnToggle = document.getElementById('columnSelectDashboardToggle');
+  const columnSelect = document.getElementById('columnSelectDashboard');
   if (!opSelect) return;
   opSelect.addEventListener('change', () => {
     const checked = opSelect.querySelector('input[name="dashboardOperation"]:checked');
     selectedOperation = checked ? checked.value : null;
-    if (columnToggle && selectedOperation) {
-      columnToggle.classList.remove('hidden');
+    if (columnSelect && selectedOperation) {
+      columnSelect.classList.remove('hidden');
     }
   });
 }
