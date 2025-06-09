@@ -89,6 +89,9 @@ function resetLayout() {
     console.debug(`[layout] resetLayout field "${field}": col ${colStart}→span ${widthUnits}, row ${rowStart}→span ${rowSpan}em → cache:`, layoutCache[field]);
   });
   console.groupEnd();
+  if (window.initAutosizeText) {
+    window.initAutosizeText();
+  }
 }
 
 function handleSaveLayout() {
@@ -125,6 +128,9 @@ function handleSaveLayout() {
       saveLayoutBtn.classList.add('hidden');
       console.info("[layout] saveLayout end");
       console.groupEnd();
+      if (window.initAutosizeText) {
+        window.initAutosizeText();
+      }
     })
     .catch(err => { console.error("[layout] saveLayout error", err); console.groupEnd(); });
 }
@@ -233,6 +239,9 @@ function enableVanillaDrag() {
 
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
+    if (window.initAutosizeText) {
+      window.initAutosizeText();
+    }
   }
 }
 
@@ -328,6 +337,9 @@ function enableVanillaResize() {
       revertPosition(fieldEl);
     } else {
       layoutCache[field] = newRect;
+    }
+    if (window.initAutosizeText) {
+      window.initAutosizeText();
     }
   }
 }

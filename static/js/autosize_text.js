@@ -4,6 +4,9 @@ export function fitText(el) {
     return;
   }
 
+  // reset font size before fitting so enlargements after resize work
+  el.style.fontSize = '';
+
   const style = window.getComputedStyle(el);
   let fontSize = parseFloat(style.fontSize);
   if (!fontSize) return;
