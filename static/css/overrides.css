@@ -108,7 +108,9 @@ input[type=number] {
 
 .autosize-text {
   width: 100%;
-  height: calc(100% - 1.5em); /* leave room for field label */
+  /* allow font size to depend on container width */
+  container-type: inline-size;
+  font-size: clamp(0.75rem, 10cqw, 1.5rem);
   display: flex;
   align-items: center;
   justify-content: center;
