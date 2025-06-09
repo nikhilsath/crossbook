@@ -244,6 +244,12 @@ function initDashboardModal() {
 }
 
 document.addEventListener('DOMContentLoaded', initDashboardModal);
+// If the script loads after DOMContentLoaded has already fired (e.g. when
+// included at the end of the page), the event above won't trigger. Call the
+// initializer immediately in that case so the modal tabs are interactive.
+if (document.readyState !== 'loading') {
+  initDashboardModal();
+}
 
 window.openDashboardModal = openDashboardModal;
 window.closeDashboardModal = closeDashboardModal;
