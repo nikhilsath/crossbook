@@ -7,17 +7,18 @@ input[type=number]::-webkit-inner-spin-button {
 input[type=number] {
   -moz-appearance: textfield;
 }
-/* 1) By default, strip away everything */
+/* 1) By default, strip away visual chrome but keep a small inner padding
+   so text/input content does not touch the edges of the draggable card. */
 #layout-grid .draggable-field {
   border: none !important;
   box-shadow: none !important;
   background-color: transparent !important;
-  padding: 0 !important;
+  padding: 0.25rem !important; /* tiny barrier in all modes */
 }
 
 /* 2) In edit mode, reset padding only */
 #layout-grid.editing .draggable-field {
-  padding: 0;
+  padding: 0.25rem;
 }
 
 /* 3) In edit mode, show the outlines/shadows again */
