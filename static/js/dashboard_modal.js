@@ -40,11 +40,11 @@ function initDashboardTabs() {
 
 function initTableSelect() {
   const container = document.getElementById('selectedTables');
-  const toggleBtn = document.getElementById('tableSelectToggle');
-  const dropdown = document.getElementById('tableSelectOptions');
+  const toggleBtn = document.getElementById('chooseTablesToggle');
+  const dropdown = document.getElementById('chooseTablesOptions');
   const columnContainer = document.getElementById('selectedColumns');
-  const columnToggleBtn = document.getElementById('columnSelectToggle');
-  const columnDropdown = document.getElementById('columnSelectOptions');
+  const columnToggleBtn = document.getElementById('chooseFirstColumnToggle');
+  const columnDropdown = document.getElementById('chooseFirstColumnOptions');
   const divider = document.getElementById('columnDivider');
   if (!container || !toggleBtn || !dropdown) return;
 
@@ -118,7 +118,8 @@ function initTableSelect() {
         input.addEventListener('change', () => { selectedColumn = val; refreshColumnTags(); });
         const span = document.createElement('span');
         span.className = 'text-sm';
-        span.innerHTML = `<strong>${table}</strong>: ${field}`;
+        const type = FIELD_SCHEMA[table] && FIELD_SCHEMA[table][field] ? FIELD_SCHEMA[table][field].type : '';
+        span.innerHTML = `<strong>${table}</strong>: ${field} <span class="text-blue-600 text-xs">(${type})</span>`;
         label.appendChild(input);
         label.appendChild(span);
         columnDropdown.appendChild(label);
