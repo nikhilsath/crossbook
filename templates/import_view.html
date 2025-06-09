@@ -9,7 +9,7 @@
     <div class="flex items-center space-x-4">
       <form method="GET" action="/import" class="flex items-center space-x-2">
         <label for="table" class="font-medium mr-2">Select Base Table</label>
-        <select name="table" id="table" class="border rounded px-3 py-2" onchange="this.form.submit()">
+        <select name="table" id="table" class="block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200" onchange="this.form.submit()">
             <option value="" disabled {% if not selected_table %}selected{% endif %}>Choose a table</option>
             {% for table in schema.keys() %}
                 <option value="{{ table }}" {% if selected_table == table %}selected{% endif %}>{{ table|capitalize }}</option>
@@ -45,7 +45,7 @@
               <div class="flex justify-between items-center">
                 <strong>{{ header }}</strong>
                 <div id="select-wrapper-{{ header }}" class="ml-auto">
-                  <select name="match_{{ header }}" data-header="{{ header }}" data-table="{{ selected_table }}" class="border rounded px-2 py-1 text-sm">
+                  <select name="match_{{ header }}" data-header="{{ header }}" data-table="{{ selected_table }}" class="block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200">
                     <option value="">Unmatched</option>
                     {% for field, data in field_status.items() %}
                       {% if not data.matched %}
@@ -78,7 +78,7 @@
   </div>
   {% endif %}
   <template id="dropdown-template">
-    <select name="match___HEADER__" data-header="__HEADER__" class="border rounded px-2 py-1 text-sm" data-table="{{ selected_table }}">
+    <select name="match___HEADER__" data-header="__HEADER__" class="block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200" data-table="{{ selected_table }}">
       <option value="">Unmatched</option>
       {% for field, data in field_status.items() %}
         {% if not data.matched %}
