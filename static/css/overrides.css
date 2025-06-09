@@ -79,6 +79,10 @@ input[type=number] {
 #layout-grid.editing .draggable-field > *:not(.resize-handle):not(.ui-resizable-handle) {
   pointer-events: none;
 }
+/* Allow select dropdowns to be used while editing layout */
+#layout-grid.editing .draggable-field select {
+  pointer-events: auto;
+}
 
 #layout-grid.editing .ui-resizable-handle,
 #layout-grid.editing .draggable-field {
