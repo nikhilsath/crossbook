@@ -29,6 +29,17 @@
     <div id="pane-value">
       <form id="dashboardTableForm" class="relative w-full" onsubmit="event.preventDefault();">
 
+        <div id="dashboardOperation" class="flex gap-2 mb-4">
+          {% for op in ['Sum', 'Count', 'Math'] %}
+          <label class="flex-1 cursor-pointer">
+            <input type="radio" name="dashboardOperation" value="{{ op|lower }}" class="sr-only peer">
+            <div class="p-2 border rounded text-center peer-checked:bg-blue-500 peer-checked:text-white">
+              {{ op }}
+            </div>
+          </label>
+          {% endfor %}
+        </div>
+
         <div id="selectedColumns" class="flex flex-wrap gap-1 mb-2"></div>
         <button id="columnSelectDashboardToggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-left focus:outline-none focus:ring-2 focus:ring-blue-500 hidden">Select Field</button>
         <div id="columnSelectDashboardOptions" class="absolute z-10 mt-1 w-full bg-white border rounded shadow hidden max-h-64 overflow-y-auto p-2 space-y-1"></div>

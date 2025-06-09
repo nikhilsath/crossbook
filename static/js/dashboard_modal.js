@@ -6,6 +6,8 @@ export function closeDashboardModal() {
   document.getElementById('dashboardModal').classList.add('hidden');
 }
 
+let selectedOperation = null;
+
 function setActiveTab(name) {
   const tabs = ['value', 'table', 'chart'];
   const colorMap = {
@@ -123,12 +125,25 @@ function initTableSelect() {
     columnSelectDashboardOptions.addEventListener('click', e => e.stopPropagation());
   }
 
-  columnSelectDashboardToggle.classList.remove('hidden');
   populateColumnOptions();
+}
+
+function initOperationSelect() {
+  const opSelect = document.getElementById('dashboardOperation');
+  const columnToggle = document.getElementById('columnSelectDashboardToggle');
+  if (!opSelect) return;
+  opSelect.addEventListener('change', () => {
+    const checked = opSelect.querySelector('input[name="dashboardOperation"]:checked');
+    selectedOperation = checked ? checked.value : null;
+    if (columnToggle && selectedOperation) {
+      columnToggle.classList.remove('hidden');
+    }
+  });
 }
 
 function initDashboardModal() {
   initDashboardTabs();
+  initOperationSelect();
   initTableSelect();
 }
 
