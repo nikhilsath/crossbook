@@ -1,9 +1,12 @@
 export function fitText(el) {
+  // Skip shrinking when layout grid is currently being edited
+  if (document.querySelector('#layout-grid.editing')) {
+    return;
+  }
+
   const style = window.getComputedStyle(el);
   let fontSize = parseFloat(style.fontSize);
   if (!fontSize) return;
-  // Skip shrinking when layout grid is in editing mode
-  if (document.querySelector('#layout-grid.editing')) return;
   while ((el.scrollWidth > el.clientWidth || el.scrollHeight > el.clientHeight) && fontSize > 4) {
     fontSize -= 1;
     el.style.fontSize = fontSize + 'px';
