@@ -1,8 +1,7 @@
-<div id="bulkEditModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden flex justify-center items-center z-50">
-  <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full">
+<div id="bulkEditModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden flex justify-center items-center z-50"
+     onclick="if(event.target.id === 'bulkEditModal') closeBulkEditModal()">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full relative">
+    <button type="button" onclick="closeBulkEditModal()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-xl">&times;</button>
     <h3 class="text-lg font-bold mb-4">Bulk Edit {{ table }}</h3>
-    <div class="text-center">
-      <button type="button" onclick="closeBulkEditModal()" class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Close</button>
-    </div>
   </div>
 </div>

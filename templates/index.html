@@ -27,8 +27,10 @@
 </div>
 
 <!-- Add Table Modal -->
-<div id="addTableModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden flex justify-center items-center z-50">
-  <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full">
+<div id="addTableModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden flex justify-center items-center z-50"
+     onclick="if(event.target.id === 'addTableModal') closeAddTableModal()">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full relative">
+    <button type="button" onclick="closeAddTableModal()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-xl">&times;</button>
     <h3 class="text-lg font-bold mb-4">Add new base table</h3>
     <div id="tableError" class="text-red-600 hidden"></div>
     <form onsubmit="submitNewTable(event)" class="space-y-4">
@@ -40,8 +42,7 @@
         <label for="tableDescription" class="block mb-1">Description</label>
         <textarea id="tableDescription" class="w-full border rounded p-2"></textarea>
       </div>
-      <div class="flex justify-end space-x-2">
-        <button type="button" onclick="closeAddTableModal()" class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Cancel</button>
+      <div class="flex justify-end">
         <button type="submit" class="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600">Add</button>
       </div>
     </form>
