@@ -41,6 +41,20 @@
           {% endfor %}
         </div>
 
+        <div id="selectedTables" class="flex flex-wrap gap-1 mb-2"></div>
+        <button id="chooseTablesToggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-left focus:outline-none focus:ring-2 focus:ring-blue-500">Choose Tables</button>
+        <div id="chooseTablesOptions" class="absolute z-10 mt-1 w-full bg-white border rounded shadow hidden max-h-64 overflow-y-auto p-2 space-y-1">
+          <input type="text" placeholder="Search..." class="w-full px-2 py-1 border rounded text-sm mb-2" oninput="const v=this.value.toLowerCase();[...this.parentElement.querySelectorAll('label')].forEach(l=>l.classList.toggle('hidden',!l.textContent.toLowerCase().includes(v)))">
+          {% for table in base_tables %}
+          <label class="flex items-center space-x-2">
+            <input type="checkbox" value="{{ table }}" class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500">
+            <span class="text-sm">{{ table }}</span>
+          </label>
+          {% endfor %}
+        </div>
+
+        <hr id="columnDivider" class="my-3 border-t-2 border-blue-600 hidden">
+
         <div id="selectedColumns" class="flex flex-wrap gap-1 mb-2"></div>
         <button id="columnSelectDashboardToggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-left focus:outline-none focus:ring-2 focus:ring-blue-500 hidden">Select Field</button>
         <div id="columnSelectDashboardOptions" class="absolute z-10 mt-1 w-full bg-white border rounded shadow hidden max-h-64 overflow-y-auto p-2 space-y-1"></div>
