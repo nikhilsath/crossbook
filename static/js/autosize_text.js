@@ -1,20 +1,4 @@
-export function fitText(el) {
-  // Skip shrinking when layout grid is currently being edited
-  if (document.querySelector('#layout-grid.editing')) {
-    return;
-  }
-
-  // reset font size before fitting so enlargements after resize work
-  el.style.fontSize = '';
-
-  const style = window.getComputedStyle(el);
-  let fontSize = parseFloat(style.fontSize);
-  if (!fontSize) return;
-  while ((el.scrollWidth > el.clientWidth || el.scrollHeight > el.clientHeight) && fontSize > 4) {
-    fontSize -= 1;
-    el.style.fontSize = fontSize + 'px';
-  }
-}
+// Inline editing for text fields
 
 function makeEditable(displayEl) {
   const value = displayEl.textContent.trim();
@@ -63,7 +47,6 @@ function makeEditable(displayEl) {
 }
 
 export function attach(el) {
-  fitText(el);
   el.addEventListener('click', () => makeEditable(el));
 }
 
