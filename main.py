@@ -82,6 +82,12 @@ def dashboard():
     """Render the dashboard page."""
     return render_template("dashboard.html")
 
+
+@app.route("/admin.html")
+def admin_page():
+    """Simple admin landing page"""
+    return render_template("admin.html")
+
 @app.route("/<table>")
 def list_view(table):
     if table not in BASE_TABLES:
