@@ -30,7 +30,7 @@ function bindEventHandlers() {
   const saveLayoutBtn  = document.getElementById('save-layout');
   const resetLayoutBtn = document.getElementById('reset-layout');
   saveLayoutBtn.addEventListener('click', handleSaveLayout);
-  resetLayoutBtn.addEventListener('click', reset_layout);
+  resetLayoutBtn.addEventListener('click', resetLayout);
   console.debug("[layout] bindEventHandlers registered save+reset click");
 }
 
@@ -71,7 +71,7 @@ function revertPosition(el) {
   console.info("[layout] revertPosition called for", el.dataset.field, "previous rect=", prev);
 }
 
-function reset_layout() {
+function resetLayout() {
   console.groupCollapsed("[layout] resetLayout start");
   let curRow = 1;
   Object.entries(layoutCache).forEach(([field, rect]) => {
