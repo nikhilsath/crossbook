@@ -8,9 +8,7 @@ export function closeDashboardModal() {
 
 let selectedOperation = null;
 let selectedColumn = null;
-let selectedTables = [];
 let columnContainer, columnToggleBtn, columnDropdown;
-let tableContainer, tableToggleBtn, tableDropdown, tableDivider;
 
 function setActiveTab(name) {
   const tabs = ['value', 'table', 'chart'];
@@ -74,71 +72,17 @@ function refreshColumnTags() {
   });
 }
 
-function refreshTableTags() {
-  if (!tableContainer) return;
-  tableContainer.innerHTML = '';
-  selectedTables = [];
-  tableDropdown.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-    if (cb.checked) {
-      selectedTables.push(cb.value);
-      const span = document.createElement('span');
-      span.className = 'inline-flex items-center bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full';
-      span.textContent = cb.value;
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'ml-1 text-blue-500 hover:text-red-500';
-      btn.textContent = '×';
-      btn.addEventListener('click', () => {
-        cb.checked = false;
-        refreshTableTags();
-      });
-      span.appendChild(btn);
-      tableContainer.appendChild(span);
-    }
-  });
-  updateColumnOptions();
-}
-
-function initTableSelect() {
-  tableContainer = document.getElementById('selectedTables');
-  tableToggleBtn = document.getElementById('chooseTablesToggle');
-  tableDropdown = document.getElementById('chooseTablesOptions');
-  tableDivider = document.getElementById('columnDivider');
-  if (!tableContainer || !tableToggleBtn || !tableDropdown) return;
-
-  tableToggleBtn.addEventListener('click', e => {
-    e.stopPropagation();
-    tableDropdown.classList.toggle('hidden');
-  });
-  document.addEventListener('click', e => {
-    if (!tableDropdown.contains(e.target) && e.target !== tableToggleBtn) {
-      tableDropdown.classList.add('hidden');
-    }
-  });
-  tableDropdown.addEventListener('click', e => e.stopPropagation());
-
-  tableDropdown.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.addEventListener('change', () => {
-    refreshTableTags();
-    if (tableDivider) tableDivider.classList.toggle('hidden', selectedTables.length === 0);
-  }));
-
-  refreshTableTags();
-  if (tableDivider) tableDivider.classList.add('hidden');
-}
 
 function updateColumnOptions() {
   if (!columnDropdown || !columnToggleBtn) return;
 
-  if (!selectedOperation || selectedTables.length === 0) {
+  if (!selectedOperation) {
     columnToggleBtn.classList.add('hidden');
     columnDropdown.classList.add('hidden');
-    if (tableDivider) tableDivider.classList.add('hidden');
     selectedColumn = selectedOperation === 'math' ? [] : null;
     refreshColumnTags();
     return;
   }
-
-  if (tableDivider) tableDivider.classList.remove('hidden');
 
   columnToggleBtn.classList.remove('hidden');
   columnDropdown.innerHTML = '';
@@ -162,7 +106,7 @@ function updateColumnOptions() {
   });
   columnDropdown.appendChild(search);
 
-  selectedTables.forEach(table => {
+  BASE_TABLES.forEach(table => {
     const fields = FIELD_SCHEMA[table] ? Object.keys(FIELD_SCHEMA[table]) : [];
     fields.forEach(field => {
       const val = `${table}:${field}`;
@@ -239,7 +183,6 @@ function initOperationSelect() {
 function initDashboardModal() {
   initDashboardTabs();
   initOperationSelect();
-  initTableSelect();
   initColumnSelect();
 }
 
