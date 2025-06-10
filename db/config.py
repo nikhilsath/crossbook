@@ -22,15 +22,16 @@ def get_logging_config():
 
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT key, value FROM config WHERE key LIKE 'logging.%'")
+
+    cur.execute("SELECT key, value FROM config WHERE section = 'logging'")
     rows = cur.fetchall()
+
     conn.close()
 
     config = {}
-    for full_key, val in rows:
-        # full_key is like 'logging.log_level'; we want 'log_level'
-        subkey = full_key.split('.', 1)[1]
-        config[subkey] = val
+    for key, val in rows:
+        config[key] = val
+
     return config
 
 
