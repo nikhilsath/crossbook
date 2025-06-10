@@ -8,7 +8,7 @@ export function closeDashboardModal() {
 
 let selectedOperation = null;
 let selectedColumn = null;
-let columnContainer, columnToggleBtn, columnDropdown, valueResultEl, titleInputEl, resultRowEl, createBtnEl;
+let columnToggleBtn, columnDropdown, valueResultEl, titleInputEl, resultRowEl, createBtnEl;
 let activeTab = 'value';
 
 function setActiveTab(name) {
@@ -46,33 +46,19 @@ function initDashboardTabs() {
 }
 
 function refreshColumnTags() {
-  if (!columnContainer) return;
-  columnContainer.innerHTML = '';
-  if (!selectedColumn) return;
+  if (!columnToggleBtn) return;
+  if (!selectedColumn || (Array.isArray(selectedColumn) && selectedColumn.length === 0)) {
+    columnToggleBtn.textContent = 'Select Field \u25BE';
+    updateValueResult();
+    return;
+  }
 
   const values = Array.isArray(selectedColumn) ? selectedColumn : [selectedColumn];
-  values.forEach(val => {
+  const labels = values.map(val => {
     const [table, field] = val.split(':');
-    const span = document.createElement('span');
-    span.className = 'inline-flex items-center bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full';
-    span.innerHTML = `<strong>${table}</strong>: ${field}`;
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'ml-1 text-blue-500 hover:text-red-500';
-    btn.textContent = '×';
-    btn.addEventListener('click', () => {
-      const input = columnDropdown.querySelector(`input[value="${val}"]`);
-      if (input) input.checked = false;
-      if (Array.isArray(selectedColumn)) {
-        selectedColumn = selectedColumn.filter(v => v !== val);
-      } else {
-        selectedColumn = null;
-      }
-      refreshColumnTags();
-    });
-    span.appendChild(btn);
-    columnContainer.appendChild(span);
+    return `${table}: ${field}`;
   });
+  columnToggleBtn.textContent = labels.join(', ') + ' \u25BE';
   updateValueResult();
 }
 
@@ -180,10 +166,9 @@ function updateColumnOptions() {
 }
 
 function initColumnSelect() {
-  columnContainer = document.getElementById('selectedColumns');
   columnToggleBtn = document.getElementById('columnSelectDashboardToggle');
   columnDropdown = document.getElementById('columnSelectDashboardOptions');
-  if (!columnContainer || !columnToggleBtn || !columnDropdown) return;
+  if (!columnToggleBtn || !columnDropdown) return;
 
   columnToggleBtn.addEventListener('click', e => {
     e.stopPropagation();
