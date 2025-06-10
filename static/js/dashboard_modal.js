@@ -112,7 +112,7 @@ function updateColumnOptions() {
     const fields = FIELD_SCHEMA[table] ? Object.keys(FIELD_SCHEMA[table]) : [];
     fields.forEach(field => {
       const type = FIELD_SCHEMA[table] && FIELD_SCHEMA[table][field] ? FIELD_SCHEMA[table][field].type : '';
-      if (activeTab === 'value' && type !== 'number') return;
+      if (selectedOperation === 'sum' && type !== 'number') return;
       const val = `${table}:${field}`;
       const label = document.createElement('label');
       label.className = 'flex items-center space-x-2';
