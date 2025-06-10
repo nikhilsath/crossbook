@@ -22,15 +22,25 @@ def get_logging_config():
 
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT key, value FROM config WHERE key LIKE 'logging.%'")
+
+    # Newer databases store logging keys without the "logging." prefix and use
+    # the section column for grouping. Look for those first.
+    cur.execute("SELECT key, value FROM config WHERE section = 'logging'")
     rows = cur.fetchall()
+
+    # Fall back to the old key scheme where each key started with "logging.".
+    if not rows:
+        cur.execute("SELECT key, value FROM config WHERE key LIKE 'logging.%'")
+        rows = cur.fetchall()
+
     conn.close()
 
     config = {}
     for full_key, val in rows:
-        # full_key is like 'logging.log_level'; we want 'log_level'
-        subkey = full_key.split('.', 1)[1]
+        # Older keys may still contain the 'logging.' prefix; strip it if present
+        subkey = full_key.split('.', 1)[-1]
         config[subkey] = val
+
     return config
 
 
