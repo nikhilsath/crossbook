@@ -29,7 +29,13 @@ from db.records import (
 from db.relationships import get_related_records, add_relationship, remove_relationship
 from utils.validation import validation_sorter
 from imports.import_csv import parse_csv
-from db.edit_fields import add_column_to_table, add_field_to_schema, drop_column_from_table, remove_field_from_schema
+from db.edit_fields import (
+    add_column_to_table,
+    add_field_to_schema,
+    drop_column_from_table,
+    remove_field_from_schema,
+)
+from utils.flask_helpers import start_timer, log_request, log_exception
 
 
 app = Flask(__name__, static_url_path='/static')
@@ -47,22 +53,10 @@ werk_logger = logging.getLogger("werkzeug")
 werk_logger.disabled = True
 
 
-
-@app.before_request
-def start_timer():
-    g.start_time = time.time()
-    app.logger.info(f"[REQ] {request.method} {request.path} started")
-
-@app.after_request
-def log_request(response):
-    duration = time.time() - g.get("start_time", time.time())
-    app.logger.info(f"[REQ] {request.method} {request.path} completed in {duration:.3f}s with {response.status_code}")
-    return response
-
-@app.teardown_request
-def log_exception(exc):
-    if exc:
-        app.logger.exception(f"[ERROR] Unhandled exception during {request.method} {request.path}: {exc}")
+# Register request logging helpers
+app.before_request(start_timer)
+app.after_request(log_request)
+app.teardown_request(log_exception)
 
 @app.context_processor
 def inject_field_schema():
