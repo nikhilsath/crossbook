@@ -38,6 +38,7 @@ DB_PATH = os.path.join("data", "crossbook.db")
 conn = get_connection()
 CARD_INFO = load_card_info(conn)
 BASE_TABLES = load_base_tables(conn)
+conn.close()
 
 configure_logging(app)
 
