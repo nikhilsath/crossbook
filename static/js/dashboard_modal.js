@@ -9,8 +9,10 @@ export function closeDashboardModal() {
 let selectedOperation = null;
 let selectedColumn = null;
 let columnContainer, columnToggleBtn, columnDropdown;
+let activeTab = 'value';
 
 function setActiveTab(name) {
+  activeTab = name;
   const tabs = ['value', 'table', 'chart'];
   const colorMap = {
     value: ['border-blue-600', 'text-blue-600'],
@@ -31,6 +33,7 @@ function setActiveTab(name) {
       paneEl.classList.add('hidden');
     }
   });
+  updateColumnOptions();
 }
 
 function initDashboardTabs() {
@@ -108,6 +111,8 @@ function updateColumnOptions() {
   Object.keys(FIELD_SCHEMA).forEach(table => {
     const fields = FIELD_SCHEMA[table] ? Object.keys(FIELD_SCHEMA[table]) : [];
     fields.forEach(field => {
+      const type = FIELD_SCHEMA[table] && FIELD_SCHEMA[table][field] ? FIELD_SCHEMA[table][field].type : '';
+      if (activeTab === 'value' && type !== 'number') return;
       const val = `${table}:${field}`;
       const label = document.createElement('label');
       label.className = 'flex items-center space-x-2';
@@ -137,7 +142,6 @@ function updateColumnOptions() {
 
       const span = document.createElement('span');
       span.className = 'text-sm';
-      const type = FIELD_SCHEMA[table] && FIELD_SCHEMA[table][field] ? FIELD_SCHEMA[table][field].type : '';
       span.innerHTML = `<strong>${table}</strong>: ${field} <span class="text-blue-600 text-xs">(${type})</span>`;
       label.appendChild(input);
       label.appendChild(span);
