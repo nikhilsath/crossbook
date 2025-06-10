@@ -10,55 +10,7 @@
 <h1 class="text-3xl font-bold mb-4">Dashboard</h1>
 <p class="text-gray-600">This page is under construction.</p>
 
-<!-- Dashboard Add Modal -->
-<div id="dashboardModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden flex justify-center items-center z-50"
-     onclick="if(event.target.id === 'dashboardModal') closeDashboardModal()">
-  <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full relative">
-    <button onclick="closeDashboardModal()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-xl">&times;</button>
-    <div class="mb-4">
-      <ul class="flex border-b border-gray-200">
-        <li class="-mb-px mr-1">
-          <button id="tab-value" class="bg-white inline-block py-2 px-4 font-semibold border-b-2 border-blue-600">Value</button>
-        </li>
-        <li class="-mb-px mr-1">
-          <button id="tab-table" class="bg-white inline-block py-2 px-4 font-semibold text-gray-600 hover:text-gray-800 border-b-2 border-transparent">Table</button>
-        </li>
-        <li class="-mb-px">
-          <button id="tab-chart" class="bg-white inline-block py-2 px-4 font-semibold text-gray-600 hover:text-gray-800 border-b-2 border-transparent">Chart</button>
-        </li>
-      </ul>
-    </div>
-    <div id="pane-value">
-      <form id="dashboardTableForm" class="relative w-full" onsubmit="event.preventDefault();">
-
-        <div id="dashboardOperation" class="flex gap-2 mb-4">
-          {% for op in ['Sum', 'Count', 'Math'] %}
-          <label class="flex-1 cursor-pointer">
-            <input type="radio" name="dashboardOperation" value="{{ op|lower }}" class="sr-only peer">
-            <div class="p-2 border rounded text-center peer-checked:bg-blue-500 peer-checked:text-white">
-              {{ op }}
-            </div>
-          </label>
-          {% endfor %}
-        </div>
-
-        <button id="columnSelectDashboardToggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-left focus:outline-none focus:ring-2 focus:ring-blue-500 hidden flex items-center justify-between"><span class="selected-label">Select Field</span> <span class="arrow text-xl">▾</span></button>
-        <div id="columnSelectDashboardOptions" class="absolute z-10 mt-1 w-full bg-white border rounded shadow hidden max-h-64 overflow-y-auto p-2 space-y-1"></div>
-        <div id="resultRow" class="mt-4 flex items-center justify-center gap-2 hidden">
-          <input id="sumTitleInput" type="text" class="px-3 py-2 border rounded flex-grow" />
-          <div id="valueResult" class="font-semibold"></div>
-        </div>
-        <button id="dashboardCreateBtn" type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 hidden mt-4 block ml-auto">Create</button>
-      </form>
-    </div>
-    <div id="pane-table" class="hidden">
-      <p class="mb-4">Table tab content coming soon.</p>
-    </div>
-    <div id="pane-chart" class="hidden">
-      <p class="mb-4">Chart tab content coming soon.</p>
-    </div>
-  </div>
-</div>
+{% include "dashboard_modal.html" %}
 
 <script>const FIELD_SCHEMA = {{ field_schema | tojson }};</script>
 <script type="module" src="{{ url_for('static', filename='js/dashboard_modal.js') }}"></script>
