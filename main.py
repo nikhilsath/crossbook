@@ -108,7 +108,6 @@ def admin_html_redirect():
     return redirect(url_for("admin_page"))
 
 
-@app.route("/config")
 @app.route("/admin/config")
 def config_page():
     """Display all configuration values grouped by section."""
@@ -119,7 +118,6 @@ def config_page():
     return render_template("config_admin.html", sections=sections)
 
 
-@app.route("/config/<path:key>", methods=["POST"])
 @app.route("/admin/config/<path:key>", methods=["POST"])
 def update_config_route(key):
     """Update a configuration key and optionally reload logging."""
