@@ -118,7 +118,7 @@
         {% endif %}
       {% endfor %}
       {% if page < total_pages %}
-        <a href="?{{ base_qs }}{{ '&' if base_qs else '' }}page={{ page + 1 }}" class="px-2 py-1 bg-gray-200 rounded">Next</a>
+        <a href="?{{ base_qs }}{{ '&' if base_qs else '' }}page={{ page + 1 }}" class="px-2 py-1 bg-blue-500 text-white rounded">Next</a>
       {% endif %}
     </div>
   </div>
