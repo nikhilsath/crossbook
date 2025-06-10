@@ -23,6 +23,7 @@ from db.records import (
     create_record,
     delete_record,
     count_nonnull,
+    count_records,
     append_edit_log,
 )
 from db.relationships import get_related_records, add_relationship, remove_relationship
@@ -134,21 +135,43 @@ def list_view(table):
     if table not in BASE_TABLES:
         abort(404)
     fields = list(get_field_schema()[table].keys())
-    search = request.args.get("search", "").strip() 
-    raw_args = request.args.to_dict()
+    search = request.args.get("search", "").strip()
+    raw_args = request.args.to_dict(flat=False)
     filters  = {k: v for k, v in raw_args.items() if k in fields}
     ops = {
         k[:-3]: v
         for k, v in raw_args.items()
         if k.endswith("_op") and k[:-3] in fields
         }
-    records = get_all_records(table, search=search, filters=filters, ops=ops)
+    page = int(request.args.get("page", 1))
+    per_page = 500
+    offset = (page - 1) * per_page
+    records = get_all_records(
+        table, search=search, filters=filters, ops=ops, limit=per_page, offset=offset
+    )
+    total_count = count_records(table, search=search, filters=filters, ops=ops)
+
+    args_without_page = request.args.to_dict(flat=False)
+    args_without_page.pop("page", None)
+    from urllib.parse import urlencode
+    base_qs = urlencode(args_without_page, doseq=True)
+
+    total_pages = (total_count + per_page - 1) // per_page
+    start = offset + 1 if total_count else 0
+    end = min(offset + len(records), total_count)
     return render_template(
         "list_view.html",
         table=table,
         fields=fields,
         records=records,
         request=request,
+        page=page,
+        total_pages=total_pages,
+        total_count=total_count,
+        start=start,
+        end=end,
+        per_page=per_page,
+        base_qs=base_qs,
     )
 
 @app.route("/<table>/<int:record_id>")

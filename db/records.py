@@ -6,69 +6,80 @@ from db.database import get_connection
 from db.schema import get_field_schema
 from db.validation import validate_table, validate_fields, validate_field
 
-def get_all_records(table, search=None, filters=None, ops=None):
-    # 1) Validate the table name
+
+
+def _build_filters(table, search=None, filters=None, ops=None):
+    """Return SQL where clauses and params for the provided filters/search."""
+    clauses = []
+    params = []
+
+    if filters:
+        validate_fields(table, filters.keys())
+        for fld, val in filters.items():
+            values = val if isinstance(val, list) else [val]
+            clean_values = [v for v in values if v != ""]
+            if not clean_values:
+                continue
+            op = (ops or {}).get(fld, "contains")
+            field_clauses = []
+            for v in clean_values:
+                if op == "equals":
+                    field_clauses.append(f"{fld} = ?")
+                    params.append(v)
+                elif op == "starts_with":
+                    field_clauses.append(f"{fld} LIKE ?")
+                    params.append(f"{v}%")
+                elif op == "ends_with":
+                    field_clauses.append(f"{fld} LIKE ?")
+                    params.append(f"%{v}")
+                else:  # contains
+                    field_clauses.append(f"{fld} LIKE ?")
+                    params.append(f"%{v}%")
+            if field_clauses:
+                clauses.append("(" + " OR ".join(field_clauses) + ")")
+
+    if search:
+        search_term = search.strip()
+        all_fields = get_field_schema()[table]
+        search_fields = [
+            field
+            for field, meta in all_fields.items()
+            if meta["type"] in ("text", "textarea", "select", "multi_select")
+        ]
+        if search_fields:
+            validate_fields(table, search_fields)
+            subconds = [f"{f} LIKE ?" for f in search_fields]
+            clauses.append("(" + " OR ".join(subconds) + ")")
+            params.extend([f"%{search_term}%"] * len(subconds))
+
+    return clauses, params
+
+def get_all_records(
+    table,
+    search=None,
+    filters=None,
+    ops=None,
+    limit=None,
+    offset=0,
+):
+    """Return a list of records honoring search/filter params."""
+
     validate_table(table)
 
     conn = get_connection()
     cursor = conn.cursor()
     try:
-        # Prepare WHERE clauses and params
-        clauses = []
-        params = []
+        clauses, params = _build_filters(table, search, filters, ops)
 
-        # 2) Apply explicit URL filters (e.g. ?status=Active)
-        if filters:
-            validate_fields(table, filters.keys())
-            for fld, val in filters.items():
-                if val == "":
-                    continue  # skip empty values
-                # Determine operator for field
-                op = (ops or {}).get(fld, 'contains')
-                if op == 'equals':
-                    clauses.append(f"{fld} = ?")
-                    params.append(val)
-                elif op == 'starts_with':
-                    clauses.append(f"{fld} LIKE ?")
-                    params.append(f"{val}%")
-                elif op == 'ends_with':
-                    clauses.append(f"{fld} LIKE ?")
-                    params.append(f"%{val}")
-                else:  # contains
-                    clauses.append(f"{fld} LIKE ?")
-                    params.append(f"%{val}%")
-
-        # 3) Apply free-text search across text-like fields
-        if search:
-            search_term = search.strip()
-            all_fields = get_field_schema()[table]
-            search_fields = [
-                field for field, meta in all_fields.items()
-                if meta['type'] in ('text', 'textarea', 'select', 'multi_select')
-            ]
-            if search_fields:
-                validate_fields(table, search_fields)
-                subconds = [f"{f} LIKE ?" for f in search_fields]
-                clauses.append("(" + " OR ".join(subconds) + ")")
-                params.extend([f"%{search_term}%"] * len(subconds))
-            else:
-                return []
-
-        # 4) Assemble and execute SQL
+        sql = f"SELECT * FROM {table}"
         if clauses:
-            sql = (
-                f"SELECT * FROM {table} "
-                + "WHERE " + " AND ".join(clauses)
-                + " LIMIT 1000"
-            )
-            logger.info(f"[QUERY] SQL: {sql} | params: {params}")
-            cursor.execute(sql, params)
-        else:
-            sql = f"SELECT * FROM {table} LIMIT 1000"
-            logger.info(f"[QUERY] SQL: {sql}")
-            cursor.execute(sql)
+            sql += " WHERE " + " AND ".join(clauses)
+        if limit is not None:
+            sql += f" LIMIT {int(limit)} OFFSET {int(offset)}"
 
-        # 5) Hydrate and return results
+        logger.info(f"[QUERY] SQL: {sql} | params: {params}")
+        cursor.execute(sql, params)
+
         rows = cursor.fetchall()
         cols = [desc[0] for desc in cursor.description]
         return [dict(zip(cols, row)) for row in rows]
@@ -76,6 +87,28 @@ def get_all_records(table, search=None, filters=None, ops=None):
     except Exception as e:
         logger.warning(f"[QUERY ERROR] {e}")
         return []
+    finally:
+        conn.close()
+
+
+def count_records(table, search=None, filters=None, ops=None):
+    """Return count of records matching the provided filters/search."""
+
+    validate_table(table)
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        clauses, params = _build_filters(table, search, filters, ops)
+        sql = f"SELECT COUNT(*) FROM {table}"
+        if clauses:
+            sql += " WHERE " + " AND ".join(clauses)
+        logger.info(f"[COUNT] SQL: {sql} | params: {params}")
+        cursor.execute(sql, params)
+        row = cursor.fetchone()
+        return row[0] if row else 0
+    except Exception as e:
+        logger.warning(f"[COUNT ERROR] {e}")
+        return 0
     finally:
         conn.close()
 
