@@ -7,15 +7,39 @@
 
 {% for section, items in sections.items() %}
   <h2 class="text-xl font-semibold mt-4 mb-2">{{ section|capitalize }}</h2>
-  <div class="space-y-2">
-  {% for item in items %}
-    <form method="post" action="{{ url_for('update_config_route', key=item.key) }}" class="flex items-center space-x-2">
-      <label class="w-64 font-mono text-sm">{{ item.key }}</label>
-      <input type="text" name="value" value="{{ item.value }}" class="flex-grow border rounded px-2 py-1 text-sm">
-      <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded">Save</button>
-    </form>
-  {% endfor %}
-  </div>
+  <table class="w-full text-sm mb-6">
+    <thead>
+      <tr class="text-left border-b">
+        <th class="w-56">Key</th>
+        <th class="w-64">Value</th>
+        <th>Description</th>
+        <th class="w-40">Updated</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for item in items %}
+      <tr class="border-t">
+        <td class="font-mono">{{ item.key }}</td>
+        <td>
+          <form method="post" action="{{ url_for('update_config_route', key=item.key) }}" class="flex items-center space-x-2">
+            {% if item.type in ('integer', 'number') %}
+              <input type="number" name="value" value="{{ item.value }}" class="border rounded px-2 py-1 text-sm flex-grow">
+            {% elif item.type == 'boolean' %}
+              <input type="hidden" name="value" value="0">
+              <input type="checkbox" name="value" value="1" {% if item.value in ('1', 1, True, 'true') %}checked{% endif %} class="mr-2">
+            {% elif item.type == 'date' %}
+              <input type="date" name="value" value="{{ item.value }}" class="border rounded px-2 py-1 text-sm flex-grow">
+            {% else %}
+              <input type="text" name="value" value="{{ item.value }}" class="border rounded px-2 py-1 text-sm flex-grow">
+            {% endif %}
+            <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded">Save</button>
+          </form>
+        </td>
+        <td>{{ item.description }}</td>
+        <td>{{ item.date_updated }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
 {% endfor %}
-
 {% endblock %}

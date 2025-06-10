@@ -4,7 +4,7 @@ import logging
 import time
 import json
 from logging_setup import configure_logging
-from db.config import get_all_config, update_config
+from db.config import get_config_rows, update_config
 from db.database import get_connection
 from db.schema import (
     load_field_schema,
@@ -93,11 +93,10 @@ def admin_page():
 @app.route("/config")
 def config_page():
     """Display all configuration values grouped by section."""
-    cfg = get_all_config()
+    configs = get_config_rows()
     sections = {}
-    for k, v in cfg.items():
-        section = k.split(".", 1)[0]
-        sections.setdefault(section, []).append({"key": k, "value": v})
+    for item in configs:
+        sections.setdefault(item["section"], []).append(item)
     return render_template("config_admin.html", sections=sections)
 
 
