@@ -4,7 +4,7 @@ import logging
 import time
 import json
 from logging_setup import configure_logging
-from db.config import get_config_rows, update_config
+from db.config import get_config_rows, update_config, get_logging_config
 from db.database import get_connection
 from db.schema import (
     load_field_schema,
@@ -125,7 +125,7 @@ def update_config_route(key):
     """Update a configuration key and optionally reload logging."""
     value = request.form.get("value", "")
     update_config(key, value)
-    if key.startswith("logging."):
+    if key in get_logging_config():
         configure_logging(app)
     return redirect(url_for("config_page"))
 
