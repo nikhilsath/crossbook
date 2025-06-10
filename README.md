@@ -57,6 +57,8 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Supported Field Types:** text, number, date, select, multi-select, foreign-key, boolean, and textarea, each rendered with the appropriate input control.
 * **Filter Macros:** Reusable Jinja macros for boolean, select, text, and multi-select filters (`templates/macros/filter_controls.html`).
 * **Field Schema Editing:** New endpoints allow adding or removing columns at runtime (`/<table>/<id>/add-field`, `/<table>/<id>/remove-field`) and counting non-null values (`/<table>/count-nonnull`).
+* **Admin Dashboard & Configuration:** The `/admin` section includes a configuration editor and placeholder pages for user management and automation.
+* **CSV Import Workflow (Experimental):** The `/import` page lets you upload CSV files, match columns to fields, and validate data before import.
 
 ## Project Structure
 
@@ -64,6 +66,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 /
 ├── README.md                        # Project documentation and setup instructions
 ├── main.py                          # Application entrypoint; Flask app setup and routes
+├── logging_setup.py                 # Logging configuration helper
 ├── requirements.txt                 # Python dependencies
 ├── db/                              # Database layer modules
 │   ├── config.py                    # Database-backed configuration helper
@@ -81,8 +84,13 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 │   │   ├── overrides.css            # Tailwind override styles
 │   │   └── styles.css               # Additional global styles
 │   ├── js/
+│   │   ├── add_table.js             # Create new tables dynamically
+│   │   ├── autosize_text.js         # Auto-resize textarea inputs
+│   │   ├── bulk_edit_modal.js       # Bulk edit modal logic
 │   │   ├── column_visibility.js     # Column toggle logic
+│   │   ├── dashboard_modal.js       # Dashboard widgets
 │   │   ├── edit_fields.js           # Client-side field schema editing
+│   │   ├── editor.js                # Initialize Quill editors
 │   │   ├── field_ajax.js            # Inline updates via fetch
 │   │   ├── filter_visibility.js     # Show/hide filter controls
 │   │   ├── layout_editor.js         # Drag/drop & layout persistence
@@ -96,8 +104,14 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 │       └── validation.py            # Import form validation helpers
 ├── templates/                       # Jinja2 view templates
 │   ├── base.html
+│   ├── admin.html                   # Admin landing page
+│   ├── admin_automation.html        # Placeholder automation page
+│   ├── admin_users.html             # Placeholder user management
+│   ├── bulk_edit_modal.html         # Modal for bulk edits
+│   ├── config_admin.html            # Configuration editor
 │   ├── dashboard.html               # (WIP) summary page
 │   ├── edit_fields_modal.html       # Modal partial for field editing
+│   ├── import_view.html             # CSV import workflow
 │   ├── index.html
 │   ├── list_view.html
 │   ├── new_record.html
@@ -122,20 +136,24 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 
 * **Frontend Interaction:** Dynamic behaviors powered by JavaScript modules in `static/js/`:
 
-  * `layout_editor.js` for drag-and-drop and grid persistence
+  * `add_table.js` for creating new tables
+  * `autosize_text.js` to expand textarea inputs as you type
+  * `bulk_edit_modal.js` for multi-record editing
   * `column_visibility.js` to toggle table columns
-  * `relations.js` for AJAX-based add/remove relationships
-  * `filter_visibility.js` for showing/hiding filter controls
-  * `tag_selector.js` (multi-select dropdown UI)
+  * `dashboard_modal.js` for dashboard widgets
   * `edit_fields.js` for client-side schema and field editing
-  * `field_ajax.js` for inline field updates without page reloads (imported by `detail_view.html`)
   * `editor.js` initializes Quill editors for textarea fields (see the [Quill documentation](https://quilljs.com/docs/quickstart/) for editor usage)
+  * `field_ajax.js` for inline field updates without page reloads (imported by `detail_view.html`)
+  * `filter_visibility.js` for showing/hiding filter controls
+  * `layout_editor.js` for drag-and-drop and grid persistence
+  * `relations.js` for AJAX-based add/remove relationships
+  * `tag_selector.js` (multi-select dropdown UI)
 
 * **Static Assets & Styling:** Global styles in `static/css/styles.css`, with Tailwind overrides in `static/css/overrides.css`.
 
-* **Templating & Macros:** Jinja2 templates in `templates/` include `base.html`, `dashboard.html`, `index.html`, `new_record.html`, `list_view.html`, `detail_view.html`, and a modal partial `edit_fields_modal.html`. Reusable macros live in `templates/macros/fields.html` and `filter_controls.html`.
+* **Templating & Macros:** Jinja2 templates in `templates/` include the core pages (`base.html`, `index.html`, `list_view.html`, `detail_view.html`, `new_record.html`, `dashboard.html`) plus admin and import views. Partial templates like `edit_fields_modal.html` and `bulk_edit_modal.html` are used for modals. Reusable macros live in `templates/macros/fields.html` and `filter_controls.html`.
 
-* **Logging & Monitoring:** Basic logging configured via Python’s `logging` module in `main.py`. A rotating/timed file handler uses the configured level, while console output logs only warnings and above. Werkzeug request logs are disabled. Logs capture errors and user actions.
+* **Logging & Monitoring:** Logging is configured via `logging_setup.py` and values stored in the database. A rotating or timed file handler uses the configured level, while console output logs only warnings and above. Werkzeug request logs are disabled. Logs capture errors and user actions.
 
 
 * **Data Directory:** Runtime files under `data/`: `crossbook.db` (primary database) and `huey.db` (task queue store).
