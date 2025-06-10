@@ -8,7 +8,7 @@ export function closeDashboardModal() {
 
 let selectedOperation = null;
 let selectedColumn = null;
-let columnContainer, columnToggleBtn, columnDropdown, valueResultEl;
+let columnContainer, columnToggleBtn, columnDropdown, valueResultEl, titleInputEl, createBtnEl;
 let activeTab = 'value';
 
 function setActiveTab(name) {
@@ -81,6 +81,11 @@ function updateValueResult() {
   if (selectedOperation === 'sum' && selectedColumn) {
     const [table, field] = selectedColumn.split(':');
     valueResultEl.classList.remove('hidden');
+    if (titleInputEl) {
+      titleInputEl.placeholder = `Sum of ${field}`;
+      titleInputEl.classList.remove('hidden');
+    }
+    if (createBtnEl) createBtnEl.classList.remove('hidden');
     valueResultEl.textContent = 'Calculating…';
     fetch(`/${table}/sum-field?field=${encodeURIComponent(field)}`)
       .then(res => res.json())
@@ -93,6 +98,8 @@ function updateValueResult() {
   } else {
     valueResultEl.classList.add('hidden');
     valueResultEl.textContent = '';
+    if (titleInputEl) titleInputEl.classList.add('hidden');
+    if (createBtnEl) createBtnEl.classList.add('hidden');
   }
 }
 
@@ -210,6 +217,8 @@ function initDashboardModal() {
   initOperationSelect();
   initColumnSelect();
   valueResultEl = document.getElementById('valueResult');
+  titleInputEl = document.getElementById('sumTitleInput');
+  createBtnEl = document.getElementById('dashboardCreateBtn');
 }
 
 document.addEventListener('DOMContentLoaded', initDashboardModal);
