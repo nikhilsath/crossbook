@@ -8,7 +8,7 @@ export function closeDashboardModal() {
 
 let selectedOperation = null;
 let selectedColumn = null;
-let columnToggleBtn, columnDropdown, valueResultEl, titleInputEl, resultRowEl, createBtnEl;
+let columnToggleBtn, columnToggleLabel, columnDropdown, valueResultEl, titleInputEl, resultRowEl, createBtnEl;
 let activeTab = 'value';
 
 function setActiveTab(name) {
@@ -48,7 +48,7 @@ function initDashboardTabs() {
 function refreshColumnTags() {
   if (!columnToggleBtn) return;
   if (!selectedColumn || (Array.isArray(selectedColumn) && selectedColumn.length === 0)) {
-    columnToggleBtn.textContent = 'Select Field \u25BE';
+    if (columnToggleLabel) columnToggleLabel.textContent = 'Select Field';
     updateValueResult();
     return;
   }
@@ -58,7 +58,7 @@ function refreshColumnTags() {
     const [table, field] = val.split(':');
     return `${table}: ${field}`;
   });
-  columnToggleBtn.textContent = labels.join(', ') + ' \u25BE';
+  if (columnToggleLabel) columnToggleLabel.textContent = labels.join(', ');
   updateValueResult();
 }
 
@@ -167,6 +167,7 @@ function updateColumnOptions() {
 
 function initColumnSelect() {
   columnToggleBtn = document.getElementById('columnSelectDashboardToggle');
+  columnToggleLabel = columnToggleBtn ? columnToggleBtn.querySelector('.selected-label') : null;
   columnDropdown = document.getElementById('columnSelectDashboardOptions');
   if (!columnToggleBtn || !columnDropdown) return;
 
