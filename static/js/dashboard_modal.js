@@ -8,7 +8,7 @@ export function closeDashboardModal() {
 
 let selectedOperation = null;
 let selectedColumn = null;
-let columnContainer, columnToggleBtn, columnDropdown, valueResultEl, titleInputEl, createBtnEl;
+let columnContainer, columnToggleBtn, columnDropdown, valueResultEl, titleInputEl, resultRowEl, createBtnEl;
 let activeTab = 'value';
 
 function setActiveTab(name) {
@@ -77,28 +77,26 @@ function refreshColumnTags() {
 }
 
 function updateValueResult() {
-  if (!valueResultEl) return;
+  if (!valueResultEl || !resultRowEl) return;
   if (selectedOperation === 'sum' && selectedColumn) {
     const [table, field] = selectedColumn.split(':');
-    valueResultEl.classList.remove('hidden');
+    resultRowEl.classList.remove('hidden');
     if (titleInputEl) {
       titleInputEl.placeholder = `Sum of ${field}`;
-      titleInputEl.classList.remove('hidden');
     }
     if (createBtnEl) createBtnEl.classList.remove('hidden');
     valueResultEl.textContent = 'Calculating…';
     fetch(`/${table}/sum-field?field=${encodeURIComponent(field)}`)
       .then(res => res.json())
       .then(data => {
-        valueResultEl.textContent = `Sum: ${data.sum}`;
+        valueResultEl.textContent = data.sum;
       })
       .catch(() => {
         valueResultEl.textContent = 'Error';
       });
   } else {
-    valueResultEl.classList.add('hidden');
+    resultRowEl.classList.add('hidden');
     valueResultEl.textContent = '';
-    if (titleInputEl) titleInputEl.classList.add('hidden');
     if (createBtnEl) createBtnEl.classList.add('hidden');
   }
 }
@@ -218,6 +216,7 @@ function initDashboardModal() {
   initColumnSelect();
   valueResultEl = document.getElementById('valueResult');
   titleInputEl = document.getElementById('sumTitleInput');
+  resultRowEl = document.getElementById('resultRow');
   createBtnEl = document.getElementById('dashboardCreateBtn');
 }
 
