@@ -149,6 +149,7 @@ function updateColumnOptions() {
         input.addEventListener('change', () => {
           selectedColumn = val;
           refreshColumnTags();
+          columnDropdown.classList.add('hidden');
         });
       }
 
