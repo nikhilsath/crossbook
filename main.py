@@ -27,7 +27,7 @@ from db.records import (
     append_edit_log,
 )
 from db.relationships import get_related_records, add_relationship, remove_relationship
-from static.imports.validation import validation_sorter
+from utils.validation import validation_sorter
 from imports.import_csv import parse_csv
 from db.edit_fields import add_column_to_table, add_field_to_schema, drop_column_from_table, remove_field_from_schema
 
