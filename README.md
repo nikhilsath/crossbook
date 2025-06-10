@@ -119,6 +119,8 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 │   └── macros/
 │       ├── fields.html              # Field rendering macros
 │       └── filter_controls.html     # Filter UI macros
+├── utils/                           # Shared helper modules
+│   └── validation.py                # CSV import validation functions
 └── data/                            # Runtime data directory
     ├── crossbook.db                # Main application SQLite database
     └── huey.db                     # Task queue persistence database
@@ -154,7 +156,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Templating & Macros:** Jinja2 templates in `templates/` include the core pages (`base.html`, `index.html`, `list_view.html`, `detail_view.html`, `new_record.html`, `dashboard.html`) plus admin and import views. Partial templates like `edit_fields_modal.html` and `bulk_edit_modal.html` are used for modals. Reusable macros live in `templates/macros/fields.html` and `filter_controls.html`.
 
 * **Logging & Monitoring:** Logging is configured via `logging_setup.py` and values stored in the database. A rotating or timed file handler uses the configured level, while console output logs only warnings and above. Werkzeug request logs are disabled. Logs capture errors and user actions.
-
+* **Utility Helpers:** Generic helper code lives in `utils/`. The `validation.py` module powers CSV import validation and can be reused across routes.
 
 * **Data Directory:** Runtime files under `data/`: `crossbook.db` (primary database) and `huey.db` (task queue store).
 
