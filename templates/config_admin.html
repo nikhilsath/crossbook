@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Configuration{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-6">Configuration</h1>
+
+{% for section, items in sections.items() %}
+  <h2 class="text-xl font-semibold mt-4 mb-2">{{ section|capitalize }}</h2>
+  <div class="space-y-2">
+  {% for item in items %}
+    <form method="post" action="{{ url_for('update_config_route', key=item.key) }}" class="flex items-center space-x-2">
+      <label class="w-64 font-mono text-sm">{{ item.key }}</label>
+      <input type="text" name="value" value="{{ item.value }}" class="flex-grow border rounded px-2 py-1 text-sm">
+      <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded">Save</button>
+    </form>
+  {% endfor %}
+  </div>
+{% endfor %}
+
+{% endblock %}
