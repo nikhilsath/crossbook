@@ -286,6 +286,18 @@ def count_nonnull(table):
 
     return jsonify({"count": count})
 
+
+@app.route("/<table>/sum-field")
+def sum_field_route(table):
+    field = request.args.get("field")
+    try:
+        from db.dashboard import sum_field as _sum_field
+        result = _sum_field(table, field)
+    except ValueError:
+        return jsonify({"sum": 0}), 400
+
+    return jsonify({"sum": result})
+
 @app.route("/<table>/<int:record_id>/remove-field", methods=["POST"])
 def remove_field_route(table, record_id):
     field_name = request.form.get("field_name")

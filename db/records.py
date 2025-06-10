@@ -261,3 +261,5 @@ def count_nonnull(table: str, field: str) -> int:
         return 0
     finally:
         conn.close()
+
+

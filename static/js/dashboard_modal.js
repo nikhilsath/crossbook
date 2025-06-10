@@ -8,7 +8,7 @@ export function closeDashboardModal() {
 
 let selectedOperation = null;
 let selectedColumn = null;
-let columnContainer, columnToggleBtn, columnDropdown;
+let columnContainer, columnToggleBtn, columnDropdown, valueResultEl;
 let activeTab = 'value';
 
 function setActiveTab(name) {
@@ -73,6 +73,27 @@ function refreshColumnTags() {
     span.appendChild(btn);
     columnContainer.appendChild(span);
   });
+  updateValueResult();
+}
+
+function updateValueResult() {
+  if (!valueResultEl) return;
+  if (selectedOperation === 'sum' && selectedColumn) {
+    const [table, field] = selectedColumn.split(':');
+    valueResultEl.classList.remove('hidden');
+    valueResultEl.textContent = 'Calculating…';
+    fetch(`/${table}/sum-field?field=${encodeURIComponent(field)}`)
+      .then(res => res.json())
+      .then(data => {
+        valueResultEl.textContent = `Sum: ${data.sum}`;
+      })
+      .catch(() => {
+        valueResultEl.textContent = 'Error';
+      });
+  } else {
+    valueResultEl.classList.add('hidden');
+    valueResultEl.textContent = '';
+  }
 }
 
 function updateColumnOptions() {
@@ -150,6 +171,7 @@ function updateColumnOptions() {
   });
 
   refreshColumnTags();
+  updateValueResult();
 }
 
 function initColumnSelect() {
@@ -187,6 +209,7 @@ function initDashboardModal() {
   initDashboardTabs();
   initOperationSelect();
   initColumnSelect();
+  valueResultEl = document.getElementById('valueResult');
 }
 
 document.addEventListener('DOMContentLoaded', initDashboardModal);
