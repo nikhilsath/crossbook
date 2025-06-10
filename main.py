@@ -84,13 +84,32 @@ def dashboard():
     return render_template("dashboard.html")
 
 
-@app.route("/admin.html")
+@app.route("/admin")
 def admin_page():
-    """Redirect old admin endpoint to config page."""
-    return redirect(url_for("config_page"))
+    """Display the admin landing page."""
+    return render_template("admin.html")
+
+
+@app.route("/admin/users")
+def admin_users():
+    """Placeholder user management page."""
+    return render_template("admin_users.html")
+
+
+@app.route("/admin/automation")
+def admin_automation():
+    """Placeholder automation page."""
+    return render_template("admin_automation.html")
+
+
+@app.route("/admin.html")
+def admin_html_redirect():
+    """Redirect legacy /admin.html to the admin page."""
+    return redirect(url_for("admin_page"))
 
 
 @app.route("/config")
+@app.route("/admin/config")
 def config_page():
     """Display all configuration values grouped by section."""
     configs = get_config_rows()
@@ -101,6 +120,7 @@ def config_page():
 
 
 @app.route("/config/<path:key>", methods=["POST"])
+@app.route("/admin/config/<path:key>", methods=["POST"])
 def update_config_route(key):
     """Update a configuration key and optionally reload logging."""
     value = request.form.get("value", "")
