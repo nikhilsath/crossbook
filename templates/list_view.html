@@ -73,10 +73,14 @@
   </div>
   
   {% if records %}
+  <div class="text-sm text-gray-600 mb-2">
+    {{ records|length }} record{{ 's' if records|length != 1 }} found
+  </div>
   <div class="overflow-x-auto rounded-lg border border-gray-200">
     <table class="min-w-full divide-y divide-gray-200 text-sm">
       <thead class="bg-gray-50">
         <tr>
+          <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider" data-static>#</th>
           {% for field in fields if not field.startswith('_') %}
             <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">{{ field }}</th>
           {% endfor %}
@@ -85,6 +89,7 @@
       <tbody class="divide-y divide-gray-200">
         {% for record in records %}
         <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location.href='/{{ table }}/{{ record.id }}'">
+          <td class="px-4 py-2 whitespace-nowrap" data-static>{{ loop.index }}</td>
           {% for field in fields if not field.startswith('_') %}
             <td class="px-4 py-2 whitespace-nowrap" data-field="{{ field|lower }}">
               {% if field_schema[table][field].type == "textarea" %}

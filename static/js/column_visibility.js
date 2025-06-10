@@ -10,12 +10,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const visible = new Set(getSelectedFields());
 
     document.querySelectorAll("thead th").forEach((th) => {
+      if (th.dataset.static !== undefined) return;
       const field = th.textContent.trim().toLowerCase();
       th.style.display = visible.has(field) ? "" : "none";
     });
 
     document.querySelectorAll("tbody tr").forEach(row => {
       row.querySelectorAll("td").forEach(td => {
+        if (td.dataset.static !== undefined) return;
         const field = td.dataset.field;
         td.style.display = visible.has(field) ? "" : "none";
       });
