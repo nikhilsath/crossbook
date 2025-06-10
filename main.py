@@ -103,7 +103,8 @@ def config_page():
 @app.route("/config/<path:key>", methods=["POST"])
 def update_config_route(key):
     """Update a configuration key and optionally reload logging."""
-    value = request.form.get("value", "")
+    values = request.form.getlist("value")
+    value = values[-1] if values else ""
     update_config(key, value)
     if key.startswith("logging."):
         configure_logging(app)
