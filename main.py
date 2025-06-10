@@ -4,6 +4,7 @@ import logging
 import time
 import json
 from logging_setup import configure_logging
+from db.config import get_all_config, update_config
 from db.database import get_connection
 from db.schema import (
     load_field_schema,
@@ -85,8 +86,29 @@ def dashboard():
 
 @app.route("/admin.html")
 def admin_page():
-    """Simple admin landing page"""
-    return render_template("admin.html")
+    """Redirect old admin endpoint to config page."""
+    return redirect(url_for("config_page"))
+
+
+@app.route("/config")
+def config_page():
+    """Display all configuration values grouped by section."""
+    cfg = get_all_config()
+    sections = {}
+    for k, v in cfg.items():
+        section = k.split(".", 1)[0]
+        sections.setdefault(section, []).append({"key": k, "value": v})
+    return render_template("config_admin.html", sections=sections)
+
+
+@app.route("/config/<path:key>", methods=["POST"])
+def update_config_route(key):
+    """Update a configuration key and optionally reload logging."""
+    value = request.form.get("value", "")
+    update_config(key, value)
+    if key.startswith("logging."):
+        configure_logging(app)
+    return redirect(url_for("config_page"))
 
 @app.route("/<table>")
 def list_view(table):
