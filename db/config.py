@@ -1,5 +1,6 @@
 from datetime import datetime
 from db.database import get_connection
+import json
 
 
 def get_config_rows():
@@ -36,6 +37,21 @@ def get_all_config():
     """Return the entire config table as a simple key/value dict."""
 
     return {row["key"]: row["value"] for row in get_config_rows()}
+
+
+def get_layout_defaults() -> dict:
+    """Return layout width/height defaults from the config table."""
+    with get_connection() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT value FROM config WHERE key = 'layout_defaults'")
+        row = cur.fetchone()
+
+    if not row:
+        return {}
+    try:
+        return json.loads(row[0])
+    except Exception:
+        return {}
 
 
 def update_config(key: str, value: str) -> int:

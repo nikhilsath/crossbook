@@ -1,6 +1,7 @@
 import sqlite3
 import json
 from db.database import get_connection
+from db.config import get_layout_defaults
 
 DEFAULT_FIELD_WIDTH = {
     "textarea":   12,
@@ -38,11 +39,15 @@ def add_field_to_schema(table, field_name, field_type, field_options=None, forei
         )
         max_bottom = cur.fetchone()[0]  # if no rows yet, that's 0
 
-        # 3) Determine col_start, col_span, row_start, row_span from defaults
+        # 3) Determine col_start, col_span, row_start, row_span
+        defaults = get_layout_defaults() or {}
+        width_map = defaults.get('width', DEFAULT_FIELD_WIDTH)
+        height_map = defaults.get('height', DEFAULT_FIELD_HEIGHT)
+
         col_start = 0
-        col_span = DEFAULT_FIELD_WIDTH.get(field_type, 6)
+        col_span = width_map.get(field_type, 6)
         row_start = max_bottom
-        row_span = DEFAULT_FIELD_HEIGHT.get(field_type, 4)
+        row_span = height_map.get(field_type, 4)
 
         # 4) Insert into field_schema with the nine real columns
         cur.execute(
