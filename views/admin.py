@@ -55,7 +55,6 @@ def dashboard_create_widget():
     try:
         col_start = int(data.get('col_start', 1))
         col_span = int(data.get('col_span', 1))
-        row_start = int(data.get('row_start', 1))
         row_span = int(data.get('row_span', 1))
     except (TypeError, ValueError):
         return jsonify({'error': 'Invalid layout values'}), 400
@@ -72,7 +71,7 @@ def dashboard_create_widget():
         widget_type,
         col_start,
         col_span,
-        row_start,
+        None,
         row_span,
     )
 
