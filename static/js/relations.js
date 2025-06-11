@@ -9,40 +9,21 @@ export function openAddRelationModal(tableA, idA, tableB) {
   const select = document.getElementById('relationOptions');
   select.innerHTML = '<option>Loading...</option>'; // Temporary placeholder
 
-  // Fetch HTML for the list view of the target table (e.g. /character)
-  fetch(`/${tableB}`)
-    .then(res => res.text())
-    .then(html => {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-      const rows = Array.from(doc.querySelectorAll('tbody tr'));
-      const options = [];
-
-      // Extract ID and label from each row (first 2 columns assumed to be ID and name/title)
-      rows.forEach(row => {
-        const cols = row.querySelectorAll('td');
-        if (cols.length >= 2) {
-          const id = cols[0].innerText.trim();
-          const label = cols[1].innerText.trim();
-          options.push({ id, label });
-        }
-      });
-
+  // Fetch JSON listing of records for the target table
+  fetch(`/api/${tableB}/list`)
+    .then(res => res.json())
+    .then(options => {
       const targetTable = modalData.tableB;
-      // Sort alphabetically by label unless it's content (content sorted by ID instead)
       if (targetTable !== "content") {
         options.sort((a, b) => a.label.localeCompare(b.label));
       }
 
-      // Populate dropdown with options
       select.innerHTML = "";
       options.forEach(({ id, label }) => {
-        const option = document.createElement("option");
-        option.value = id;
-        option.textContent = (targetTable === "content")
-          ? `#${id} – ${label}`
-          : label;
-        select.appendChild(option);
+        const opt = document.createElement("option");
+        opt.value = id;
+        opt.textContent = targetTable === "content" ? `#${id} – ${label}` : label;
+        select.appendChild(opt);
       });
     });
 }

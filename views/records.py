@@ -1,4 +1,6 @@
 from flask import Blueprint, render_template, abort, request, redirect, url_for, jsonify, current_app
+from db.database import get_connection
+from db.validation import validate_table
 from db.records import (
     get_all_records,
     get_record_by_id,
@@ -52,6 +54,32 @@ def list_view(table):
         per_page=per_page,
         base_qs=base_qs,
     )
+
+
+@records_bp.route('/api/<table>/list')
+def api_list(table):
+    """Return basic id/label info for records in the table."""
+    try:
+        validate_table(table)
+    except ValueError:
+        abort(404)
+
+    with get_connection() as conn:
+        cur = conn.cursor()
+        cur.execute(f"PRAGMA table_info({table})")
+        cols = [r[1] for r in cur.fetchall()]
+        if not cols:
+            return jsonify([])
+        if table in cols:
+            label_field = table
+        elif len(cols) > 1:
+            label_field = cols[1]
+        else:
+            label_field = cols[0]
+        cur.execute(f"SELECT id, {label_field} FROM {table}")
+        rows = cur.fetchall()
+
+    return jsonify([{'id': r[0], 'label': r[1]} for r in rows])
 
 @records_bp.route('/<table>/<int:record_id>')
 def detail_view(table, record_id):
