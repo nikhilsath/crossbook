@@ -1,5 +1,5 @@
 {% macro render_tag_selector(field, value, table, get_field_options) %}
-  <form method="POST" action="{{ url_for('update_field', table=table, record_id=request.view_args['record_id']) }}" class="relative w-full" data-multiselect-dropdown onsubmit="event.preventDefault();">
+  <form method="POST" action="{{ url_for('records.update_field', table=table, record_id=request.view_args['record_id']) }}" class="relative w-full" data-multiselect-dropdown onsubmit="event.preventDefault();">
     <input type="hidden" name="field" value="{{ field }}">
     {% set selected_options = (value or '').split(', ') %}
 
