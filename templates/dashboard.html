@@ -31,6 +31,14 @@
       {% else %}
         <div class="text-gray-500">{{ widget.widget_type }} widget</div>
       {% endif %}
+      <span class="resize-handle hidden top-left"
+            style="position:absolute; top:0; left:0; width:8px; height:8px; background:#333; cursor:nwse-resize; "></span>
+      <span class="resize-handle hidden top-right"
+            style="position:absolute; top:0; right:0; width:8px; height:8px; background:#333; cursor:nwse-resize; "></span>
+      <span class="resize-handle hidden bottom-left"
+            style="position:absolute; bottom:0; left:0; width:8px; height:8px; background:#333; cursor:nwse-resize; "></span>
+      <span class="resize-handle hidden bottom-right"
+            style="position:absolute; bottom:0; right:0; width:8px; height:8px; background:#333; cursor:nwse-resize; "></span>
     </div>
   {% endfor %}
 </div>
