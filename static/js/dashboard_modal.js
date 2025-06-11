@@ -64,20 +64,22 @@ function refreshColumnTags() {
 
 function updateValueResult() {
   if (!valueResultEl || !resultRowEl) return;
-  if (selectedOperation === 'sum' && selectedColumn) {
+  if ((selectedOperation === 'sum' || selectedOperation === 'count') && selectedColumn) {
     const [table, field] = selectedColumn.split(':');
+    const endpoint = selectedOperation === 'sum' ? 'sum-field' : 'count-nonnull';
+    const key = selectedOperation === 'sum' ? 'sum' : 'count';
     resultRowEl.classList.remove('hidden');
     if (titleInputEl) {
-      const defaultTitle = `Sum of ${field}`;
+      const defaultTitle = `${selectedOperation === 'sum' ? 'Sum' : 'Count'} of ${field}`;
       titleInputEl.placeholder = defaultTitle;
       titleInputEl.value = defaultTitle;
     }
     if (createBtnEl) createBtnEl.classList.remove('hidden');
     valueResultEl.textContent = 'Calculating…';
-    fetch(`/${table}/sum-field?field=${encodeURIComponent(field)}`)
+    fetch(`/${table}/${endpoint}?field=${encodeURIComponent(field)}`)
       .then(res => res.json())
       .then(data => {
-        valueResultEl.textContent = data.sum;
+        valueResultEl.textContent = data[key];
       })
       .catch(() => {
         valueResultEl.textContent = 'Error';
@@ -91,12 +93,13 @@ function updateValueResult() {
 
 function onCreateWidget(event) {
   if (event) event.preventDefault();
-  if (selectedOperation !== 'sum' || !selectedColumn) return;
+  if (!['sum', 'count'].includes(selectedOperation) || !selectedColumn) return;
   const [table, field] = selectedColumn.split(':');
-  const title = (titleInputEl && titleInputEl.value.trim()) || `Sum of ${field}`;
+  const defaultTitle = `${selectedOperation === 'sum' ? 'Sum' : 'Count'} of ${field}`;
+  const title = (titleInputEl && titleInputEl.value.trim()) || defaultTitle;
   const payload = {
     title: title,
-    content: JSON.stringify({ operation: 'sum', table, field }),
+    content: JSON.stringify({ operation: selectedOperation, table, field }),
     widget_type: 'value',
     col_start: 1,
     col_span: 4,
@@ -235,7 +238,7 @@ function initDashboardModal() {
   initOperationSelect();
   initColumnSelect();
   valueResultEl = document.getElementById('valueResult');
-  titleInputEl = document.getElementById('sumTitleInput');
+  titleInputEl = document.getElementById('valueTitleInput');
   resultRowEl = document.getElementById('resultRow');
   createBtnEl = document.getElementById('dashboardCreateBtn');
   if (createBtnEl) {
