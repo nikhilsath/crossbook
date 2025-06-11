@@ -195,7 +195,7 @@ def get_edit_history(table_name: str, record_id: int, limit: int | None = None) 
     with get_connection() as conn:
         cur = conn.cursor()
         sql = (
-            "SELECT table_name, record_id, timestamp, field_name, old_value, new_value, actor "
+            "SELECT id, table_name, record_id, timestamp, field_name, old_value, new_value, actor "
             "FROM edit_history WHERE table_name = ? AND record_id = ? ORDER BY timestamp DESC"
         )
         params = [table_name, record_id]
@@ -206,6 +206,50 @@ def get_edit_history(table_name: str, record_id: int, limit: int | None = None) 
         rows = cur.fetchall()
         cols = [d[0] for d in cur.description]
         return [dict(zip(cols, r)) for r in rows]
+
+
+def get_edit_entry(edit_id: int) -> dict | None:
+    """Return a single edit_history row by id."""
+    with get_connection() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT id, table_name, record_id, timestamp, field_name, old_value, new_value, actor "
+            "FROM edit_history WHERE id = ?",
+            (edit_id,),
+        )
+        row = cur.fetchone()
+        if row:
+            cols = [d[0] for d in cur.description]
+            return dict(zip(cols, row))
+        return None
+
+
+def revert_edit(entry: dict) -> bool:
+    """Undo the provided edit_history entry."""
+    table = entry["table_name"]
+    record_id = entry["record_id"]
+    field = entry["field_name"]
+    old_val = entry["old_value"]
+    new_val = entry["new_value"]
+
+    try:
+        if field.startswith("relation_"):
+            from db.relationships import add_relationship, remove_relationship
+
+            rel_table = field[len("relation_") :]
+            if old_val is None and new_val is not None:
+                add_relationship(table, record_id, rel_table, int(new_val))
+            elif new_val is None and old_val is not None:
+                remove_relationship(table, record_id, rel_table, int(old_val))
+            else:
+                return False
+        else:
+            update_field_value(table, record_id, field, old_val)
+        append_edit_log(table, record_id, field, new_val, old_val, actor="undo")
+    except Exception:
+        logger.exception("Failed to revert edit")
+        return False
+    return True
 
 def create_record(table, form_data):
     # 1) Validate the table name
