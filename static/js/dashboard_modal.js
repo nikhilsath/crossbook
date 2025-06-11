@@ -201,9 +201,11 @@ function populateFieldDropdown(dropdown, restrictNumeric, callback) {
   dropdown.appendChild(search);
 
   Object.keys(FIELD_SCHEMA).forEach(table => {
-    const fields = FIELD_SCHEMA[table] ? Object.keys(FIELD_SCHEMA[table]) : [];
+    const tableSchema = FIELD_SCHEMA[table] || {};
+    const fields = Object.keys(tableSchema);
     fields.forEach(field => {
-      const type = FIELD_SCHEMA[table] && FIELD_SCHEMA[table][field] ? FIELD_SCHEMA[table][field].type : '';
+      const type = tableSchema[field] ? tableSchema[field].type : '';
+      if (type === 'hidden') return;
       if (restrictNumeric && type !== 'number') return;
       const val = `${table}:${field}`;
       const label = document.createElement('label');
