@@ -11,7 +11,7 @@ from db.records import (
 )
 from db.relationships import get_related_records, add_relationship, remove_relationship
 from db.edit_fields import add_column_to_table, add_field_to_schema, drop_column_from_table, remove_field_from_schema
-from db.schema import load_field_schema, get_field_schema, update_layout as db_update_layout
+from db.schema import get_field_schema, update_layout as db_update_layout
 from db.dashboard import sum_field as db_sum_field
 
 records_bp = Blueprint('records', __name__)
@@ -59,7 +59,7 @@ def detail_view(table, record_id):
     if not record:
         abort(404)
     related = get_related_records(table, record_id)
-    field_schema = load_field_schema()
+    field_schema = get_field_schema()
     raw_layout = field_schema.get(table, {})
     field_schema_layout = {field: meta.get('layout', {}) for field, meta in raw_layout.items()}
     current_app.logger.debug("[DETAIL] Using layout: %s", field_schema_layout)
@@ -92,8 +92,6 @@ def add_field_route(table, record_id):
             field_options=field_options,
             foreign_key=foreign_key
         )
-        from db import schema
-        schema.FIELD_SCHEMA = load_field_schema()
         current_app.logger.info('Added column to %s: field=%r type=%r', table, field_name, field_type)
         return redirect(url_for('records.detail_view', table=table, record_id=record_id))
     except Exception as e:
@@ -126,8 +124,6 @@ def remove_field_route(table, record_id):
         abort(400, 'Invalid field')
     drop_column_from_table(table, field_name)
     remove_field_from_schema(table, field_name)
-    from db import schema
-    schema.FIELD_SCHEMA = load_field_schema()
     return redirect(url_for('records.detail_view', table=table, record_id=record_id))
 
 @records_bp.route('/<table>/<int:record_id>/update', methods=['POST'])

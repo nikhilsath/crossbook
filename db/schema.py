@@ -5,7 +5,6 @@ import logging
 from db.database import get_connection
 
 logger = logging.getLogger(__name__)
-FIELD_SCHEMA = {}
 
 # Create library with field types and coordinate layouts
 def load_field_schema():
@@ -51,11 +50,6 @@ def load_field_schema():
         return schema
 
 
-# Initialize in-memory cache
-try:
-    FIELD_SCHEMA = load_field_schema()
-except Exception as e:
-    logger.exception("Error loading FIELD_SCHEMA: %s", e)
 
 
 def update_foreign_field_options():
@@ -121,7 +115,7 @@ def update_foreign_field_options():
 
 
 def get_field_schema():
-    return FIELD_SCHEMA
+    return load_field_schema()
 
 def load_card_info(conn):
     """Return card metadata from the config_base_tables table."""
@@ -202,10 +196,6 @@ def update_layout(table: str, layout_items: list[dict]) -> int:
                 }
 
         conn.commit()
-
-    # Refresh the global FIELD_SCHEMA cache
-    global FIELD_SCHEMA
-    FIELD_SCHEMA = current_schema
 
     return updated
 
@@ -301,9 +291,5 @@ def create_base_table(table_name: str, description: str) -> bool:
             logger.exception("Error creating base table %s: %s", table_name, exc)
             conn.rollback()
             return False
-
-    # Refresh the in-memory FIELD_SCHEMA cache
-    global FIELD_SCHEMA
-    FIELD_SCHEMA = load_field_schema()
 
     return True
