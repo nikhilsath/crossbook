@@ -72,7 +72,6 @@ def add_field_to_schema(table, field_name, field_type, field_options=None, forei
         conn.commit()
 
 def add_column_to_table(table_name, field_name, field_type):
-    import sqlite3
     from db.database import get_connection
 
     # Map form types to SQL types
