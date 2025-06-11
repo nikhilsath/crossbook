@@ -80,6 +80,7 @@ function enableDashboardDrag() {
   let startX, startY, startRect, widgetEl, widgetId;
 
   grid.addEventListener('mousedown', e => {
+    if (!grid.classList.contains('editing')) return;
     if (e.target.classList.contains('resize-handle')) return;
     widgetEl = e.target.closest('.draggable-field');
     widgetId = widgetEl?.dataset.widget;
@@ -107,7 +108,7 @@ function enableDashboardDrag() {
   });
 
   function onMove(e) {
-    if (!isDragging) return;
+    if (!isDragging || !grid.classList.contains('editing')) return;
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
     widgetEl.style.left = `${startRect.left + dx}px`;
@@ -117,6 +118,12 @@ function enableDashboardDrag() {
   function onUp(e) {
     if (!isDragging) return;
     isDragging = false;
+    if (!grid.classList.contains('editing')) {
+      revertPosition(widgetEl);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      return;
+    }
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
     const containerWidth = grid.clientWidth;
@@ -157,6 +164,7 @@ function enableDashboardResize() {
   let handleType, widgetEl, widgetId, startX, startY, startRect;
 
   grid.addEventListener('mousedown', e => {
+    if (!grid.classList.contains('editing')) return;
     if (!e.target.classList.contains('resize-handle')) return;
     e.preventDefault();
     handleType = ['top-left','top-right','bottom-left','bottom-right']
@@ -173,7 +181,7 @@ function enableDashboardResize() {
   });
 
   function onMove(e) {
-    if (!isResizing) return;
+    if (!isResizing || !grid.classList.contains('editing')) return;
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
     const containerWidth = grid.clientWidth;
@@ -212,6 +220,12 @@ function enableDashboardResize() {
   function onUp() {
     if (!isResizing) return;
     isResizing = false;
+    if (!grid.classList.contains('editing')) {
+      revertPosition(widgetEl);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      return;
+    }
     document.removeEventListener('mousemove', onMove);
     document.removeEventListener('mouseup', onUp);
 
