@@ -262,7 +262,6 @@ function populateFieldDropdown(dropdown, restrictNumeric, callback) {
     const fields = Object.keys(tableSchema);
     fields.forEach(field => {
       const type = tableSchema[field] ? tableSchema[field].type : '';
-      if (type === 'hidden') return;
       if (restrictNumeric && type !== 'number') return;
       const val = `${table}:${field}`;
       const label = document.createElement('label');
