@@ -59,6 +59,8 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Field Schema Editing:** New endpoints allow adding or removing columns at runtime (`/<table>/<id>/add-field`, `/<table>/<id>/remove-field`) and counting non-null values (`/<table>/count-nonnull`).
 * **Admin Dashboard & Configuration:** The `/admin` section includes a configuration editor and placeholder pages for user management and automation.
 * **Layout Defaults from DB:** Field width and height defaults are loaded from the `config` table instead of being hardcoded.
+* **Automatic Dashboard Widget Placement:** New widgets are inserted at the next
+  available row in the grid without specifying `row_start`.
 * **CSV Import Workflow (Experimental):** The `/import` page lets you upload CSV files, match columns to fields, and validate data before import.
 
 ## Project Structure
