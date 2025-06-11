@@ -44,3 +44,33 @@ def get_dashboard_widgets() -> list[dict]:
         return []
     finally:
         conn.close()
+
+
+def create_widget(
+    title: str,
+    content: str,
+    widget_type: str,
+    col_start: int,
+    col_span: int,
+    row_start: int,
+    row_span: int,
+) -> int | None:
+    """Insert a new widget row and return its id."""
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            """
+            INSERT INTO dashboard_widget
+                (title, content, widget_type, col_start, col_span, row_start, row_span)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (title, content, widget_type, col_start, col_span, row_start, row_span),
+        )
+        conn.commit()
+        return cur.lastrowid
+    except Exception as exc:
+        logger.warning("[create_widget] SQL error: %s", exc)
+        return None
+    finally:
+        conn.close()

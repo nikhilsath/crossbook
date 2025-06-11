@@ -87,6 +87,37 @@ function updateValueResult() {
   }
 }
 
+function onCreateWidget(event) {
+  if (event) event.preventDefault();
+  if (selectedOperation !== 'sum' || !selectedColumn) return;
+  const [table, field] = selectedColumn.split(':');
+  const title = (titleInputEl && titleInputEl.value.trim()) || `Sum of ${field}`;
+  const payload = {
+    title: title,
+    content: JSON.stringify({ operation: 'sum', table, field }),
+    widget_type: 'value',
+    col_start: 1,
+    col_span: 4,
+    row_start: 1,
+    row_span: 3
+  };
+  fetch('/dashboard/widget', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        closeDashboardModal();
+        window.location.reload();
+      }
+    })
+    .catch(() => {
+      console.error('Failed to create widget');
+    });
+}
+
 function updateColumnOptions() {
   if (!columnDropdown || !columnToggleBtn) return;
 
@@ -205,6 +236,9 @@ function initDashboardModal() {
   titleInputEl = document.getElementById('sumTitleInput');
   resultRowEl = document.getElementById('resultRow');
   createBtnEl = document.getElementById('dashboardCreateBtn');
+  if (createBtnEl) {
+    createBtnEl.addEventListener('click', onCreateWidget);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', initDashboardModal);
