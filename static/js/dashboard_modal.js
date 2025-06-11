@@ -20,6 +20,13 @@ let mathField1Container, mathField2Container;
 let aggToggle1El, aggToggle2El;
 let valueResultEl, titleInputEl, resultRowEl, createBtnEl, mathOpContainer;
 let activeTab = 'value';
+let chartTypeEl,
+    chartXToggleBtn, chartXLabel, chartXOptions,
+    chartYToggleBtn, chartYLabel, chartYOptions,
+    chartAggToggleEl, chartTitleInputEl, chartCreateBtnEl;
+let chartXField = null;
+let chartYField = null;
+let chartAgg = '';
 
 function isNumericField(val) {
   if (!val) return false;
@@ -216,6 +223,48 @@ function updateValueResult() {
 
 function onCreateWidget(event) {
   if (event) event.preventDefault();
+
+  // Chart widget
+  if (activeTab === 'chart') {
+    const chartType = chartTypeEl ? chartTypeEl.value : 'bar';
+    const aggInput = chartAggToggleEl ? chartAggToggleEl.querySelector('input[name="chartAgg"]:checked') : null;
+    chartAgg = aggInput ? aggInput.value : '';
+    if (!chartXField || !chartYField) return;
+    const payloadContent = {
+      chart_type: chartType,
+      x_field: chartXField,
+      y_field: chartYField,
+      aggregation: chartAgg
+    };
+    const title = (chartTitleInputEl && chartTitleInputEl.value.trim()) || 'Chart Widget';
+    const payload = {
+      title,
+      content: JSON.stringify(payloadContent),
+      widget_type: 'chart',
+      col_start: 1,
+      col_span: 10,
+      row_start: 1,
+      row_span: 8
+    };
+    fetch('/dashboard/widget', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          closeDashboardModal();
+          window.location.reload();
+        }
+      })
+      .catch(() => {
+        console.error('Failed to create widget');
+      });
+    return;
+  }
+
+  // Value widget
   if (selectedOperation === 'math') {
     if (!mathField1 || !mathOperation || (mathOperation !== 'average' && !mathField2)) return;
   } else if (!['sum', 'count'].includes(selectedOperation) || !selectedColumn) {
@@ -415,6 +464,16 @@ function initDashboardModal() {
   mathOpContainer = document.getElementById('mathOperationContainer');
   mathField1Container = document.getElementById('mathField1');
   mathField2Container = document.getElementById('mathField2');
+  chartTypeEl = document.getElementById('chartTypeSelect');
+  chartXToggleBtn = document.getElementById('chartXFieldToggle');
+  chartXLabel = chartXToggleBtn ? chartXToggleBtn.querySelector('.selected-label') : null;
+  chartXOptions = document.getElementById('chartXFieldOptions');
+  chartYToggleBtn = document.getElementById('chartYFieldToggle');
+  chartYLabel = chartYToggleBtn ? chartYToggleBtn.querySelector('.selected-label') : null;
+  chartYOptions = document.getElementById('chartYFieldOptions');
+  chartAggToggleEl = document.getElementById('chartAggToggle');
+  chartTitleInputEl = document.getElementById('chartTitleInput');
+  chartCreateBtnEl = document.getElementById('chartCreateBtn');
   if (mathOpContainer) {
     mathOpContainer.addEventListener('change', () => {
       const checked = mathOpContainer.querySelector('input[name="mathOperation"]:checked');
@@ -453,6 +512,43 @@ function initDashboardModal() {
   }
   if (createBtnEl) {
     createBtnEl.addEventListener('click', onCreateWidget);
+  }
+  if (chartXToggleBtn && chartXOptions) {
+    chartXToggleBtn.addEventListener('click', e => { e.stopPropagation(); chartXOptions.classList.toggle('hidden'); });
+    document.addEventListener('click', e => {
+      if (!chartXOptions.contains(e.target) && e.target !== chartXToggleBtn) chartXOptions.classList.add('hidden');
+    });
+    chartXOptions.addEventListener('click', e => e.stopPropagation());
+    populateFieldDropdown(chartXOptions, false, val => {
+      chartXField = val;
+      if (chartXLabel) {
+        const [t,f] = val.split(':');
+        chartXLabel.textContent = `${t}: ${f}`;
+      }
+    });
+  }
+  if (chartYToggleBtn && chartYOptions) {
+    chartYToggleBtn.addEventListener('click', e => { e.stopPropagation(); chartYOptions.classList.toggle('hidden'); });
+    document.addEventListener('click', e => {
+      if (!chartYOptions.contains(e.target) && e.target !== chartYToggleBtn) chartYOptions.classList.add('hidden');
+    });
+    chartYOptions.addEventListener('click', e => e.stopPropagation());
+    populateFieldDropdown(chartYOptions, false, val => {
+      chartYField = val;
+      if (chartYLabel) {
+        const [t,f] = val.split(':');
+        chartYLabel.textContent = `${t}: ${f}`;
+      }
+    });
+  }
+  if (chartAggToggleEl) {
+    chartAggToggleEl.addEventListener('change', () => {
+      const checked = chartAggToggleEl.querySelector('input[name="chartAgg"]:checked');
+      chartAgg = checked ? checked.value : '';
+    });
+  }
+  if (chartCreateBtnEl) {
+    chartCreateBtnEl.addEventListener('click', onCreateWidget);
   }
 
   updateAggToggleUI();
