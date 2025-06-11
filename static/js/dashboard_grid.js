@@ -12,6 +12,30 @@ const defaultWidgetHeight = {
 
 const widgetLayout = {};
 
+function enterEditMode() {
+  const grid = document.getElementById('dashboard-grid');
+  if (grid) {
+    grid.classList.add('editing');
+  }
+  document
+    .querySelectorAll('#dashboard-grid .resize-handle')
+    .forEach(h => h.classList.remove('hidden'));
+  const saveBtn = document.getElementById('dashboard_save');
+  if (saveBtn) saveBtn.classList.remove('hidden');
+}
+
+function exitEditMode() {
+  const grid = document.getElementById('dashboard-grid');
+  if (grid) {
+    grid.classList.remove('editing');
+  }
+  document
+    .querySelectorAll('#dashboard-grid .resize-handle')
+    .forEach(h => h.classList.add('hidden'));
+  const saveBtn = document.getElementById('dashboard_save');
+  if (saveBtn) saveBtn.classList.add('hidden');
+}
+
 function intersects(a, b) {
   return (
     a.colStart <  b.colStart + b.colSpan  &&
@@ -195,4 +219,12 @@ function enableDashboardResize() {
 document.addEventListener('DOMContentLoaded', () => {
   enableDashboardDrag();
   enableDashboardResize();
+  const editBtn = document.getElementById('dashboard_edit');
+  if (editBtn) editBtn.addEventListener('click', enterEditMode);
+  const saveBtn = document.getElementById('dashboard_save');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', () => {
+      exitEditMode();
+    });
+  }
 });
