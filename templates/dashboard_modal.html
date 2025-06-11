@@ -96,13 +96,14 @@
         <div class="mb-4">
           <label for="chartTypeSelect" class="block text-sm font-medium mb-1">Chart Type</label>
           <select id="chartTypeSelect" class="w-full px-3 py-2 border rounded shadow-sm bg-white">
+            <option value="" selected disabled>Select Chart Type</option>
             <option value="bar">Bar</option>
             <option value="line">Line</option>
             <option value="pie">Pie</option>
           </select>
         </div>
-        <div class="mb-4">
-          <label class="block text-sm font-medium mb-1">X Field</label>
+        <div id="chartXFieldContainer" class="mb-4 hidden">
+          <label id="chartXFieldLabel" class="block text-sm font-medium mb-1">X Field</label>
           <div class="relative">
             <button id="chartXFieldToggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-left flex items-center justify-between">
               <span class="selected-label">Select Field</span> <span class="arrow text-xl">▾</span>
@@ -110,7 +111,7 @@
             <div id="chartXFieldOptions" class="absolute z-10 mt-1 w-full bg-white border rounded shadow hidden max-h-64 overflow-y-auto p-2 space-y-1"></div>
           </div>
         </div>
-        <div class="mb-4">
+        <div id="chartYFieldContainer" class="mb-4 hidden">
           <label class="block text-sm font-medium mb-1">Y Field</label>
           <div class="relative">
             <button id="chartYFieldToggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-left flex items-center justify-between">
@@ -119,7 +120,7 @@
             <div id="chartYFieldOptions" class="absolute z-10 mt-1 w-full bg-white border rounded shadow hidden max-h-64 overflow-y-auto p-2 space-y-1"></div>
           </div>
         </div>
-        <div id="chartAggToggle" class="flex mb-4">
+        <div id="chartAggContainer" class="flex mb-4 hidden">
           <label class="cursor-pointer">
             <input type="radio" name="chartAgg" value="" class="sr-only peer" checked>
             <div class="p-1 border rounded-l text-center peer-checked:bg-blue-500 peer-checked:text-white">None</div>
@@ -133,8 +134,8 @@
             <div class="p-1 border border-l-0 rounded-r text-center peer-checked:bg-blue-500 peer-checked:text-white">Count</div>
           </label>
         </div>
-        <input id="chartTitleInput" type="text" placeholder="Widget Title" class="px-3 py-2 border rounded w-full mb-4" />
-        <button id="chartCreateBtn" type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 block ml-auto">Create</button>
+        <input id="chartTitleInput" type="text" placeholder="Widget Title" class="px-3 py-2 border rounded w-full mb-4 hidden" />
+        <button id="chartCreateBtn" type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 block ml-auto hidden">Create</button>
       </form>
     </div>
   </div>
