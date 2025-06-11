@@ -25,3 +25,22 @@ def sum_field(table: str, field: str) -> float:
         return 0
     finally:
         conn.close()
+
+
+def get_dashboard_widgets() -> list[dict]:
+    """Return all dashboard widgets ordered by id."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "SELECT id, title, content, widget_type, col_start, col_span, row_start, row_span"
+            " FROM dashboard_widget ORDER BY id"
+        )
+        rows = cursor.fetchall()
+        cols = [d[0] for d in cursor.description]
+        return [dict(zip(cols, r)) for r in rows]
+    except Exception as e:
+        logger.warning("[get_dashboard_widgets] SQL error: %s", e)
+        return []
+    finally:
+        conn.close()

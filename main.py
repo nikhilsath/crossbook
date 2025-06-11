@@ -77,7 +77,9 @@ def home():
 @app.route("/dashboard")
 def dashboard():
     """Render the dashboard page."""
-    return render_template("dashboard.html")
+    from db.dashboard import get_dashboard_widgets
+    widgets = get_dashboard_widgets()
+    return render_template("dashboard.html", widgets=widgets)
 
 
 @app.route("/admin")

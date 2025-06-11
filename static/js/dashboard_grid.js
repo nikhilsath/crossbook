@@ -1,0 +1,198 @@
+const defaultWidgetWidth = {
+  value: 4,
+  table: 10,
+  chart: 10
+};
+
+const defaultWidgetHeight = {
+  value: 3,
+  table: 8,
+  chart: 8
+};
+
+const widgetLayout = {};
+
+function intersects(a, b) {
+  return (
+    a.colStart <  b.colStart + b.colSpan  &&
+    b.colStart <  a.colStart + a.colSpan  &&
+    a.rowStart   <  b.rowStart   + b.rowSpan &&
+    b.rowStart   <  a.rowStart   + a.rowSpan
+  );
+}
+
+function revertPosition(el) {
+  const prev = el._prevRect;
+  if (!prev) return;
+  el.style.gridColumn = `${prev.colStart} / span ${prev.colSpan}`;
+  el.style.gridRow    = `${prev.rowStart} / span ${prev.rowSpan}`;
+  el.style.left = '';
+  el.style.top  = '';
+  el.style.position = '';
+  widgetLayout[el.dataset.widget] = { ...prev };
+}
+
+function enableDashboardDrag() {
+  const grid = document.getElementById('dashboard-grid');
+  let isDragging = false;
+  let startX, startY, startRect, widgetEl, widgetId;
+
+  grid.addEventListener('mousedown', e => {
+    if (e.target.classList.contains('resize-handle')) return;
+    widgetEl = e.target.closest('.draggable-field');
+    widgetId = widgetEl?.dataset.widget;
+    if (!widgetEl || !widgetId) return;
+    widgetEl._prevRect = { ...widgetLayout[widgetId] };
+    const rect = widgetEl.getBoundingClientRect();
+    widgetEl.style.width  = `${rect.width}px`;
+    widgetEl.style.height = `${rect.height}px`;
+    const gridRect = grid.getBoundingClientRect();
+    startX = e.clientX;
+    startY = e.clientY;
+    startRect = {
+      left:   rect.left - gridRect.left,
+      top:    rect.top  - gridRect.top,
+      ...widgetLayout[widgetId]
+    };
+    widgetEl.style.gridColumn = '';
+    widgetEl.style.gridRow = '';
+    widgetEl.style.position = 'absolute';
+    widgetEl.style.left = `${startRect.left}px`;
+    widgetEl.style.top  = `${startRect.top}px`;
+    isDragging = true;
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  function onMove(e) {
+    if (!isDragging) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    widgetEl.style.left = `${startRect.left + dx}px`;
+    widgetEl.style.top  = `${startRect.top  + dy}px`;
+  }
+
+  function onUp(e) {
+    if (!isDragging) return;
+    isDragging = false;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    const containerWidth = grid.clientWidth;
+    const gridCols = 20;
+    const gridCellWidth = containerWidth / gridCols;
+    const newColStart = Math.floor((startRect.left + dx) / gridCellWidth);
+    const rowEm = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const newRowStart = Math.round((startRect.top + dy) / rowEm);
+    widgetLayout[widgetId] = {
+      colStart: newColStart + 1,
+      colSpan:  startRect.colSpan,
+      rowStart: newRowStart + 1,
+      rowSpan:  startRect.rowSpan
+    };
+    const hasOverlap = Object.entries(widgetLayout).some(([other, rect]) =>
+      other !== widgetId && intersects(widgetLayout[widgetId], rect)
+    );
+    if (hasOverlap) {
+      revertPosition(widgetEl);
+    } else {
+      widgetEl.style.left = '';
+      widgetEl.style.top = '';
+      widgetEl.style.position = '';
+      widgetEl.style.gridColumn = `${newColStart + 1} / span ${startRect.colSpan}`;
+      widgetEl.style.gridRow    = `${newRowStart + 1} / span ${startRect.rowSpan}`;
+      widgetEl.style.width = '';
+      widgetEl.style.height = '';
+    }
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+  }
+}
+
+function enableDashboardResize() {
+  const grid = document.getElementById('dashboard-grid');
+  const handles = document.querySelectorAll('.resize-handle');
+  let isResizing = false;
+  let handleType, widgetEl, widgetId, startX, startY, startRect;
+
+  grid.addEventListener('mousedown', e => {
+    if (!e.target.classList.contains('resize-handle')) return;
+    e.preventDefault();
+    handleType = ['top-left','top-right','bottom-left','bottom-right']
+                   .find(c => e.target.classList.contains(c));
+    widgetEl = e.target.closest('.draggable-field');
+    widgetId = widgetEl.dataset.widget;
+    startX = e.clientX;
+    startY = e.clientY;
+    startRect = { ...widgetLayout[widgetId] };
+    widgetEl._prevRect = { ...startRect };
+    isResizing = true;
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  function onMove(e) {
+    if (!isResizing) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    const containerWidth = grid.clientWidth;
+    const gridCols = 20;
+    const gridCellWidth = containerWidth / gridCols;
+    const deltaCols = Math.round(dx / gridCellWidth);
+    const rowEm = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const deltaRows = Math.round(dy / rowEm);
+
+    let { colStart, colSpan, rowStart, rowSpan } = startRect;
+    let newColStart = colStart, newRowStart = rowStart;
+    let newColSpan = colSpan, newRowSpan = rowSpan;
+
+    if (handleType === 'bottom-right') {
+      newColSpan = Math.max(1, colSpan + deltaCols);
+      newRowSpan = Math.max(1, rowSpan + deltaRows);
+    } else if (handleType === 'bottom-left') {
+      newColStart = Math.max(1, colStart + deltaCols);
+      newColSpan  = Math.max(1, colSpan - deltaCols);
+      newRowSpan  = Math.max(1, rowSpan + deltaRows);
+    } else if (handleType === 'top-right') {
+      newRowStart = Math.max(1, rowStart + deltaRows);
+      newRowSpan  = Math.max(1, rowSpan - deltaRows);
+      newColSpan  = Math.max(1, colSpan + deltaCols);
+    } else if (handleType === 'top-left') {
+      newColStart = Math.max(1, colStart + deltaCols);
+      newRowStart = Math.max(1, rowStart + deltaRows);
+      newColSpan  = Math.max(1, colSpan - deltaCols);
+      newRowSpan  = Math.max(1, rowSpan - deltaRows);
+    }
+
+    widgetEl.style.gridColumn = `${newColStart} / span ${newColSpan}`;
+    widgetEl.style.gridRow    = `${newRowStart} / span ${newRowSpan}`;
+  }
+
+  function onUp() {
+    if (!isResizing) return;
+    isResizing = false;
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+
+    const partsCol = widgetEl.style.gridColumn.split(' ');
+    const partsRow = widgetEl.style.gridRow.split(' ');
+    const newRect = {
+      colStart: parseInt(partsCol[0]),
+      colSpan:  parseInt(partsCol[3]),
+      rowStart: parseInt(partsRow[0]),
+      rowSpan:  parseInt(partsRow[3])
+    };
+    const hasOverlap = Object.entries(widgetLayout).some(([id, rect]) =>
+      id !== widgetId && intersects(newRect, rect)
+    );
+    if (hasOverlap) {
+      revertPosition(widgetEl);
+    } else {
+      widgetLayout[widgetId] = newRect;
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  enableDashboardDrag();
+  enableDashboardResize();
+});
