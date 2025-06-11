@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, current_app
 from logging_setup import configure_logging
 from db.config import get_config_rows, update_config, get_logging_config
-from db.dashboard import get_dashboard_widgets, create_widget
+from db.dashboard import get_dashboard_widgets, create_widget, update_widget_layout
 from db.schema import create_base_table, refresh_card_cache
 from imports.import_csv import parse_csv
 from utils.validation import validation_sorter
@@ -80,6 +80,16 @@ def dashboard_create_widget():
         return jsonify({'error': 'Failed to create widget'}), 500
 
     return jsonify({'success': True, 'id': widget_id})
+
+
+@admin_bp.route('/dashboard/layout', methods=['POST'])
+def dashboard_update_layout():
+    data = request.get_json(silent=True)
+    if not data or not isinstance(data.get('layout'), list):
+        return jsonify({'error': 'Invalid JSON or missing `layout`'}), 400
+    layout_items = data['layout']
+    updated = update_widget_layout(layout_items)
+    return jsonify({'success': True, 'updated': updated})
 
 @admin_bp.route('/add-table', methods=['POST'])
 def add_table():

@@ -56,6 +56,24 @@ function revertPosition(el) {
   widgetLayout[el.dataset.widget] = { ...prev };
 }
 
+function saveDashboardLayout() {
+  const layout = Object.entries(widgetLayout).map(([id, rect]) => ({
+    id: parseInt(id),
+    colStart: rect.colStart,
+    colSpan: rect.colSpan,
+    rowStart: rect.rowStart,
+    rowSpan: rect.rowSpan
+  }));
+  fetch('/dashboard/layout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ layout })
+  })
+    .then(res => res.json())
+    .then(data => { console.debug('[dashboard] save layout', data); })
+    .catch(err => { console.error('[dashboard] save layout error', err); });
+}
+
 function enableDashboardDrag() {
   const grid = document.getElementById('dashboard-grid');
   let isDragging = false;
@@ -224,6 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveBtn = document.getElementById('dashboard_save');
   if (saveBtn) {
     saveBtn.addEventListener('click', () => {
+      saveDashboardLayout();
       exitEditMode();
     });
   }
