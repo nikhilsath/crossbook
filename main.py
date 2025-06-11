@@ -40,7 +40,6 @@ from utils.flask_helpers import start_timer, log_request, log_exception
 
 app = Flask(__name__, static_url_path='/static')
 app.jinja_env.add_extension('jinja2.ext.do') # for field type in detail_view
-DB_PATH = os.path.join("data", "crossbook.db")
 conn = get_connection()
 CARD_INFO = load_card_info(conn)
 BASE_TABLES = load_base_tables(conn)

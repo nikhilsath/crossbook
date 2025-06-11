@@ -2,9 +2,9 @@ import sqlite3
 import json
 import logging
 
-logger = logging.getLogger(__name__)
+from db.database import get_connection
 
-DB_PATH = "data/crossbook.db"
+logger = logging.getLogger(__name__)
 FIELD_SCHEMA = {}
 
 # Create library with field types and coordinate layouts
@@ -12,7 +12,7 @@ def load_field_schema():
     """
     Load field definitions from the field_schema table into a nested dict
     """
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_connection()
     cur = conn.cursor()
     # Select all schema columns including new coordinates
     cur.execute("""
@@ -65,7 +65,7 @@ def update_foreign_field_options():
     # Local import to avoid circular dependency
     from db.validation import validate_table
 
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_connection()
     cur = conn.cursor()
     # Step 1: Get all foreign key definitions
     cur.execute("""
@@ -152,7 +152,7 @@ def load_base_tables(conn):
 
 def refresh_card_cache():
     """Return updated CARD_INFO and BASE_TABLES lists."""
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_connection()
     try:
         card_info = load_card_info(conn)
         base_tables = load_base_tables(conn)
@@ -166,7 +166,7 @@ def update_layout(table: str, layout_items: list[dict]) -> int:
     if table not in current_schema:
         raise ValueError(f"Unknown table: {table}")
 
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_connection()
     cur = conn.cursor()
     updated = 0
 
@@ -225,7 +225,7 @@ def create_base_table(table_name: str, description: str) -> bool:
         logger.error("Invalid table name: %s", table_name)
         return False
 
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_connection()
     cur = conn.cursor()
     try:
         # Ensure the table does not already exist
