@@ -8,7 +8,8 @@ export function closeDashboardModal() {
 
 let selectedOperation = null;
 let selectedColumn = null;
-let columnToggleBtn, columnToggleLabel, columnDropdown, valueResultEl, titleInputEl, resultRowEl, createBtnEl, mathTagsContainer;
+let mathOperation = null;
+let columnToggleBtn, columnToggleLabel, columnDropdown, valueResultEl, titleInputEl, resultRowEl, createBtnEl, mathTagsContainer, mathOpContainer;
 let activeTab = 'value';
 
 function setActiveTab(name) {
@@ -111,6 +112,37 @@ function updateValueResult() {
       .catch(() => {
         valueResultEl.textContent = 'Error';
       });
+  } else if (selectedOperation === 'math' && Array.isArray(selectedColumn) && selectedColumn.length >= 2 && mathOperation) {
+    resultRowEl.classList.remove('hidden');
+    if (createBtnEl) createBtnEl.classList.remove('hidden');
+    const labels = selectedColumn.map(val => val.split(':')[1]);
+    const defaultTitle = `${mathOperation.charAt(0).toUpperCase() + mathOperation.slice(1)} of ${labels.join(', ')}`;
+    if (titleInputEl) {
+      titleInputEl.placeholder = defaultTitle;
+      titleInputEl.value = defaultTitle;
+    }
+    valueResultEl.textContent = 'Calculating…';
+    Promise.all(selectedColumn.map(val => {
+      const [table, field] = val.split(':');
+      return fetch(`/${table}/sum-field?field=${encodeURIComponent(field)}`)
+        .then(res => res.json())
+        .then(d => d.sum || 0)
+        .catch(() => 0);
+    }))
+    .then(nums => {
+      let result = nums[0] || 0;
+      for (let i = 1; i < nums.length; i++) {
+        const n = nums[i] || 0;
+        if (mathOperation === 'add') result += n;
+        else if (mathOperation === 'subtract') result -= n;
+        else if (mathOperation === 'multiply') result *= n;
+        else if (mathOperation === 'divide') result /= n || 1;
+      }
+      valueResultEl.textContent = result;
+    })
+    .catch(() => {
+      valueResultEl.textContent = 'Error';
+    });
   } else {
     resultRowEl.classList.add('hidden');
     valueResultEl.textContent = '';
@@ -120,13 +152,29 @@ function updateValueResult() {
 
 function onCreateWidget(event) {
   if (event) event.preventDefault();
-  if (!['sum', 'count'].includes(selectedOperation) || !selectedColumn) return;
-  const [table, field] = selectedColumn.split(':');
-  const defaultTitle = `${selectedOperation === 'sum' ? 'Sum' : 'Count'} of ${field}`;
+  if (selectedOperation === 'math') {
+    if (!Array.isArray(selectedColumn) || selectedColumn.length < 2 || !mathOperation) return;
+  } else if (!['sum', 'count'].includes(selectedOperation) || !selectedColumn) {
+    return;
+  }
+
+  let defaultTitle;
+  let payloadContent;
+
+  if (selectedOperation === 'math') {
+    const labels = selectedColumn.map(val => val.split(':')[1]);
+    defaultTitle = `${mathOperation.charAt(0).toUpperCase() + mathOperation.slice(1)} of ${labels.join(', ')}`;
+    payloadContent = { operation: 'math', math_operation: mathOperation, columns: selectedColumn };
+  } else {
+    const [table, field] = selectedColumn.split(':');
+    defaultTitle = `${selectedOperation === 'sum' ? 'Sum' : 'Count'} of ${field}`;
+    payloadContent = { operation: selectedOperation, table, field };
+  }
+
   const title = (titleInputEl && titleInputEl.value.trim()) || defaultTitle;
   const payload = {
     title: title,
-    content: JSON.stringify({ operation: selectedOperation, table, field }),
+    content: JSON.stringify(payloadContent),
     widget_type: 'value',
     col_start: 1,
     col_span: 4,
@@ -161,6 +209,12 @@ function updateColumnOptions() {
       mathTagsContainer.classList.add('hidden');
       mathTagsContainer.innerHTML = '';
     }
+    if (mathOpContainer) {
+      mathOpContainer.classList.add('hidden');
+      const checked = mathOpContainer.querySelector('input[name="mathOperation"]:checked');
+      if (checked) checked.checked = false;
+      mathOperation = null;
+    }
     refreshColumnTags();
     return;
   }
@@ -170,9 +224,16 @@ function updateColumnOptions() {
   if (mathTagsContainer) {
     if (selectedOperation === 'math') {
       mathTagsContainer.classList.remove('hidden');
+      if (mathOpContainer) mathOpContainer.classList.remove('hidden');
     } else {
       mathTagsContainer.classList.add('hidden');
       mathTagsContainer.innerHTML = '';
+      if (mathOpContainer) {
+        mathOpContainer.classList.add('hidden');
+        const checked = mathOpContainer.querySelector('input[name="mathOperation"]:checked');
+        if (checked) checked.checked = false;
+        mathOperation = null;
+      }
     }
   }
 
@@ -281,6 +342,14 @@ function initDashboardModal() {
   resultRowEl = document.getElementById('resultRow');
   createBtnEl = document.getElementById('dashboardCreateBtn');
   mathTagsContainer = document.getElementById('mathTagsContainer');
+  mathOpContainer = document.getElementById('mathOperationContainer');
+  if (mathOpContainer) {
+    mathOpContainer.addEventListener('change', () => {
+      const checked = mathOpContainer.querySelector('input[name="mathOperation"]:checked');
+      mathOperation = checked ? checked.value : null;
+      updateValueResult();
+    });
+  }
   if (createBtnEl) {
     createBtnEl.addEventListener('click', onCreateWidget);
   }
