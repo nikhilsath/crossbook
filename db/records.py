@@ -66,182 +66,164 @@ def get_all_records(
 
     validate_table(table)
 
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        clauses, params = _build_filters(table, search, filters, ops)
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            clauses, params = _build_filters(table, search, filters, ops)
 
-        sql = f"SELECT * FROM {table}"
-        if clauses:
-            sql += " WHERE " + " AND ".join(clauses)
-        if limit is not None:
-            sql += f" LIMIT {int(limit)} OFFSET {int(offset)}"
+            sql = f"SELECT * FROM {table}"
+            if clauses:
+                sql += " WHERE " + " AND ".join(clauses)
+            if limit is not None:
+                sql += f" LIMIT {int(limit)} OFFSET {int(offset)}"
 
-        logger.info(f"[QUERY] SQL: {sql} | params: {params}")
-        cursor.execute(sql, params)
+            logger.info(f"[QUERY] SQL: {sql} | params: {params}")
+            cursor.execute(sql, params)
 
-        rows = cursor.fetchall()
-        cols = [desc[0] for desc in cursor.description]
-        return [dict(zip(cols, row)) for row in rows]
-
-    except Exception as e:
-        logger.warning(f"[QUERY ERROR] {e}")
-        return []
-    finally:
-        conn.close()
+            rows = cursor.fetchall()
+            cols = [desc[0] for desc in cursor.description]
+            return [dict(zip(cols, row)) for row in rows]
+        except Exception as e:
+            logger.warning(f"[QUERY ERROR] {e}")
+            return []
 
 
 def count_records(table, search=None, filters=None, ops=None):
     """Return count of records matching the provided filters/search."""
 
     validate_table(table)
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        clauses, params = _build_filters(table, search, filters, ops)
-        sql = f"SELECT COUNT(*) FROM {table}"
-        if clauses:
-            sql += " WHERE " + " AND ".join(clauses)
-        logger.info(f"[COUNT] SQL: {sql} | params: {params}")
-        cursor.execute(sql, params)
-        row = cursor.fetchone()
-        return row[0] if row else 0
-    except Exception as e:
-        logger.warning(f"[COUNT ERROR] {e}")
-        return 0
-    finally:
-        conn.close()
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            clauses, params = _build_filters(table, search, filters, ops)
+            sql = f"SELECT COUNT(*) FROM {table}"
+            if clauses:
+                sql += " WHERE " + " AND ".join(clauses)
+            logger.info(f"[COUNT] SQL: {sql} | params: {params}")
+            cursor.execute(sql, params)
+            row = cursor.fetchone()
+            return row[0] if row else 0
+        except Exception as e:
+            logger.warning(f"[COUNT ERROR] {e}")
+            return 0
 
 def get_record_by_id(table, record_id):
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute(f"PRAGMA table_info({table})")
-    fields = [row[1] for row in cursor.fetchall()]
-    cursor.execute(f"SELECT * FROM {table} WHERE id = ?", (record_id,))
-    row = cursor.fetchone()
-    conn.close()
-    if row:
-        return dict(zip(fields, row))
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(f"PRAGMA table_info({table})")
+        fields = [row[1] for row in cursor.fetchall()]
+        cursor.execute(f"SELECT * FROM {table} WHERE id = ?", (record_id,))
+        row = cursor.fetchone()
+        if row:
+            return dict(zip(fields, row))
     return None
 
 def update_field_value(table, record_id, field, new_value):
     validate_table(table)
     validate_field(table, field)
 
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    try:
-        logger.debug(
-            f"update_field_value: table={table}, id={record_id}, field={field}, value={new_value!r}"
-        )
-        cursor.execute(
-            f"UPDATE {table} SET {field} = ? WHERE id = ?",  # identifiers are validated
-            (new_value, record_id)
-        )
-        conn.commit()
-        logger.info(
-            f"Updated {table}.{field} for id={record_id} to {new_value!r}"
-        )
-        return True
-    except Exception as e:
-        logger.error(f"[UPDATE ERROR] {e}")
-        return False
-    finally:
-        conn.close()
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            logger.debug(
+                f"update_field_value: table={table}, id={record_id}, field={field}, value={new_value!r}"
+            )
+            cursor.execute(
+                f"UPDATE {table} SET {field} = ? WHERE id = ?",
+                (new_value, record_id),
+            )
+            conn.commit()
+            logger.info(
+                f"Updated {table}.{field} for id={record_id} to {new_value!r}"
+            )
+            return True
+        except Exception as e:
+            logger.error(f"[UPDATE ERROR] {e}")
+            return False
 
 
 def append_edit_log(table: str, record_id: int, message: str) -> None:
     """Append a single entry to the record's edit_log field."""
     validate_table(table)
 
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        logger.debug(
-            f"append_edit_log: table={table}, id={record_id}, message={message}"
-        )
-        cursor.execute(f"SELECT edit_log FROM {table} WHERE id = ?", (record_id,))
-        row = cursor.fetchone()
-        current_log = row[0] if row else ""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            logger.debug(
+                f"append_edit_log: table={table}, id={record_id}, message={message}"
+            )
+            cursor.execute(f"SELECT edit_log FROM {table} WHERE id = ?", (record_id,))
+            row = cursor.fetchone()
+            current_log = row[0] if row else ""
 
-        timestamp = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
-        entry = f"[{timestamp}] {message}"
-        new_log = f"{current_log}\n{entry}" if current_log else entry
+            timestamp = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
+            entry = f"[{timestamp}] {message}"
+            new_log = f"{current_log}\n{entry}" if current_log else entry
 
-        cursor.execute(
-            f"UPDATE {table} SET edit_log = ? WHERE id = ?",
-            (new_log, record_id),
-        )
-        conn.commit()
-        logger.info(
-            f"Appended edit log for {table} id={record_id}: {message}"
-        )
-    except Exception as e:
-        logger.warning(f"[EDIT LOG ERROR] {e}")
-    finally:
-        conn.close()
+            cursor.execute(
+                f"UPDATE {table} SET edit_log = ? WHERE id = ?",
+                (new_log, record_id),
+            )
+            conn.commit()
+            logger.info(
+                f"Appended edit log for {table} id={record_id}: {message}"
+            )
+        except Exception as e:
+            logger.warning(f"[EDIT LOG ERROR] {e}")
 
 def create_record(table, form_data):
     # 1) Validate the table name
     validate_table(table)
 
-    conn   = get_connection()
-    cursor = conn.cursor()
-    try:
-        fields = get_field_schema().get(table, {})
-        if not fields:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            fields = get_field_schema().get(table, {})
+            if not fields:
+                return None
+
+            # 2) Figure out real columns on the table
+            cursor.execute(f"PRAGMA table_info({table})")
+            cols = [col[1] for col in cursor.fetchall()]
+
+            # 3) Build insert_data, but only for known schema fields
+            insert_data = {}
+            for f, meta in fields.items():
+                if f in ("id", "edit_log") or meta["type"] == "hidden":
+                    continue
+                if f not in cols:
+                    continue
+                validate_field(table, f)
+                insert_data[f] = form_data.get(f, "")
+
+            if not insert_data:
+                return None
+
+            field_names = list(insert_data.keys())
+            placeholders = ", ".join("?" for _ in field_names)
+            sql = f"INSERT INTO {table} ({', '.join(field_names)}) VALUES ({placeholders})"
+            params = [insert_data[f] for f in field_names]
+
+            cursor.execute(sql, params)
+            record_id = cursor.lastrowid
+            conn.commit()
+            return record_id
+        except Exception as e:
+            logger.warning(f"[CREATE ERROR] {e}")
             return None
-
-        # 2) Figure out real columns on the table
-        cursor.execute(f"PRAGMA table_info({table})")
-        cols = [col[1] for col in cursor.fetchall()]
-
-        # 3) Build insert_data, but only for known schema fields
-        insert_data = {}
-        for f, meta in fields.items():
-            if f in ("id", "edit_log") or meta["type"] == "hidden":
-                continue
-            # validate each column before we use it
-            if f not in cols:
-                continue
-            validate_field(table, f)
-            insert_data[f] = form_data.get(f, "")
-
-        if not insert_data:
-            return None
-
-        field_names = list(insert_data.keys())
-        placeholders = ", ".join("?" for _ in field_names)
-        sql          = f"INSERT INTO {table} ({', '.join(field_names)}) VALUES ({placeholders})"
-        params       = [insert_data[f] for f in field_names]
-
-        cursor.execute(sql, params)
-        record_id = cursor.lastrowid
-        conn.commit()
-        return record_id
-
-    except Exception as e:
-        logger.warning(f"[CREATE ERROR] {e}")
-        return None
-
-    finally:
-        conn.close()
 
 def delete_record(table, record_id):
     validate_table(table)
 
-    conn   = get_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute(f"DELETE FROM {table} WHERE id = ?", (record_id,))
-        conn.commit()
-        return True
-    except Exception as e:
-        logger.warning(f"[DELETE ERROR] {e}")
-        return False
-    finally:
-        conn.close()
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute(f"DELETE FROM {table} WHERE id = ?", (record_id,))
+            conn.commit()
+            return True
+        except Exception as e:
+            logger.warning(f"[DELETE ERROR] {e}")
+            return False
 
 def count_nonnull(table: str, field: str) -> int:
     validate_table(table)
@@ -250,16 +232,14 @@ def count_nonnull(table: str, field: str) -> int:
     fmeta = get_field_schema().get(table, {}).get(field)
     if fmeta is None or fmeta.get("type") == "hidden" or field == "id":
         raise ValueError(f"Invalid or protected field: {field}")
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        sql = f'SELECT COUNT(*) FROM "{table}" WHERE "{field}" IS NOT NULL'
-        cursor.execute(sql)
-        return cursor.fetchone()[0] or 0
-    except Exception as e:
-        logger.warning(f"[count_nonnull] SQL error for {table}.{field}: {e}")
-        return 0
-    finally:
-        conn.close()
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            sql = f'SELECT COUNT(*) FROM "{table}" WHERE "{field}" IS NOT NULL'
+            cursor.execute(sql)
+            return cursor.fetchone()[0] or 0
+        except Exception as e:
+            logger.warning(f"[count_nonnull] SQL error for {table}.{field}: {e}")
+            return 0
 
 
