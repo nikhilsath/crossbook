@@ -404,3 +404,7 @@ By using this macro in `detail_view.html`, the template stays cleaner and any ch
 This software is provided for evaluation and internal use only.
 Modification, redistribution, or commercial deployment is prohibited without written permission.
 
+
+## Acknowledgements
+
+This project uses [Flowbite](https://github.com/themesberg/flowbite) and Flowbite Charts under the MIT License.
