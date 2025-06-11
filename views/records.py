@@ -102,6 +102,9 @@ def detail_view(table, record_id):
 @records_bp.route('/<table>/<int:record_id>/add-field', methods=['POST'])
 def add_field_route(table, record_id):
     try:
+        # Ensure table exists in schema
+        validate_table(table)
+
         field_name = request.form['field_name']
         current_app.logger.debug(
             'add_field_route start: table=%r, record_id=%r, form=%r', table, record_id, dict(request.form)
@@ -122,6 +125,9 @@ def add_field_route(table, record_id):
         )
         current_app.logger.info('Added column to %s: field=%r type=%r', table, field_name, field_type)
         return redirect(url_for('records.detail_view', table=table, record_id=record_id))
+    except ValueError as e:
+        current_app.logger.warning('add_field_route validation failed: %s', e)
+        return str(e), 400
     except Exception as e:
         current_app.logger.exception('add_field_route error: %s', e)
         return 'Server error', 500
