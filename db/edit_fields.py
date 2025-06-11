@@ -91,6 +91,8 @@ def add_column_to_table(table_name, field_name, field_type):
         raise ValueError(f"Unsupported field type: {field_type}")
 
     # Validate names are safe (simple alphanumeric check)
+    if not table_name.isidentifier():
+        raise ValueError(f"Invalid table name: {table_name}")
     if not field_name.isidentifier():
         raise ValueError(f"Invalid field name: {field_name}")
 
