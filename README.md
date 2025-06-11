@@ -52,7 +52,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Detail View & Inline Edit:** Displays all fields on the detail page with inline editing via text inputs, date pickers, checkboxes, or textareas. Numeric field changes now save via AJAX and append to the edit log without reloading the page.
 * **Relationship Management:** Displays related records and allows adding/removing relationships through a modal interface (+ to add, ✖ to remove), using AJAX to update join tables dynamically.
 * **Rich Text Support:** Textareas are enhanced with [Quill](https://quilljs.com/) for WYSIWYG editing.
-* **Edit History:** Tracks each record’s modifications in an `edit_log`, viewable via an expandable history section.
+* **Edit History:** Tracks each record’s modifications in an `edit_log`, viewable via an expandable history section. Individual entries now include an **Undo** link to revert that change.
 * **Navigation Bar:** A consistent top navigation (`base.html`) links to Home and all base table sections.
 * **Supported Field Types:** text, number, date, select, multi-select, foreign-key, boolean, and textarea, each rendered with the appropriate input control.
 * **Filter Macros:** Reusable Jinja macros for boolean, select, text, and multi-select filters (`templates/macros/filter_controls.html`).
@@ -350,7 +350,7 @@ Key features of the detail view:
     - For foreign key fields: currently just displays the value in italic blue text (as a visual cue that it’s a reference) – but it’s not a link. This is a placeholder for future functionality.
     - All other fields: displayed as plain text.
     - In all non-edit cases (except booleans which have their own form), an edit ✏️ icon link is provided next to the value. Clicking this link reloads the page with the `?edit=<fieldname>` query parameter, thus switching that field into edit mode.
-- **Edit Log:** If the `record.edit_log` field is present and not empty, the template shows an **Edit History** section below the fields table. This is implemented with a `<details>` element that can be expanded to reveal the full log (each entry on a new line, preserved with whitespace via `<pre>`). This allows developers to see all past changes to the record’s fields.
+- **Edit Log:** If the `record.edit_log` field is present and not empty, the template shows an **Edit History** section below the fields table. Each entry includes an **Undo** button which posts back to revert that particular change. The section is implemented with a `<details>` element containing a list of the past changes.
 - **Related Records (Right Panel):** On the right side, the template shows **Related Pages**:
   - It loops over the `related` dictionary (from `get_related_records`). Each entry corresponds to a related table, with a label (e.g., "Locations") and a list of related items.
   - For each related table section, it displays a heading (the label) and a **+ button**. The + button triggers the `openAddRelationModal(table, id, related_table)` JavaScript function (with the current record’s table and ID, and the target related table).

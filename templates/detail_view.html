@@ -92,9 +92,14 @@
         <summary class="cursor-pointer font-medium text-blue-600">
           Edit History
         </summary>
-        <pre class="whitespace-pre-wrap mt-2">
-{% for row in edit_history %}[{{ row.timestamp }}] {{ row.field_name }}: {{ row.old_value }} → {{ row.new_value }}{% if row.actor %} ({{ row.actor }}){% endif %}
-{% endfor %}</pre>
+        <ul class="mt-2 space-y-1 text-blue-800">
+        {% for row in edit_history %}
+          <li>
+            [{{ row.timestamp }}] {{ row.field_name }}: {{ row.old_value }} → {{ row.new_value }}{% if row.actor %} ({{ row.actor }}){% endif %}
+            <button class="ml-2 text-sm text-blue-600 underline" onclick="undoEdit({{ row.id }}, '{{ table }}', {{ record.id }})">Undo</button>
+          </li>
+        {% endfor %}
+        </ul>
       </details>
     {% endif %}
   </div>
@@ -183,6 +188,7 @@
 <script type="module" src="{{ url_for('static', filename='js/field_ajax.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/autosize_text.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/editor.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/undo_edit.js') }}"></script>
 
 {% include "edit_fields_modal.html" %}
 

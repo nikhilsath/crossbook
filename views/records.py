@@ -11,6 +11,8 @@ from db.records import (
     count_records,
     append_edit_log,
     get_edit_history,
+    get_edit_entry,
+    revert_edit,
 )
 from db.relationships import get_related_records, add_relationship, remove_relationship
 from db.edit_fields import add_column_to_table, add_field_to_schema, drop_column_from_table, remove_field_from_schema
@@ -264,6 +266,17 @@ def delete_record_route(table, record_id):
     if not success:
         abort(500, 'Failed to delete record')
     return redirect(url_for('records.list_view', table=table))
+
+
+@records_bp.route('/<table>/<int:record_id>/undo/<int:edit_id>', methods=['POST'])
+def undo_edit_route(table, record_id, edit_id):
+    entry = get_edit_entry(edit_id)
+    if not entry or entry['table_name'] != table or entry['record_id'] != record_id:
+        abort(404)
+    success = revert_edit(entry)
+    if not success:
+        abort(500, 'Undo failed')
+    return jsonify({'success': True})
 
 @records_bp.route('/<table>/layout', methods=['POST'])
 def update_layout(table):
