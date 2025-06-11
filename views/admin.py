@@ -5,7 +5,7 @@ from db.dashboard import get_dashboard_widgets, create_widget
 from db.schema import create_base_table, refresh_card_cache
 from imports.import_csv import parse_csv
 from utils.validation import validation_sorter
-from db.schema import load_field_schema, get_field_schema
+from db.schema import get_field_schema
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -110,7 +110,7 @@ def add_table():
 
 @admin_bp.route('/import', methods=['GET', 'POST'])
 def import_records():
-    schema = load_field_schema()
+    schema = get_field_schema()
     selected_table = request.args.get('table') or request.form.get('table')
     parsed_headers = []
     rows = []

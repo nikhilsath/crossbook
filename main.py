@@ -3,7 +3,7 @@ import logging
 from logging_setup import configure_logging
 from db.database import get_connection
 from db.schema import (
-    load_field_schema,
+    get_field_schema,
     update_foreign_field_options,
     load_base_tables,
     load_card_info,
@@ -34,7 +34,7 @@ app.register_blueprint(records_bp)
 @app.context_processor
 def inject_field_schema():
     return {
-        'field_schema': load_field_schema(),
+        'field_schema': get_field_schema(),
         'update_foreign_field_options': update_foreign_field_options,
         'nav_cards': current_app.config['CARD_INFO'],
         'base_tables': current_app.config['BASE_TABLES'],
@@ -45,6 +45,5 @@ def home():
     return render_template("index.html", cards=current_app.config['CARD_INFO'])
 
 if __name__ == "__main__":
-    load_field_schema()
     update_foreign_field_options()
     app.run(debug=True)
