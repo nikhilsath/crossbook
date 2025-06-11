@@ -8,7 +8,7 @@ export function closeDashboardModal() {
 
 let selectedOperation = null;
 let selectedColumn = null;
-let columnToggleBtn, columnToggleLabel, columnDropdown, valueResultEl, titleInputEl, resultRowEl, createBtnEl;
+let columnToggleBtn, columnToggleLabel, columnDropdown, valueResultEl, titleInputEl, resultRowEl, createBtnEl, mathTagsContainer;
 let activeTab = 'value';
 
 function setActiveTab(name) {
@@ -49,6 +49,7 @@ function refreshColumnTags() {
   if (!columnToggleBtn) return;
   if (!selectedColumn || (Array.isArray(selectedColumn) && selectedColumn.length === 0)) {
     if (columnToggleLabel) columnToggleLabel.textContent = 'Select Field';
+    if (mathTagsContainer) mathTagsContainer.innerHTML = '';
     updateValueResult();
     return;
   }
@@ -58,7 +59,33 @@ function refreshColumnTags() {
     const [table, field] = val.split(':');
     return `${table}: ${field}`;
   });
+
   if (columnToggleLabel) columnToggleLabel.textContent = labels.join(', ');
+
+  if (selectedOperation === 'math' && mathTagsContainer) {
+    mathTagsContainer.innerHTML = '';
+    values.forEach(val => {
+      const [table, field] = val.split(':');
+      const tag = document.createElement('span');
+      tag.className = 'inline-flex items-center bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full';
+      tag.textContent = `${table}: ${field}`;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'ml-1 text-blue-500 hover:text-red-500';
+      btn.textContent = '×';
+      btn.onclick = () => {
+        selectedColumn = selectedColumn.filter(v => v !== val);
+        const cb = columnDropdown.querySelector(`input[value="${val}"]`);
+        if (cb) cb.checked = false;
+        refreshColumnTags();
+      };
+      tag.appendChild(btn);
+      mathTagsContainer.appendChild(tag);
+    });
+  } else if (mathTagsContainer) {
+    mathTagsContainer.innerHTML = '';
+  }
+
   updateValueResult();
 }
 
@@ -130,12 +157,24 @@ function updateColumnOptions() {
     columnToggleBtn.classList.add('hidden');
     columnDropdown.classList.add('hidden');
     selectedColumn = null;
+    if (mathTagsContainer) {
+      mathTagsContainer.classList.add('hidden');
+      mathTagsContainer.innerHTML = '';
+    }
     refreshColumnTags();
     return;
   }
 
   columnToggleBtn.classList.remove('hidden');
   columnDropdown.innerHTML = '';
+  if (mathTagsContainer) {
+    if (selectedOperation === 'math') {
+      mathTagsContainer.classList.remove('hidden');
+    } else {
+      mathTagsContainer.classList.add('hidden');
+      mathTagsContainer.innerHTML = '';
+    }
+  }
 
   const inputType = selectedOperation === 'math' ? 'checkbox' : 'radio';
 
@@ -241,6 +280,7 @@ function initDashboardModal() {
   titleInputEl = document.getElementById('valueTitleInput');
   resultRowEl = document.getElementById('resultRow');
   createBtnEl = document.getElementById('dashboardCreateBtn');
+  mathTagsContainer = document.getElementById('mathTagsContainer');
   if (createBtnEl) {
     createBtnEl.addEventListener('click', onCreateWidget);
   }
