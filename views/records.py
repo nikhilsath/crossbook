@@ -10,6 +10,7 @@ from db.records import (
     count_nonnull as db_count_nonnull,
     count_records,
     append_edit_log,
+    get_edit_history,
 )
 from db.relationships import get_related_records, add_relationship, remove_relationship
 from db.edit_fields import add_column_to_table, add_field_to_schema, drop_column_from_table, remove_field_from_schema
@@ -91,11 +92,13 @@ def detail_view(table, record_id):
     raw_layout = field_schema.get(table, {})
     field_schema_layout = {field: meta.get('layout', {}) for field, meta in raw_layout.items()}
     current_app.logger.debug("[DETAIL] Using layout: %s", field_schema_layout)
+    history = get_edit_history(table, record_id)
     return render_template(
         'detail_view.html',
         table=table,
         record=record,
         related=related,
+        edit_history=history,
         field_schema_layout=field_schema_layout
     )
 
@@ -191,7 +194,13 @@ def update_field(table, record_id):
         abort(500, 'Database update failed')
     current_app.logger.info('Field updated for %s id=%s: %s -> %r', table, record_id, field, new_value)
     if prev_record is not None and str(prev_value) != str(new_value):
-        append_edit_log(table, record_id, f'Updated {field}: {prev_value!r} -> {new_value!r}')
+        append_edit_log(
+            table,
+            record_id,
+            field,
+            str(prev_value),
+            str(new_value),
+        )
     return redirect(url_for('records.detail_view', table=table, record_id=record_id))
 
 @records_bp.route('/relationship', methods=['POST'])
@@ -206,11 +215,23 @@ def manage_relationship():
     if action == 'add':
         success = add_relationship(table_a, id_a, table_b, id_b)
         if success:
-            append_edit_log(table_a, id_a, f'Added relation to {table_b} {id_b}')
+            append_edit_log(
+                table_a,
+                id_a,
+                f'relation_{table_b}',
+                None,
+                str(id_b),
+            )
     elif action == 'remove':
         success = remove_relationship(table_a, id_a, table_b, id_b)
         if success:
-            append_edit_log(table_a, id_a, f'Removed relation to {table_b} {id_b}')
+            append_edit_log(
+                table_a,
+                id_a,
+                f'relation_{table_b}',
+                str(id_b),
+                None,
+            )
     else:
         abort(400, 'Invalid action')
     if not success:

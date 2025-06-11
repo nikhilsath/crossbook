@@ -87,12 +87,14 @@
 
     </div>
 
-    {% if record.edit_log %}
+    {% if edit_history %}
       <details class="mt-6 text-sm text-gray-600">
         <summary class="cursor-pointer font-medium text-blue-600">
           Edit History
         </summary>
-        <pre class="whitespace-pre-wrap mt-2">{{ record.edit_log }}</pre>
+        <pre class="whitespace-pre-wrap mt-2">
+{% for row in edit_history %}[{{ row.timestamp }}] {{ row.field_name }}: {{ row.old_value }} → {{ row.new_value }}{% if row.actor %} ({{ row.actor }}){% endif %}
+{% endfor %}</pre>
       </details>
     {% endif %}
   </div>

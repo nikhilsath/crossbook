@@ -228,18 +228,10 @@ def create_base_table(table_name: str, description: str) -> bool:
                 """
             )
 
-            # Always ensure the edit_log column exists
-            try:
-                cur.execute(f"ALTER TABLE {table_name} ADD COLUMN edit_log TEXT")
-            except sqlite3.OperationalError as exc:
-                if "duplicate column name" not in str(exc).lower():
-                    raise
-
             # Insert default field schema rows
             defaults = [
                 (table_name, "id", "hidden", None, None, 0, 0, 0, 0),
                 (table_name, table_name, "text", None, None, 0, 0, 0, 0),
-                (table_name, "edit_log", "hidden", None, None, 0, 0, 0, 0),
             ]
             cur.executemany(
                 """

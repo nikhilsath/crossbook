@@ -92,8 +92,6 @@
             <td class="px-4 py-2 whitespace-nowrap" data-field="{{ field|lower }}">
               {% if field_schema[table][field].type == "textarea" %}
                 {{ record[field]|striptags|truncate(100) }}
-              {% elif field == "edit_log" %}
-                {{ record[field].split('\n')[0] if record[field] }}
               {% else %}
                 {{ record[field] }}
               {% endif %}

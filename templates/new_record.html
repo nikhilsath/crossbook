@@ -6,7 +6,7 @@
 
 <form method="post" class="space-y-4">
   {% for field, ftype in fields.items() %}
-    {% if field != "id" and field != "edit_log" and ftype != "hidden" %}
+    {% if field != "id" and ftype != "hidden" %}
       <div>
         <label class="block text-sm font-medium capitalize mb-1">{{ field }}</label>
         {% if ftype == "textarea" %}
