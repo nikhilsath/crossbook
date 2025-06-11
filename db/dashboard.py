@@ -68,3 +68,49 @@ def create_widget(
         except Exception as exc:
             logger.warning("[create_widget] SQL error: %s", exc)
             return None
+
+
+def update_widget_layout(layout_items: list[dict]) -> int:
+    """Update the grid layout data for dashboard widgets.
+
+    Args:
+        layout_items: A list of dicts each containing ``id``, ``colStart``,
+            ``colSpan``, ``rowStart`` and ``rowSpan``.
+
+    Returns:
+        The number of widget rows updated.
+    """
+    with get_connection() as conn:
+        cur = conn.cursor()
+        updated = 0
+
+        for item in layout_items:
+            widget_id = item.get("id")
+            if widget_id is None:
+                continue
+
+            try:
+                col_start = float(item.get("colStart", 0))
+                col_span = float(item.get("colSpan", 0))
+                row_start = float(item.get("rowStart", 0))
+                row_span = float(item.get("rowSpan", 0))
+            except (TypeError, ValueError):
+                continue
+
+            cur.execute(
+                """
+                UPDATE dashboard_widget
+                   SET col_start = ?,
+                       col_span  = ?,
+                       row_start = ?,
+                       row_span  = ?
+                 WHERE id = ?
+                """,
+                (col_start, col_span, row_start, row_span, widget_id),
+            )
+            if cur.rowcount:
+                updated += 1
+
+        conn.commit()
+
+    return updated
