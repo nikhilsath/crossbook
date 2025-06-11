@@ -20,6 +20,63 @@ let aggToggle1El, aggToggle2El;
 let valueResultEl, titleInputEl, resultRowEl, createBtnEl, mathOpContainer;
 let activeTab = 'value';
 
+function isNumericField(val) {
+  if (!val) return false;
+  const [table, field] = val.split(':');
+  return (
+    FIELD_SCHEMA[table] &&
+    FIELD_SCHEMA[table][field] &&
+    FIELD_SCHEMA[table][field].type === 'number'
+  );
+}
+
+function toggleDisabled(label, input, disabled) {
+  if (!label || !input) return;
+  input.disabled = disabled;
+  if (disabled) {
+    label.classList.add('opacity-50', 'pointer-events-none');
+  } else {
+    label.classList.remove('opacity-50', 'pointer-events-none');
+  }
+}
+
+function updateAggToggleUI() {
+  if (aggToggle1El) {
+    const sumInput = aggToggle1El.querySelector('input[value="sum"]');
+    const countInput = aggToggle1El.querySelector('input[value="count"]');
+    const sumLabel = sumInput ? sumInput.parentElement : null;
+    const numeric = isNumericField(mathField1);
+    toggleDisabled(sumLabel, sumInput, !numeric);
+    if (!numeric && sumInput && sumInput.checked && countInput) {
+      countInput.checked = true;
+      agg1 = 'count';
+    }
+  }
+  if (aggToggle2El) {
+    const sumInput = aggToggle2El.querySelector('input[value="sum"]');
+    const countInput = aggToggle2El.querySelector('input[value="count"]');
+    const sumLabel = sumInput ? sumInput.parentElement : null;
+    const numeric = isNumericField(mathField2);
+    toggleDisabled(sumLabel, sumInput, !numeric);
+    if (!numeric && sumInput && sumInput.checked && countInput) {
+      countInput.checked = true;
+      agg2 = 'count';
+    }
+  }
+}
+
+function updateAverageButtonUI() {
+  if (!mathOpContainer) return;
+  const avgInput = mathOpContainer.querySelector('input[value="average"]');
+  const avgLabel = avgInput ? avgInput.parentElement : null;
+  const numeric = isNumericField(mathField1);
+  toggleDisabled(avgLabel, avgInput, !numeric);
+  if (!numeric && avgInput && avgInput.checked) {
+    avgInput.checked = false;
+    mathOperation = null;
+  }
+}
+
 function setActiveTab(name) {
   activeTab = name;
   const tabs = ['value', 'table', 'chart'];
@@ -244,6 +301,8 @@ function updateColumnOptions() {
     mathField1 = null;
     mathField2 = null;
     mathOperation = null;
+    updateAggToggleUI();
+    updateAverageButtonUI();
     updateValueResult();
     return;
   }
@@ -264,6 +323,8 @@ function updateColumnOptions() {
         const [t,f] = val.split(':');
         mathSelect1Label.textContent = `${t}: ${f}`;
       }
+      updateAggToggleUI();
+      updateAverageButtonUI();
       updateValueResult();
     });
     populateFieldDropdown(mathSelect2Options, false, val => {
@@ -272,10 +333,13 @@ function updateColumnOptions() {
         const [t,f] = val.split(':');
         mathSelect2Label.textContent = `${t}: ${f}`;
       }
+      updateAggToggleUI();
       updateValueResult();
     });
   }
 
+  updateAggToggleUI();
+  updateAverageButtonUI();
   updateValueResult();
 }
 
@@ -368,6 +432,9 @@ function initDashboardModal() {
   if (createBtnEl) {
     createBtnEl.addEventListener('click', onCreateWidget);
   }
+
+  updateAggToggleUI();
+  updateAverageButtonUI();
 }
 
 document.addEventListener('DOMContentLoaded', initDashboardModal);
