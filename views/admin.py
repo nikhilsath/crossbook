@@ -1,4 +1,13 @@
-from flask import Blueprint, render_template, redirect, url_for, request, jsonify, current_app
+from flask import (
+    Blueprint,
+    render_template,
+    redirect,
+    url_for,
+    request,
+    jsonify,
+    current_app,
+)
+import json
 from logging_setup import configure_logging
 from db.config import get_config_rows, update_config, get_logging_config
 from db.dashboard import get_dashboard_widgets, create_widget, update_widget_layout
@@ -50,7 +59,6 @@ def update_config_route(key):
 def dashboard_create_widget():
     data = request.get_json(silent=True) or {}
     title = (data.get('title') or '').strip()
-    content = data.get('content', '')
     widget_type = (data.get('widget_type') or '').strip()
     try:
         col_start = int(data.get('col_start', 1))
@@ -64,6 +72,28 @@ def dashboard_create_widget():
 
     if widget_type not in {'value', 'table', 'chart'}:
         return jsonify({'error': 'Invalid widget type'}), 400
+
+    content = data.get('content')
+    if widget_type == 'chart':
+        if content is None:
+            content = {
+                'chart_type': data.get('chart_type', 'bar'),
+                'x_field': data.get('x_field'),
+                'y_field': data.get('y_field'),
+                'aggregation': data.get('aggregation', '')
+            }
+        if isinstance(content, str):
+            try:
+                json.loads(content)
+            except json.JSONDecodeError:
+                return jsonify({'error': 'Invalid JSON for content'}), 400
+        else:
+            content = json.dumps(content)
+    else:
+        if isinstance(content, (dict, list)):
+            content = json.dumps(content)
+        if content is None:
+            content = ''
 
     widget_id = create_widget(
         title,
