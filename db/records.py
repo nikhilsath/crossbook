@@ -142,34 +142,70 @@ def update_field_value(table, record_id, field, new_value):
             return False
 
 
-def append_edit_log(table: str, record_id: int, message: str) -> None:
-    """Append a single entry to the record's edit_log field."""
+def append_edit_log(
+    table: str,
+    record_id: int,
+    field_name: str | None,
+    old_value: str | None,
+    new_value: str | None,
+    actor: str | None = None,
+) -> None:
+    """Insert a row into the edit_history table."""
     validate_table(table)
+
+    timestamp = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
 
     with get_connection() as conn:
         cursor = conn.cursor()
         try:
             logger.debug(
-                f"append_edit_log: table={table}, id={record_id}, message={message}"
+                "append_edit_log: %s id=%s field=%s old=%r new=%r actor=%r",
+                table,
+                record_id,
+                field_name,
+                old_value,
+                new_value,
+                actor,
             )
-            cursor.execute(f"SELECT edit_log FROM {table} WHERE id = ?", (record_id,))
-            row = cursor.fetchone()
-            current_log = row[0] if row else ""
-
-            timestamp = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
-            entry = f"[{timestamp}] {message}"
-            new_log = f"{current_log}\n{entry}" if current_log else entry
-
             cursor.execute(
-                f"UPDATE {table} SET edit_log = ? WHERE id = ?",
-                (new_log, record_id),
+                """
+                INSERT INTO edit_history
+                    (table_name, record_id, timestamp, field_name, old_value, new_value, actor)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (table, record_id, timestamp, field_name, old_value, new_value, actor),
             )
             conn.commit()
             logger.info(
-                f"Appended edit log for {table} id={record_id}: {message}"
+                "Logged edit for %s id=%s field=%s old=%r new=%r",
+                table,
+                record_id,
+                field_name,
+                old_value,
+                new_value,
             )
         except Exception as e:
-            logger.warning(f"[EDIT LOG ERROR] {e}")
+            logger.warning("[EDIT LOG ERROR] %s", e)
+
+
+def get_edit_history(table_name: str, record_id: int, limit: int | None = None) -> list[dict]:
+    """Return edit history rows ordered by timestamp descending."""
+    validate_table(table_name)
+
+    with get_connection() as conn:
+        cur = conn.cursor()
+        sql = (
+            "SELECT table_name, record_id, timestamp, field_name, old_value, new_value, actor "
+            "FROM edit_history WHERE table_name = ? AND record_id = ? ORDER BY timestamp DESC"
+        )
+        params = [table_name, record_id]
+        if limit is not None:
+            sql += " LIMIT ?"
+            params.append(limit)
+        cur.execute(sql, params)
+        rows = cur.fetchall()
+        cols = [d[0] for d in cur.description]
+        return [dict(zip(cols, r)) for r in rows]
 
 def create_record(table, form_data):
     # 1) Validate the table name
@@ -189,7 +225,7 @@ def create_record(table, form_data):
             # 3) Build insert_data, but only for known schema fields
             insert_data = {}
             for f, meta in fields.items():
-                if f in ("id", "edit_log") or meta["type"] == "hidden":
+                if f == "id" or meta["type"] == "hidden":
                     continue
                 if f not in cols:
                     continue
