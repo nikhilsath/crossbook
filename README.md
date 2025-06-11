@@ -15,7 +15,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
     - [Field Schema Injection](#field-schema-injection)
     - [Record Fetching](#record-fetching)
     - [Update Logic](#update-logic)
-  - [Functions in `main.py`](#functions-in-mainpy)
+  - [Key Functions and Routes](#key-functions-and-routes)
   - [Front-End Scripts – `static/js/`](#front-end-scripts-staticjs)
     - [column_visibility.js](#columnvisibilityjs)
     - [relations.js](#relationsjs)
@@ -65,7 +65,10 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 ```text
 /
 ├── README.md                        # Project documentation and setup instructions
-├── main.py                          # Application entrypoint; Flask app setup and routes
+├── main.py                          # Application entrypoint; registers route blueprints
+├── views/                           # Flask blueprints
+│   ├── admin.py                     # Admin routes
+│   └── records.py                   # CRUD routes
 ├── logging_setup.py                 # Logging configuration helper
 ├── requirements.txt                 # Python dependencies
 ├── db/                              # Database layer modules
@@ -128,7 +131,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 
 ## Application Architecture and Code Overview
 
-* **Routing & Views:** Defined in `main.py` using Flask decorators; routes handle list, detail, new record, and error pages. A context processor (`@app.context_processor`) injects the `field_schema`—the in-memory representation of all table fields, types, options, and layout—into all templates and front-end scripts for dynamic form generation and validation. Error handlers (e.g., `@app.errorhandler(404)`) and `abort()` calls manage invalid requests.
+* **Routing & Views:** Routes are organized in blueprint modules under `views/` (`records.py` and `admin.py`). `main.py` registers these blueprints and defines a simple home route. A context processor (`@app.context_processor`) injects the `field_schema`—the in-memory representation of all table fields—into all templates and front-end scripts for dynamic form generation and validation. Error handlers (e.g., `@app.errorhandler(404)`) and `abort()` calls manage invalid requests.
 
 * **Configuration & Environment:** Dependencies listed in `requirements.txt`. Configuration values such as the database path are defined directly in `main.py`.
 
@@ -191,9 +194,9 @@ The context processor `inject_field_schema` loads the field schema and navigatio
 #### Update Logic
 `update_field` interprets the field type, handles lists for multi-select and foreign keys, coerces booleans and numbers, writes changes with `update_field_value`, and appends a note to `edit_log` when a value changes.
 
-### Functions in `main.py`:
+### Key Functions and Routes
 
-The following functions encapsulate the application logic:
+The following functions encapsulate the core logic. Route handlers live in the `views` package while database helpers are under `db/`. `main.py` simply registers the blueprints and starts the app:
 
 | Function & Signature                          | Purpose                                                             |
 |-----------------------------------------------|----------------------------------------------------------------------|
@@ -216,7 +219,7 @@ The following functions encapsulate the application logic:
 | `count_nonnull(table)` | **Route:** GET `/<table>/count-nonnull?field=<name>` – Returns a JSON count of non-null values for the specified field. |
 
 
-All routes and functions above are actively used by the application (there is no dead code in `main.py`). The file concludes by calling `load_field_schema()` and then `app.run(debug=True)` if executed directly, to initialize the schema and start the development server.
+All routes and functions above are actively used by the application. `main.py` loads the field schema, registers the blueprints, and if executed directly runs `app.run(debug=True)` to start the development server.
 
 ### **Front-End Scripts – `static/js/`
 
