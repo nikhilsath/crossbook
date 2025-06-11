@@ -23,7 +23,9 @@ let activeTab = 'value';
 let chartTypeEl,
     chartXToggleBtn, chartXLabel, chartXOptions,
     chartYToggleBtn, chartYLabel, chartYOptions,
-    chartAggToggleEl, chartTitleInputEl, chartCreateBtnEl;
+    chartAggToggleEl, chartTitleInputEl, chartCreateBtnEl,
+    chartXFieldContainer, chartYFieldContainer, chartAggContainer,
+    chartXFieldLabel;
 let chartXField = null;
 let chartYField = null;
 let chartAgg = '';
@@ -99,6 +101,42 @@ function updateMathFieldUI() {
   } else {
     mathField1Container.classList.add('hidden');
     mathField2Container.classList.add('hidden');
+  }
+}
+
+function updateChartUI() {
+  if (!chartTypeEl || !chartXFieldContainer || !chartYFieldContainer || !chartAggContainer || !chartTitleInputEl || !chartCreateBtnEl) return;
+  const type = chartTypeEl.value;
+  chartXFieldContainer.classList.add('hidden');
+  chartYFieldContainer.classList.add('hidden');
+  chartAggContainer.classList.add('hidden');
+  chartTitleInputEl.classList.add('hidden');
+  chartCreateBtnEl.classList.add('hidden');
+  chartXFieldLabel.textContent = 'X Field';
+  if (!type) return;
+  chartXFieldContainer.classList.remove('hidden');
+  chartTitleInputEl.classList.remove('hidden');
+  chartCreateBtnEl.classList.remove('hidden');
+  if (type === 'pie') {
+    chartXFieldLabel.textContent = 'Category Field';
+    populateFieldDropdown(chartXOptions, false, ['select', 'multi_select'], val => {
+      chartXField = val;
+      if (chartXLabel) {
+        const [t,f] = val.split(':');
+        chartXLabel.textContent = `${t}: ${f}`;
+      }
+    });
+  } else {
+    chartXFieldLabel.textContent = 'X Field';
+    populateFieldDropdown(chartXOptions, false, null, val => {
+      chartXField = val;
+      if (chartXLabel) {
+        const [t,f] = val.split(':');
+        chartXLabel.textContent = `${t}: ${f}`;
+      }
+    });
+    chartYFieldContainer.classList.remove('hidden');
+    chartAggContainer.classList.remove('hidden');
   }
 }
 
@@ -226,16 +264,25 @@ function onCreateWidget(event) {
 
   // Chart widget
   if (activeTab === 'chart') {
-    const chartType = chartTypeEl ? chartTypeEl.value : 'bar';
+    const chartType = chartTypeEl ? chartTypeEl.value : '';
     const aggInput = chartAggToggleEl ? chartAggToggleEl.querySelector('input[name="chartAgg"]:checked') : null;
     chartAgg = aggInput ? aggInput.value : '';
-    if (!chartXField || !chartYField) return;
-    const payloadContent = {
-      chart_type: chartType,
-      x_field: chartXField,
-      y_field: chartYField,
-      aggregation: chartAgg
-    };
+    let payloadContent;
+    if (chartType === 'pie') {
+      if (!chartXField) return;
+      payloadContent = {
+        chart_type: chartType,
+        x_field: chartXField
+      };
+    } else {
+      if (!chartXField || !chartYField) return;
+      payloadContent = {
+        chart_type: chartType,
+        x_field: chartXField,
+        y_field: chartYField,
+        aggregation: chartAgg
+      };
+    }
     const title = (chartTitleInputEl && chartTitleInputEl.value.trim()) || 'Chart Widget';
     const payload = {
       title,
@@ -311,7 +358,7 @@ function onCreateWidget(event) {
     });
 }
 
-function populateFieldDropdown(dropdown, restrictNumeric, callback) {
+function populateFieldDropdown(dropdown, restrictNumeric, allowedTypes, callback) {
   if (!dropdown) return;
   dropdown.innerHTML = '';
   const search = document.createElement('input');
@@ -330,6 +377,7 @@ function populateFieldDropdown(dropdown, restrictNumeric, callback) {
     fields.forEach(field => {
       const type = tableSchema[field] ? tableSchema[field].type : '';
       if (restrictNumeric && type !== 'number') return;
+      if (allowedTypes && !allowedTypes.includes(type)) return;
       const val = `${table}:${field}`;
       const label = document.createElement('label');
       label.className = 'flex items-center space-x-2';
@@ -375,7 +423,7 @@ function updateColumnOptions() {
 
   if (selectedOperation === 'sum' || selectedOperation === 'count') {
     columnToggleBtn.classList.remove('hidden');
-    populateFieldDropdown(columnDropdown, selectedOperation === 'sum', val => {
+    populateFieldDropdown(columnDropdown, selectedOperation === 'sum', null, val => {
       selectedColumn = val;
       refreshColumnTags();
     });
@@ -383,7 +431,7 @@ function updateColumnOptions() {
   } else if (selectedOperation === 'math') {
     if (mathSelect1Btn) mathSelect1Btn.parentElement.parentElement.classList.remove('hidden');
     if (mathOpContainer) mathOpContainer.classList.remove('hidden');
-    populateFieldDropdown(mathSelect1Options, false, val => {
+    populateFieldDropdown(mathSelect1Options, false, null, val => {
       mathField1 = val;
       if (mathSelect1Label) {
         const [t,f] = val.split(':');
@@ -393,7 +441,7 @@ function updateColumnOptions() {
       updateAverageButtonUI();
       updateValueResult();
     });
-    populateFieldDropdown(mathSelect2Options, false, val => {
+    populateFieldDropdown(mathSelect2Options, false, null, val => {
       mathField2 = val;
       if (mathSelect2Label) {
         const [t,f] = val.split(':');
@@ -471,6 +519,10 @@ function initDashboardModal() {
   chartYToggleBtn = document.getElementById('chartYFieldToggle');
   chartYLabel = chartYToggleBtn ? chartYToggleBtn.querySelector('.selected-label') : null;
   chartYOptions = document.getElementById('chartYFieldOptions');
+  chartXFieldContainer = document.getElementById('chartXFieldContainer');
+  chartYFieldContainer = document.getElementById('chartYFieldContainer');
+  chartAggContainer = document.getElementById('chartAggContainer');
+  chartXFieldLabel = document.getElementById('chartXFieldLabel');
   chartAggToggleEl = document.getElementById('chartAggToggle');
   chartTitleInputEl = document.getElementById('chartTitleInput');
   chartCreateBtnEl = document.getElementById('chartCreateBtn');
@@ -519,7 +571,7 @@ function initDashboardModal() {
       if (!chartXOptions.contains(e.target) && e.target !== chartXToggleBtn) chartXOptions.classList.add('hidden');
     });
     chartXOptions.addEventListener('click', e => e.stopPropagation());
-    populateFieldDropdown(chartXOptions, false, val => {
+    populateFieldDropdown(chartXOptions, false, null, val => {
       chartXField = val;
       if (chartXLabel) {
         const [t,f] = val.split(':');
@@ -533,7 +585,7 @@ function initDashboardModal() {
       if (!chartYOptions.contains(e.target) && e.target !== chartYToggleBtn) chartYOptions.classList.add('hidden');
     });
     chartYOptions.addEventListener('click', e => e.stopPropagation());
-    populateFieldDropdown(chartYOptions, false, val => {
+    populateFieldDropdown(chartYOptions, false, null, val => {
       chartYField = val;
       if (chartYLabel) {
         const [t,f] = val.split(':');
@@ -550,10 +602,14 @@ function initDashboardModal() {
   if (chartCreateBtnEl) {
     chartCreateBtnEl.addEventListener('click', onCreateWidget);
   }
+  if (chartTypeEl) {
+    chartTypeEl.addEventListener('change', updateChartUI);
+  }
 
   updateAggToggleUI();
   updateAverageButtonUI();
   updateMathFieldUI();
+  updateChartUI();
 }
 
 document.addEventListener('DOMContentLoaded', initDashboardModal);
