@@ -21,7 +21,7 @@
       <tr class="border-t">
         <td class="font-mono">{{ item.key }}</td>
         <td>
-          <form method="post" action="{{ url_for('update_config_route', key=item.key) }}" class="flex items-center space-x-2">
+          <form method="post" action="{{ url_for('admin.update_config_route', key=item.key) }}" class="flex items-center space-x-2">
             {% if item.type in ('integer', 'number') %}
               <input type="number" name="value" value="{{ item.value }}" class="border rounded px-2 py-1 text-sm flex-grow">
             {% elif item.type == 'boolean' %}
