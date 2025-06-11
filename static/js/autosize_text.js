@@ -1,15 +1,30 @@
 export function fitText(el) {
-  // Skip shrinking when layout grid is currently being edited
+  // Skip resizing text while the layout grid is actively being edited
   if (document.querySelector('#layout-grid.editing')) {
     return;
   }
 
-  // reset font size before fitting so enlargements after resize work
+  // Reset any inline size so we can start from a clean slate
   el.style.fontSize = '';
 
   const style = window.getComputedStyle(el);
-  let fontSize = parseFloat(style.fontSize);
-  if (!fontSize) return;
+  let fontSize = parseFloat(style.fontSize) || 12;
+
+  // Allow the text to grow while it fits within its own container
+  el.style.fontSize = fontSize + 'px';
+  while (el.scrollWidth <= el.clientWidth && el.scrollHeight <= el.clientHeight) {
+    const nextSize = fontSize + 1;
+    el.style.fontSize = nextSize + 'px';
+    if (el.scrollWidth > el.clientWidth || el.scrollHeight > el.clientHeight) {
+      el.style.fontSize = fontSize + 'px';
+      break;
+    }
+    fontSize = nextSize;
+    if (nextSize > 500) break; // safety guard
+  }
+
+  // If something still overflows, shrink to fit
+  fontSize = parseFloat(el.style.fontSize);
   while ((el.scrollWidth > el.clientWidth || el.scrollHeight > el.clientHeight) && fontSize > 4) {
     fontSize -= 1;
     el.style.fontSize = fontSize + 'px';
