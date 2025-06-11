@@ -1,4 +1,3 @@
-import json
 import re
 import csv
 import logging
@@ -124,7 +123,7 @@ def validate_number_column(values, integer_only=False):
         s = str(v).strip()
         # Try to convert to number
         try:
-            num = int(s) if integer_only else float(s)
+            int(s) if integer_only else float(s)
         except ValueError:
             invalid += 1
             details["invalid"].append({"row": idx, "reason": "not a number", })
