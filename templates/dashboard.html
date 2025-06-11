@@ -32,10 +32,14 @@
     <div class="dashboard-widget draggable-field border p-2 rounded shadow bg-gray-50"
          data-widget="{{ widget.id }}"
          data-type="{{ widget.widget_type }}"
+         {% if widget.widget_type == 'chart' %}data-config='{{ widget.content }}'{% endif %}
          style="grid-column: {{ col_start }} / span {{ col_span }}; grid-row: {{ row_start }} / span {{ row_span }};">
       {% if widget.widget_type == 'value' %}
         <div class="font-semibold">{{ widget.title }}</div>
         <div>{{ widget.content }}</div>
+      {% elif widget.widget_type == 'chart' %}
+        <div class="font-semibold mb-2">{{ widget.title }}</div>
+        <canvas></canvas>
       {% else %}
         <div class="text-gray-500">{{ widget.widget_type }} widget</div>
       {% endif %}
@@ -57,4 +61,5 @@
 <script>window.WIDGET_LAYOUT = {{ widget_layout | tojson }};</script>
 <script type="module" src="{{ url_for('static', filename='js/dashboard_modal.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/dashboard_grid.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/dashboard_charts.js') }}"></script>
 {% endblock %}
