@@ -294,6 +294,45 @@ def sum_field_route(table):
 
     return jsonify({"sum": result})
 
+
+@app.route("/dashboard/widget", methods=["POST"])
+def dashboard_create_widget():
+    """Create a new dashboard widget."""
+    data = request.get_json(silent=True) or {}
+    title = (data.get("title") or "").strip()
+    content = data.get("content", "")
+    widget_type = (data.get("widget_type") or "").strip()
+    try:
+        col_start = int(data.get("col_start", 1))
+        col_span = int(data.get("col_span", 1))
+        row_start = int(data.get("row_start", 1))
+        row_span = int(data.get("row_span", 1))
+    except (TypeError, ValueError):
+        return jsonify({"error": "Invalid layout values"}), 400
+
+    if not title or not widget_type:
+        return jsonify({"error": "Missing required fields"}), 400
+
+    if widget_type not in {"value", "table", "chart"}:
+        return jsonify({"error": "Invalid widget type"}), 400
+
+    from db.dashboard import create_widget as _create_widget
+
+    widget_id = _create_widget(
+        title,
+        content,
+        widget_type,
+        col_start,
+        col_span,
+        row_start,
+        row_span,
+    )
+
+    if not widget_id:
+        return jsonify({"error": "Failed to create widget"}), 500
+
+    return jsonify({"success": True, "id": widget_id})
+
 @app.route("/<table>/<int:record_id>/remove-field", methods=["POST"])
 def remove_field_route(table, record_id):
     field_name = request.form.get("field_name")
