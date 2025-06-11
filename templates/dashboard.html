@@ -13,12 +13,23 @@
 <div id="dashboard-grid"
      class="relative w-full grid"
      style="grid-template-columns: repeat(20, 1fr); grid-auto-rows: 1em;">
-  {% for w in widgets %}
-    <div class="draggable-field border p-2 rounded shadow bg-gray-50"
-         data-widget="{{ w.id }}"
-         data-type="{{ w.widget_type }}"
-         style="grid-column: {{ w.col_start }} / span {{ w.col_span }}; grid-row: {{ w.row_start }} / span {{ w.row_span }};">
-      {{ w.title }}
+  {% set default_width = { 'value': 4, 'table': 10, 'chart': 10 } %}
+  {% set default_height = { 'value': 3, 'table': 8,  'chart': 8 } %}
+  {% for widget in widgets %}
+    {% set col_start = widget.col_start or 1 %}
+    {% set col_span  = widget.col_span  or default_width[widget.widget_type] %}
+    {% set row_start = widget.row_start or 1 %}
+    {% set row_span  = widget.row_span  or default_height[widget.widget_type] %}
+    <div class="dashboard-widget draggable-field border p-2 rounded shadow bg-gray-50"
+         data-widget="{{ widget.id }}"
+         data-type="{{ widget.widget_type }}"
+         style="grid-column: {{ col_start }} / span {{ col_span }}; grid-row: {{ row_start }} / span {{ row_span }};">
+      {% if widget.widget_type == 'value' %}
+        <div class="font-semibold">{{ widget.title }}</div>
+        <div>{{ widget.content }}</div>
+      {% else %}
+        <div class="text-gray-500">{{ widget.widget_type }} widget</div>
+      {% endif %}
     </div>
   {% endfor %}
 </div>
