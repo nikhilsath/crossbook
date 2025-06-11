@@ -1,39 +1,37 @@
+let measureCanvas;
+
 export function fitText(el) {
-  // Skip shrinking when layout grid is currently being edited
+  // Skip resizing when layout grid is currently being edited
   if (document.querySelector('#layout-grid.editing')) {
     return;
   }
 
-  // reset font size before fitting so enlargements after resize work
+  if (!measureCanvas) {
+    measureCanvas = document.createElement('canvas');
+  }
+  const ctx = measureCanvas.getContext('2d');
+
+  // Reset any previous inline size
   el.style.fontSize = '';
 
+  const text = el.textContent.trim();
+  if (!text) return;
+
   const style = window.getComputedStyle(el);
-  let fontSize = parseFloat(style.fontSize);
-  if (!fontSize) return;
+  const fontFamily = style.fontFamily || 'sans-serif';
+  const fontWeight = style.fontWeight || 'normal';
+  ctx.font = `${fontWeight} 10px ${fontFamily}`;
+  const metrics = ctx.measureText(text);
 
-  const initialSize = fontSize;
+  const width = el.clientWidth;
+  const height = el.clientHeight;
+  if (!width || !height) return;
 
-  // Grow text while it still fits in the element
-  let nextSize = fontSize;
-  while (el.scrollWidth <= el.clientWidth && el.scrollHeight <= el.clientHeight) {
-    nextSize += 1;
-    el.style.fontSize = nextSize + 'px';
-    if (el.scrollWidth > el.clientWidth || el.scrollHeight > el.clientHeight) {
-      // revert to last fitting size
-      nextSize -= 1;
-      el.style.fontSize = nextSize + 'px';
-      break;
-    }
-    fontSize = nextSize;
-    if (nextSize - initialSize > 500) break; // sanity guard
-  }
-
-  // If it still overflows, shrink until it fits
-  fontSize = parseFloat(el.style.fontSize);
-  while ((el.scrollWidth > el.clientWidth || el.scrollHeight > el.clientHeight) && fontSize > 4) {
-    fontSize -= 1;
-    el.style.fontSize = fontSize + 'px';
-  }
+  const sizeByWidth = (width * 0.9 / metrics.width) * 10;
+  const sizeByHeight = height * 0.9; // because metrics were for 10px height
+  let newSize = Math.floor(Math.min(sizeByWidth, sizeByHeight));
+  if (newSize < 4) newSize = 4;
+  el.style.fontSize = `${newSize}px`;
 }
 
 function makeEditable(displayEl) {
