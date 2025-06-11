@@ -17,11 +17,18 @@
      style="grid-template-columns: repeat(20, 1fr); grid-auto-rows: 1em;">
   {% set default_width = { 'value': 4, 'table': 10, 'chart': 10 } %}
   {% set default_height = { 'value': 3, 'table': 8,  'chart': 8 } %}
+  {% set widget_layout = {} %}
   {% for widget in widgets %}
     {% set col_start = widget.col_start or 1 %}
     {% set col_span  = widget.col_span  or default_width[widget.widget_type] %}
     {% set row_start = widget.row_start or 1 %}
     {% set row_span  = widget.row_span  or default_height[widget.widget_type] %}
+    {% set _ = widget_layout.update({ widget.id: {
+      'colStart': col_start,
+      'colSpan': col_span,
+      'rowStart': row_start,
+      'rowSpan': row_span
+    } }) %}
     <div class="dashboard-widget draggable-field border p-2 rounded shadow bg-gray-50"
          data-widget="{{ widget.id }}"
          data-type="{{ widget.widget_type }}"
@@ -47,6 +54,7 @@
 {% include "dashboard_modal.html" %}
 
 <script>const FIELD_SCHEMA = {{ field_schema | tojson }};</script>
+<script>window.WIDGET_LAYOUT = {{ widget_layout | tojson }};</script>
 <script type="module" src="{{ url_for('static', filename='js/dashboard_modal.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/dashboard_grid.js') }}"></script>
 {% endblock %}

@@ -10,7 +10,7 @@ const defaultWidgetHeight = {
   chart: 8
 };
 
-const widgetLayout = {};
+const widgetLayout = window.WIDGET_LAYOUT || {};
 
 function enterEditMode() {
   const grid = document.getElementById('dashboard-grid');
