@@ -52,7 +52,8 @@ def configure_logging(app):
 
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(formatter)
-    console_handler.setLevel(logging.WARNING)
+    # Only show errors in the console but keep all logs in the file
+    console_handler.setLevel(logging.ERROR)
 
     app.logger.setLevel(level)
     app.logger.addHandler(file_handler)
