@@ -3,40 +3,42 @@ import re
 import csv
 import logging
 from db.schema import get_field_schema
+
 logger = logging.getLogger(__name__)
 SCHEMA = get_field_schema()
 
+# Map field types to a tuple of (log message, validator function)
+VALIDATION_DISPATCH = {
+    "text": ("Text Validation Triggered", lambda table, field, values: validate_text_column(values)),
+    "boolean": ("Boolean Validation Triggered", lambda table, field, values: validate_boolean_column(values)),
+    "foreign_key": (
+        "FK Validation Triggered",
+        lambda table, field, values: validate_select_column(values, SCHEMA[table][field]["options"]),
+    ),
+    "multi_select": (
+        "Multi Validation Triggered",
+        lambda table, field, values: validate_multi_select_column(values, SCHEMA[table][field]["options"]),
+    ),
+    "number": ("Number Validation Triggered", lambda table, field, values: validate_number_column(values)),
+    "select": (
+        "Select Validation Triggered",
+        lambda table, field, values: validate_select_column(values, SCHEMA[table][field]["options"]),
+    ),
+    "textarea": ("Textarea Validation Triggered", lambda table, field, values: validate_textarea_column(values)),
+}
+
 def validation_sorter(table, field, header, fieldType, values):
     logger.debug("✅ Validation function was triggered.")
-    # Delegate to specific validator based on field type
-    if fieldType == "text":
-        logger.debug("Text Validation Triggered")
-        result = validate_text_column(values)
-    elif fieldType == "boolean":
-        logger.debug("Boolean Validation Triggered")
-        result = validate_boolean_column(values)
-    elif fieldType == "foreign_key":
-        logger.debug("FK Validation Triggered")
-        options = SCHEMA[table][field]["options"]
-        result = validate_select_column(values, options)
-    elif fieldType == "multi_select":
-        logger.debug("Multi Validation Triggered")
-        options = SCHEMA[table][field]["options"]
-        result = validate_multi_select_column(values, options)
-    elif fieldType == "number":
-        logger.debug("Number Validation Triggered")
-        result = validate_number_column(values)
-    elif fieldType == "select":
-        logger.debug("Select Validation Triggered")
-        options = SCHEMA[table][field]["options"]
-        result = validate_select_column(values, options)
-    elif fieldType == "textarea":
-        logger.debug("Textarea Validation Triggered")
-        result = validate_textarea_column(values)
-    else:
+
+    # Lookup validator and log message from dispatch table
+    dispatch_entry = VALIDATION_DISPATCH.get(fieldType)
+    if not dispatch_entry:
         logger.debug("no validation for this datatype")
-        # Return empty report when no validation is available
         return {}
+
+    log_msg, validator = dispatch_entry
+    logger.debug(log_msg)
+    result = validator(table, field, values)
 
     classes = []
     if result.get("blank", 0) > 0:
