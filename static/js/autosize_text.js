@@ -10,6 +10,26 @@ export function fitText(el) {
   const style = window.getComputedStyle(el);
   let fontSize = parseFloat(style.fontSize);
   if (!fontSize) return;
+
+  const initialSize = fontSize;
+
+  // Grow text while it still fits in the element
+  let nextSize = fontSize;
+  while (el.scrollWidth <= el.clientWidth && el.scrollHeight <= el.clientHeight) {
+    nextSize += 1;
+    el.style.fontSize = nextSize + 'px';
+    if (el.scrollWidth > el.clientWidth || el.scrollHeight > el.clientHeight) {
+      // revert to last fitting size
+      nextSize -= 1;
+      el.style.fontSize = nextSize + 'px';
+      break;
+    }
+    fontSize = nextSize;
+    if (nextSize - initialSize > 500) break; // sanity guard
+  }
+
+  // If it still overflows, shrink until it fits
+  fontSize = parseFloat(el.style.fontSize);
   while ((el.scrollWidth > el.clientWidth || el.scrollHeight > el.clientHeight) && fontSize > 4) {
     fontSize -= 1;
     el.style.fontSize = fontSize + 'px';
