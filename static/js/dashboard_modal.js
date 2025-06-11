@@ -68,7 +68,9 @@ function updateValueResult() {
     const [table, field] = selectedColumn.split(':');
     resultRowEl.classList.remove('hidden');
     if (titleInputEl) {
-      titleInputEl.placeholder = `Sum of ${field}`;
+      const defaultTitle = `Sum of ${field}`;
+      titleInputEl.placeholder = defaultTitle;
+      titleInputEl.value = defaultTitle;
     }
     if (createBtnEl) createBtnEl.classList.remove('hidden');
     valueResultEl.textContent = 'Calculating…';
