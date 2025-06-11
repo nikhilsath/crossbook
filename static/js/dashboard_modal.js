@@ -16,6 +16,7 @@ let agg2 = 'sum';
 let columnToggleBtn, columnToggleLabel, columnDropdown;
 let mathSelect1Btn, mathSelect1Label, mathSelect1Options;
 let mathSelect2Btn, mathSelect2Label, mathSelect2Options;
+let mathField1Container, mathField2Container;
 let aggToggle1El, aggToggle2El;
 let valueResultEl, titleInputEl, resultRowEl, createBtnEl, mathOpContainer;
 let activeTab = 'value';
@@ -74,6 +75,23 @@ function updateAverageButtonUI() {
   if (!numeric && avgInput && avgInput.checked) {
     avgInput.checked = false;
     mathOperation = null;
+  }
+}
+
+function updateMathFieldUI() {
+  if (!mathField1Container || !mathField2Container) return;
+  if (selectedOperation === 'math') {
+    mathField1Container.classList.remove('hidden');
+    if (mathOperation && mathOperation !== 'average') {
+      mathField2Container.classList.remove('hidden');
+    } else {
+      mathField2Container.classList.add('hidden');
+      mathField2 = null;
+      if (mathSelect2Label) mathSelect2Label.textContent = 'Select Field';
+    }
+  } else {
+    mathField1Container.classList.add('hidden');
+    mathField2Container.classList.add('hidden');
   }
 }
 
@@ -339,6 +357,7 @@ function updateColumnOptions() {
 
   updateAggToggleUI();
   updateAverageButtonUI();
+  updateMathFieldUI();
   updateValueResult();
 }
 
@@ -373,6 +392,7 @@ function initOperationSelect() {
     mathField2 = null;
     mathOperation = null;
     updateColumnOptions();
+    updateMathFieldUI();
   });
 }
 
@@ -393,10 +413,13 @@ function initDashboardModal() {
   resultRowEl = document.getElementById('resultRow');
   createBtnEl = document.getElementById('dashboardCreateBtn');
   mathOpContainer = document.getElementById('mathOperationContainer');
+  mathField1Container = document.getElementById('mathField1');
+  mathField2Container = document.getElementById('mathField2');
   if (mathOpContainer) {
     mathOpContainer.addEventListener('change', () => {
       const checked = mathOpContainer.querySelector('input[name="mathOperation"]:checked');
       mathOperation = checked ? checked.value : null;
+      updateMathFieldUI();
       updateValueResult();
     });
   }
@@ -434,6 +457,7 @@ function initDashboardModal() {
 
   updateAggToggleUI();
   updateAverageButtonUI();
+  updateMathFieldUI();
 }
 
 document.addEventListener('DOMContentLoaded', initDashboardModal);
