@@ -38,6 +38,8 @@
             {{ filters.select_filter(field, request.args.get(field,''), meta.options) }}
           {% elif meta.type == 'number' %}
             {{ filters.number_filter(field, request.args.get(field + '_min',''), request.args.get(field + '_max','')) }}
+          {% elif meta.type == 'date' %}
+            {{ filters.date_filter(field, request.args.get(field + '_start',''), request.args.get(field + '_end','')) }}
           {% else %}
             {{ filters.text_filter(field, request.args.get(field,''), request.args.get(field + '_op','contains')) }}
           {% endif %}

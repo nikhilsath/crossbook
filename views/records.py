@@ -36,6 +36,8 @@ def list_view(table):
         if k in fields
         or (k.endswith('_min') and k[:-4] in fields)
         or (k.endswith('_max') and k[:-4] in fields)
+        or (k.endswith('_start') and k[:-6] in fields)
+        or (k.endswith('_end') and k[:-4] in fields)
     }
     ops = {k[:-3]: v for k, v in raw_args.items() if k.endswith('_op') and k[:-3] in fields}
     page = int(request.args.get('page', 1))

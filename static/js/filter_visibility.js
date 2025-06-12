@@ -88,11 +88,28 @@ document.addEventListener("DOMContentLoaded", () => {
       window.location.search = params.toString();
     }
 
-    function bindNumberFilters() {
-      document
-        .querySelectorAll("#filter-container input[type='number']")
-        .forEach(input => input.addEventListener("change", onNumberFilterChange));
+  function bindNumberFilters() {
+    document
+      .querySelectorAll("#filter-container input[type='number']")
+      .forEach(input => input.addEventListener("change", onNumberFilterChange));
+  }
+
+  function onDateFilterChange(e) {
+    const input = e.target;
+    const params = new URLSearchParams(window.location.search);
+    if (input.value === "") {
+      params.delete(input.name);
+    } else {
+      params.set(input.name, input.value);
     }
+    window.location.search = params.toString();
+  }
+
+  function bindDateFilters() {
+    document
+      .querySelectorAll("#filter-container input[type='date']")
+      .forEach(input => input.addEventListener("change", onDateFilterChange));
+  }
   
     // Handle operator dropdown changes
     function onOperatorChange(e) {
@@ -147,6 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
     bindDebounceToFilters();
     bindOperatorListeners();
     bindNumberFilters();
+    bindDateFilters();
   });
   
     // Multi-select popover logic

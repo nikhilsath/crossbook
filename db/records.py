@@ -15,10 +15,16 @@ def _build_filters(table, search=None, filters=None, ops=None):
 
     if filters:
         valid_keys = [
-            f[:-4] if f.endswith('_min') or f.endswith('_max') else f
+            f[:-4] if f.endswith('_min') or f.endswith('_max') else
+            f[:-6] if f.endswith('_start') else
+            f[:-4] if f.endswith('_end') else f
             for f in filters.keys()
         ]
         validate_fields(table, valid_keys)
+
+        date_starts = {}
+        date_ends = {}
+
         for fld, val in filters.items():
             values = val if isinstance(val, list) else [val]
             clean_values = [v for v in values if v != ""]
@@ -34,6 +40,12 @@ def _build_filters(table, search=None, filters=None, ops=None):
                 for v in clean_values:
                     clauses.append(f"{base} <= ?")
                     params.append(v)
+            elif fld.endswith('_start'):
+                base = fld[:-6]
+                date_starts[base] = clean_values[0]
+            elif fld.endswith('_end'):
+                base = fld[:-4]
+                date_ends[base] = clean_values[0]
             else:
                 op = (ops or {}).get(fld, "contains")
                 field_clauses = []
@@ -52,6 +64,19 @@ def _build_filters(table, search=None, filters=None, ops=None):
                         params.append(f"%{v}%")
                 if field_clauses:
                     clauses.append("(" + " OR ".join(field_clauses) + ")")
+
+        for base in set(date_starts) | set(date_ends):
+            start = date_starts.get(base)
+            end = date_ends.get(base)
+            if start and end:
+                clauses.append(f"{base} BETWEEN ? AND ?")
+                params.extend([start, end])
+            elif start:
+                clauses.append(f"{base} >= ?")
+                params.append(start)
+            elif end:
+                clauses.append(f"{base} <= ?")
+                params.append(end)
 
     if search:
         search_term = search.strip()
