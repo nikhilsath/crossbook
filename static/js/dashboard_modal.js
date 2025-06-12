@@ -138,6 +138,15 @@ function updateChartUI() {
       }
     });
     chartOrientContainer.classList.remove('hidden');
+  } else if (type === 'line') {
+    chartXFieldLabel.textContent = 'Field';
+    populateFieldDropdown(chartXOptions, false, null, val => {
+      chartXField = val;
+      if (chartXLabel) {
+        const [t,f] = val.split(':');
+        chartXLabel.textContent = `${t}: ${f}`;
+      }
+    });
   } else {
     chartXFieldLabel.textContent = 'X Field';
     populateFieldDropdown(chartXOptions, false, null, val => {
@@ -292,6 +301,12 @@ function onCreateWidget(event) {
         chart_type: chartType,
         field: chartXField,
         orientation: chartOrient
+      };
+    } else if (chartType === 'line') {
+      if (!chartXField) return;
+      payloadContent = {
+        chart_type: chartType,
+        field: chartXField
       };
     } else {
       if (!chartXField || !chartYField) return;
