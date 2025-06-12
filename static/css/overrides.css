@@ -92,6 +92,18 @@ input[type=number] {
 #dashboard-grid .draggable-field textarea {
   height: 100% !important;
 }
+
+/* Dashboard grid defaults */
+#dashboard-grid .draggable-field {
+  padding: 0 !important;
+  /* …other reset rules… */
+}
+
+/* Re-apply Tailwind p-2 & proper box-sizing on widgets */
+#dashboard-grid .dashboard-widget {
+  padding: 0.5rem !important;   /* Tailwind p-2 */
+  box-sizing: border-box;       /* so h-full includes padding */
+}
 #dashboard-grid .resize-handle {
   position: absolute;
   width: 12px;
