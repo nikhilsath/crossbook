@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelectorAll("thead th").forEach((th) => {
       if (th.dataset.static !== undefined) return;
-      const field = th.textContent.trim().toLowerCase();
+      const field = th.textContent.trim();
       th.style.display = visible.has(field) ? "" : "none";
     });
 
