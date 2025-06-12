@@ -28,9 +28,17 @@ document.addEventListener('DOMContentLoaded', () => {
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="bold"> <span>Bold</span></label>
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="italic"> <span>Italic</span></label>
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="underline"> <span>Underline</span></label>
-    <input type="color" data-opt="color" class="w-full h-6 p-0 border border-gray-300 rounded">
+    <div id="field-color-picker" class="w-full"></div>
   `;
   document.body.appendChild(menu);
+
+  const colorPickerDiv = menu.querySelector('#field-color-picker');
+  const colorQuill = new Quill(colorPickerDiv, {
+    modules: { toolbar: [[{ color: [] }]] },
+    theme: 'snow'
+  });
+  colorPickerDiv.querySelector('.ql-editor').style.display = 'none';
+  const colorSelect = colorPickerDiv.querySelector('select.ql-color');
 
   let currentEl;
 
@@ -45,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
     menu.querySelector('[data-opt="bold"]').checked = !!styling.bold;
     menu.querySelector('[data-opt="italic"]').checked = !!styling.italic;
     menu.querySelector('[data-opt="underline"]').checked = !!styling.underline;
-    menu.querySelector('[data-opt="color"]').value = styling.color || '#000000';
+    colorSelect.value = styling.color || '';
     menu.style.left = `${e.pageX}px`;
     menu.style.top = `${e.pageY}px`;
     menu.classList.remove('hidden');
@@ -64,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
       bold: menu.querySelector('[data-opt="bold"]').checked,
       italic: menu.querySelector('[data-opt="italic"]').checked,
       underline: menu.querySelector('[data-opt="underline"]').checked,
-      color: menu.querySelector('[data-opt="color"]').value
+      color: colorSelect.value
     };
     currentEl._styling = styling;
     applyStyling(currentEl, styling);
