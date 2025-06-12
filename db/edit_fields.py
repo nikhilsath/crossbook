@@ -24,13 +24,22 @@ DEFAULT_FIELD_HEIGHT = {
 }
 
 
-def add_field_to_schema(table, field_name, field_type, field_options=None, foreign_key=None, layout=None):
+def add_field_to_schema(
+    table,
+    field_name,
+    field_type,
+    field_options=None,
+    foreign_key=None,
+    layout=None,
+    styling=None,
+):
     """Insert a new field into the field_schema table."""
     with get_connection() as conn:
         cur = conn.cursor()
 
         # 1) Serialize the list of options (if any) to JSON text
         options_str = json.dumps(field_options or [])
+        styling_str = json.dumps(styling) if styling else None
 
         # 2) Compute the new field's row_start by finding the current bottom edge
         cur.execute(
@@ -49,13 +58,13 @@ def add_field_to_schema(table, field_name, field_type, field_options=None, forei
         row_start = max_bottom
         row_span = height_map.get(field_type, 4)
 
-        # 4) Insert into field_schema with the nine real columns
+        # 4) Insert into field_schema including the styling column
         cur.execute(
             """
             INSERT INTO field_schema
               (table_name, field_name, field_type, field_options, foreign_key,
-               col_start, col_span, row_start, row_span)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+               col_start, col_span, row_start, row_span, styling)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 table,
@@ -67,6 +76,7 @@ def add_field_to_schema(table, field_name, field_type, field_options=None, forei
                 col_span,
                 row_start,
                 row_span,
+                styling_str,
             ),
         )
         conn.commit()

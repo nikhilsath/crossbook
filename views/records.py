@@ -1,3 +1,4 @@
+import json
 from flask import Blueprint, render_template, abort, request, redirect, url_for, jsonify, current_app
 from db.database import get_connection
 from db.validation import validate_table
@@ -143,7 +144,9 @@ def add_field_route(table, record_id):
         field_type = request.form['field_type']
         field_options_raw = request.form.get('field_options', '')
         foreign_key = request.form.get('foreign_key_target', None)
+        styling_raw = request.form.get('styling')
         field_options = [opt.strip() for opt in field_options_raw.split(',') if opt.strip()] if field_options_raw else []
+        styling = json.loads(styling_raw) if styling_raw else None
         add_column_to_table(table, field_name, field_type)
         current_app.logger.info('Returned from add_column_to_table for field %s', field_name)
         add_field_to_schema(
@@ -151,7 +154,8 @@ def add_field_route(table, record_id):
             field_name=field_name,
             field_type=field_type,
             field_options=field_options,
-            foreign_key=foreign_key
+            foreign_key=foreign_key,
+            styling=styling,
         )
         current_app.logger.info('Added column to %s: field=%r type=%r', table, field_name, field_type)
         return redirect(url_for('records.detail_view', table=table, record_id=record_id))
