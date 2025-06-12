@@ -5,7 +5,7 @@
 {% block content %}
 <h1 class="text-2xl font-bold mb-6">Configuration</h1>
 
-<div class="max-w-4xl mx-auto space-y-6">
+<div class="mx-auto w-11/12 max-w-screen-2xl space-y-6">
 {% for section, items in sections.items() %}
   <details class="bg-white rounded shadow" {% if loop.first %}open{% endif %}>
     <summary class="cursor-pointer px-4 py-2 bg-gray-100 rounded-t font-semibold text-lg">
