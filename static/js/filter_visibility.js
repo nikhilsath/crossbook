@@ -19,6 +19,18 @@ document.addEventListener("DOMContentLoaded", () => {
           pagerWrap.innerHTML = data.pagination_html;
           const cnt = document.getElementById("record-count");
           if (cnt) cnt.outerHTML = data.count_html;
+          if (data.filters_html) {
+            const cur = document.getElementById("filter-container");
+            if (cur) {
+              cur.outerHTML = data.filters_html;
+              bindDebounceToFilters();
+              bindOperatorListeners();
+              bindNumberFilters();
+              bindDateFilters();
+              bindMultiSelectPopovers();
+              bindSelectMulti();
+            }
+          }
         })
         .catch(err => console.error("fetchRecords", err))
         .finally(() => loading.classList.add("hidden"));

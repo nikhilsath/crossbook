@@ -92,7 +92,9 @@ def list_view(table):
         rows = render_template('_record_rows.html', **ctx)
         pager = render_template('_pagination.html', **ctx)
         count = render_template('_record_count.html', **ctx)
-        ctx.update({'rows_html': rows, 'pagination_html': pager, 'count_html': count})
+        filters = render_template('_filter_chips.html', **ctx)
+        ctx.update({'rows_html': rows, 'pagination_html': pager,
+                    'count_html': count, 'filters_html': filters})
         return jsonify(ctx)
     return render_template('list_view.html', request=request, **ctx)
 
@@ -129,7 +131,9 @@ def api_records(table):
     rows = render_template('_record_rows.html', **ctx)
     pager = render_template('_pagination.html', **ctx)
     count = render_template('_record_count.html', **ctx)
-    ctx.update({'rows_html': rows, 'pagination_html': pager, 'count_html': count})
+    filters = render_template('_filter_chips.html', **ctx)
+    ctx.update({'rows_html': rows, 'pagination_html': pager,
+                'count_html': count, 'filters_html': filters})
     return jsonify(ctx)
 
 @records_bp.route('/<table>/<int:record_id>')
