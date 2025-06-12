@@ -86,7 +86,10 @@
 {% endmacro %}
 
 {%- macro number_filter(field, min_val, max_val) -%}
-  <div class="filter-chip flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1 border border-gray-300">
+  <div class="filter-chip flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1 border border-gray-400">
+    <span class="text-xs border border-gray-400 rounded px-1 mr-1">
+      {{ field | replace('_',' ') | capitalize }}
+    </span>
     <input
       type="number"
       name="{{ field }}_min"
