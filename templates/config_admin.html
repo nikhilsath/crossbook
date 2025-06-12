@@ -26,9 +26,9 @@
           <tr>
             <td class="font-mono px-2 py-1">{{ item.key }}</td>
             <td class="px-2 py-1">
-              <form method="post" action="{{ url_for('admin.update_config_route', key=item.key) }}"
-                    class="{% if item.type == 'json' and item.key == 'layout_defaults' %}space-y-2{% else %}flex items-center space-x-2{% endif %}"
-                    {% if item.type == 'json' %}data-json-key="{{ item.key }}"{% endif %}>
+                <form method="post" action="{{ url_for('admin.update_config_route', key=item.key) }}"
+                      class="{% if item.type == 'json' %}flex flex-col items-start space-y-2{% else %}flex items-center space-x-2{% endif %}"
+                      {% if item.type == 'json' %}data-json-key="{{ item.key }}"{% endif %}>
                 {% if item.type in ('integer', 'number') %}
                   <input type="number" name="value" value="{{ item.value }}" class="border border-gray-300 rounded px-2 py-1 text-sm flex-grow focus:ring-blue-500 focus:border-blue-500">
                 {% elif item.type == 'boolean' %}
