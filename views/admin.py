@@ -44,6 +44,11 @@ def config_page():
     configs = get_config_rows()
     sections = {}
     for item in configs:
+        if item.get('type') == 'json':
+            try:
+                item['parsed'] = json.loads(item.get('value') or '{}')
+            except Exception:
+                item['parsed'] = {}
         sections.setdefault(item['section'], []).append(item)
     return render_template('config_admin.html', sections=sections)
 

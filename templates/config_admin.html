@@ -26,7 +26,9 @@
           <tr>
             <td class="font-mono px-2 py-1">{{ item.key }}</td>
             <td class="px-2 py-1">
-              <form method="post" action="{{ url_for('admin.update_config_route', key=item.key) }}" class="flex items-center space-x-2">
+              <form method="post" action="{{ url_for('admin.update_config_route', key=item.key) }}"
+                    class="{% if item.type == 'json' and item.key == 'layout_defaults' %}space-y-2{% else %}flex items-center space-x-2{% endif %}"
+                    {% if item.type == 'json' %}data-json-key="{{ item.key }}"{% endif %}>
                 {% if item.type in ('integer', 'number') %}
                   <input type="number" name="value" value="{{ item.value }}" class="border border-gray-300 rounded px-2 py-1 text-sm flex-grow focus:ring-blue-500 focus:border-blue-500">
                 {% elif item.type == 'boolean' %}
@@ -34,6 +36,32 @@
                   <input type="hidden" name="value" value="0">
                 {% elif item.type == 'date' %}
                   <input type="date" name="value" value="{{ item.value }}" class="border border-gray-300 rounded px-2 py-1 text-sm flex-grow focus:ring-blue-500 focus:border-blue-500">
+                {% elif item.type == 'json' and item.key == 'layout_defaults' %}
+                  <div class="space-y-2 w-full" data-layout-defaults>
+                    <div>
+                      <h4 class="font-semibold text-sm">Width</h4>
+                      <div class="grid grid-cols-2 gap-2 mt-1">
+                        {% for fname, val in item.parsed.width.items() %}
+                          <label class="text-xs flex items-center space-x-1">
+                            <span class="w-20 text-right">{{ fname }}</span>
+                            <input type="number" step="1" name="width.{{ fname }}" value="{{ val }}" class="border border-gray-300 rounded px-1 py-0.5 text-xs flex-grow">
+                          </label>
+                        {% endfor %}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 class="font-semibold text-sm">Height</h4>
+                      <div class="grid grid-cols-2 gap-2 mt-1">
+                        {% for fname, val in item.parsed.height.items() %}
+                          <label class="text-xs flex items-center space-x-1">
+                            <span class="w-20 text-right">{{ fname }}</span>
+                            <input type="number" step="1" name="height.{{ fname }}" value="{{ val }}" class="border border-gray-300 rounded px-1 py-0.5 text-xs flex-grow">
+                          </label>
+                        {% endfor %}
+                      </div>
+                    </div>
+                    <input type="hidden" name="value" value="{{ item.value }}">
+                  </div>
                 {% else %}
                   <input type="text" name="value" value="{{ item.value }}" class="border border-gray-300 rounded px-2 py-1 text-sm flex-grow focus:ring-blue-500 focus:border-blue-500">
                 {% endif %}
@@ -50,4 +78,5 @@
   </details>
 {% endfor %}
 </div>
+<script type="module" src="{{ url_for('static', filename='js/config_admin.js') }}"></script>
 {% endblock %}
