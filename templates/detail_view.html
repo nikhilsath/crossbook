@@ -60,7 +60,9 @@
                  grid-column: {{ col_start }} / span {{ col_span }};
                  grid-row:    {{ row_start }} / span {{ row_span }};
                ">
+            {% if field_schema[table][field].type != 'text' %}
             <div class="text-sm font-bold capitalize mb-1">{{ field }}</div>
+            {% endif %}
             <div>
               {{ fields.render_editable_field(
                    field, value, record.id, request,

@@ -35,7 +35,7 @@ export function fitText(el) {
 }
 
 function makeEditable(displayEl) {
-  const value = displayEl.textContent.trim();
+  const value = displayEl.dataset.rawValue || displayEl.textContent.trim();
   const form = document.createElement('form');
   form.method = 'POST';
   form.action = displayEl.dataset.updateUrl;
@@ -66,7 +66,9 @@ function makeEditable(displayEl) {
     newDiv.dataset.field = displayEl.dataset.field;
     newDiv.dataset.recordId = displayEl.dataset.recordId;
     newDiv.dataset.updateUrl = displayEl.dataset.updateUrl;
-    newDiv.textContent = input.value;
+    newDiv.dataset.label = displayEl.dataset.label;
+    newDiv.dataset.rawValue = input.value;
+    newDiv.innerHTML = `<b>${displayEl.dataset.label}:</b> ${input.value}`;
     form.replaceWith(newDiv);
     attach(newDiv);
   };
