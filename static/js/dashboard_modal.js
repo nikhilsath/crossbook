@@ -226,6 +226,7 @@ function updateTablePreview() {
         tablePreviewEl.classList.remove('hidden');
       });
   } else if (tableType === 'select-count') {
+    if (selectCountToggleBtn) selectCountToggleBtn.classList.remove('hidden');
     if (!selectCountField) {
       if (selectCountFieldContainer) selectCountFieldContainer.classList.remove('hidden');
       return;
