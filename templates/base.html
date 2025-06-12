@@ -11,7 +11,7 @@
   <script src="{{ url_for('static', filename='js/flowbite-charts.min.js') }}"></script>
   <title>{% block title %}Crossbook{% endblock %}</title>
 </head>
-<body class="bg-white text-gray-900">
+<body class="bg-white text-gray-900 {% block body_class %}{% endblock %}">
     {% set segments = request.path.strip('/').split('/') %}
     {% set current_table = segments[0] %}
     {% set current_id = segments[1] if segments|length > 1 else None %}
