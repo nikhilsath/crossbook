@@ -15,6 +15,7 @@ from db.dashboard import (
     create_widget,
     update_widget_layout,
     get_base_table_counts,
+    get_top_numeric_values,
 )
 from db.schema import create_base_table, refresh_card_cache
 from imports.import_csv import parse_csv
@@ -141,6 +142,28 @@ def dashboard_update_layout():
 def dashboard_base_count():
     """Return counts for all base tables."""
     data = get_base_table_counts()
+    return jsonify(data)
+
+
+@admin_bp.route('/dashboard/top-numeric')
+def dashboard_top_numeric():
+    """Return top or bottom numeric values from a table."""
+    table = request.args.get('table')
+    field = request.args.get('field')
+    try:
+        limit = int(request.args.get('limit', 10))
+    except (TypeError, ValueError):
+        limit = 10
+    direction = request.args.get('direction', 'desc')
+    try:
+        data = get_top_numeric_values(
+            table,
+            field,
+            limit=limit,
+            ascending=(direction == 'asc'),
+        )
+    except ValueError:
+        return jsonify([]), 400
     return jsonify(data)
 
 @admin_bp.route('/add-table', methods=['POST'])
