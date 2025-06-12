@@ -69,7 +69,20 @@
       <thead class="bg-gray-50">
         <tr>
           {% for field in fields if not field.startswith('_') %}
-            <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">{{ field }}</th>
+            {% set is_current = sort_field == field %}
+            {% set new_dir = 'desc' if is_current and direction == 'asc' else 'asc' %}
+            <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+              <a href="?{{ base_qs_no_sort }}{{ '&' if base_qs_no_sort else '' }}sort={{ field }}&dir={{ new_dir }}" class="flex items-center space-x-1">
+                <span>{{ field }}</span>
+                {% if is_current %}
+                  {% if direction == 'asc' %}
+                    <span>&#9650;</span>
+                  {% else %}
+                    <span>&#9660;</span>
+                  {% endif %}
+                {% endif %}
+              </a>
+            </th>
           {% endfor %}
         </tr>
       </thead>
