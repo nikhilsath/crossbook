@@ -199,6 +199,9 @@ def update_field(table, record_id):
                 new_value = 0
         else:
             new_value = raw
+        if ftype == 'textarea':
+            from utils.html_sanitizer import sanitize_html
+            new_value = sanitize_html(new_value)
     current_app.logger.debug('update_field: table=%s id=%s field=%s value=%r', table, record_id, field, new_value)
     prev_record = get_record_by_id(table, record_id)
     prev_value = prev_record.get(field) if prev_record else None

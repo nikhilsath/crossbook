@@ -122,6 +122,12 @@ def update_field_value(table, record_id, field, new_value):
     validate_table(table)
     validate_field(table, field)
 
+    # Sanitize textarea HTML before saving
+    fmeta = get_field_schema().get(table, {}).get(field, {})
+    if fmeta.get("type") == "textarea":
+        from utils.html_sanitizer import sanitize_html
+        new_value = sanitize_html(new_value)
+
     with get_connection() as conn:
         cursor = conn.cursor()
         try:
@@ -268,13 +274,18 @@ def create_record(table, form_data):
 
             # 3) Build insert_data, but only for known schema fields
             insert_data = {}
+            from utils.html_sanitizer import sanitize_html
+
             for f, meta in fields.items():
                 if f == "id" or meta["type"] == "hidden":
                     continue
                 if f not in cols:
                     continue
                 validate_field(table, f)
-                insert_data[f] = form_data.get(f, "")
+                value = form_data.get(f, "")
+                if meta["type"] == "textarea":
+                    value = sanitize_html(value)
+                insert_data[f] = value
 
             if not insert_data:
                 return None
