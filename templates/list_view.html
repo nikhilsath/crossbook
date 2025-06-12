@@ -84,10 +84,11 @@
   </div>
   
   {% if records %}
-  <div id="loading-indicator" class="hidden text-sm text-gray-600 mb-2">Loading...</div>
-  {% include '_record_count.html' %}
+  <div class="text-sm text-gray-600 mb-2">
+    Showing {{ start }}-{{ end }} of {{ total_count }} record{{ 's' if total_count != 1 }}
+  </div>
   <div class="overflow-x-auto rounded-lg border border-gray-200">
-    <table id="records-table" data-table="{{ table }}" class="min-w-full divide-y divide-gray-200 text-sm">
+    <table class="min-w-full divide-y divide-gray-200 text-sm">
       <thead class="bg-gray-50">
         <tr>
           {% for field in fields if not field.startswith('_') %}
@@ -95,13 +96,40 @@
           {% endfor %}
         </tr>
       </thead>
-      <tbody id="records-body" class="divide-y divide-gray-200">
-        {% include '_record_rows.html' %}
+      <tbody class="divide-y divide-gray-200">
+        {% for record in records %}
+        <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location.href='/{{ table }}/{{ record.id }}'">
+          {% for field in fields if not field.startswith('_') %}
+            <td class="px-4 py-2 whitespace-nowrap" data-field="{{ field }}">
+              {% if field_schema[table][field].type == "textarea" %}
+                {{ record[field]|striptags|truncate(100) }}
+              {% else %}
+                {{ record[field] }}
+              {% endif %}
+            </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>
-  <div id="pagination-wrapper">
-    {% include '_pagination.html' %}
+  <div class="flex items-center mt-4 text-sm space-x-4">
+    <div>Page {{ page }} of {{ total_pages }}</div>
+    <div class="space-x-1">
+      {% if page > 1 %}
+        <a href="?{{ base_qs }}{{ '&' if base_qs else '' }}page={{ page - 1 }}" class="px-2 py-1 bg-gray-200 rounded">Prev</a>
+      {% endif %}
+      {% for p in range(1, total_pages + 1) %}
+        {% if p == page %}
+          <span class="px-2 py-1 bg-blue-500 text-white rounded">{{ p }}</span>
+        {% else %}
+          <a href="?{{ base_qs }}{{ '&' if base_qs else '' }}page={{ p }}" class="px-2 py-1 bg-gray-200 rounded">{{ p }}</a>
+        {% endif %}
+      {% endfor %}
+      {% if page < total_pages %}
+        <a href="?{{ base_qs }}{{ '&' if base_qs else '' }}page={{ page + 1 }}" class="px-2 py-1 bg-blue-500 text-white rounded">Next</a>
+      {% endif %}
+    </div>
   </div>
 {% else %}
   <p class="text-gray-600">No records found.</p>
