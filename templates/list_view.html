@@ -36,8 +36,14 @@
       >
         Reset Filters
       </button>
+      <a
+        href="{{ url_for('records.export_csv', table=table) }}{{ '?' if base_qs else '' }}{{ base_qs }}"
+        class="text-sm bg-green-500 text-white px-2 py-1 rounded"
+      >
+        Export CSV
+      </a>
     </div>
-  </form>  
+  </form>
   <!-- Visibility control -->
   <div class="relative inline-block text-left mb-4" id="column-visibility-wrapper">
     <button id="toggle-columns" type="button" class="px-2 py-1 bg-gray-200 rounded">
