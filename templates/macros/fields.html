@@ -130,7 +130,14 @@
           <span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>
         </form>
         {% elif field_type == "text" %}
-        <div class="autosize-text" data-field="{{ field }}" data-record-id="{{ record_id }}" data-update-url="{{ url_for(update_endpoint, table=table, record_id=record_id) }}">{{ value }}</div>
+        <div class="autosize-text"
+             data-field="{{ field }}"
+             data-record-id="{{ record_id }}"
+             data-update-url="{{ url_for(update_endpoint, table=table, record_id=record_id) }}"
+             data-raw-value="{{ value }}"
+             data-label="{{ field|capitalize }}">
+          <b>{{ field|capitalize }}:</b> {{ value }}
+        </div>
       {% else %}
         <span class="ml-1">{{ value }}</span>
       {% endif %}

@@ -166,7 +166,7 @@ input[type=number] {
 
 .autosize-text {
   width: 100%;
-  height: calc(100% - 1.5em); /* leave room for field label */
+  height: 100%; /* label is inside the element */
   display: flex;
   align-items: center;
   justify-content: center;
