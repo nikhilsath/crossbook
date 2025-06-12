@@ -109,6 +109,12 @@
               Top/Bottom Numeric
             </div>
           </label>
+          <label class="flex-1 cursor-pointer">
+            <input type="radio" name="tableType" value="filtered-records" class="sr-only peer">
+            <div class="p-2 border rounded text-center peer-checked:bg-purple-500 peer-checked:text-white">
+              Filtered Records
+            </div>
+          </label>
         </div>
         <div id="selectCountFieldContainer" class="mb-4 hidden">
           <div class="relative">
@@ -135,6 +141,22 @@
             <input type="radio" name="topDirection" value="asc" class="sr-only peer">
             <div class="p-1 border border-l-0 rounded-r text-center peer-checked:bg-purple-500 peer-checked:text-white">Bottom</div>
           </label>
+        </div>
+        <div id="filteredRecordsContainer" class="mb-4 hidden">
+          <div class="relative mb-2">
+            <button id="filteredTableToggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-left flex items-center justify-between">
+              <span class="selected-label">Select Table</span> <span class="arrow text-xl">▾</span>
+            </button>
+            <div id="filteredTableOptions" class="absolute z-10 mt-1 w-full bg-white border rounded shadow hidden max-h-64 overflow-y-auto p-2 space-y-1"></div>
+          </div>
+          <input id="filteredSearchInput" type="text" placeholder="Search" class="w-full px-3 py-2 border rounded mb-2" />
+          <div class="relative mb-2">
+            <button id="filteredSortToggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-left flex items-center justify-between">
+              <span class="selected-label">Sort Field</span> <span class="arrow text-xl">▾</span>
+            </button>
+            <div id="filteredSortOptions" class="absolute z-10 mt-1 w-full bg-white border rounded shadow hidden max-h-64 overflow-y-auto p-2 space-y-1"></div>
+          </div>
+          <input id="filteredLimitInput" type="number" value="10" min="1" class="w-full px-3 py-2 border rounded" />
         </div>
         <div id="tablePreview" class="mb-4 max-h-64 overflow-y-auto border rounded hidden">
           <table class="min-w-full text-sm">

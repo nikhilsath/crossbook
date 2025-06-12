@@ -4,7 +4,7 @@ from flask import current_app
 from db.database import get_connection
 from db.schema import get_field_schema
 from db.validation import validate_table
-from db.records import count_records
+from db.records import count_records, get_all_records
 
 logger = logging.getLogger(__name__)
 
@@ -184,3 +184,36 @@ def get_top_numeric_values(
                 "[get_top_numeric_values] SQL error for %s.%s: %s", table, field, exc
             )
             return []
+
+
+def get_filtered_records(
+    table: str,
+    filters: str | None = None,
+    order_by: str | None = None,
+    limit: int = 10,
+) -> list[dict]:
+    """Return filtered records from a table.
+
+    Args:
+        table: Table name.
+        filters: Optional search string applied across text fields.
+        order_by: Field to order results by.
+        limit: Maximum number of records to return.
+
+    Returns:
+        A list of record dictionaries.
+    """
+    validate_table(table)
+    try:
+        rows = get_all_records(
+            table,
+            search=filters,
+            sort_field=order_by,
+            limit=limit,
+        )
+        return rows
+    except Exception as exc:
+        logger.warning(
+            "[get_filtered_records] error for %s: %s", table, exc
+        )
+        return []

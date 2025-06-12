@@ -36,6 +36,13 @@ let selectCountToggleBtn, selectCountToggleLabel, selectCountOptions, selectCoun
 let topNumericField = null;
 let topDirection = 'desc';
 let topFieldToggleBtn, topFieldToggleLabel, topFieldOptions, topFieldContainer, topDirectionContainer;
+let filteredTable = null;
+let filteredSearch = '';
+let filteredSort = null;
+let filteredLimit = 10;
+let filteredTableToggleBtn, filteredTableToggleLabel, filteredTableOptions;
+let filteredSortToggleBtn, filteredSortToggleLabel, filteredSortOptions;
+let filteredSearchInputEl, filteredLimitInputEl, filteredRecordsContainer;
 let tableTitleInputEl, tableCreateBtnEl, tablePreviewEl, tablePreviewBodyEl, tablePreviewHeaderEl;
 let tableData = [];
 
@@ -55,6 +62,14 @@ function getNonTextTypes() {
     Object.values(tbl).forEach(meta => types.add(meta.type));
   });
   return Array.from(types).filter(t => t !== 'text' && t !== 'textarea');
+}
+
+function getLabelField(table) {
+  const schema = FIELD_SCHEMA[table] || {};
+  const fields = Object.keys(schema);
+  if (!fields.length) return null;
+  if (fields.includes(table)) return table;
+  return fields.length > 1 ? fields[1] : fields[0];
 }
 
 function toggleDisabled(label, input, disabled) {
@@ -209,6 +224,7 @@ function updateTablePreview() {
   if (topFieldOptions) topFieldOptions.classList.add('hidden');
   if (topFieldContainer) topFieldContainer.classList.add('hidden');
   if (topDirectionContainer) topDirectionContainer.classList.add('hidden');
+  if (filteredRecordsContainer) filteredRecordsContainer.classList.add('hidden');
   if (tableType === 'base-count') {
     if (tablePreviewHeaderEl)
       tablePreviewHeaderEl.innerHTML = '<th class="px-2 py-1 text-left">Table</th><th class="px-2 py-1 text-left">Count</th>';
@@ -284,10 +300,46 @@ function updateTablePreview() {
           tr.innerHTML = `<td class="px-2 py-1"><a href="/${tbl}/${r.id}" class="text-blue-600 underline">${r.id}</a></td><td class="px-2 py-1">${r.value}</td>`;
           tablePreviewBodyEl.appendChild(tr);
         });
+      tablePreviewEl.classList.remove('hidden');
+      const prefix = topDirection === 'desc' ? 'Top' : 'Bottom';
+      tableTitleInputEl.placeholder = `${prefix} ${tableData.length} of ${fld}`;
+      tableTitleInputEl.value = `${prefix} ${tableData.length} of ${fld}`;
+      tableTitleInputEl.classList.remove('hidden');
+      tableCreateBtnEl.classList.remove('hidden');
+      })
+      .catch(() => {
+        tableData = [];
+        tablePreviewBodyEl.innerHTML = '<tr><td colspan="2" class="px-2 py-1">Error</td></tr>';
         tablePreviewEl.classList.remove('hidden');
-        const prefix = topDirection === 'desc' ? 'Top' : 'Bottom';
-        tableTitleInputEl.placeholder = `${prefix} ${tableData.length} of ${fld}`;
-        tableTitleInputEl.value = `${prefix} ${tableData.length} of ${fld}`;
+      });
+  } else if (tableType === 'filtered-records') {
+    if (!filteredTable) {
+      if (filteredRecordsContainer) filteredRecordsContainer.classList.remove('hidden');
+      return;
+    }
+    if (filteredRecordsContainer) filteredRecordsContainer.classList.remove('hidden');
+    const labelField = getLabelField(filteredTable);
+    if (tablePreviewHeaderEl)
+      tablePreviewHeaderEl.innerHTML = `<th class="px-2 py-1 text-left">ID</th><th class="px-2 py-1 text-left">${labelField || 'Label'}</th>`;
+    const params = new URLSearchParams({
+      table: filteredTable,
+      search: filteredSearch || '',
+      order_by: filteredSort || '',
+      limit: filteredLimit || 10
+    });
+    fetch(`/dashboard/filtered-records?${params.toString()}`)
+      .then(r => r.json())
+      .then(rows => {
+        tableData = rows || [];
+        tableData.forEach(r => {
+          const tr = document.createElement('tr');
+          const label = r[labelField];
+          tr.innerHTML = `<td class="px-2 py-1"><a href="/${filteredTable}/${r.id}" class="text-blue-600 underline">${r.id}</a></td><td class="px-2 py-1">${label ?? ''}</td>`;
+          tablePreviewBodyEl.appendChild(tr);
+        });
+        tablePreviewEl.classList.remove('hidden');
+        tableTitleInputEl.placeholder = `Filtered ${filteredTable}`;
+        tableTitleInputEl.value = `Filtered ${filteredTable}`;
         tableTitleInputEl.classList.remove('hidden');
         tableCreateBtnEl.classList.remove('hidden');
       })
@@ -438,6 +490,11 @@ function onCreateWidget(event) {
       payloadContent.field = fld;
       payloadContent.direction = topDirection;
       payloadContent.limit = tableData.length;
+    } else if (tableType === 'filtered-records' && filteredTable) {
+      payloadContent.table = filteredTable;
+      payloadContent.search = filteredSearch || '';
+      payloadContent.order_by = filteredSort || '';
+      payloadContent.limit = filteredLimit || tableData.length;
     }
     const payload = {
       title,
@@ -757,6 +814,15 @@ function initDashboardModal() {
   topFieldOptions = document.getElementById('topNumericFieldOptions');
   topFieldContainer = document.getElementById('topNumericFieldContainer');
   topDirectionContainer = document.getElementById('topNumericDirection');
+  filteredRecordsContainer = document.getElementById('filteredRecordsContainer');
+  filteredTableToggleBtn = document.getElementById('filteredTableToggle');
+  filteredTableToggleLabel = filteredTableToggleBtn ? filteredTableToggleBtn.querySelector('.selected-label') : null;
+  filteredTableOptions = document.getElementById('filteredTableOptions');
+  filteredSearchInputEl = document.getElementById('filteredSearchInput');
+  filteredSortToggleBtn = document.getElementById('filteredSortToggle');
+  filteredSortToggleLabel = filteredSortToggleBtn ? filteredSortToggleBtn.querySelector('.selected-label') : null;
+  filteredSortOptions = document.getElementById('filteredSortOptions');
+  filteredLimitInputEl = document.getElementById('filteredLimitInput');
   const tableTypeSelect = document.getElementById('tableTypeSelect');
   if (tableTypeSelect) {
     tableTypeSelect.addEventListener('change', () => {
@@ -805,6 +871,77 @@ function initDashboardModal() {
       topDirection = checked ? checked.value : 'desc';
       updateTablePreview();
     });
+  }
+  if (filteredTableToggleBtn && filteredTableOptions) {
+    filteredTableToggleBtn.addEventListener('click', e => { e.stopPropagation(); filteredTableOptions.classList.toggle('hidden'); });
+    document.addEventListener('click', e => {
+      if (!filteredTableOptions.contains(e.target) && e.target !== filteredTableToggleBtn) {
+        filteredTableOptions.classList.add('hidden');
+      }
+    });
+    filteredTableOptions.addEventListener('click', e => e.stopPropagation());
+    filteredTableOptions.innerHTML = '';
+    Object.keys(FIELD_SCHEMA).forEach(tbl => {
+      const label = document.createElement('label');
+      label.className = 'flex items-center space-x-2';
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'filteredTable';
+      input.value = tbl;
+      input.className = 'rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500';
+      input.addEventListener('change', () => {
+        filteredTable = tbl;
+        if (filteredTableToggleLabel) filteredTableToggleLabel.textContent = tbl;
+        populateSortOptions();
+        updateTablePreview();
+        filteredTableOptions.classList.add('hidden');
+      });
+      const span = document.createElement('span');
+      span.className = 'text-sm';
+      span.textContent = tbl;
+      label.appendChild(input); label.appendChild(span);
+      filteredTableOptions.appendChild(label);
+    });
+  }
+  function populateSortOptions() {
+    if (!filteredSortOptions) return;
+    filteredSortOptions.innerHTML = '';
+    if (!filteredTable) return;
+    Object.keys(FIELD_SCHEMA[filteredTable] || {}).forEach(fld => {
+      const label = document.createElement('label');
+      label.className = 'flex items-center space-x-2';
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'filteredSort';
+      input.value = fld;
+      input.className = 'rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500';
+      input.addEventListener('change', () => {
+        filteredSort = fld;
+        if (filteredSortToggleLabel) filteredSortToggleLabel.textContent = fld;
+        filteredSortOptions.classList.add('hidden');
+        updateTablePreview();
+      });
+      const span = document.createElement('span');
+      span.className = 'text-sm';
+      span.textContent = fld;
+      label.appendChild(input); label.appendChild(span);
+      filteredSortOptions.appendChild(label);
+    });
+  }
+  if (filteredSortToggleBtn && filteredSortOptions) {
+    filteredSortToggleBtn.addEventListener('click', e => { e.stopPropagation(); filteredSortOptions.classList.toggle('hidden'); });
+    document.addEventListener('click', e => {
+      if (!filteredSortOptions.contains(e.target) && e.target !== filteredSortToggleBtn) {
+        filteredSortOptions.classList.add('hidden');
+      }
+    });
+    filteredSortOptions.addEventListener('click', e => e.stopPropagation());
+  }
+  if (filteredSearchInputEl) {
+    filteredSearchInputEl.addEventListener('input', e => { filteredSearch = e.target.value; updateTablePreview(); });
+  }
+  if (filteredLimitInputEl) {
+    filteredLimitInputEl.addEventListener('input', e => { const v = parseInt(e.target.value, 10); filteredLimit = isNaN(v) ? 10 : v; updateTablePreview(); });
   }
   if (mathOpContainer) {
     mathOpContainer.addEventListener('change', () => {
