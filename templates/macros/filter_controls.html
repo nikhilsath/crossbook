@@ -84,3 +84,23 @@
     <input type="hidden" name="{{ field }}_op" value="equals" />
   </div>
 {% endmacro %}
+
+{%- macro number_filter(field, min_val, max_val) -%}
+  <div class="filter-chip flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1 border border-gray-300">
+    <input
+      type="number"
+      name="{{ field }}_min"
+      value="{{ min_val }}"
+      placeholder="min"
+      class="bg-transparent focus:outline-none text-sm w-20"
+    />
+    <span class="text-gray-500">-</span>
+    <input
+      type="number"
+      name="{{ field }}_max"
+      value="{{ max_val }}"
+      placeholder="max"
+      class="bg-transparent focus:outline-none text-sm w-20"
+    />
+  </div>
+{%- endmacro -%}
