@@ -27,8 +27,7 @@ from db.dashboard import sum_field as db_sum_field
 
 records_bp = Blueprint('records', __name__)
 
-@records_bp.route('/<table>')
-def list_view(table):
+def _build_list_context(table):
     base_tables = current_app.config['BASE_TABLES']
     if table not in base_tables:
         abort(404)
@@ -36,7 +35,6 @@ def list_view(table):
     search = request.args.get('search', '').strip()
 
     raw_args = request.args.to_dict(flat=False)
-    # Normalize incoming arg keys to match actual field case
     field_map = {f.lower(): f for f in fields}
     normalized = {field_map.get(k.lower(), k): v for k, v in raw_args.items()}
 
@@ -73,20 +71,30 @@ def list_view(table):
     total_pages = (total_count + per_page - 1) // per_page
     start = offset + 1 if total_count else 0
     end = min(offset + len(records), total_count)
-    return render_template(
-        'list_view.html',
-        table=table,
-        fields=fields,
-        records=records,
-        request=request,
-        page=page,
-        total_pages=total_pages,
-        total_count=total_count,
-        start=start,
-        end=end,
-        per_page=per_page,
-        base_qs=base_qs,
-    )
+
+    return {
+        'table': table,
+        'fields': fields,
+        'records': records,
+        'page': page,
+        'total_pages': total_pages,
+        'total_count': total_count,
+        'start': start,
+        'end': end,
+        'per_page': per_page,
+        'base_qs': base_qs,
+    }
+
+@records_bp.route('/<table>')
+def list_view(table):
+    ctx = _build_list_context(table)
+    if request.accept_mimetypes.best == 'application/json':
+        rows = render_template('_record_rows.html', **ctx)
+        pager = render_template('_pagination.html', **ctx)
+        count = render_template('_record_count.html', **ctx)
+        ctx.update({'rows_html': rows, 'pagination_html': pager, 'count_html': count})
+        return jsonify(ctx)
+    return render_template('list_view.html', request=request, **ctx)
 
 
 @records_bp.route('/api/<table>/list')
@@ -113,6 +121,16 @@ def api_list(table):
         rows = cur.fetchall()
 
     return jsonify([{'id': r[0], 'label': r[1]} for r in rows])
+
+
+@records_bp.route('/api/<table>/records')
+def api_records(table):
+    ctx = _build_list_context(table)
+    rows = render_template('_record_rows.html', **ctx)
+    pager = render_template('_pagination.html', **ctx)
+    count = render_template('_record_count.html', **ctx)
+    ctx.update({'rows_html': rows, 'pagination_html': pager, 'count_html': count})
+    return jsonify(ctx)
 
 @records_bp.route('/<table>/<int:record_id>')
 def detail_view(table, record_id):
