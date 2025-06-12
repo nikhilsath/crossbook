@@ -27,8 +27,8 @@ export function fitText(el) {
   const height = el.clientHeight;
   if (!width || !height) return;
 
-  const sizeByWidth = (width * 0.9 / metrics.width) * 10;
-  const sizeByHeight = height * 0.9; // because metrics were for 10px height
+  const sizeByWidth = (width / metrics.width) * 10;
+  const sizeByHeight = height; // metrics based on 10px font
   let newSize = Math.floor(Math.min(sizeByWidth, sizeByHeight));
   if (newSize < 4) newSize = 4;
   el.style.fontSize = `${newSize}px`;
