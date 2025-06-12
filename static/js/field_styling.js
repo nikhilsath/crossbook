@@ -28,17 +28,23 @@ document.addEventListener('DOMContentLoaded', () => {
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="bold"> <span>Bold</span></label>
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="italic"> <span>Italic</span></label>
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="underline"> <span>Underline</span></label>
-    <div id="field-color-picker" class="w-full"></div>
+    <input id="field-color-input" type="color" data-opt="color" class="w-full h-6 p-0 border rounded cursor-pointer">
+    <div id="color-presets" class="flex space-x-1 mt-1"></div>
   `;
   document.body.appendChild(menu);
 
-  const colorPickerDiv = menu.querySelector('#field-color-picker');
-  const colorQuill = new Quill(colorPickerDiv, {
-    modules: { toolbar: [[{ color: [] }]] },
-    theme: 'snow'
+  const colorInput = menu.querySelector('#field-color-input');
+  const presetsDiv = menu.querySelector('#color-presets');
+  const presetColors = ['#000000', '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+  presetsDiv.innerHTML = presetColors.map(c =>
+    `<button type="button" data-color="${c}" class="w-4 h-4 rounded border" style="background-color:${c}"></button>`
+  ).join('');
+  presetsDiv.addEventListener('click', e => {
+    if (e.target.dataset.color) {
+      colorInput.value = e.target.dataset.color;
+      menu.dispatchEvent(new Event('change'));
+    }
   });
-  colorPickerDiv.querySelector('.ql-editor').style.display = 'none';
-  const colorSelect = colorPickerDiv.querySelector('select.ql-color');
 
   let currentEl;
 
@@ -53,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
     menu.querySelector('[data-opt="bold"]').checked = !!styling.bold;
     menu.querySelector('[data-opt="italic"]').checked = !!styling.italic;
     menu.querySelector('[data-opt="underline"]').checked = !!styling.underline;
-    colorSelect.value = styling.color || '';
+    colorInput.value = styling.color || '#000000';
     menu.style.left = `${e.pageX}px`;
     menu.style.top = `${e.pageY}px`;
     menu.classList.remove('hidden');
@@ -72,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
       bold: menu.querySelector('[data-opt="bold"]').checked,
       italic: menu.querySelector('[data-opt="italic"]').checked,
       underline: menu.querySelector('[data-opt="underline"]').checked,
-      color: colorSelect.value
+      color: colorInput.value
     };
     currentEl._styling = styling;
     applyStyling(currentEl, styling);
