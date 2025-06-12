@@ -29,18 +29,33 @@ def list_view(table):
         abort(404)
     fields = list(get_field_schema()[table].keys())
     search = request.args.get('search', '').strip()
+
     raw_args = request.args.to_dict(flat=False)
+    # Normalize incoming arg keys to match actual field case
+    field_map = {f.lower(): f for f in fields}
+    normalized = {field_map.get(k.lower(), k): v for k, v in raw_args.items()}
+
     filters = {
         k: v
-        for k, v in raw_args.items()
+        for k, v in normalized.items()
         if k in fields
         or (k.endswith('_min') and k[:-4] in fields)
         or (k.endswith('_max') and k[:-4] in fields)
         or (k.endswith('_start') and k[:-6] in fields)
         or (k.endswith('_end') and k[:-4] in fields)
     }
-    ops = {k[:-3]: v for k, v in raw_args.items() if k.endswith('_op') and k[:-3] in fields}
-    modes = {k[:-5]: v[0] for k, v in raw_args.items() if k.endswith('_mode') and k[:-5] in fields}
+
+    ops = {
+        k[:-3]: (v[0] if isinstance(v, list) else v)
+        for k, v in normalized.items()
+        if k.endswith('_op') and k[:-3] in fields
+    }
+
+    modes = {
+        k[:-5]: (v[0] if isinstance(v, list) else v)
+        for k, v in normalized.items()
+        if k.endswith('_mode') and k[:-5] in fields
+    }
     page = int(request.args.get('page', 1))
     per_page = 500
     offset = (page - 1) * per_page
