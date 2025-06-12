@@ -193,6 +193,9 @@ document.addEventListener("DOMContentLoaded", () => {
         pop.classList.toggle("hidden");
       });
 
+      // prevent closing when interacting within the popover
+      pop.addEventListener("click", e => e.stopPropagation());
+
       const modeSel = pop.querySelector(".multi-select-mode");
 
       function handleChange() {
