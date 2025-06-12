@@ -61,6 +61,8 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Layout Defaults from DB:** Field width and height defaults are loaded from the `config` table instead of being hardcoded.
 * **Automatic Dashboard Widget Placement:** New widgets are inserted at the next
   available row in the grid without specifying `row_start`.
+* **Dashboard Charts:** Pie, bar and line chart widgets leverage Flowbite Charts
+  and auto-generate counts from a single field.
 * **CSV Import Workflow (Experimental):** The `/import` page lets you upload CSV files, match columns to fields, and validate data before import.
 
 ## Project Structure
