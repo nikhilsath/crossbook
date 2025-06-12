@@ -16,7 +16,7 @@
         <thead class="text-xs uppercase bg-gray-50">
           <tr>
             <th class="w-56 px-2 py-1">Key</th>
-            <th class="w-64 px-2 py-1">Value</th>
+            <th class="px-2 py-1">Value</th>
             <th class="px-2 py-1">Description</th>
             <th class="w-40 px-2 py-1">Updated</th>
           </tr>
@@ -27,7 +27,7 @@
             <td class="font-mono px-2 py-1">{{ item.key }}</td>
             <td class="px-2 py-1">
                 <form method="post" action="{{ url_for('admin.update_config_route', key=item.key) }}"
-                      class="{% if item.type == 'json' %}flex flex-col items-start space-y-2{% else %}flex items-center space-x-2{% endif %}"
+                      class="{% if item.type == 'json' %}flex flex-col items-start space-y-2 w-full{% else %}flex items-center space-x-2{% endif %}"
                       {% if item.type == 'json' %}data-json-key="{{ item.key }}"{% endif %}>
                 {% if item.type in ('integer', 'number') %}
                   <input type="number" name="value" value="{{ item.value }}" class="border border-gray-300 rounded px-2 py-1 text-sm flex-grow focus:ring-blue-500 focus:border-blue-500">
