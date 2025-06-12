@@ -107,3 +107,24 @@
     />
   </div>
 {%- endmacro -%}
+
+{%- macro date_filter(field, start_val, end_val) -%}
+  <div class="filter-chip flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1 border border-gray-400">
+    <span class="text-xs border border-gray-400 rounded px-1 mr-1">
+      {{ field | replace('_',' ') | capitalize }}
+    </span>
+    <input
+      type="date"
+      name="{{ field }}_start"
+      value="{{ start_val }}"
+      class="bg-transparent focus:outline-none text-sm"
+    />
+    <span class="text-gray-500">-</span>
+    <input
+      type="date"
+      name="{{ field }}_end"
+      value="{{ end_val }}"
+      class="bg-transparent focus:outline-none text-sm"
+    />
+  </div>
+{%- endmacro -%}
