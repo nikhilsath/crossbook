@@ -31,7 +31,7 @@
       'rowStart': row_start,
       'rowSpan': row_span
     } }) %}
-    <div class="dashboard-widget draggable-field border p-2 rounded shadow bg-gray-50"
+    <div class="dashboard-widget draggable-field min-h-0 border p-2 rounded shadow bg-gray-50"
          data-widget="{{ widget.id }}"
          data-type="{{ widget.widget_type }}"
          {% if widget.widget_type == 'chart' %}data-config='{{ widget.content }}'{% endif %}
@@ -44,7 +44,7 @@
         <canvas></canvas>
         {% elif widget.widget_type == 'table' %}
         <div class="font-semibold mb-2">{{ widget.title }}</div>
-        <div class="overflow-auto max-h-64">
+        <div class="overflow-auto h-full box-border">
           <table class="min-w-full text-sm">
             <thead>
               {% if widget.parsed.type == 'select-count' %}
