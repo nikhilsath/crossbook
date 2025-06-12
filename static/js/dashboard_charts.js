@@ -12,7 +12,31 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('[dashboard_charts] Invalid config', err);
       return;
     }
+
     const { chart_type: type = 'bar', x_field, y_field, aggregation } = cfg;
+    const canvas = widget.querySelector('canvas') || document.createElement('canvas');
+    if (!canvas.parentElement) widget.appendChild(canvas);
+
+    if (type === 'pie') {
+      if (!x_field) return;
+      const [table, field] = x_field.split(':');
+      try {
+        const res = await fetch(`/${table}/field-distribution?field=${encodeURIComponent(field)}`);
+        const data = await res.json();
+        const labels = Object.keys(data);
+        const values = Object.values(data);
+        const colors = labels.map((_, i) => `hsl(${(i * 40) % 360},70%,60%)`);
+        new Chart(canvas, {
+          type: 'pie',
+          data: { labels, datasets: [{ data: values, backgroundColor: colors }] },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+      } catch (err) {
+        console.error('[dashboard_charts] pie data fetch error', err);
+      }
+      return;
+    }
+
     if (!x_field || !y_field || !aggregation) return;
 
     const fetchVal = spec => {
@@ -27,9 +51,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const values = await Promise.all([fetchVal(x_field), fetchVal(y_field)]);
     const labels = [x_field.split(':')[1], y_field.split(':')[1]];
-
-    const canvas = widget.querySelector('canvas') || document.createElement('canvas');
-    if (!canvas.parentElement) widget.appendChild(canvas);
 
     new Chart(canvas, {
       type: type,

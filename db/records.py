@@ -323,3 +323,35 @@ def count_nonnull(table: str, field: str) -> int:
             return 0
 
 
+def field_distribution(table: str, field: str) -> dict[str, int]:
+    """Return counts of each distinct value for a field."""
+    validate_table(table)
+    validate_field(table, field)
+    fmeta = get_field_schema().get(table, {}).get(field)
+    if fmeta is None or fmeta.get("type") == "hidden" or field == "id":
+        raise ValueError(f"Invalid field: {field}")
+
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute(
+                f'SELECT "{field}" FROM "{table}" WHERE "{field}" IS NOT NULL'
+            )
+            rows = [r[0] for r in cursor.fetchall()]
+        except Exception as e:
+            logger.warning(f"[field_distribution] SQL error for {table}.{field}: {e}")
+            return {}
+
+    counts: dict[str, int] = {}
+    for val in rows:
+        if val is None or val == "":
+            continue
+        if fmeta["type"] == "multi_select":
+            parts = [p.strip() for p in str(val).split(',') if p.strip()]
+            for p in parts:
+                counts[p] = counts.get(p, 0) + 1
+        else:
+            counts[str(val)] = counts.get(str(val), 0) + 1
+    return counts
+
+
