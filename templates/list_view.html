@@ -2,6 +2,7 @@
 
 {% block title %}{{ table|capitalize }} List{% endblock %}
 {% import 'macros/filter_controls.html' as filters %}
+{% block body_class %}list-view-page{% endblock %}
 {% block nav_buttons %}
 <button id="bulk_edit" onclick="openBulkEditModal()" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Bulk Edit</button>
 {% endblock %}
