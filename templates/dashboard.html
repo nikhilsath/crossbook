@@ -10,7 +10,9 @@
 
 {% block content %}
 <h1 class="text-3xl font-bold mb-4">Dashboard</h1>
-<p class="text-gray-600">This page is under construction.</p>
+{% if not widgets %}
+<p class="text-gray-600">No widgets visible with current permissions please create new</p>
+{% endif %}
 
 <div id="dashboard-grid"
      class="relative w-full grid"
