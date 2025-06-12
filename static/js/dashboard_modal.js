@@ -25,10 +25,11 @@ let chartTypeEl,
     chartYToggleBtn, chartYLabel, chartYOptions,
     chartAggToggleEl, chartTitleInputEl, chartCreateBtnEl,
     chartXFieldContainer, chartYFieldContainer, chartAggContainer,
-    chartXFieldLabel;
+    chartXFieldLabel, chartOrientContainer;
 let chartXField = null;
 let chartYField = null;
 let chartAgg = '';
+let chartOrient = 'x';
 
 function isNumericField(val) {
   if (!val) return false;
@@ -105,11 +106,12 @@ function updateMathFieldUI() {
 }
 
 function updateChartUI() {
-  if (!chartTypeEl || !chartXFieldContainer || !chartYFieldContainer || !chartAggContainer || !chartTitleInputEl || !chartCreateBtnEl) return;
+  if (!chartTypeEl || !chartXFieldContainer || !chartYFieldContainer || !chartAggContainer || !chartOrientContainer || !chartTitleInputEl || !chartCreateBtnEl) return;
   const type = chartTypeEl.value;
   chartXFieldContainer.classList.add('hidden');
   chartYFieldContainer.classList.add('hidden');
   chartAggContainer.classList.add('hidden');
+  chartOrientContainer.classList.add('hidden');
   chartTitleInputEl.classList.add('hidden');
   chartCreateBtnEl.classList.add('hidden');
   chartXFieldLabel.textContent = 'X Field';
@@ -126,6 +128,16 @@ function updateChartUI() {
         chartXLabel.textContent = `${t}: ${f}`;
       }
     });
+  } else if (type === 'bar') {
+    chartXFieldLabel.textContent = 'Field';
+    populateFieldDropdown(chartXOptions, false, null, val => {
+      chartXField = val;
+      if (chartXLabel) {
+        const [t,f] = val.split(':');
+        chartXLabel.textContent = `${t}: ${f}`;
+      }
+    });
+    chartOrientContainer.classList.remove('hidden');
   } else {
     chartXFieldLabel.textContent = 'X Field';
     populateFieldDropdown(chartXOptions, false, null, val => {
@@ -273,6 +285,13 @@ function onCreateWidget(event) {
       payloadContent = {
         chart_type: chartType,
         x_field: chartXField
+      };
+    } else if (chartType === 'bar') {
+      if (!chartXField) return;
+      payloadContent = {
+        chart_type: chartType,
+        field: chartXField,
+        orientation: chartOrient
       };
     } else {
       if (!chartXField || !chartYField) return;
@@ -523,6 +542,7 @@ function initDashboardModal() {
   chartYFieldContainer = document.getElementById('chartYFieldContainer');
   chartAggContainer = document.getElementById('chartAggContainer');
   chartXFieldLabel = document.getElementById('chartXFieldLabel');
+  chartOrientContainer = document.getElementById('chartOrientContainer');
   chartAggToggleEl = document.getElementById('chartAggToggle');
   chartTitleInputEl = document.getElementById('chartTitleInput');
   chartCreateBtnEl = document.getElementById('chartCreateBtn');
@@ -597,6 +617,12 @@ function initDashboardModal() {
     chartAggToggleEl.addEventListener('change', () => {
       const checked = chartAggToggleEl.querySelector('input[name="chartAgg"]:checked');
       chartAgg = checked ? checked.value : '';
+    });
+  }
+  if (chartOrientContainer) {
+    chartOrientContainer.addEventListener('change', () => {
+      const checked = chartOrientContainer.querySelector('input[name="chartOrient"]:checked');
+      chartOrient = checked ? checked.value : 'x';
     });
   }
   if (chartCreateBtnEl) {

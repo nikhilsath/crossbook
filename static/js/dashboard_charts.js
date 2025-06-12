@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const { chart_type: type = 'bar', x_field, y_field, aggregation } = cfg;
+    const { chart_type: type = 'bar', x_field, y_field, aggregation, field, orientation } = cfg;
     const canvas = widget.querySelector('canvas') || document.createElement('canvas');
     if (!canvas.parentElement) widget.appendChild(canvas);
 
@@ -33,6 +33,24 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       } catch (err) {
         console.error('[dashboard_charts] pie data fetch error', err);
+      }
+      return;
+    }
+
+    if (type === 'bar' && field) {
+      const [table, fld] = field.split(':');
+      try {
+        const res = await fetch(`/${table}/field-distribution?field=${encodeURIComponent(fld)}`);
+        const data = await res.json();
+        const labels = Object.keys(data);
+        const values = Object.values(data);
+        new Chart(canvas, {
+          type: 'bar',
+          data: { labels, datasets: [{ data: values, backgroundColor: '#3b82f6' }] },
+          options: { responsive: true, maintainAspectRatio: false, indexAxis: orientation === 'y' ? 'y' : 'x', plugins: { legend: { display: false } } }
+        });
+      } catch (err) {
+        console.error('[dashboard_charts] bar data fetch error', err);
       }
       return;
     }

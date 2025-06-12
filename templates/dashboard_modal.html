@@ -111,6 +111,16 @@
             <div id="chartXFieldOptions" class="absolute z-10 mt-1 w-full bg-white border rounded shadow hidden max-h-64 overflow-y-auto p-2 space-y-1"></div>
           </div>
         </div>
+        <div id="chartOrientContainer" class="flex mb-4 hidden">
+          <label class="cursor-pointer">
+            <input type="radio" name="chartOrient" value="x" class="sr-only peer" checked>
+            <div class="p-1 border rounded-l text-center peer-checked:bg-blue-500 peer-checked:text-white">X Axis</div>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="chartOrient" value="y" class="sr-only peer">
+            <div class="p-1 border border-l-0 rounded-r text-center peer-checked:bg-blue-500 peer-checked:text-white">Y Axis</div>
+          </label>
+        </div>
         <div id="chartYFieldContainer" class="mb-4 hidden">
           <label class="block text-sm font-medium mb-1">Y Field</label>
           <div class="relative">
