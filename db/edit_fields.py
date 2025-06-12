@@ -2,6 +2,7 @@ import sqlite3
 import json
 from db.database import get_connection
 from db.config import get_layout_defaults
+from db.validation import validate_table, validate_field
 
 DEFAULT_FIELD_WIDTH = {
     "textarea":   12,
@@ -34,6 +35,7 @@ def add_field_to_schema(
     styling=None,
 ):
     """Insert a new field into the field_schema table."""
+    validate_table(table)
     with get_connection() as conn:
         cur = conn.cursor()
 
@@ -84,6 +86,8 @@ def add_field_to_schema(
 def add_column_to_table(table_name, field_name, field_type):
     from db.database import get_connection
 
+    validate_table(table_name)
+
     # Map form types to SQL types
     SQL_TYPE_MAP = {
         "text": "TEXT",
@@ -112,6 +116,8 @@ def add_column_to_table(table_name, field_name, field_type):
         conn.commit()
 
 def drop_column_from_table(table, field_name):
+    validate_table(table)
+    validate_field(table, field_name)
     with get_connection() as conn:
         cur = conn.cursor()
 
@@ -135,6 +141,8 @@ def drop_column_from_table(table, field_name):
         conn.commit()
 
 def remove_field_from_schema(table, field_name):
+    validate_table(table)
+    validate_field(table, field_name)
     with get_connection() as conn:
         cur = conn.cursor()
         cur.execute(
