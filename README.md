@@ -216,6 +216,7 @@ The following functions encapsulate the application logic:
 | `add_field_route(table, record_id)` | **Route:** POST `/<table>/<int:record_id>/add-field` – Adds a new column to the table and updates the field schema. |
 | `remove_field_route(table, record_id)` | **Route:** POST `/<table>/<int:record_id>/remove-field` – Removes a column from the table and refreshes the schema. |
 | `count_nonnull(table)` | **Route:** GET `/<table>/count-nonnull?field=<name>` – Returns a JSON count of non-null values for the specified field. |
+| `field_distribution(table)` | **Route:** GET `/<table>/field-distribution?field=<name>` – Returns JSON counts of each value for the given field. |
 
 
 All routes and functions above are actively used by the application (there is no dead code in `main.py`). When run directly, the app simply calls `update_foreign_field_options()` and then starts with `app.run(debug=True)`.

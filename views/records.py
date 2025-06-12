@@ -8,6 +8,7 @@ from db.records import (
     create_record,
     delete_record,
     count_nonnull as db_count_nonnull,
+    field_distribution,
     count_records,
     append_edit_log,
     get_edit_history,
@@ -154,6 +155,16 @@ def sum_field_route(table):
     except ValueError:
         return jsonify({'sum': 0}), 400
     return jsonify({'sum': result})
+
+
+@records_bp.route('/<table>/field-distribution')
+def field_distribution_route(table):
+    field = request.args.get('field')
+    try:
+        counts = field_distribution(table, field)
+    except ValueError:
+        return jsonify({}), 400
+    return jsonify(counts)
 
 @records_bp.route('/<table>/<int:record_id>/remove-field', methods=['POST'])
 def remove_field_route(table, record_id):
