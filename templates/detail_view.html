@@ -63,13 +63,11 @@
             {% if field_schema[table][field].type != 'text' %}
             <div class="text-sm font-bold capitalize mb-1">{{ field }}</div>
             {% endif %}
-            <div>
-              {{ fields.render_editable_field(
-                   field, value, record.id, request,
-                  'detail_view', 'records.update_field',
-                   'record_id', field_schema[table][field].type, table,
-                   field_schema) }}
-            </div>
+            {{ fields.render_editable_field(
+                 field, value, record.id, request,
+                'detail_view', 'records.update_field',
+                 'record_id', field_schema[table][field].type, table,
+                 field_schema) }}
             <!-- resize handles (hidden until edit mode) -->
             <span class="resize-handle hidden top-left"
                   style="position:absolute; top:0; left:0; width:8px; height:8px;

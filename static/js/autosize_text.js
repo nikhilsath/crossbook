@@ -7,11 +7,17 @@ export function fitText(el) {
   }
   const ctx = measureCanvas.getContext('2d');
 
+  console.groupCollapsed('[autosize_text] fitText', el.dataset.field || el.textContent.trim());
+
   // Reset any previous inline size
   el.style.fontSize = '';
 
   const text = el.textContent.trim();
-  if (!text) return;
+  if (!text) {
+    console.warn('[autosize_text] empty text');
+    console.groupEnd();
+    return;
+  }
 
   const style = window.getComputedStyle(el);
   const fontFamily = style.fontFamily || 'sans-serif';
@@ -21,13 +27,20 @@ export function fitText(el) {
 
   const width = el.clientWidth;
   const height = el.clientHeight;
-  if (!width || !height) return;
+  if (!width || !height) {
+    console.warn('[autosize_text] zero size', width, height);
+    console.groupEnd();
+    return;
+  }
 
   const sizeByWidth = (width * 0.9 / metrics.width) * 10;
   const sizeByHeight = height * 0.9; // because metrics were for 10px height
   let newSize = Math.floor(Math.min(sizeByWidth, sizeByHeight));
   if (newSize < 4) newSize = 4;
+  console.debug('[autosize_text] metrics.width=', metrics.width, 'sizeByWidth=', sizeByWidth, 'sizeByHeight=', sizeByHeight, 'newSize=', newSize);
   el.style.fontSize = `${newSize}px`;
+  console.debug('[autosize_text] applied fontSize', el.style.fontSize);
+  console.groupEnd();
 }
 
 function makeEditable(displayEl) {
