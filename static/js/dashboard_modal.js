@@ -140,7 +140,8 @@ function updateChartUI() {
     chartOrientContainer.classList.remove('hidden');
   } else if (type === 'line') {
     chartXFieldLabel.textContent = 'Field';
-    populateFieldDropdown(chartXOptions, false, null, val => {
+    // Line charts only support sequential numeric or date fields
+    populateFieldDropdown(chartXOptions, false, ['number', 'date'], val => {
       chartXField = val;
       if (chartXLabel) {
         const [t,f] = val.split(':');
