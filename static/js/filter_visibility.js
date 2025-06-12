@@ -112,12 +112,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   
     // Handle operator dropdown changes
+    function setOperatorTitle(sel) {
+      const opt = sel.options[sel.selectedIndex];
+      if (opt && opt.title) sel.title = opt.title;
+    }
+
     function onOperatorChange(e) {
       const sel = e.target;
       const params = new URLSearchParams(window.location.search);
       const field = sel.name.replace(/_op$/, '');
       const val   = params.get(field) || "";
-  
+
       params.set(sel.name, sel.value);
       params.set(field, val);
       window.location.search = params.toString();
@@ -126,7 +131,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Bind operator change listeners
     function bindOperatorListeners() {
       const ops = document.querySelectorAll("#filter-container select.operator-select");
-      ops.forEach(sel => sel.addEventListener("change", onOperatorChange));
+      ops.forEach(sel => {
+        setOperatorTitle(sel);
+        sel.addEventListener("change", e => {
+          setOperatorTitle(sel);
+          onOperatorChange(e);
+        });
+      });
     }
     // Bind change handlers for non-operator selects (i.e. our select filters)
     document.querySelectorAll("#filter-container select:not(.operator-select)")
