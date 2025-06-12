@@ -4,15 +4,15 @@
   <div class="filter-chip flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1 border border-gray-300">
     <select
       name="{{ field }}_op"
-      class="operator-select appearance-none text-xs rounded-full border-0 bg-transparent text-center w-6"
+      class="operator-select appearance-none text-xs rounded-full border-0 bg-transparent text-center text-blue-600 cursor-pointer w-auto"
       title="Operator"
     >
-      <option value="contains"    title="Contains"      {% if operator=='contains'    %}selected{% endif %}>*</option>
-      <option value="equals"      title="Equals"        {% if operator=='equals'      %}selected{% endif %}>=</option>
-      <option value="starts_with" title="Starts with"   {% if operator=='starts_with' %}selected{% endif %}>__*</option>
-      <option value="ends_with"   title="Ends with"     {% if operator=='ends_with'   %}selected{% endif %}>*__</option>
-      <option value="not_contains" title="Does not contain" {% if operator=='not_contains' %}selected{% endif %}>!*</option>
-      <option value="regex"       title="Regex"         {% if operator=='regex'       %}selected{% endif %}>/~</option>
+      <option value="contains"    title="Contains"      {% if operator=='contains'    %}selected{% endif %}>Contains</option>
+      <option value="equals"      title="Equals"        {% if operator=='equals'      %}selected{% endif %}>Equals</option>
+      <option value="starts_with" title="Starts with"   {% if operator=='starts_with' %}selected{% endif %}>Starts with</option>
+      <option value="ends_with"   title="Ends with"     {% if operator=='ends_with'   %}selected{% endif %}>Ends with</option>
+      <option value="not_contains" title="Does not contain" {% if operator=='not_contains' %}selected{% endif %}>Does not contain</option>
+      <option value="regex"       title="Regex"         {% if operator=='regex'       %}selected{% endif %}>Regex</option>
     </select>
     <input
       type="text"

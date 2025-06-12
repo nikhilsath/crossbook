@@ -33,6 +33,12 @@ input[type=number] {
   display: none;
 }
 
+/* Style operator dropdowns for better visibility */
+.operator-select {
+  color: #2563eb; /* Tailwind blue-600 */
+  cursor: pointer;
+}
+
 /* Constrain each multi-select chip’s popover */
 .multi-select-popover {
   width: 16rem !important;
