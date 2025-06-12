@@ -3,6 +3,7 @@ import json
 import logging
 
 from db.database import get_connection
+from db.validation import validate_table, validate_field
 
 logger = logging.getLogger(__name__)
 
@@ -157,6 +158,7 @@ def refresh_card_cache():
     return card_info, base_tables
 
 def update_layout(table: str, layout_items: list[dict]) -> int:
+    validate_table(table)
     current_schema = load_field_schema()
 
     if table not in current_schema:
@@ -171,6 +173,7 @@ def update_layout(table: str, layout_items: list[dict]) -> int:
             if not field:
                 # Skip items without a "field" key
                 continue
+            validate_field(table, field)
 
             # Safely parse numeric layout values (defaults to 0.0)
             try:
@@ -223,6 +226,8 @@ def update_field_styling(table: str, field: str, styling_dict: dict) -> bool:
             cannot be serialized to JSON.
     """
 
+    validate_table(table)
+    validate_field(table, field)
     current_schema = load_field_schema()
     if table not in current_schema or field not in current_schema[table]:
         raise ValueError(f"Unknown table/field: {table}.{field}")
