@@ -136,7 +136,7 @@ function updateChartUI() {
         const [t,f] = val.split(':');
         chartXLabel.textContent = `${t}: ${f}`;
       }
-    });
+    }, ['text', 'textarea']);
     chartOrientContainer.classList.remove('hidden');
   } else if (type === 'line') {
     chartXFieldLabel.textContent = 'Field';
@@ -393,7 +393,7 @@ function onCreateWidget(event) {
     });
 }
 
-function populateFieldDropdown(dropdown, restrictNumeric, allowedTypes, callback) {
+function populateFieldDropdown(dropdown, restrictNumeric, allowedTypes, callback, excludeTypes = []) {
   if (!dropdown) return;
   dropdown.innerHTML = '';
   const search = document.createElement('input');
@@ -413,6 +413,7 @@ function populateFieldDropdown(dropdown, restrictNumeric, allowedTypes, callback
       const type = tableSchema[field] ? tableSchema[field].type : '';
       if (restrictNumeric && type !== 'number') return;
       if (allowedTypes && !allowedTypes.includes(type)) return;
+      if (excludeTypes && excludeTypes.includes(type)) return;
       const val = `${table}:${field}`;
       const label = document.createElement('label');
       label.className = 'flex items-center space-x-2';
