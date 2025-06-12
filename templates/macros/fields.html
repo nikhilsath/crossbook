@@ -7,7 +7,10 @@
   </form>
 {%- endmacro %}
 {% macro render_editable_field(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) %}
-  <div class="mt-2 h-full">
+  {% set styling = field_schema[table][field].styling or {} %}
+  <div class="mt-2 h-full{{ ' font-bold' if styling.bold }}{{ ' italic' if styling.italic }}{{ ' underline' if styling.underline }}"
+       {% if styling.color %}style="color: {{ styling.color }}"{% endif %}
+       data-styling='{{ styling | tojson }}'>
     {% if field_type == "textarea" %}
     <form method="POST"
           action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}"
