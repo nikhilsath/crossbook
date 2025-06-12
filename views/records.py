@@ -1,5 +1,7 @@
 import json
-from flask import Blueprint, render_template, abort, request, redirect, url_for, jsonify, current_app
+import csv
+import io
+from flask import Blueprint, render_template, abort, request, redirect, url_for, jsonify, current_app, Response
 from db.database import get_connection
 from db.validation import validate_table
 from db.records import (
@@ -27,7 +29,9 @@ from db.dashboard import sum_field as db_sum_field
 
 records_bp = Blueprint('records', __name__)
 
-def _build_list_context(table):
+
+def _parse_list_params(table):
+    """Parse query parameters for list/export routes."""
     base_tables = current_app.config['BASE_TABLES']
     if table not in base_tables:
         abort(404)
@@ -59,8 +63,29 @@ def _build_list_context(table):
         for k, v in normalized.items()
         if k.endswith('_mode') and k[:-5] in fields
     }
+
     sort_field = request.args.get('sort')
     direction = request.args.get('dir', 'asc')
+
+    return {
+        'fields': fields,
+        'search': search,
+        'filters': filters,
+        'ops': ops,
+        'modes': modes,
+        'sort_field': sort_field,
+        'direction': direction,
+    }
+
+def _build_list_context(table):
+    params = _parse_list_params(table)
+    fields = params['fields']
+    search = params['search']
+    filters = params['filters']
+    ops = params['ops']
+    modes = params['modes']
+    sort_field = params['sort_field']
+    direction = params['direction']
     page = int(request.args.get('page', 1))
     per_page = 500
     offset = (page - 1) * per_page
@@ -154,6 +179,42 @@ def api_records(table):
     ctx.update({'rows_html': rows, 'pagination_html': pager,
                 'count_html': count, 'filters_html': filters})
     return jsonify(ctx)
+
+
+@records_bp.route('/<table>/export')
+def export_csv(table):
+    """Stream CSV of records using current filters and search."""
+    params = _parse_list_params(table)
+    fields = [f for f in params['fields'] if not f.startswith('_')]
+    records = get_all_records(
+        table,
+        search=params['search'],
+        filters=params['filters'],
+        ops=params['ops'],
+        modes=params['modes'],
+        sort_field=params['sort_field'],
+        direction=params['direction'],
+    )
+
+    def generate():
+        buf = io.StringIO()
+        writer = csv.writer(buf)
+        writer.writerow(fields)
+        yield buf.getvalue()
+        buf.seek(0)
+        buf.truncate(0)
+        for row in records:
+            writer.writerow([row.get(f, '') for f in fields])
+            yield buf.getvalue()
+            buf.seek(0)
+            buf.truncate(0)
+
+    filename = f"{table}.csv"
+    return Response(
+        generate(),
+        mimetype='text/csv',
+        headers={'Content-Disposition': f'attachment; filename={filename}'}
+    )
 
 @records_bp.route('/<table>/<int:record_id>')
 def detail_view(table, record_id):
