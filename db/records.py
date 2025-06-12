@@ -8,7 +8,7 @@ from db.validation import validate_table, validate_fields, validate_field
 
 
 
-def _build_filters(table, search=None, filters=None, ops=None):
+def _build_filters(table, search=None, filters=None, ops=None, modes=None):
     """Return SQL where clauses and params for the provided filters/search."""
     clauses = []
     params = []
@@ -48,11 +48,7 @@ def _build_filters(table, search=None, filters=None, ops=None):
                 date_ends[base] = clean_values[0]
             else:
                 op = (ops or {}).get(fld, "contains")
-                if op == "equals" and len(clean_values) > 1:
-                    clause = "(" + " OR ".join([f"{fld} = ?" for _ in clean_values]) + ")"
-                    clauses.append(clause)
-                    params.extend(clean_values)
-                    continue
+                mode = (modes or {}).get(fld, "any")
                 field_clauses = []
                 for v in clean_values:
                     if op == "equals":
@@ -68,7 +64,8 @@ def _build_filters(table, search=None, filters=None, ops=None):
                         field_clauses.append(f"{fld} LIKE ?")
                         params.append(f"%{v}%")
                 if field_clauses:
-                    clauses.append("(" + " OR ".join(field_clauses) + ")")
+                    joiner = " AND " if mode == "all" else " OR "
+                    clauses.append("(" + joiner.join(field_clauses) + ")")
 
         for base in set(date_starts) | set(date_ends):
             start = date_starts.get(base)
@@ -104,6 +101,7 @@ def get_all_records(
     search=None,
     filters=None,
     ops=None,
+    modes=None,
     limit=None,
     offset=0,
 ):
@@ -114,7 +112,7 @@ def get_all_records(
     with get_connection() as conn:
         cursor = conn.cursor()
         try:
-            clauses, params = _build_filters(table, search, filters, ops)
+            clauses, params = _build_filters(table, search, filters, ops, modes)
 
             sql = f"SELECT * FROM {table}"
             if clauses:
@@ -133,14 +131,14 @@ def get_all_records(
             return []
 
 
-def count_records(table, search=None, filters=None, ops=None):
+def count_records(table, search=None, filters=None, ops=None, modes=None):
     """Return count of records matching the provided filters/search."""
 
     validate_table(table)
     with get_connection() as conn:
         cursor = conn.cursor()
         try:
-            clauses, params = _build_filters(table, search, filters, ops)
+            clauses, params = _build_filters(table, search, filters, ops, modes)
             sql = f"SELECT COUNT(*) FROM {table}"
             if clauses:
                 sql += " WHERE " + " AND ".join(clauses)

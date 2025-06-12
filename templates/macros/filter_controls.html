@@ -40,7 +40,7 @@
   </div>
 {%- endmacro -%}
 
-{%- macro multi_select_popover(field, selected, options) -%}
+{%- macro multi_select_popover(field, selected, options, mode) -%}
     {% set actual = selected | reject('equalto', '') | list %}
 <div class="relative filter-chip flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1 border border-gray-300">
   <button
@@ -55,6 +55,13 @@
   <div
   class="multi-select-popover absolute z-20 mt-1 bg-white border rounded shadow p-2 hidden overflow-scroll "
   data-field="{{ field }}">
+    <div class="text-right mb-1 text-xs">
+      <label class="mr-1">Mode:</label>
+      <select class="multi-select-mode border rounded px-1 py-0.5 text-xs" data-field="{{ field }}">
+        <option value="any" {% if mode!='all' %}selected{% endif %}>Any</option>
+        <option value="all" {% if mode=='all' %}selected{% endif %}>All</option>
+      </select>
+    </div>
     {% for opt in options %}
       <label class="flex items-center space-x-2 mb-1">
         <input
