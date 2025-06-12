@@ -1,12 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Elements
-    const toggleBtn  = document.getElementById("toggle-filters");
-    const dropdown   = document.getElementById("filter-dropdown");
-    const clearBtn   = document.getElementById("reset-filters");
-    const tableName  = document.getElementById("records-table").dataset.table;
-    const tbody      = document.getElementById("records-body");
-    const pagerWrap  = document.getElementById("pagination-wrapper");
-    const loading    = document.getElementById("loading-indicator");
+  // Elements
+  const toggleBtn = document.getElementById("toggle-filters");
+  const dropdown = document.getElementById("filter-dropdown");
+  const clearBtn = document.getElementById("reset-filters");
+  const tableName = document.getElementById("records-table").dataset.table;
+  const tbody = document.getElementById("records-body");
+  const pagerWrap = document.getElementById("pagination-wrapper");
+  const loading = document.getElementById("loading-indicator");
 
     function fetchRecords(params) {
       loading.classList.remove("hidden");
@@ -213,21 +213,18 @@ document.addEventListener("DOMContentLoaded", () => {
     bindOperatorListeners();
     bindNumberFilters();
     bindDateFilters();
-  });
-  
-    // Multi-select popover logic
-  function updateMultiSelect(field, values, mode) {
-    const params = new URLSearchParams(window.location.search);
-    // Remove all previous entries for this field
-    params.delete(field);
-    params.delete(field + "_mode");
-    // Add back each selected value
-    values.forEach(v => params.append(field, v));
-    if (mode) params.set(field + "_mode", mode);
-    updateState(params);
-  }
 
-  function bindMultiSelectPopovers() {
+    // Multi-select popover logic
+    function updateMultiSelect(field, values, mode) {
+      const params = new URLSearchParams(window.location.search);
+      params.delete(field);
+      params.delete(field + "_mode");
+      values.forEach(v => params.append(field, v));
+      if (mode) params.set(field + "_mode", mode);
+      updateState(params);
+    }
+
+    function bindMultiSelectPopovers() {
     // Toggle popover open/close
     document.querySelectorAll(".multi-select-chip").forEach(btn => {
       const field = btn.dataset.field;
@@ -268,30 +265,31 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // call it after your other binds
-  bindMultiSelectPopovers();
+    bindMultiSelectPopovers();
 
-  function updateSelectMulti(field, values) {
-    const params = new URLSearchParams(window.location.search);
-    params.delete(field);
-    params.delete(field + "_op");
-    values.forEach(v => params.append(field, v));
-    if (values.length) params.set(field + "_op", "equals");
-    updateState(params);
-  }
+    function updateSelectMulti(field, values) {
+      const params = new URLSearchParams(window.location.search);
+      params.delete(field);
+      params.delete(field + "_op");
+      values.forEach(v => params.append(field, v));
+      if (values.length) params.set(field + "_op", "equals");
+      updateState(params);
+    }
 
-  function bindSelectMulti() {
-    document.querySelectorAll(".select-multi-filter").forEach(div => {
-      const field = div.dataset.field;
-      const boxes = div.querySelectorAll(".select-multi-option");
-      boxes.forEach(cb =>
-        cb.addEventListener("change", () => {
-          const selected = Array.from(boxes)
-            .filter(b => b.checked)
-            .map(b => b.value);
-          updateSelectMulti(field, selected);
-        })
-      );
-    });
-  }
+    function bindSelectMulti() {
+      document.querySelectorAll(".select-multi-filter").forEach(div => {
+        const field = div.dataset.field;
+        const boxes = div.querySelectorAll(".select-multi-option");
+        boxes.forEach(cb =>
+          cb.addEventListener("change", () => {
+            const selected = Array.from(boxes)
+              .filter(b => b.checked)
+              .map(b => b.value);
+            updateSelectMulti(field, selected);
+          })
+        );
+      });
+    }
 
-  bindSelectMulti();
+    bindSelectMulti();
+  });
