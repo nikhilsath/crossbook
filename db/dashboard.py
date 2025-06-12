@@ -144,3 +144,43 @@ def get_base_table_counts() -> list[dict]:
             cnt = 0
         results.append({"table": table, "count": cnt})
     return results
+
+
+def get_top_numeric_values(
+    table: str,
+    field: str,
+    limit: int = 10,
+    ascending: bool = False,
+) -> list[dict]:
+    """Return records ordered by a numeric field.
+
+    Args:
+        table: Table name.
+        field: Numeric field to sort by.
+        limit: Number of records to return.
+        ascending: If True, return lowest values instead of highest.
+
+    Returns:
+        A list of ``{"id": id, "value": value}`` dictionaries.
+    """
+    validate_table(table)
+    fmeta = get_field_schema().get(table, {}).get(field)
+    if fmeta is None or fmeta.get("type") != "number":
+        raise ValueError(f"Invalid numeric field: {field}")
+    direction = "ASC" if ascending else "DESC"
+    with get_connection() as conn:
+        cur = conn.cursor()
+        try:
+            sql = (
+                f'SELECT id, "{field}" FROM "{table}" '
+                f'WHERE "{field}" IS NOT NULL '
+                f'ORDER BY "{field}" {direction} LIMIT ?'
+            )
+            cur.execute(sql, (int(limit),))
+            rows = cur.fetchall()
+            return [{"id": r[0], "value": r[1]} for r in rows]
+        except Exception as exc:
+            logger.warning(
+                "[get_top_numeric_values] SQL error for %s.%s: %s", table, field, exc
+            )
+            return []

@@ -33,6 +33,9 @@ let chartOrient = 'x';
 let tableType = 'base-count';
 let selectCountField = null;
 let selectCountToggleBtn, selectCountToggleLabel, selectCountOptions, selectCountFieldContainer;
+let topNumericField = null;
+let topDirection = 'desc';
+let topFieldToggleBtn, topFieldToggleLabel, topFieldOptions, topFieldContainer, topDirectionContainer;
 let tableTitleInputEl, tableCreateBtnEl, tablePreviewEl, tablePreviewBodyEl, tablePreviewHeaderEl;
 let tableData = [];
 
@@ -202,6 +205,10 @@ function updateTablePreview() {
   if (selectCountToggleBtn) selectCountToggleBtn.classList.add('hidden');
   if (selectCountOptions) selectCountOptions.classList.add('hidden');
   if (selectCountFieldContainer) selectCountFieldContainer.classList.add('hidden');
+  if (topFieldToggleBtn) topFieldToggleBtn.classList.add('hidden');
+  if (topFieldOptions) topFieldOptions.classList.add('hidden');
+  if (topFieldContainer) topFieldContainer.classList.add('hidden');
+  if (topDirectionContainer) topDirectionContainer.classList.add('hidden');
   if (tableType === 'base-count') {
     if (tablePreviewHeaderEl)
       tablePreviewHeaderEl.innerHTML = '<th class="px-2 py-1 text-left">Table</th><th class="px-2 py-1 text-left">Count</th>';
@@ -244,10 +251,43 @@ function updateTablePreview() {
           tr.innerHTML = `<td class="px-2 py-1">${r.value}</td><td class="px-2 py-1">${r.count}</td>`;
           tablePreviewBodyEl.appendChild(tr);
         });
+      tablePreviewEl.classList.remove('hidden');
+      const fieldLabel = fld;
+      tableTitleInputEl.placeholder = `Value Counts for ${fieldLabel}`;
+      tableTitleInputEl.value = `Value Counts for ${fieldLabel}`;
+      tableTitleInputEl.classList.remove('hidden');
+      tableCreateBtnEl.classList.remove('hidden');
+      })
+      .catch(() => {
+        tableData = [];
+        tablePreviewBodyEl.innerHTML = '<tr><td colspan="2" class="px-2 py-1">Error</td></tr>';
         tablePreviewEl.classList.remove('hidden');
-        const fieldLabel = fld;
-        tableTitleInputEl.placeholder = `Value Counts for ${fieldLabel}`;
-        tableTitleInputEl.value = `Value Counts for ${fieldLabel}`;
+      });
+  } else if (tableType === 'top-numeric') {
+    if (topFieldToggleBtn) topFieldToggleBtn.classList.remove('hidden');
+    if (!topNumericField) {
+      if (topFieldContainer) topFieldContainer.classList.remove('hidden');
+      if (topDirectionContainer) topDirectionContainer.classList.remove('hidden');
+      return;
+    }
+    if (topFieldContainer) topFieldContainer.classList.remove('hidden');
+    if (topDirectionContainer) topDirectionContainer.classList.remove('hidden');
+    const [tbl, fld] = topNumericField.split(':');
+    if (tablePreviewHeaderEl)
+      tablePreviewHeaderEl.innerHTML = '<th class="px-2 py-1 text-left">ID</th><th class="px-2 py-1 text-left">Value</th>';
+    fetch(`/dashboard/top-numeric?table=${encodeURIComponent(tbl)}&field=${encodeURIComponent(fld)}&direction=${topDirection}&limit=5`)
+      .then(r => r.json())
+      .then(rows => {
+        tableData = rows || [];
+        tableData.forEach(r => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td class="px-2 py-1"><a href="/${tbl}/${r.id}" class="text-blue-600 underline">${r.id}</a></td><td class="px-2 py-1">${r.value}</td>`;
+          tablePreviewBodyEl.appendChild(tr);
+        });
+        tablePreviewEl.classList.remove('hidden');
+        const prefix = topDirection === 'desc' ? 'Top' : 'Bottom';
+        tableTitleInputEl.placeholder = `${prefix} ${tableData.length} of ${fld}`;
+        tableTitleInputEl.value = `${prefix} ${tableData.length} of ${fld}`;
         tableTitleInputEl.classList.remove('hidden');
         tableCreateBtnEl.classList.remove('hidden');
       })
@@ -385,12 +425,19 @@ function onCreateWidget(event) {
   if (activeTab === 'table') {
     if (!tableData.length) return;
     if (tableType === 'select-count' && !selectCountField) return;
+    if (tableType === 'top-numeric' && !topNumericField) return;
     const title = (tableTitleInputEl && tableTitleInputEl.value.trim()) || 'Table Widget';
     const payloadContent = { type: tableType, data: tableData };
     if (tableType === 'select-count' && selectCountField) {
       const [tbl, fld] = selectCountField.split(':');
       payloadContent.table = tbl;
       payloadContent.field = fld;
+    } else if (tableType === 'top-numeric' && topNumericField) {
+      const [tbl, fld] = topNumericField.split(':');
+      payloadContent.table = tbl;
+      payloadContent.field = fld;
+      payloadContent.direction = topDirection;
+      payloadContent.limit = tableData.length;
     }
     const payload = {
       title,
@@ -705,6 +752,11 @@ function initDashboardModal() {
   selectCountToggleLabel = selectCountToggleBtn ? selectCountToggleBtn.querySelector('.selected-label') : null;
   selectCountOptions = document.getElementById('selectCountFieldOptions');
   selectCountFieldContainer = document.getElementById('selectCountFieldContainer');
+  topFieldToggleBtn = document.getElementById('topNumericFieldToggle');
+  topFieldToggleLabel = topFieldToggleBtn ? topFieldToggleBtn.querySelector('.selected-label') : null;
+  topFieldOptions = document.getElementById('topNumericFieldOptions');
+  topFieldContainer = document.getElementById('topNumericFieldContainer');
+  topDirectionContainer = document.getElementById('topNumericDirection');
   const tableTypeSelect = document.getElementById('tableTypeSelect');
   if (tableTypeSelect) {
     tableTypeSelect.addEventListener('change', () => {
@@ -727,6 +779,30 @@ function initDashboardModal() {
         const [t,f] = val.split(':');
         selectCountToggleLabel.textContent = `${t}: ${f}`;
       }
+      updateTablePreview();
+    });
+  }
+  if (topFieldToggleBtn && topFieldOptions) {
+    topFieldToggleBtn.addEventListener('click', e => { e.stopPropagation(); topFieldOptions.classList.toggle('hidden'); });
+    document.addEventListener('click', e => {
+      if (!topFieldOptions.contains(e.target) && e.target !== topFieldToggleBtn) {
+        topFieldOptions.classList.add('hidden');
+      }
+    });
+    topFieldOptions.addEventListener('click', e => e.stopPropagation());
+    populateFieldDropdown(topFieldOptions, true, ['number'], val => {
+      topNumericField = val;
+      if (topFieldToggleLabel) {
+        const [t,f] = val.split(':');
+        topFieldToggleLabel.textContent = `${t}: ${f}`;
+      }
+      updateTablePreview();
+    });
+  }
+  if (topDirectionContainer) {
+    topDirectionContainer.addEventListener('change', () => {
+      const checked = topDirectionContainer.querySelector('input[name="topDirection"]:checked');
+      topDirection = checked ? checked.value : 'desc';
       updateTablePreview();
     });
   }
