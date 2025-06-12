@@ -7,7 +7,7 @@ const defaultWidgetWidth = {
 const defaultWidgetHeight = {
   value: 3,
   table: 8,
-  chart: 8
+  chart: 12
 };
 
 const widgetLayout = window.WIDGET_LAYOUT || {};

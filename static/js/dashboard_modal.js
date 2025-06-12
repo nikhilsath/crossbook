@@ -291,7 +291,7 @@ function onCreateWidget(event) {
       col_start: 1,
       col_span: 10,
       row_start: 1,
-      row_span: 8
+      row_span: 12
     };
     fetch('/dashboard/widget', {
       method: 'POST',
