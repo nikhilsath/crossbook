@@ -16,6 +16,7 @@ from db.dashboard import (
     update_widget_layout,
     get_base_table_counts,
     get_top_numeric_values,
+    get_filtered_records,
 )
 from db.schema import create_base_table, refresh_card_cache
 from imports.import_csv import parse_csv
@@ -162,6 +163,23 @@ def dashboard_top_numeric():
             limit=limit,
             ascending=(direction == 'asc'),
         )
+    except ValueError:
+        return jsonify([]), 400
+    return jsonify(data)
+
+
+@admin_bp.route('/dashboard/filtered-records')
+def dashboard_filtered_records():
+    """Return filtered records from a table."""
+    table = request.args.get('table')
+    search = request.args.get('search')
+    order_by = request.args.get('order_by')
+    try:
+        limit = int(request.args.get('limit', 10))
+    except (TypeError, ValueError):
+        limit = 10
+    try:
+        data = get_filtered_records(table, filters=search, order_by=order_by, limit=limit)
     except ValueError:
         return jsonify([]), 400
     return jsonify(data)
