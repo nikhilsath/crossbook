@@ -48,6 +48,11 @@ def _build_filters(table, search=None, filters=None, ops=None):
                 date_ends[base] = clean_values[0]
             else:
                 op = (ops or {}).get(fld, "contains")
+                if op == "equals" and len(clean_values) > 1:
+                    clause = "(" + " OR ".join([f"{fld} = ?" for _ in clean_values]) + ")"
+                    clauses.append(clause)
+                    params.extend(clean_values)
+                    continue
                 field_clauses = []
                 for v in clean_values:
                     if op == "equals":
