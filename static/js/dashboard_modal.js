@@ -827,7 +827,11 @@ function initDashboardModal() {
   updateTablePreview();
 }
 
-document.addEventListener('DOMContentLoaded', initDashboardModal);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initDashboardModal);
+} else {
+  initDashboardModal();
+}
 
 window.openDashboardModal = openDashboardModal;
 window.closeDashboardModal = closeDashboardModal;
