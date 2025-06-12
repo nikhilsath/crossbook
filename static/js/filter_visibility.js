@@ -3,6 +3,31 @@ document.addEventListener("DOMContentLoaded", () => {
     const toggleBtn  = document.getElementById("toggle-filters");
     const dropdown   = document.getElementById("filter-dropdown");
     const clearBtn   = document.getElementById("reset-filters");
+    const tableName  = document.getElementById("records-table").dataset.table;
+    const tbody      = document.getElementById("records-body");
+    const pagerWrap  = document.getElementById("pagination-wrapper");
+    const loading    = document.getElementById("loading-indicator");
+
+    function fetchRecords(params) {
+      loading.classList.remove("hidden");
+      fetch(`/api/${tableName}/records?${params.toString()}`, {
+        headers: { Accept: "application/json" }
+      })
+        .then(r => r.json())
+        .then(data => {
+          tbody.innerHTML = data.rows_html;
+          pagerWrap.innerHTML = data.pagination_html;
+          const cnt = document.getElementById("record-count");
+          if (cnt) cnt.outerHTML = data.count_html;
+        })
+        .catch(err => console.error("fetchRecords", err))
+        .finally(() => loading.classList.add("hidden"));
+    }
+
+    function updateState(params) {
+      history.replaceState({}, "", "?" + params.toString());
+      fetchRecords(params);
+    }
   
     // Utility: get columns currently visible
     const getSelectedFields = () =>
@@ -10,19 +35,19 @@ document.addEventListener("DOMContentLoaded", () => {
            .filter(cb => cb.checked)
            .map(cb => cb.value);
   
-    // Update URL based on checked filters and reload
+    // Update URL based on checked filters and fetch results
     function updateFilters() {
       const params = new URLSearchParams(window.location.search);
-  
+
       // Remove existing filter params for all visible fields
       getSelectedFields().forEach(f => params.delete(f));
-  
+
       // Add back only the ones currently checked
       Array.from(dropdown.querySelectorAll(".filter-toggle"))
         .filter(cb => cb.checked)
         .forEach(cb => params.set(cb.value, ""));
-  
-      window.location.search = params.toString();
+
+      updateState(params);
     }
   
     // Populate the dropdown with checkboxes for each visible column
@@ -60,13 +85,13 @@ document.addEventListener("DOMContentLoaded", () => {
       };
     }
   
-    // Handle debounced text input: update URL and reload
+    // Handle debounced text input: update state and fetch
     function onTextFilterInput(e) {
       const input = e.target;
       const params = new URLSearchParams(window.location.search);
-  
+
       params.set(input.name, input.value);
-      window.location.search = params.toString();
+      updateState(params);
     }
   
     // Bind debounce to all active text filter inputs
@@ -85,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         params.set(input.name, input.value);
       }
-      window.location.search = params.toString();
+      updateState(params);
     }
 
   function bindNumberFilters() {
@@ -102,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       params.set(input.name, input.value);
     }
-    window.location.search = params.toString();
+    updateState(params);
   }
 
   function bindDateFilters() {
@@ -125,7 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       params.set(sel.name, sel.value);
       params.set(field, val);
-      window.location.search = params.toString();
+      updateState(params);
     }
   
     // Bind operator change listeners
@@ -145,7 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
         sel.addEventListener("change", e => {
         const params = new URLSearchParams(window.location.search);
         params.set(sel.name, sel.value);
-        window.location.search = params.toString();
+        updateState(params);
         })
     );
 
@@ -159,11 +184,11 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("click", () => dropdown.classList.add("hidden"));
     dropdown.addEventListener("click", e => e.stopPropagation());
   
-    // Clear filters button: remove all filter params & reload
+    // Clear filters button: remove all filter params & fetch
     clearBtn.addEventListener("click", () => {
       const params = new URLSearchParams(window.location.search);
       getSelectedFields().forEach(f => params.delete(f));
-      window.location.search = params.toString();
+      updateState(params);
     });
   
     // Rebuild dropdown whenever column visibility changes
@@ -187,7 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Add back each selected value
     values.forEach(v => params.append(field, v));
     if (mode) params.set(field + "_mode", mode);
-    window.location.search = params.toString();
+    updateState(params);
   }
 
   function bindMultiSelectPopovers() {
@@ -239,7 +264,7 @@ document.addEventListener("DOMContentLoaded", () => {
     params.delete(field + "_op");
     values.forEach(v => params.append(field, v));
     if (values.length) params.set(field + "_op", "equals");
-    window.location.search = params.toString();
+    updateState(params);
   }
 
   function bindSelectMulti() {
