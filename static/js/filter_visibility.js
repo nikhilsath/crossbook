@@ -211,3 +211,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // call it after your other binds
   bindMultiSelectPopovers();
+
+  function updateSelectMulti(field, values) {
+    const params = new URLSearchParams(window.location.search);
+    params.delete(field);
+    params.delete(field + "_op");
+    values.forEach(v => params.append(field, v));
+    if (values.length) params.set(field + "_op", "equals");
+    window.location.search = params.toString();
+  }
+
+  function bindSelectMulti() {
+    document.querySelectorAll(".select-multi-filter").forEach(div => {
+      const field = div.dataset.field;
+      const boxes = div.querySelectorAll(".select-multi-option");
+      boxes.forEach(cb =>
+        cb.addEventListener("change", () => {
+          const selected = Array.from(boxes)
+            .filter(b => b.checked)
+            .map(b => b.value);
+          updateSelectMulti(field, selected);
+        })
+      );
+    });
+  }
+
+  bindSelectMulti();
