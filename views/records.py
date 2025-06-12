@@ -40,11 +40,12 @@ def list_view(table):
         or (k.endswith('_end') and k[:-4] in fields)
     }
     ops = {k[:-3]: v for k, v in raw_args.items() if k.endswith('_op') and k[:-3] in fields}
+    modes = {k[:-5]: v[0] for k, v in raw_args.items() if k.endswith('_mode') and k[:-5] in fields}
     page = int(request.args.get('page', 1))
     per_page = 500
     offset = (page - 1) * per_page
-    records = get_all_records(table, search=search, filters=filters, ops=ops, limit=per_page, offset=offset)
-    total_count = count_records(table, search=search, filters=filters, ops=ops)
+    records = get_all_records(table, search=search, filters=filters, ops=ops, modes=modes, limit=per_page, offset=offset)
+    total_count = count_records(table, search=search, filters=filters, ops=ops, modes=modes)
     args_without_page = request.args.to_dict(flat=False)
     args_without_page.pop('page', None)
     from urllib.parse import urlencode

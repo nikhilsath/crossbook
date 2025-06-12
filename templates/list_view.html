@@ -34,7 +34,7 @@
           {% if meta.type == 'boolean' %}
             {{ filters.boolean_filter(field, request.args.get(field,'')) }}
           {% elif meta.type in ['multi_select','foreign_key'] %}
-            {{ filters.multi_select_popover(field, request.args.getlist(field), meta.options) }}
+            {{ filters.multi_select_popover(field, request.args.getlist(field), meta.options, request.args.get(field + '_mode', 'any')) }}
           {% elif meta.type == 'select' %}
             {% if use_checkbox_filters %}
               {{ filters.select_multi_filter(field, request.args.getlist(field), meta.options) }}

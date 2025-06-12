@@ -168,12 +168,14 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   
     // Multi-select popover logic
-  function updateMultiSelect(field, values) {
+  function updateMultiSelect(field, values, mode) {
     const params = new URLSearchParams(window.location.search);
     // Remove all previous entries for this field
     params.delete(field);
+    params.delete(field + "_mode");
     // Add back each selected value
     values.forEach(v => params.append(field, v));
+    if (mode) params.set(field + "_mode", mode);
     window.location.search = params.toString();
   }
 
@@ -191,15 +193,19 @@ document.addEventListener("DOMContentLoaded", () => {
         pop.classList.toggle("hidden");
       });
 
-      // Handle option changes inside this popover
+      const modeSel = pop.querySelector(".multi-select-mode");
+
+      function handleChange() {
+        const selected = Array.from(
+          pop.querySelectorAll(".multi-select-option:checked")
+        ).map(c => c.value);
+        updateMultiSelect(field, selected, modeSel ? modeSel.value : "any");
+      }
+
       pop.querySelectorAll(".multi-select-option").forEach(cb => {
-        cb.addEventListener("change", () => {
-          const selected = Array.from(
-            pop.querySelectorAll(".multi-select-option:checked")
-          ).map(c => c.value);
-          updateMultiSelect(field, selected);
-        });
+        cb.addEventListener("change", handleChange);
       });
+      if (modeSel) modeSel.addEventListener("change", handleChange);
     });
 
     // Close all popovers when clicking outside
