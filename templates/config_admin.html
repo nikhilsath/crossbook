@@ -5,41 +5,49 @@
 {% block content %}
 <h1 class="text-2xl font-bold mb-6">Configuration</h1>
 
+<div class="max-w-4xl mx-auto space-y-6">
 {% for section, items in sections.items() %}
-  <h2 class="text-xl font-semibold mt-4 mb-2">{{ section|capitalize }}</h2>
-  <table class="w-full text-sm mb-6">
-    <thead>
-      <tr class="text-left border-b">
-        <th class="w-56">Key</th>
-        <th class="w-64">Value</th>
-        <th>Description</th>
-        <th class="w-40">Updated</th>
-      </tr>
-    </thead>
-    <tbody>
-    {% for item in items %}
-      <tr class="border-t">
-        <td class="font-mono">{{ item.key }}</td>
-        <td>
-          <form method="post" action="{{ url_for('admin.update_config_route', key=item.key) }}" class="flex items-center space-x-2">
-            {% if item.type in ('integer', 'number') %}
-              <input type="number" name="value" value="{{ item.value }}" class="border rounded px-2 py-1 text-sm flex-grow">
-            {% elif item.type == 'boolean' %}
-              <input type="checkbox" name="value" value="1" {% if item.value in ('1', 1, True, 'true') %}checked{% endif %} class="mr-2">
-              <input type="hidden" name="value" value="0">
-            {% elif item.type == 'date' %}
-              <input type="date" name="value" value="{{ item.value }}" class="border rounded px-2 py-1 text-sm flex-grow">
-            {% else %}
-              <input type="text" name="value" value="{{ item.value }}" class="border rounded px-2 py-1 text-sm flex-grow">
-            {% endif %}
-            <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded">Save</button>
-          </form>
-        </td>
-        <td>{{ item.description }}</td>
-        <td>{{ item.date_updated }}</td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
+  <details class="bg-white rounded shadow" {% if loop.first %}open{% endif %}>
+    <summary class="cursor-pointer px-4 py-2 bg-gray-100 rounded-t font-semibold text-lg">
+      {{ section|capitalize }}
+    </summary>
+    <div class="p-4 overflow-x-auto">
+      <table class="min-w-full text-sm text-left text-gray-700 divide-y divide-gray-200">
+        <thead class="text-xs uppercase bg-gray-50">
+          <tr>
+            <th class="w-56 px-2 py-1">Key</th>
+            <th class="w-64 px-2 py-1">Value</th>
+            <th class="px-2 py-1">Description</th>
+            <th class="w-40 px-2 py-1">Updated</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+        {% for item in items %}
+          <tr>
+            <td class="font-mono px-2 py-1">{{ item.key }}</td>
+            <td class="px-2 py-1">
+              <form method="post" action="{{ url_for('admin.update_config_route', key=item.key) }}" class="flex items-center space-x-2">
+                {% if item.type in ('integer', 'number') %}
+                  <input type="number" name="value" value="{{ item.value }}" class="border border-gray-300 rounded px-2 py-1 text-sm flex-grow focus:ring-blue-500 focus:border-blue-500">
+                {% elif item.type == 'boolean' %}
+                  <input type="checkbox" name="value" value="1" {% if item.value in ('1', 1, True, 'true') %}checked{% endif %} class="h-4 w-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+                  <input type="hidden" name="value" value="0">
+                {% elif item.type == 'date' %}
+                  <input type="date" name="value" value="{{ item.value }}" class="border border-gray-300 rounded px-2 py-1 text-sm flex-grow focus:ring-blue-500 focus:border-blue-500">
+                {% else %}
+                  <input type="text" name="value" value="{{ item.value }}" class="border border-gray-300 rounded px-2 py-1 text-sm flex-grow focus:ring-blue-500 focus:border-blue-500">
+                {% endif %}
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded">Save</button>
+              </form>
+            </td>
+            <td class="px-2 py-1">{{ item.description }}</td>
+            <td class="px-2 py-1">{{ item.date_updated }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </details>
 {% endfor %}
+</div>
 {% endblock %}
