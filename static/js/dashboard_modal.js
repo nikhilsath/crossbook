@@ -31,7 +31,9 @@ let chartYField = null;
 let chartAgg = '';
 let chartOrient = 'x';
 let tableType = 'base-count';
-let tableTitleInputEl, tableCreateBtnEl, tablePreviewEl, tablePreviewBodyEl;
+let selectCountField = null;
+let selectCountToggleBtn, selectCountToggleLabel, selectCountOptions, selectCountFieldContainer;
+let tableTitleInputEl, tableCreateBtnEl, tablePreviewEl, tablePreviewBodyEl, tablePreviewHeaderEl;
 let tableData = [];
 
 function isNumericField(val) {
@@ -197,7 +199,12 @@ function updateTablePreview() {
   tablePreviewEl.classList.add('hidden');
   tableTitleInputEl.classList.add('hidden');
   tableCreateBtnEl.classList.add('hidden');
+  if (selectCountToggleBtn) selectCountToggleBtn.classList.add('hidden');
+  if (selectCountOptions) selectCountOptions.classList.add('hidden');
+  if (selectCountFieldContainer) selectCountFieldContainer.classList.add('hidden');
   if (tableType === 'base-count') {
+    if (tablePreviewHeaderEl)
+      tablePreviewHeaderEl.innerHTML = '<th class="px-2 py-1 text-left">Table</th><th class="px-2 py-1 text-left">Count</th>';
     fetch('/dashboard/base-count')
       .then(r => r.json())
       .then(rows => {
@@ -210,6 +217,36 @@ function updateTablePreview() {
         tablePreviewEl.classList.remove('hidden');
         tableTitleInputEl.placeholder = 'Base Table Counts';
         tableTitleInputEl.value = 'Base Table Counts';
+        tableTitleInputEl.classList.remove('hidden');
+        tableCreateBtnEl.classList.remove('hidden');
+      })
+      .catch(() => {
+        tableData = [];
+        tablePreviewBodyEl.innerHTML = '<tr><td colspan="2" class="px-2 py-1">Error</td></tr>';
+        tablePreviewEl.classList.remove('hidden');
+      });
+  } else if (tableType === 'select-count') {
+    if (!selectCountField) {
+      if (selectCountFieldContainer) selectCountFieldContainer.classList.remove('hidden');
+      return;
+    }
+    if (selectCountFieldContainer) selectCountFieldContainer.classList.remove('hidden');
+    const [tbl, fld] = selectCountField.split(':');
+    if (tablePreviewHeaderEl)
+      tablePreviewHeaderEl.innerHTML = '<th class="px-2 py-1 text-left">Value</th><th class="px-2 py-1 text-left">Count</th>';
+    fetch(`/${tbl}/field-distribution?field=${encodeURIComponent(fld)}`)
+      .then(r => r.json())
+      .then(data => {
+        tableData = Object.entries(data).map(([value, count]) => ({ value, count }));
+        tableData.forEach(r => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td class="px-2 py-1">${r.value}</td><td class="px-2 py-1">${r.count}</td>`;
+          tablePreviewBodyEl.appendChild(tr);
+        });
+        tablePreviewEl.classList.remove('hidden');
+        const fieldLabel = fld;
+        tableTitleInputEl.placeholder = `Value Counts for ${fieldLabel}`;
+        tableTitleInputEl.value = `Value Counts for ${fieldLabel}`;
         tableTitleInputEl.classList.remove('hidden');
         tableCreateBtnEl.classList.remove('hidden');
       })
@@ -346,10 +383,17 @@ function onCreateWidget(event) {
 
   if (activeTab === 'table') {
     if (!tableData.length) return;
+    if (tableType === 'select-count' && !selectCountField) return;
     const title = (tableTitleInputEl && tableTitleInputEl.value.trim()) || 'Table Widget';
+    const payloadContent = { type: tableType, data: tableData };
+    if (tableType === 'select-count' && selectCountField) {
+      const [tbl, fld] = selectCountField.split(':');
+      payloadContent.table = tbl;
+      payloadContent.field = fld;
+    }
     const payload = {
       title,
-      content: JSON.stringify({ type: tableType, data: tableData }),
+      content: JSON.stringify(payloadContent),
       widget_type: 'table',
       col_start: 1,
       col_span: 10,
@@ -655,11 +699,33 @@ function initDashboardModal() {
   tableCreateBtnEl = document.getElementById('tableCreateBtn');
   tablePreviewEl = document.getElementById('tablePreview');
   tablePreviewBodyEl = document.getElementById('tablePreviewBody');
+  tablePreviewHeaderEl = document.getElementById('tablePreviewHeader');
+  selectCountToggleBtn = document.getElementById('selectCountFieldToggle');
+  selectCountToggleLabel = selectCountToggleBtn ? selectCountToggleBtn.querySelector('.selected-label') : null;
+  selectCountOptions = document.getElementById('selectCountFieldOptions');
+  selectCountFieldContainer = document.getElementById('selectCountFieldContainer');
   const tableTypeSelect = document.getElementById('tableTypeSelect');
   if (tableTypeSelect) {
     tableTypeSelect.addEventListener('change', () => {
       const checked = tableTypeSelect.querySelector('input[name="tableType"]:checked');
       tableType = checked ? checked.value : 'base-count';
+      updateTablePreview();
+    });
+  }
+  if (selectCountToggleBtn && selectCountOptions) {
+    selectCountToggleBtn.addEventListener('click', e => { e.stopPropagation(); selectCountOptions.classList.toggle('hidden'); });
+    document.addEventListener('click', e => {
+      if (!selectCountOptions.contains(e.target) && e.target !== selectCountToggleBtn) {
+        selectCountOptions.classList.add('hidden');
+      }
+    });
+    selectCountOptions.addEventListener('click', e => e.stopPropagation());
+    populateFieldDropdown(selectCountOptions, false, ['select','multi_select'], val => {
+      selectCountField = val;
+      if (selectCountToggleLabel) {
+        const [t,f] = val.split(':');
+        selectCountToggleLabel.textContent = `${t}: ${f}`;
+      }
       updateTablePreview();
     });
   }

@@ -45,15 +45,24 @@
         {% elif widget.widget_type == 'table' %}
         <div class="font-semibold mb-2">{{ widget.title }}</div>
         <div class="overflow-auto max-h-64">
-
           <table class="min-w-full text-sm">
             <thead>
+              {% if widget.parsed.type == 'select-count' %}
+              <tr><th class="px-2 py-1 text-left">Value</th><th class="px-2 py-1 text-left">Count</th></tr>
+              {% else %}
               <tr><th class="px-2 py-1 text-left">Table</th><th class="px-2 py-1 text-left">Count</th></tr>
+              {% endif %}
             </thead>
             <tbody>
-            {% for row in widget.parsed.data if widget.parsed %}
-              <tr><td class="px-2 py-1">{{ row.table }}</td><td class="px-2 py-1">{{ row.count }}</td></tr>
-            {% endfor %}
+            {% if widget.parsed.type == 'select-count' %}
+              {% for row in widget.parsed.data if widget.parsed %}
+                <tr><td class="px-2 py-1">{{ row.value }}</td><td class="px-2 py-1">{{ row.count }}</td></tr>
+              {% endfor %}
+            {% else %}
+              {% for row in widget.parsed.data if widget.parsed %}
+                <tr><td class="px-2 py-1">{{ row.table }}</td><td class="px-2 py-1">{{ row.count }}</td></tr>
+              {% endfor %}
+            {% endif %}
             </tbody>
           </table>
         </div>

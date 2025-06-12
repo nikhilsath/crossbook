@@ -65,6 +65,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
   available row in the grid without specifying `row_start`.
 * **Dashboard Charts:** Pie, bar and line chart widgets leverage Flowbite Charts and auto-generate counts from a single field.
 * **Table Widget:** Displays simple tabular data such as base table record counts.
+* **Select Value Counts:** Table widget option that shows counts of each choice for a select or multi-select field.
 * **Dashboard Grid Editing:** Widgets can be dragged, resized, and saved using `/dashboard/layout`.
 * **Numerical Summaries:** `/<table>/sum-field` returns the sum for numeric columns, used by dashboard charts.
 * **List API:** `/api/<table>/list` provides ID and label data for dropdowns.

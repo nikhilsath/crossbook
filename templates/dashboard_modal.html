@@ -97,11 +97,25 @@
               Base Count
             </div>
           </label>
+          <label class="flex-1 cursor-pointer">
+            <input type="radio" name="tableType" value="select-count" class="sr-only peer">
+            <div class="p-2 border rounded text-center peer-checked:bg-purple-500 peer-checked:text-white">
+              Select Value Counts
+            </div>
+          </label>
+        </div>
+        <div id="selectCountFieldContainer" class="mb-4 hidden">
+          <div class="relative">
+            <button id="selectCountFieldToggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-left flex items-center justify-between">
+              <span class="selected-label">Select Field</span> <span class="arrow text-xl">▾</span>
+            </button>
+            <div id="selectCountFieldOptions" class="absolute z-10 mt-1 w-full bg-white border rounded shadow hidden max-h-64 overflow-y-auto p-2 space-y-1"></div>
+          </div>
         </div>
         <div id="tablePreview" class="mb-4 max-h-64 overflow-y-auto border rounded hidden">
           <table class="min-w-full text-sm">
             <thead>
-              <tr><th class="px-2 py-1 text-left">Table</th><th class="px-2 py-1 text-left">Count</th></tr>
+              <tr id="tablePreviewHeader"><th class="px-2 py-1 text-left">Table</th><th class="px-2 py-1 text-left">Count</th></tr>
             </thead>
             <tbody id="tablePreviewBody"></tbody>
           </table>
