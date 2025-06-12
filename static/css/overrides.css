@@ -39,11 +39,15 @@ input[type=number] {
   cursor: pointer;
 }
 
-/* Constrain each multi-select chip’s popover */
+/* Constrain each multi-select chip’s popover
+   Default positioning opens to the right of the chip via left:0.
+   JS may set right:0 and clear left to open it to the left. */
 .multi-select-popover {
   width: 16rem !important;
   max-height: 15rem !important;
   overflow-y: auto !important;
+  left: 0;
+  right: auto;
 }
 
 /* Make all inputs/selects/textareas fill their .draggable-field parent */
