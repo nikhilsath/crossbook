@@ -30,6 +30,9 @@ let chartXField = null;
 let chartYField = null;
 let chartAgg = '';
 let chartOrient = 'x';
+let tableType = 'base-count';
+let tableTitleInputEl, tableCreateBtnEl, tablePreviewEl, tablePreviewBodyEl;
+let tableData = [];
 
 function isNumericField(val) {
   if (!val) return false;
@@ -188,6 +191,36 @@ function updateChartTitle() {
   chartTitleInputEl.value = defaultTitle;
 }
 
+function updateTablePreview() {
+  if (!tablePreviewEl || !tablePreviewBodyEl || !tableTitleInputEl || !tableCreateBtnEl) return;
+  tablePreviewBodyEl.innerHTML = '';
+  tablePreviewEl.classList.add('hidden');
+  tableTitleInputEl.classList.add('hidden');
+  tableCreateBtnEl.classList.add('hidden');
+  if (tableType === 'base-count') {
+    fetch('/dashboard/base-count')
+      .then(r => r.json())
+      .then(rows => {
+        tableData = rows || [];
+        tableData.forEach(r => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td class="px-2 py-1">${r.table}</td><td class="px-2 py-1">${r.count}</td>`;
+          tablePreviewBodyEl.appendChild(tr);
+        });
+        tablePreviewEl.classList.remove('hidden');
+        tableTitleInputEl.placeholder = 'Base Table Counts';
+        tableTitleInputEl.value = 'Base Table Counts';
+        tableTitleInputEl.classList.remove('hidden');
+        tableCreateBtnEl.classList.remove('hidden');
+      })
+      .catch(() => {
+        tableData = [];
+        tablePreviewBodyEl.innerHTML = '<tr><td colspan="2" class="px-2 py-1">Error</td></tr>';
+        tablePreviewEl.classList.remove('hidden');
+      });
+  }
+}
+
 function setActiveTab(name) {
   activeTab = name;
   const tabs = ['value', 'table', 'chart'];
@@ -211,6 +244,7 @@ function setActiveTab(name) {
     }
   });
   updateColumnOptions();
+  if (activeTab === 'table') updateTablePreview();
 }
 
 function initDashboardTabs() {
@@ -309,6 +343,34 @@ function updateValueResult() {
 
 function onCreateWidget(event) {
   if (event) event.preventDefault();
+
+  if (activeTab === 'table') {
+    if (!tableData.length) return;
+    const title = (tableTitleInputEl && tableTitleInputEl.value.trim()) || 'Table Widget';
+    const payload = {
+      title,
+      content: JSON.stringify({ type: tableType, data: tableData }),
+      widget_type: 'table',
+      col_start: 1,
+      col_span: 10,
+      row_start: 1,
+      row_span: 8
+    };
+    fetch('/dashboard/widget', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          closeDashboardModal();
+          window.location.reload();
+        }
+      })
+      .catch(() => { console.error('Failed to create widget'); });
+    return;
+  }
 
   // Chart widget
   if (activeTab === 'chart') {
@@ -589,6 +651,18 @@ function initDashboardModal() {
   chartAggToggleEl = document.getElementById('chartAggToggle');
   chartTitleInputEl = document.getElementById('chartTitleInput');
   chartCreateBtnEl = document.getElementById('chartCreateBtn');
+  tableTitleInputEl = document.getElementById('tableTitleInput');
+  tableCreateBtnEl = document.getElementById('tableCreateBtn');
+  tablePreviewEl = document.getElementById('tablePreview');
+  tablePreviewBodyEl = document.getElementById('tablePreviewBody');
+  const tableTypeSelect = document.getElementById('tableTypeSelect');
+  if (tableTypeSelect) {
+    tableTypeSelect.addEventListener('change', () => {
+      const checked = tableTypeSelect.querySelector('input[name="tableType"]:checked');
+      tableType = checked ? checked.value : 'base-count';
+      updateTablePreview();
+    });
+  }
   if (mathOpContainer) {
     mathOpContainer.addEventListener('change', () => {
       const checked = mathOpContainer.querySelector('input[name="mathOperation"]:checked');
@@ -673,6 +747,9 @@ function initDashboardModal() {
   if (chartCreateBtnEl) {
     chartCreateBtnEl.addEventListener('click', onCreateWidget);
   }
+  if (tableCreateBtnEl) {
+    tableCreateBtnEl.addEventListener('click', onCreateWidget);
+  }
   if (chartTypeEl) {
     chartTypeEl.addEventListener('change', updateChartUI);
   }
@@ -681,6 +758,7 @@ function initDashboardModal() {
   updateAverageButtonUI();
   updateMathFieldUI();
   updateChartUI();
+  updateTablePreview();
 }
 
 document.addEventListener('DOMContentLoaded', initDashboardModal);

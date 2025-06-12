@@ -1,8 +1,10 @@
 import logging
 
+from flask import current_app
 from db.database import get_connection
 from db.schema import get_field_schema
 from db.validation import validate_table
+from db.records import count_records
 
 logger = logging.getLogger(__name__)
 
@@ -128,3 +130,17 @@ def update_widget_layout(layout_items: list[dict]) -> int:
         conn.commit()
 
     return updated
+
+
+def get_base_table_counts() -> list[dict]:
+    """Return record counts for each base table."""
+    base_tables = current_app.config.get("BASE_TABLES", [])
+    results: list[dict] = []
+    for table in base_tables:
+        try:
+            cnt = count_records(table)
+        except Exception as exc:
+            logger.warning("[get_base_table_counts] error for %s: %s", table, exc)
+            cnt = 0
+        results.append({"table": table, "count": cnt})
+    return results

@@ -10,7 +10,12 @@ from flask import (
 import json
 from logging_setup import configure_logging
 from db.config import get_config_rows, update_config, get_logging_config
-from db.dashboard import get_dashboard_widgets, create_widget, update_widget_layout
+from db.dashboard import (
+    get_dashboard_widgets,
+    create_widget,
+    update_widget_layout,
+    get_base_table_counts,
+)
 from db.schema import create_base_table, refresh_card_cache
 from imports.import_csv import parse_csv
 from utils.validation import validation_sorter
@@ -21,6 +26,12 @@ admin_bp = Blueprint('admin', __name__)
 @admin_bp.route('/dashboard')
 def dashboard():
     widgets = get_dashboard_widgets()
+    for w in widgets:
+        if w.get('widget_type') == 'table':
+            try:
+                w['parsed'] = json.loads(w.get('content') or '{}')
+            except Exception:
+                w['parsed'] = {}
     return render_template('dashboard.html', widgets=widgets)
 
 @admin_bp.route('/admin')
@@ -124,6 +135,13 @@ def dashboard_update_layout():
     layout_items = data['layout']
     updated = update_widget_layout(layout_items)
     return jsonify({'success': True, 'updated': updated})
+
+
+@admin_bp.route('/dashboard/base-count')
+def dashboard_base_count():
+    """Return counts for all base tables."""
+    data = get_base_table_counts()
+    return jsonify(data)
 
 @admin_bp.route('/add-table', methods=['POST'])
 def add_table():

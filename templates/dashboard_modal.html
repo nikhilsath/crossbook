@@ -89,7 +89,26 @@
       </form>
     </div>
     <div id="pane-table" class="hidden">
-      <p class="mb-4">Table tab content coming soon.</p>
+      <form id="tableWidgetForm" class="relative w-full" onsubmit="event.preventDefault();">
+        <div id="tableTypeSelect" class="flex gap-2 mb-4">
+          <label class="flex-1 cursor-pointer">
+            <input type="radio" name="tableType" value="base-count" class="sr-only peer" checked>
+            <div class="p-2 border rounded text-center peer-checked:bg-purple-500 peer-checked:text-white">
+              Base Count
+            </div>
+          </label>
+        </div>
+        <div id="tablePreview" class="mb-4 overflow-x-auto border rounded hidden">
+          <table class="min-w-full text-sm">
+            <thead>
+              <tr><th class="px-2 py-1 text-left">Table</th><th class="px-2 py-1 text-left">Count</th></tr>
+            </thead>
+            <tbody id="tablePreviewBody"></tbody>
+          </table>
+        </div>
+        <input id="tableTitleInput" type="text" placeholder="Widget Title" class="px-3 py-2 border rounded w-full mb-4 hidden" />
+        <button id="tableCreateBtn" type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 block ml-auto hidden">Create</button>
+      </form>
     </div>
     <div id="pane-chart" class="hidden">
       <form id="chartWidgetForm" class="relative w-full" onsubmit="event.preventDefault();">
