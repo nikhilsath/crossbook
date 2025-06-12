@@ -201,7 +201,21 @@ document.addEventListener("DOMContentLoaded", () => {
         // close others
         document.querySelectorAll(".multi-select-popover")
                 .forEach(p => p !== pop && p.classList.add("hidden"));
+
+        const wasHidden = pop.classList.contains("hidden");
         pop.classList.toggle("hidden");
+
+        if (wasHidden) {
+          const rect = btn.getBoundingClientRect();
+          const spaceRight = window.innerWidth - rect.right;
+          if (spaceRight < pop.offsetWidth) {
+            pop.style.right = "0";
+            pop.style.left = "";
+          } else {
+            pop.style.left = "0";
+            pop.style.right = "";
+          }
+        }
       });
 
       // prevent closing when interacting within the popover
