@@ -41,6 +41,14 @@ function isNumericField(val) {
   );
 }
 
+function getNonTextTypes() {
+  const types = new Set();
+  Object.values(FIELD_SCHEMA).forEach(tbl => {
+    Object.values(tbl).forEach(meta => types.add(meta.type));
+  });
+  return Array.from(types).filter(t => t !== 'text' && t !== 'textarea');
+}
+
 function toggleDisabled(label, input, disabled) {
   if (!label || !input) return;
   input.disabled = disabled;
@@ -130,7 +138,7 @@ function updateChartUI() {
     });
   } else if (type === 'bar') {
     chartXFieldLabel.textContent = 'Field';
-    populateFieldDropdown(chartXOptions, false, null, val => {
+    populateFieldDropdown(chartXOptions, false, getNonTextTypes(), val => {
       chartXField = val;
       if (chartXLabel) {
         const [t,f] = val.split(':');
