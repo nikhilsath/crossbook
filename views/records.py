@@ -116,6 +116,11 @@ def api_list(table):
 
 @records_bp.route('/<table>/<int:record_id>')
 def detail_view(table, record_id):
+    try:
+        validate_table(table)
+    except ValueError:
+        abort(404)
+
     record = get_record_by_id(table, record_id)
     if not record:
         abort(404)
