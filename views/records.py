@@ -116,7 +116,10 @@ def api_list(table):
 
 @records_bp.route('/<table>/<int:record_id>')
 def detail_view(table, record_id):
-    record = get_record_by_id(table, record_id)
+    try:
+        record = get_record_by_id(table, record_id)
+    except ValueError:
+        abort(404)
     if not record:
         abort(404)
     related = get_related_records(table, record_id)
@@ -235,7 +238,10 @@ def update_field(table, record_id):
             from utils.html_sanitizer import sanitize_html
             new_value = sanitize_html(new_value)
     current_app.logger.debug('update_field: table=%s id=%s field=%s value=%r', table, record_id, field, new_value)
-    prev_record = get_record_by_id(table, record_id)
+    try:
+        prev_record = get_record_by_id(table, record_id)
+    except ValueError:
+        abort(404)
     prev_value = prev_record.get(field) if prev_record else None
     success = update_field_value(table, record_id, field, new_value)
     if not success:

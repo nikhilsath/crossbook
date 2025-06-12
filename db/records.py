@@ -161,6 +161,10 @@ def count_records(table, search=None, filters=None, ops=None, modes=None):
             return 0
 
 def get_record_by_id(table, record_id):
+    """Return a single record by ID or ``None`` if it does not exist."""
+    # Validate table name and raise ``ValueError`` for unknown tables
+    validate_table(table)
+
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(f"PRAGMA table_info({table})")
