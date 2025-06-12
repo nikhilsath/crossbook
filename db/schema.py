@@ -24,13 +24,14 @@ def load_field_schema():
                col_start,
                col_span,
                row_start,
-               row_span
+               row_span,
+               styling
         FROM field_schema
             """
         )
         rows = cur.fetchall()
         schema = {}
-        for table, field, ftype, options, fk, col_start, col_span, row_start, row_span in rows:
+        for table, field, ftype, options, fk, col_start, col_span, row_start, row_span, styling in rows:
             schema.setdefault(table, {})[field] = {
                 "type": ftype.strip(),
                 "options": [],
@@ -41,12 +42,18 @@ def load_field_schema():
                     "rowStart": row_start,
                     "rowSpan": row_span,
                 },
+                "styling": {},
             }
             if options:
                 try:
                     schema[table][field]["options"] = json.loads(options)
                 except Exception:
                     schema[table][field]["options"] = []
+            if styling is not None:
+                try:
+                    schema[table][field]["styling"] = json.loads(styling)
+                except Exception:
+                    schema[table][field]["styling"] = styling
         return schema
 
 
