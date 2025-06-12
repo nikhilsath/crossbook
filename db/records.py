@@ -112,6 +112,8 @@ def get_all_records(
     filters=None,
     ops=None,
     modes=None,
+    sort_field=None,
+    direction="asc",
     limit=None,
     offset=0,
 ):
@@ -127,6 +129,15 @@ def get_all_records(
             sql = f"SELECT * FROM {table}"
             if clauses:
                 sql += " WHERE " + " AND ".join(clauses)
+
+            if sort_field:
+                try:
+                    validate_field(table, sort_field)
+                    dir_sql = "DESC" if str(direction).lower() == "desc" else "ASC"
+                    sql += f" ORDER BY {sort_field} {dir_sql}"
+                except Exception:
+                    logger.warning("Invalid sort field: %s", sort_field)
+
             if limit is not None:
                 sql += f" LIMIT {int(limit)} OFFSET {int(offset)}"
 
