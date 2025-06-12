@@ -202,10 +202,9 @@ document.addEventListener("DOMContentLoaded", () => {
         document.querySelectorAll(".multi-select-popover")
                 .forEach(p => p !== pop && p.classList.add("hidden"));
 
-        const wasHidden = pop.classList.contains("hidden");
         pop.classList.toggle("hidden");
 
-        if (wasHidden) {
+        if (!pop.classList.contains("hidden")) {
           const rect = btn.getBoundingClientRect();
           const spaceRight = window.innerWidth - rect.right;
           if (spaceRight < pop.offsetWidth) {
