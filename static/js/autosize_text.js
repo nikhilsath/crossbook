@@ -1,10 +1,6 @@
 let measureCanvas;
 
 export function fitText(el) {
-  // Skip resizing when layout grid is currently being edited
-  if (document.querySelector('#layout-grid.editing')) {
-    return;
-  }
 
   if (!measureCanvas) {
     measureCanvas = document.createElement('canvas');
