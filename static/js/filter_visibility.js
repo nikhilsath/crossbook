@@ -76,6 +76,23 @@ document.addEventListener("DOMContentLoaded", () => {
         input.addEventListener("input", debounce(onTextFilterInput, 400))
       );
     }
+
+    function onNumberFilterChange(e) {
+      const input = e.target;
+      const params = new URLSearchParams(window.location.search);
+      if (input.value === "") {
+        params.delete(input.name);
+      } else {
+        params.set(input.name, input.value);
+      }
+      window.location.search = params.toString();
+    }
+
+    function bindNumberFilters() {
+      document
+        .querySelectorAll("#filter-container input[type='number']")
+        .forEach(input => input.addEventListener("change", onNumberFilterChange));
+    }
   
     // Handle operator dropdown changes
     function onOperatorChange(e) {
@@ -129,6 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initial binding for inputs and operators
     bindDebounceToFilters();
     bindOperatorListeners();
+    bindNumberFilters();
   });
   
     // Multi-select popover logic

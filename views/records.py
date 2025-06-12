@@ -30,7 +30,13 @@ def list_view(table):
     fields = list(get_field_schema()[table].keys())
     search = request.args.get('search', '').strip()
     raw_args = request.args.to_dict(flat=False)
-    filters = {k: v for k, v in raw_args.items() if k in fields}
+    filters = {
+        k: v
+        for k, v in raw_args.items()
+        if k in fields
+        or (k.endswith('_min') and k[:-4] in fields)
+        or (k.endswith('_max') and k[:-4] in fields)
+    }
     ops = {k[:-3]: v for k, v in raw_args.items() if k.endswith('_op') and k[:-3] in fields}
     page = int(request.args.get('page', 1))
     per_page = 500

@@ -36,6 +36,8 @@
             {{ filters.multi_select_popover(field, request.args.getlist(field), meta.options) }}
           {% elif meta.type == 'select' %}
             {{ filters.select_filter(field, request.args.get(field,''), meta.options) }}
+          {% elif meta.type == 'number' %}
+            {{ filters.number_filter(field, request.args.get(field + '_min',''), request.args.get(field + '_max','')) }}
           {% else %}
             {{ filters.text_filter(field, request.args.get(field,''), request.args.get(field + '_op','contains')) }}
           {% endif %}

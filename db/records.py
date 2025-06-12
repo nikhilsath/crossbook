@@ -14,29 +14,44 @@ def _build_filters(table, search=None, filters=None, ops=None):
     params = []
 
     if filters:
-        validate_fields(table, filters.keys())
+        valid_keys = [
+            f[:-4] if f.endswith('_min') or f.endswith('_max') else f
+            for f in filters.keys()
+        ]
+        validate_fields(table, valid_keys)
         for fld, val in filters.items():
             values = val if isinstance(val, list) else [val]
             clean_values = [v for v in values if v != ""]
             if not clean_values:
                 continue
-            op = (ops or {}).get(fld, "contains")
-            field_clauses = []
-            for v in clean_values:
-                if op == "equals":
-                    field_clauses.append(f"{fld} = ?")
+            if fld.endswith('_min'):
+                base = fld[:-4]
+                for v in clean_values:
+                    clauses.append(f"{base} >= ?")
                     params.append(v)
-                elif op == "starts_with":
-                    field_clauses.append(f"{fld} LIKE ?")
-                    params.append(f"{v}%")
-                elif op == "ends_with":
-                    field_clauses.append(f"{fld} LIKE ?")
-                    params.append(f"%{v}")
-                else:  # contains
-                    field_clauses.append(f"{fld} LIKE ?")
-                    params.append(f"%{v}%")
-            if field_clauses:
-                clauses.append("(" + " OR ".join(field_clauses) + ")")
+            elif fld.endswith('_max'):
+                base = fld[:-4]
+                for v in clean_values:
+                    clauses.append(f"{base} <= ?")
+                    params.append(v)
+            else:
+                op = (ops or {}).get(fld, "contains")
+                field_clauses = []
+                for v in clean_values:
+                    if op == "equals":
+                        field_clauses.append(f"{fld} = ?")
+                        params.append(v)
+                    elif op == "starts_with":
+                        field_clauses.append(f"{fld} LIKE ?")
+                        params.append(f"{v}%")
+                    elif op == "ends_with":
+                        field_clauses.append(f"{fld} LIKE ?")
+                        params.append(f"%{v}")
+                    else:  # contains
+                        field_clauses.append(f"{fld} LIKE ?")
+                        params.append(f"%{v}%")
+                if field_clauses:
+                    clauses.append("(" + " OR ".join(field_clauses) + ")")
 
     if search:
         search_term = search.strip()
