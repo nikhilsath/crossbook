@@ -169,7 +169,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
   * `config_admin.js` processes layout defaults forms
   * `undo_edit.js` allows reverting edits via AJAX
 
-* **Static Assets & Styling:** Global styles in `static/css/styles.css`, with Tailwind overrides in `static/css/overrides.css`.
+* **Static Assets & Styling:** Tailwind is loaded via CDN in `templates/base.html`. Global rules live in `static/css/styles.css`, while `static/css/overrides.css` contains Tailwind tweaks used by the layout editors. Update these files to change colors, spacing or other visual details.
 
 * **Templating & Macros:** Jinja2 templates in `templates/` include the core pages (`base.html`, `index.html`, `list_view.html`, `detail_view.html`, `new_record.html`, `dashboard.html`) plus admin and import views. Partial templates like `edit_fields_modal.html` and `bulk_edit_modal.html` are used for modals. Reusable macros live in `templates/macros/fields.html` and `filter_controls.html`.
 
@@ -420,6 +420,16 @@ Overall, `detail_view.html` works in tandem with `macros/fields.html` and the JS
 - The macro also prints a small debug line in edit mode (`[DEBUG: field → field_type]` in gray, small text) to show the field name and type. This is helpful for developers to see what type the system thinks the field is. (This line could be removed or hidden in a production setting if desired.)
 
 By using this macro in `detail_view.html`, the template stays cleaner and any changes to how fields are rendered (view or edit) can be made in one place. For example, when select fields are implemented, the macro can be updated to handle `field_type == "select"` differently (perhaps render a dropdown with options) without having to touch the main template logic.
+
+## Styling
+
+The UI relies on Tailwind utility classes with a small set of custom overrides. If you want to modify the look and feel:
+
+1. Edit `static/css/styles.css` for additional rules.
+2. Adjust `static/css/overrides.css` to tweak layout editor styles or Tailwind utilities.
+3. Tailwind itself is loaded via CDN in `templates/base.html`, so you can reference any Tailwind class directly in the templates.
+
+Reload the browser after making changes to see your updates.
 
 ## License
 
