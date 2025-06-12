@@ -8,6 +8,7 @@ from db.schema import (
     load_base_tables,
     load_card_info,
 )
+from db.config import get_all_config
 from utils.flask_helpers import start_timer, log_request, log_exception
 
 app = Flask(__name__, static_url_path='/static')
@@ -42,7 +43,12 @@ def inject_field_schema():
 
 @app.route("/")
 def home():
-    return render_template("index.html", cards=current_app.config['CARD_INFO'])
+    heading = get_all_config().get('heading', 'Load the Glass Cannon')
+    return render_template(
+        "index.html",
+        cards=current_app.config['CARD_INFO'],
+        heading=heading,
+    )
 
 if __name__ == "__main__":
     update_foreign_field_options()
