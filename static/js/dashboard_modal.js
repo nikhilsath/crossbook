@@ -135,6 +135,7 @@ function updateChartUI() {
         const [t,f] = val.split(':');
         chartXLabel.textContent = `${t}: ${f}`;
       }
+      updateChartTitle();
     });
   } else if (type === 'bar') {
     chartXFieldLabel.textContent = 'Field';
@@ -144,6 +145,7 @@ function updateChartUI() {
         const [t,f] = val.split(':');
         chartXLabel.textContent = `${t}: ${f}`;
       }
+      updateChartTitle();
     }, ['text', 'textarea']);
     chartOrientContainer.classList.remove('hidden');
   } else if (type === 'line') {
@@ -155,6 +157,7 @@ function updateChartUI() {
         const [t,f] = val.split(':');
         chartXLabel.textContent = `${t}: ${f}`;
       }
+      updateChartTitle();
     });
   } else {
     chartXFieldLabel.textContent = 'X Field';
@@ -164,10 +167,25 @@ function updateChartUI() {
         const [t,f] = val.split(':');
         chartXLabel.textContent = `${t}: ${f}`;
       }
+      updateChartTitle();
     });
     chartYFieldContainer.classList.remove('hidden');
     chartAggContainer.classList.remove('hidden');
   }
+  updateChartTitle();
+}
+
+function updateChartTitle() {
+  if (!chartTitleInputEl) return;
+  const type = chartTypeEl ? chartTypeEl.value : '';
+  if (!type) return;
+  let field = chartXField || chartYField;
+  if (!field) return;
+  const fieldName = field.split(':')[1];
+  const typeCap = type.charAt(0).toUpperCase() + type.slice(1);
+  const defaultTitle = `${typeCap} Chart of ${fieldName}`;
+  chartTitleInputEl.placeholder = defaultTitle;
+  chartTitleInputEl.value = defaultTitle;
 }
 
 function setActiveTab(name) {
@@ -622,6 +640,7 @@ function initDashboardModal() {
         const [t,f] = val.split(':');
         chartXLabel.textContent = `${t}: ${f}`;
       }
+      updateChartTitle();
     });
   }
   if (chartYToggleBtn && chartYOptions) {
@@ -636,6 +655,7 @@ function initDashboardModal() {
         const [t,f] = val.split(':');
         chartYLabel.textContent = `${t}: ${f}`;
       }
+      updateChartTitle();
     });
   }
   if (chartAggToggleEl) {
