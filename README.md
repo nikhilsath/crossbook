@@ -43,7 +43,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 
 ## Current Status
 
-* **Detail View Resizing & Layout Editor (In Progress):** improving drag-and-drop interactions, grid responsiveness across screen sizes, and persisting custom layouts immediately on change.
+* **Detail View Layout Editor:** drag-and-drop and resizing are fully functional and layouts save via the `/<table>/layout` endpoint.
 
 ## Implemented Features
 
@@ -60,10 +60,13 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Field Schema Editing:** New endpoints allow adding or removing columns at runtime (`/<table>/<id>/add-field`, `/<table>/<id>/remove-field`) and counting non-null values (`/<table>/count-nonnull`).
 * **Admin Dashboard & Configuration:** The `/admin` section includes a configuration editor and placeholder pages for user management and automation.
 * **Layout Defaults from DB:** Field width and height defaults are loaded from the `config` table instead of being hardcoded.
+* **Layout Editor Persistence:** detail page layouts save to the database via the `/<table>/layout` endpoint.
 * **Automatic Dashboard Widget Placement:** New widgets are inserted at the next
   available row in the grid without specifying `row_start`.
-* **Dashboard Charts:** Pie, bar and line chart widgets leverage Flowbite Charts
-  and auto-generate counts from a single field.
+* **Dashboard Charts:** Pie, bar and line chart widgets leverage Flowbite Charts and auto-generate counts from a single field.
+* **Dashboard Grid Editing:** Widgets can be dragged, resized, and saved using `/dashboard/layout`.
+* **Numerical Summaries:** `/<table>/sum-field` returns the sum for numeric columns, used by dashboard charts.
+* **List API:** `/api/<table>/list` provides ID and label data for dropdowns.
 * **CSV Import Workflow (Experimental):** The `/import` page lets you upload CSV files, match columns to fields, and validate data before import.
 
 ## Project Structure
@@ -100,6 +103,10 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 │   │   ├── field_ajax.js            # Inline updates via fetch
 │   │   ├── filter_visibility.js     # Show/hide filter controls
 │   │   ├── layout_editor.js         # Drag/drop & layout persistence
+│   │   ├── dashboard_grid.js       # Drag and resize dashboard widgets
+│   │   ├── dashboard_charts.js     # Render charts from field data
+│   │   ├── config_admin.js         # Helpers for editing config JSON
+│   │   ├── undo_edit.js            # Undo actions via AJAX
 │   │   ├── relations.js             # AJAX for add/remove relationships
 │   │   └── tag_selector.js          # Multi-select tag UI helper
 │   └── imports/
@@ -156,6 +163,10 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
   * `layout_editor.js` for drag-and-drop and grid persistence
   * `relations.js` for AJAX-based add/remove relationships
   * `tag_selector.js` (multi-select dropdown UI)
+  * `dashboard_charts.js` renders Flowbite charts using field counts and sums
+  * `dashboard_grid.js` enables dashboard drag & resize
+  * `config_admin.js` processes layout defaults forms
+  * `undo_edit.js` allows reverting edits via AJAX
 
 * **Static Assets & Styling:** Global styles in `static/css/styles.css`, with Tailwind overrides in `static/css/overrides.css`.
 
@@ -214,14 +225,20 @@ The following functions encapsulate the application logic:
 | `detail_view(table, record_id)`               | **Route:** GET `/<table>/<int:record_id>` – Renders the **detail view page** for a single record. If the table is not in `BASE_TABLES`, or the record with that ID doesn’t exist, it aborts with 404. Otherwise, it fetches the record via `get_record_by_id` and all related records via `get_related_records`. It then renders `detail_view.html`, providing the table name, the record dict, and the related records dict to the template. |
 | `update_field(table, record_id)`              | **Route:** POST `/<table>/<int:record_id>/update` – Handles inline edits from the detail page. This is called when a user submits a field edit form. It first ensures the table is valid and the record exists. It then reads `field` (the field name to update) and the new value from the form data (`new_value` or `new_value_override`). Certain fields are protected: attempting to edit the primary `id` or the `edit_log` directly will result in a 403 Forbidden. For other fields, it determines the expected data type from the field schema and **coerces** the input accordingly: booleans are converted to "1" or "0", numbers to int (default 0 if parse fails), and all other types are treated as strings. It then executes an `UPDATE ... SET field = ?` query to save the new value. If the value changed, it appends a timestamped entry describing the change to the record’s `edit_log` field (this is done by concatenating text). After updating, it commits the transaction and redirects the user back to the detail view page for that record. |
 | `manage_relationship()`                       | **Route:** POST `/relationship` – AJAX endpoint for adding or removing a relationship (join table entry) between two records. It expects a JSON payload with `table_a`, `id_a`, `table_b`, `id_b`, and an `action` ("add" or "remove"). The two table names are sorted alphabetically to determine the join table name (e.g., `character` + `thing` -> join table **character_thing**). Depending on the action, it either inserts a new row (with the two IDs) into the join table or deletes the matching row. It uses `INSERT OR IGNORE` for adds (to avoid duplicates) and a straightforward DELETE for removal. On success, returns JSON `{"success": True}` (HTTP 200). If the join table doesn’t exist or another database error occurs, it returns an error message JSON with status 500. If required fields are missing or an invalid action is given, it returns a 400 error. *(Note: This function uses a direct sqlite3 connection separate from `get_connection()` for convenience and does not explicitly reuse the app’s global connection helper.)* |
-| `dashboard()` | **Route:** GET `/dashboard` – Displays the dashboard page (work in progress). |
+| `dashboard()` | **Route:** GET `/dashboard` – Displays the dashboard page with draggable widgets.
+| `api_list(table)` | **Route:** GET `/api/<table>/list` – Returns JSON with `id` and `label` values for dropdowns. |
 
 | `add_field_route(table, record_id)` | **Route:** POST `/<table>/<int:record_id>/add-field` – Adds a new column to the table and updates the field schema. |
 | `remove_field_route(table, record_id)` | **Route:** POST `/<table>/<int:record_id>/remove-field` – Removes a column from the table and refreshes the schema. |
 | `count_nonnull(table)` | **Route:** GET `/<table>/count-nonnull?field=<name>` – Returns a JSON count of non-null values for the specified field. |
 | `field_distribution(table)` | **Route:** GET `/<table>/field-distribution?field=<name>` – Returns JSON counts of each value for the given field. |
 
+| `sum_field(table)` | **Route:** GET `/<table>/sum-field?field=<name>` – Returns the sum of a numeric field. |
 
+| `update_layout(table)` | **Route:** POST `/<table>/layout` – Saves grid coordinates for fields on the detail page. |
+| `dashboard_create_widget()` | **Route:** POST `/dashboard/widget` – Creates a new dashboard widget. |
+| `dashboard_update_layout()` | **Route:** POST `/dashboard/layout` – Saves the positions of dashboard widgets. |
+| `add_table()` | **Route:** POST `/add-table` – Adds a new base table and join tables. |
 All routes and functions above are actively used by the application (there is no dead code in `main.py`). When run directly, the app simply calls `update_foreign_field_options()` and then starts with `app.run(debug=True)`.
 
 ### **Front-End Scripts – `static/js/`
