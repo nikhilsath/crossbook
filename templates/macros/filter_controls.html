@@ -11,6 +11,8 @@
       <option value="equals"      {% if operator=='equals'      %}selected{% endif %}>=</option>
       <option value="starts_with" {% if operator=='starts_with' %}selected{% endif %}>__*</option>
       <option value="ends_with"   {% if operator=='ends_with'   %}selected{% endif %}>*__</option>
+      <option value="not_contains" {% if operator=='not_contains' %}selected{% endif %}>!*</option>
+      <option value="regex"       {% if operator=='regex'       %}selected{% endif %}>/~</option>
     </select>
     <input
       type="text"

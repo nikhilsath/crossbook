@@ -2,7 +2,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 import datetime
-from db.database import get_connection
+from db.database import get_connection, SUPPORTS_REGEX
 from db.schema import get_field_schema
 from db.validation import validate_table, validate_fields, validate_field
 
@@ -60,6 +60,16 @@ def _build_filters(table, search=None, filters=None, ops=None, modes=None):
                     elif op == "ends_with":
                         field_clauses.append(f"{fld} LIKE ?")
                         params.append(f"%{v}")
+                    elif op == "not_contains":
+                        field_clauses.append(f"{fld} NOT LIKE ?")
+                        params.append(f"%{v}%")
+                    elif op == "regex":
+                        if SUPPORTS_REGEX:
+                            field_clauses.append(f"{fld} REGEXP ?")
+                            params.append(v)
+                        else:
+                            field_clauses.append(f"{fld} LIKE ?")
+                            params.append(f"%{v}%")
                     else:  # contains
                         field_clauses.append(f"{fld} LIKE ?")
                         params.append(f"%{v}%")
