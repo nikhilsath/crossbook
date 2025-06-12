@@ -42,6 +42,18 @@
       {% elif widget.widget_type == 'chart' %}
         <div class="font-semibold mb-2">{{ widget.title }}</div>
         <canvas></canvas>
+      {% elif widget.widget_type == 'table' %}
+        <div class="font-semibold mb-2">{{ widget.title }}</div>
+        <table class="min-w-full text-sm">
+          <thead>
+            <tr><th class="px-2 py-1 text-left">Table</th><th class="px-2 py-1 text-left">Count</th></tr>
+          </thead>
+          <tbody>
+          {% for row in widget.parsed.data if widget.parsed %}
+            <tr><td class="px-2 py-1">{{ row.table }}</td><td class="px-2 py-1">{{ row.count }}</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
       {% else %}
         <div class="text-gray-500">{{ widget.widget_type }} widget</div>
       {% endif %}
