@@ -207,6 +207,50 @@ def update_layout(table: str, layout_items: list[dict]) -> int:
     return updated
 
 
+def update_field_styling(table: str, field: str, styling_dict: dict) -> bool:
+    """Update the styling JSON for a particular field.
+
+    Args:
+        table: Name of the table containing the field.
+        field: The field whose styling should be updated.
+        styling_dict: Dictionary of styling properties.
+
+    Returns:
+        ``True`` if the row was updated, ``False`` otherwise.
+
+    Raises:
+        ValueError: If ``table`` or ``field`` is unknown or the styling data
+            cannot be serialized to JSON.
+    """
+
+    current_schema = load_field_schema()
+    if table not in current_schema or field not in current_schema[table]:
+        raise ValueError(f"Unknown table/field: {table}.{field}")
+
+    try:
+        styling_json = json.dumps(styling_dict or {})
+    except (TypeError, ValueError) as exc:
+        raise ValueError("Invalid styling data") from exc
+
+    with get_connection() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+        UPDATE field_schema
+           SET styling = ?
+         WHERE table_name = ? AND field_name = ?
+            """,
+            (styling_json, table, field),
+        )
+        conn.commit()
+
+    updated = cur.rowcount > 0
+    if updated:
+        current_schema[table][field]["styling"] = styling_dict or {}
+
+    return updated
+
+
 def create_base_table(table_name: str, description: str) -> bool:
     """Create a new base table and associated metadata."""
     if not table_name.isidentifier():

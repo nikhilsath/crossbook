@@ -17,7 +17,11 @@ from db.records import (
 )
 from db.relationships import get_related_records, add_relationship, remove_relationship
 from db.edit_fields import add_column_to_table, add_field_to_schema, drop_column_from_table, remove_field_from_schema
-from db.schema import get_field_schema, update_layout as db_update_layout
+from db.schema import (
+    get_field_schema,
+    update_layout as db_update_layout,
+    update_field_styling as db_update_field_styling,
+)
 from db.dashboard import sum_field as db_sum_field
 
 records_bp = Blueprint('records', __name__)
@@ -327,3 +331,22 @@ def update_layout(table):
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
     return jsonify({'success': True, 'updated': updated})
+
+
+@records_bp.route('/<table>/style', methods=['POST'])
+def update_style(table):
+    """Update styling information for a single field."""
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({'error': 'Invalid JSON'}), 400
+    field = data.get('field')
+    styling = data.get('styling')
+    if not field or styling is None:
+        return jsonify({'error': 'Missing `field` or `styling`'}), 400
+    if not isinstance(styling, dict):
+        return jsonify({'error': '`styling` must be an object'}), 400
+    try:
+        success = db_update_field_styling(table, field, styling)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    return jsonify({'success': bool(success)})
