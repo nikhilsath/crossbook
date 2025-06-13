@@ -9,6 +9,7 @@ from flask import (
 )
 from werkzeug.utils import secure_filename
 import os
+import json
 from db.database import DB_PATH, check_db_status
 from db.config import update_config, get_all_config
 from db.schema import create_base_table, refresh_card_cache
@@ -94,18 +95,39 @@ def table_step():
     if request.method == 'POST':
         table_name = (request.form.get('table_name') or '').strip()
         description = (request.form.get('description') or '').strip()
+        fields_json = request.form.get('fields_json', '')
         fields_text = request.form.get('fields', '')
         if table_name:
             if create_base_table(table_name, description):
-                for line in fields_text.splitlines():
-                    if ':' in line:
-                        name, ftype = [p.strip() for p in line.split(':', 1)]
-                        if name:
-                            try:
-                                add_column_to_table(table_name, name, ftype)
-                                add_field_to_schema(table_name, name, ftype)
-                            except Exception:
-                                current_app.logger.exception('Failed to add field %s', name)
+                field_defs = []
+                if fields_json:
+                    try:
+                        field_defs = json.loads(fields_json)
+                    except Exception:
+                        current_app.logger.exception('Failed to parse fields_json')
+                else:
+                    for line in fields_text.splitlines():
+                        if ':' in line:
+                            name, ftype = [p.strip() for p in line.split(':', 1)]
+                            if name:
+                                field_defs.append({'name': name, 'type': ftype})
+
+                for f in field_defs:
+                    name = f.get('name')
+                    ftype = f.get('type')
+                    if not name or not ftype:
+                        continue
+                    try:
+                        add_column_to_table(table_name, name, ftype)
+                        add_field_to_schema(
+                            table_name,
+                            name,
+                            ftype,
+                            f.get('options'),
+                            f.get('foreign_key'),
+                        )
+                    except Exception:
+                        current_app.logger.exception('Failed to add field %s', name)
                 card_info, base_tables = refresh_card_cache()
                 current_app.config['CARD_INFO'] = card_info
                 current_app.config['BASE_TABLES'] = base_tables
