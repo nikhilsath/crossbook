@@ -11,6 +11,24 @@ BASE_TABLES = [
     "topic",
 ]
 
+# Default configuration settings used by the setup wizard
+DEFAULT_CONFIGS = [
+    ("log_level", "INFO", "general", "string"),
+    ("handler_type", "rotating", "general", "string"),
+    ("max_file_size", 5242880, "general", "integer"),
+    ("backup_count", 3, "general", "integer"),
+    ("when_interval", "midnight", "general", "string"),
+    ("interval_count", 1, "general", "integer"),
+    (
+        "log_format",
+        "[%(asctime)s] %(levelname)s in %(module)s: %(message)s",
+        "general",
+        "string",
+    ),
+    ("filename", "logs/crossbook.log", "general", "string"),
+    ("heading", "", "home", "string"),
+]
+
 LAYOUT_DEFAULTS = {
     "width": {
         "textarea": 12,
