@@ -19,7 +19,9 @@ function updateBulkButtonState() {
 
 function buildInput() {
   const sel = document.getElementById('bulk-field');
-  const type = sel.selectedOptions[0].dataset.type;
+  const optEl = sel.selectedOptions[0];
+  const type = optEl.dataset.type;
+  const options = optEl.dataset.options ? JSON.parse(optEl.dataset.options) : [];
   const container = document.getElementById('bulk-input-container');
   let html = '';
   if (type === 'textarea') {
@@ -28,6 +30,14 @@ function buildInput() {
     html = '<input id="bulk-value" type="number" class="w-full border px-2 py-1 rounded">';
   } else if (type === 'boolean') {
     html = '<select id="bulk-value" class="w-full border px-2 py-1 rounded"><option value="1">True</option><option value="0">False</option></select>';
+  } else if (type === 'select') {
+    html = '<select id="bulk-value" class="w-full border px-2 py-1 rounded">' +
+      options.map(o => `<option value="${o}">${o}</option>`).join('') +
+      '</select>';
+  } else if (type === 'multi_select' || type === 'foreign_key') {
+    html = '<div class="max-h-48 overflow-y-auto border p-2 space-y-1">' +
+      options.map(o => `<label class="flex items-center space-x-2"><input type="checkbox" value="${o}" class="bulk-multi-option"><span class="text-sm">${o}</span></label>`).join('') +
+      '</div>';
   } else {
     html = '<input id="bulk-value" type="text" class="w-full border px-2 py-1 rounded">';
   }
@@ -58,8 +68,15 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('bulk-edit-form').addEventListener('submit', e => {
     e.preventDefault();
     const ids = Array.from(document.querySelectorAll('.row-select:checked')).map(cb => cb.value);
-    const field = document.getElementById('bulk-field').value;
-    const value = document.getElementById('bulk-value').value;
+    const fieldSel = document.getElementById('bulk-field');
+    const field = fieldSel.value;
+    const type = fieldSel.selectedOptions[0].dataset.type;
+    let value;
+    if (type === 'multi_select' || type === 'foreign_key') {
+      value = Array.from(document.querySelectorAll('.bulk-multi-option:checked')).map(cb => cb.value);
+    } else {
+      value = document.getElementById('bulk-value').value;
+    }
     fetch(`/${tableName}/bulk-update`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },

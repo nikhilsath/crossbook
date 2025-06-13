@@ -381,6 +381,11 @@ def bulk_update(table):
             value = int(value)
         except (TypeError, ValueError):
             value = 0
+    elif ftype in ('multi_select', 'foreign_key'):
+        if isinstance(value, list):
+            value = ', '.join([str(v) for v in value])
+        elif value is None:
+            value = ''
     elif ftype == 'textarea':
         from utils.html_sanitizer import sanitize_html
         value = sanitize_html(value or '')
