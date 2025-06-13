@@ -90,3 +90,39 @@ def test_bulk_update_multiselect():
             conn.execute('UPDATE content SET tags = ? WHERE id = ?', (val, i))
         conn.commit()
 
+
+def test_url_field_add_update_and_bulk():
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.execute('SELECT id FROM character LIMIT 2')
+        rows = cur.fetchall()
+        record_ids = [r[0] for r in rows]
+    record_id = record_ids[0]
+
+    resp = client.post(f'/character/{record_id}/add-field', data={'field_name': 'website', 'field_type': 'url'})
+    assert resp.status_code in (302, 200)
+
+    with sqlite3.connect(DB_PATH) as conn:
+        cols = [r[1] for r in conn.execute('PRAGMA table_info(character)').fetchall()]
+        assert 'website' in cols
+
+    resp = client.post(f'/character/{record_id}/update', data={'field': 'website', 'new_value': 'https://example.com'})
+    assert resp.status_code in (302, 200)
+
+    resp = client.get('/api/character/records', query_string={'website': 'https://example.com', 'website_op': 'equals', 'id': record_id, 'id_op': 'equals'})
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert any(r['id'] == record_id and r.get('website') == 'https://example.com' for r in data['records'])
+
+    resp = client.post('/character/bulk-update', json={'ids': record_ids, 'field': 'website', 'value': 'https://bulk.com'})
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data['success'] and data['updated'] == len(record_ids)
+
+    with sqlite3.connect(DB_PATH) as conn:
+        vals = [r[0] for r in conn.execute('SELECT website FROM character WHERE id IN (?, ?)', record_ids).fetchall()]
+    assert set(vals) == {'https://bulk.com'}
+
+    from db.edit_fields import drop_column_from_table, remove_field_from_schema
+    drop_column_from_table('character', 'website')
+    remove_field_from_schema('character', 'website')
+

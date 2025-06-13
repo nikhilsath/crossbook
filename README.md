@@ -56,7 +56,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Edit History:** Tracks each record’s modifications in an `edit_log`, viewable via an expandable history section. Individual entries now include an **Undo** link to revert that change.
 * **Navigation Bar:** A consistent top navigation (`base.html`) links to Home and all base table sections.
 * **Bulk Edit Modal:** Select rows in a list view and update a single field across all of them at once.
-* **Supported Field Types:** text, number, date, select, multi-select, foreign-key, boolean, and textarea, each rendered with the appropriate input control.
+* **Supported Field Types:** text, number, date, select, multi-select, foreign-key, boolean, textarea, and url, each rendered with the appropriate input control.
 * **Filter Macros:** Reusable Jinja macros for boolean, select, text, and multi-select filters (`templates/macros/filter_controls.html`).
 * **Text Filter Operators:** `contains`, `equals`, `starts_with`, `ends_with`, `not_contains`, and `regex` operators are available when filtering text fields. Regex matching requires database support and falls back to a normal `LIKE` search if unavailable.
 * **Field Schema Editing:** New endpoints allow adding or removing columns at runtime (`/<table>/<id>/add-field`, `/<table>/<id>/remove-field`) and counting non-null values (`/<table>/count-nonnull`).

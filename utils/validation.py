@@ -14,6 +14,7 @@ VALIDATION_DISPATCH = {
         "FK Validation Triggered",
         lambda table, field, values: validate_select_column(values, SCHEMA[table][field]["options"]),
     ),
+    "url": ("URL Validation Triggered", lambda table, field, values: validate_text_column(values)),
     "multi_select": (
         "Multi Validation Triggered",
         lambda table, field, values: validate_multi_select_column(values, SCHEMA[table][field]["options"]),

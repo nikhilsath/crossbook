@@ -8,7 +8,8 @@ const defaultFieldWidth = {
   foreign_key: 5,
   boolean: 3,
   number: 4,
-  multi_select: 6
+  multi_select: 6,
+  url: 12
 };
 const defaultFieldHeight = {
   textarea:  18,
@@ -17,7 +18,8 @@ const defaultFieldHeight = {
   foreign_key: 10,
   boolean: 7,
   number: 3,
-  multi_select: 8
+  multi_select: 8,
+  url: 4
 };
 
 function initLayout() {
