@@ -47,23 +47,12 @@ with get_connection() as conn:
     app.config['CARD_INFO'] = load_card_info(conn)
     app.config['BASE_TABLES'] = load_base_tables(conn)
 
-config_values = get_all_config()
-wizard_required = needs_init or not config_values.get('heading')
-app.config['WIZARD_REQUIRED'] = wizard_required
-
 configure_logging(app)
 
 werk_logger = logging.getLogger("werkzeug")
 werk_logger.disabled = True
 
 app.before_request(start_timer)
-
-
-@app.before_request
-def enforce_wizard():
-    if current_app.config.get('WIZARD_REQUIRED') and not session.get('wizard_complete'):
-        if request.blueprint != 'wizard' and not request.path.startswith('/static'):
-            return redirect(url_for('wizard.wizard_start'))
 
 app.after_request(log_request)
 app.teardown_request(log_exception)
