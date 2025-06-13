@@ -79,6 +79,11 @@ def update_config(key: str, value: str) -> int:
             "UPDATE config SET value = ?, date_updated = ? WHERE key = ?",
             (value, timestamp, key),
         )
+        if cur.rowcount == 0:
+            cur.execute(
+                "INSERT INTO config (key, value, date_updated) VALUES (?, ?, ?)",
+                (key, value, timestamp),
+            )
         conn.commit()
         affected = cur.rowcount
 

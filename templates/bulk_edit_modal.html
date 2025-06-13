@@ -2,7 +2,8 @@
      onclick="if(event.target.id === 'bulkEditModal') closeBulkEditModal()">
   <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full relative">
     <button type="button" onclick="closeBulkEditModal()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-xl">&times;</button>
-    <h3 class="text-lg font-bold mb-4">Bulk Edit {{ table }}</h3>
+    <h3 class="text-lg font-bold">Bulk Edit {{ table }}</h3>
+    <p id="bulk-edit-count" class="text-sm text-gray-600 mb-4"></p>
     <form id="bulk-edit-form" class="space-y-4">
       <div>
         <label for="bulk-field" class="block text-sm font-medium text-gray-700 mb-1">Field</label>
