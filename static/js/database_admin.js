@@ -38,6 +38,7 @@ function initDatabaseControls() {
               const color = data.status === 'valid' ? 'text-green-600' : 'text-red-600';
               disp.classList.add(color);
             }
+            window.location.reload();
           } else if (data.error) {
             console.error('Failed to change database:', data.error);
           } else {
@@ -72,6 +73,7 @@ function initDatabaseControls() {
               const color = data.status === 'valid' ? 'text-green-600' : 'text-red-600';
               disp.classList.add(color);
             }
+            window.location.reload();
           }
         });
     });
