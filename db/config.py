@@ -81,5 +81,13 @@ def update_config(key: str, value: str) -> int:
         )
         conn.commit()
         affected = cur.rowcount
-        return affected
+
+    if key == "db_path":
+        # Refresh the global database path so subsequent connections
+        # use the newly configured location.
+        from db.database import init_db_path
+
+        init_db_path()
+
+    return affected
 
