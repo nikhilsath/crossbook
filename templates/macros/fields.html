@@ -132,6 +132,14 @@
           </button>
           <span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>
         </form>
+        {% elif field_type == "url" %}
+        {% if request.args.get('edit') %}
+          {{ inline_input(field, update_endpoint, table, record_id,
+          '<input type="url" name="new_value" value="' ~ value ~
+          '" class="border px-1 py-0.5 text-sm rounded" onchange="submitFieldAjax(this.form)">\n<span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>' ) }}
+        {% else %}
+          <a href="{{ value }}" target="_blank" rel="noopener">{{ value }}</a>
+        {% endif %}
         {% elif field_type == "text" %}
         <div class="autosize-text"
              data-field="{{ field }}"

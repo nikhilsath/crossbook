@@ -11,7 +11,8 @@ DEFAULT_FIELD_WIDTH = {
     "foreign_key": 5,
     "boolean":     3,
     "number":      4,
-    "multi_select": 6
+    "multi_select": 6,
+    "url":         12
 }
 
 DEFAULT_FIELD_HEIGHT = {
@@ -21,7 +22,8 @@ DEFAULT_FIELD_HEIGHT = {
     "foreign_key": 10,
     "boolean":      7,
     "number":       3,
-    "multi_select":  8
+    "multi_select":  8,
+    "url":           4
 }
 
 
@@ -97,7 +99,8 @@ def add_column_to_table(table_name, field_name, field_type):
         "textarea": "TEXT",
         "select": "TEXT",
         "multi_select": "TEXT",
-        "foreign_key": "TEXT"
+        "foreign_key": "TEXT",
+        "url": "TEXT"
     }
 
     sql_type = SQL_TYPE_MAP.get(field_type)

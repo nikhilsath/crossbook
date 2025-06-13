@@ -127,7 +127,7 @@ def _build_filters(table, search=None, filters=None, ops=None, modes=None):
         search_fields = [
             field
             for field, meta in all_fields.items()
-            if meta["type"] in ("text", "textarea", "select", "multi_select")
+            if meta["type"] in ("text", "textarea", "select", "multi_select", "url")
         ]
         if search_fields:
             validate_fields(table, search_fields)

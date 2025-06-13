@@ -61,7 +61,7 @@ function getNonTextTypes() {
   Object.values(FIELD_SCHEMA).forEach(tbl => {
     Object.values(tbl).forEach(meta => types.add(meta.type));
   });
-  return Array.from(types).filter(t => t !== 'text' && t !== 'textarea');
+  return Array.from(types).filter(t => t !== 'text' && t !== 'textarea' && t !== 'url');
 }
 
 function getLabelField(table) {

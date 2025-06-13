@@ -38,6 +38,8 @@ function buildInput() {
     html = '<div class="max-h-48 overflow-y-auto border p-2 space-y-1">' +
       options.map(o => `<label class="flex items-center space-x-2"><input type="checkbox" value="${o}" class="bulk-multi-option"><span class="text-sm">${o}</span></label>`).join('') +
       '</div>';
+  } else if (type === 'url') {
+    html = '<input id="bulk-value" type="url" class="w-full border px-2 py-1 rounded">';
   } else {
     html = '<input id="bulk-value" type="text" class="w-full border px-2 py-1 rounded">';
   }
