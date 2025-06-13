@@ -21,7 +21,11 @@ from db.dashboard import (
     get_top_numeric_values,
     get_filtered_records,
 )
-from db.schema import create_base_table, refresh_card_cache
+from db.schema import (
+    create_base_table,
+    refresh_card_cache,
+    update_foreign_field_options,
+)
 from imports.import_csv import parse_csv
 from utils.validation import validation_sorter
 from db.schema import get_field_schema
@@ -40,6 +44,15 @@ def write_local_settings(db_path: str, filename: str = 'local_settings.py') -> N
             fh.write(f"CROSSBOOK_DB_PATH = '{db_path}'\n")
     except Exception as exc:
         current_app.logger.exception('Failed to write %s: %s', filename, exc)
+
+
+def reload_app_state() -> None:
+    """Refresh cached navigation and schema data after a DB change."""
+    card_info, base_tables = refresh_card_cache()
+    current_app.config['CARD_INFO'] = card_info
+    current_app.config['BASE_TABLES'] = base_tables
+    update_foreign_field_options()
+    current_app.jinja_env.cache.clear()
 
 @admin_bp.route('/dashboard')
 def dashboard():
@@ -101,6 +114,7 @@ def update_config_route(key):
     update_config(key, value)
     if key == 'db_path':
         write_local_settings(value)
+        reload_app_state()
     if key in get_logging_config():
         configure_logging(current_app)
     return redirect(url_for('admin.config_page'))
@@ -121,9 +135,7 @@ def update_database_file():
         init_db_path(save_path)
         update_config('db_path', save_path)
         write_local_settings(save_path)
-        card_info, base_tables = refresh_card_cache()
-        current_app.config['CARD_INFO'] = card_info
-        current_app.config['BASE_TABLES'] = base_tables
+        reload_app_state()
         if wants_json:
             return jsonify({'db_path': save_path, 'status': check_db_status(save_path)})
         return redirect(url_for('admin.database_page'))
@@ -139,9 +151,7 @@ def update_database_file():
         init_db_path(save_path)
         update_config('db_path', save_path)
         write_local_settings(save_path)
-        card_info, base_tables = refresh_card_cache()
-        current_app.config['CARD_INFO'] = card_info
-        current_app.config['BASE_TABLES'] = base_tables
+        reload_app_state()
         session['wizard_progress'] = {'database': True, 'skip_import': True}
         session.pop('wizard_complete', None)
         if wants_json:
@@ -293,9 +303,7 @@ def add_table():
     if not success:
         return jsonify({'error': 'Failed to create table'}), 400
 
-    card_info, base_tables = refresh_card_cache()
-    current_app.config['CARD_INFO'] = card_info
-    current_app.config['BASE_TABLES'] = base_tables
+    reload_app_state()
 
     return jsonify({'success': True})
 
