@@ -21,5 +21,34 @@ function initLayoutDefaultsForms() {
   });
 }
 
-document.addEventListener('DOMContentLoaded', initLayoutDefaultsForms);
+function initDatabaseControls() {
+  const uploadForm = document.getElementById('db-upload-form');
+  if (uploadForm) {
+    uploadForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const fd = new FormData(uploadForm);
+      fetch('/admin/config/db', {
+        method: 'POST',
+        body: fd
+      }).then(() => window.location.reload());
+    });
+  }
+
+  const createBtn = document.getElementById('create-db-btn');
+  if (createBtn) {
+    createBtn.addEventListener('click', () => {
+      const name = prompt('Filename for new database (.db):');
+      if (!name) return;
+      const fd = new FormData();
+      fd.append('create_name', name);
+      fetch('/admin/config/db', { method: 'POST', body: fd })
+        .then(() => window.location.reload());
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initLayoutDefaultsForms();
+  initDatabaseControls();
+});
 

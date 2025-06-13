@@ -1,6 +1,11 @@
 import sqlite3
 import re
 import os
+
+try:
+    from local_settings import CROSSBOOK_DB_PATH as LOCAL_DB_PATH
+except Exception:
+    LOCAL_DB_PATH = None
 from contextlib import contextmanager
 
 try:
@@ -12,13 +17,14 @@ try:
 except Exception:
     SUPPORTS_REGEX = False
 
-DB_PATH = os.environ.get("CROSSBOOK_DB_PATH", "data/crossbook.db")
+DB_PATH = os.environ.get("CROSSBOOK_DB_PATH", LOCAL_DB_PATH or "data/crossbook.db")
 
 
 def init_db_path() -> None:
     """Override DB_PATH using database config if available."""
     global DB_PATH
     env_path = os.environ.get("CROSSBOOK_DB_PATH")
+    local_path = LOCAL_DB_PATH
     cfg_path = None
     try:
         from db.config import get_database_config
@@ -38,6 +44,8 @@ def init_db_path() -> None:
 
     if env_path:
         DB_PATH = env_path
+    elif local_path:
+        DB_PATH = local_path
     elif cfg_path:
         DB_PATH = cfg_path
 
