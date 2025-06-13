@@ -1,5 +1,6 @@
 from datetime import datetime
 from db.database import get_connection
+from db.bootstrap import DEFAULT_CONFIGS
 import json
 
 
@@ -79,6 +80,14 @@ def update_config(key: str, value: str) -> int:
             "UPDATE config SET value = ?, date_updated = ? WHERE key = ?",
             (value, timestamp, key),
         )
+        if cur.rowcount == 0:
+            meta = next((c for c in DEFAULT_CONFIGS if c[0] == key), None)
+            section = meta[2] if meta else "general"
+            ctype = meta[3] if meta else "string"
+            cur.execute(
+                "INSERT INTO config (key, value, section, type, date_updated) VALUES (?, ?, ?, ?, ?)",
+                (key, value, section, ctype, timestamp),
+            )
         conn.commit()
         affected = cur.rowcount
 

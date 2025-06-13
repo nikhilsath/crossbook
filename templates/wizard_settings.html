@@ -15,6 +15,38 @@
       {% endfor %}
     </select>
   </div>
+  <div>
+    <label class="block mb-1">Handler Type</label>
+    <select name="handler_type" class="border rounded px-2 py-1">
+      {% for opt in ['rotating', 'timed', 'stream'] %}
+      <option value="{{ opt }}" {% if config.get('handler_type') == opt %}selected{% endif %}>{{ opt }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label class="block mb-1">Max File Size</label>
+    <input type="number" name="max_file_size" value="{{ config.get('max_file_size','') }}" class="border rounded px-2 py-1">
+  </div>
+  <div>
+    <label class="block mb-1">Backup Count</label>
+    <input type="number" name="backup_count" value="{{ config.get('backup_count','') }}" class="border rounded px-2 py-1">
+  </div>
+  <div>
+    <label class="block mb-1">When Interval</label>
+    <input type="text" name="when_interval" value="{{ config.get('when_interval','') }}" class="border rounded px-2 py-1">
+  </div>
+  <div>
+    <label class="block mb-1">Interval Count</label>
+    <input type="number" name="interval_count" value="{{ config.get('interval_count','') }}" class="border rounded px-2 py-1">
+  </div>
+  <div>
+    <label class="block mb-1">Log Format</label>
+    <input type="text" name="log_format" value="{{ config.get('log_format','') }}" class="border rounded px-2 py-1 w-full">
+  </div>
+  <div>
+    <label class="block mb-1">Log Filename</label>
+    <input type="text" name="filename" value="{{ config.get('filename','') }}" class="border rounded px-2 py-1 w-full">
+  </div>
   <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Continue</button>
 </form>
 {% endblock %}

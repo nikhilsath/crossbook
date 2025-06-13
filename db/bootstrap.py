@@ -181,6 +181,16 @@ def _insert_defaults(cur: sqlite3.Cursor, path: str, include_base_tables: bool =
     return
 
 
+def _insert_default_configs(cur: sqlite3.Cursor) -> None:
+    from datetime import datetime
+
+    ts = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    cur.executemany(
+        "INSERT INTO config (key, value, section, type, date_updated) VALUES (?, ?, ?, ?, ?)",
+        [(k, v, s, t, ts) for k, v, s, t in DEFAULT_CONFIGS],
+    )
+
+
 def initialize_database(path: str, include_base_tables: bool = False) -> None:
     """Create a new database with core tables."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -189,6 +199,6 @@ def initialize_database(path: str, include_base_tables: bool = False) -> None:
         _create_core_tables(cur)
         if include_base_tables:
             _create_base_tables(cur)
-        # Default records are no longer inserted
+        _insert_default_configs(cur)
         conn.commit()
 
