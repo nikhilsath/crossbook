@@ -21,7 +21,7 @@ from db.dashboard import (
     get_top_numeric_values,
     get_filtered_records,
 )
-from db.schema import create_base_table, refresh_card_cache
+from db.schema import create_base_table, refresh_card_cache, update_foreign_field_options
 from imports.import_csv import parse_csv
 from utils.validation import validation_sorter
 from db.schema import get_field_schema
@@ -120,6 +120,12 @@ def update_database_file():
         init_db_path(save_path)
         update_config('db_path', save_path)
         write_local_settings(save_path)
+        card_info, base_tables = refresh_card_cache()
+        current_app.config['CARD_INFO'] = card_info
+        current_app.config['BASE_TABLES'] = base_tables
+        update_foreign_field_options()
+        from utils import validation
+        validation.reload_schema()
         if wants_json:
             return jsonify({'db_path': save_path, 'status': check_db_status(save_path)})
         return redirect(url_for('admin.database_page'))
@@ -135,6 +141,12 @@ def update_database_file():
         init_db_path(save_path)
         update_config('db_path', save_path)
         write_local_settings(save_path)
+        card_info, base_tables = refresh_card_cache()
+        current_app.config['CARD_INFO'] = card_info
+        current_app.config['BASE_TABLES'] = base_tables
+        update_foreign_field_options()
+        from utils import validation
+        validation.reload_schema()
         session['wizard_progress'] = {'database': True, 'skip_import': True}
         session.pop('wizard_complete', None)
         if wants_json:

@@ -7,6 +7,12 @@ from utils.field_registry import register_type, get_field_type
 logger = logging.getLogger(__name__)
 SCHEMA = get_field_schema()
 
+
+def reload_schema() -> None:
+    """Reload validation schema from the active database."""
+    global SCHEMA
+    SCHEMA = get_field_schema()
+
 def validation_sorter(table, field, header, fieldType, values):
     logger.debug("✅ Validation function was triggered.")
 
