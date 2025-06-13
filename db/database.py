@@ -20,21 +20,15 @@ try:
 except Exception:
     SUPPORTS_REGEX = False
 
-DB_PATH = os.path.abspath(
-    os.environ.get("CROSSBOOK_DB_PATH", LOCAL_DB_PATH or DEFAULT_DB_PATH)
-)
+DB_PATH = os.path.abspath(LOCAL_DB_PATH or DEFAULT_DB_PATH)
 
 
 def init_db_path(path: str | None = None) -> None:
-    """Set DB_PATH from arguments, environment, local settings or database config."""
+    """Set DB_PATH from arguments, local settings or database config."""
     global DB_PATH, LOCAL_DB_PATH
     if path:
         DB_PATH = os.path.abspath(path)
         return
-
-    env_path = os.environ.get("CROSSBOOK_DB_PATH")
-    if env_path:
-        env_path = os.path.abspath(env_path)
 
     try:
         import importlib
@@ -66,9 +60,7 @@ def init_db_path(path: str | None = None) -> None:
     except Exception:
         cfg_path = None
 
-    if env_path:
-        DB_PATH = env_path
-    elif local_path:
+    if local_path:
         DB_PATH = local_path
     elif cfg_path:
         DB_PATH = cfg_path
