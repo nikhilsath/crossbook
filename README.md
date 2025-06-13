@@ -45,6 +45,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 ## Current Status
 
 * **Detail View Layout Editor:** drag-and-drop and resizing are fully functional and layouts save via the `/<table>/layout` endpoint.
+* **Setup Wizard:** `/wizard/` walks through choosing or creating a database, adjusting settings, adding an initial table, and optionally importing a CSV.
 
 ## Implemented Features
 
@@ -66,7 +67,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Layout Editor Persistence:** detail page layouts save to the database via the `/<table>/layout` endpoint.
 * **Automatic Dashboard Widget Placement:** New widgets are inserted at the next
   available row in the grid without specifying `row_start`.
-* **Dashboard Charts:** Pie, bar and line chart widgets leverage Flowbite Charts and auto-generate counts from a single field.
+* **Dashboard Charts:** Pie, bar and line chart widgets rely on Flowbite Charts. The repo ships a placeholder `flowbite-charts.min.js`; download the real library for production use.
 * **Table Widget:** Displays simple tabular data such as base table record counts.
 * **Select Value Counts:** Table widget option that shows counts of each choice for a select or multi-select field.
 * **Top/Bottom Numeric:** Table widget listing records with the highest or lowest values for a numeric field.
@@ -139,8 +140,20 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 │   └── macros/
 │       ├── fields.html              # Field rendering macros
 │       └── filter_controls.html     # Filter UI macros
+├── views/                           # Flask blueprints
+│   ├── admin.py                     # Admin and dashboard routes
+│   ├── records.py                   # CRUD and list/detail endpoints
+│   └── wizard.py                    # Setup wizard workflow
 ├── utils/                           # Shared helper modules
+│   ├── field_registry.py            # Field type registry and defaults
+│   ├── flask_helpers.py             # Flask utilities
+│   ├── html_sanitizer.py            # Sanitize editor HTML
 │   └── validation.py                # CSV import validation functions
+├── tests/                           # Automated tests
+│   ├── test_api_records.py
+│   ├── test_import_jobs.py
+│   ├── test_wizard_database.py
+│   └── test_wizard_skip.py
 └── data/                            # Runtime data directory
     ├── crossbook.db                # Main application SQLite database
     └── huey.db                     # Task queue persistence database
@@ -206,7 +219,7 @@ Large files are not streamed—they are fully loaded into memory during parsing,
 * **Templating & Macros:** Jinja2 templates in `templates/` include the core pages (`base.html`, `index.html`, `list_view.html`, `detail_view.html`, `new_record.html`, `dashboard.html`) plus admin and import views. Partial templates like `edit_fields_modal.html` and `bulk_edit_modal.html` are used for modals. Reusable macros live in `templates/macros/fields.html` and `filter_controls.html`.
 
 * **Logging & Monitoring:** Logging is configured via `logging_setup.py` and values stored in the database. Both Flask and root handlers are cleared, then a rotating or timed file handler is attached. Only error-level messages appear in the console. Werkzeug request logs are disabled. Logs capture errors and user actions.
-* **Utility Helpers:** Generic helper code lives in `utils/`. The `validation.py` module powers CSV import validation and can be reused across routes.
+* **Utility Helpers:** Helper modules in `utils/` include field type registration, Flask helpers, HTML sanitization and the CSV import validator.
 
 * **Data Directory:** Runtime files under `data/`: `crossbook.db` (primary database) and `huey.db` (task queue store). The `db_path` entry in the `config` table can point the application at a different database file.
 
