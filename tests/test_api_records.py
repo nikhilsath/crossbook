@@ -65,3 +65,28 @@ def test_bulk_update_route():
             conn.execute('UPDATE character SET character = ? WHERE id = ?', (val, i))
         conn.commit()
 
+
+def test_bulk_update_multiselect():
+    ids = []
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.execute('SELECT id, tags FROM content LIMIT 2')
+        rows = cur.fetchall()
+        ids = [r[0] for r in rows]
+        originals = [r[1] for r in rows]
+
+    new_tags = ['magic', 'quest']
+    resp = client.post('/content/bulk-update', json={'ids': ids, 'field': 'tags', 'value': new_tags})
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data['success'] and data['updated'] == len(ids)
+
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.execute('SELECT tags FROM content WHERE id IN (?, ?)', ids)
+        values = [r[0] for r in cur.fetchall()]
+    assert set(values) == {', '.join(new_tags)}
+
+    with sqlite3.connect(DB_PATH) as conn:
+        for i, val in zip(ids, originals):
+            conn.execute('UPDATE content SET tags = ? WHERE id = ?', (val, i))
+        conn.commit()
+

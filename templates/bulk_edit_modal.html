@@ -8,7 +8,7 @@
         <label for="bulk-field" class="block text-sm font-medium text-gray-700 mb-1">Field</label>
         <select id="bulk-field" class="w-full border px-2 py-1 rounded">
           {% for field, meta in field_schema[table].items() if not field.startswith('_') %}
-            <option value="{{ field }}" data-type="{{ meta.type }}">{{ field }}</option>
+            <option value="{{ field }}" data-type="{{ meta.type }}" data-options='{{ meta.options | tojson | e }}'>{{ field }}</option>
           {% endfor %}
         </select>
       </div>
