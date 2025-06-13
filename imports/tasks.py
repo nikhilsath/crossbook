@@ -6,11 +6,9 @@ from db.records import create_record
 
 # Huey queue for background imports
 huey = SqliteHuey(
-    'crossbook-tasks',                         # queue name
-    filename=os.path.join(os.getcwd(),         # ensure this points to your data/ folder
-                          'data',
-                          'huey.db'),
-    store_none=False                            # don’t clutter the DB with None results
+    'crossbook-tasks',  # queue name
+    filename=os.path.join(os.getcwd(), 'data', 'huey.db'),
+    store_none=False,  # don't clutter the DB with None results
 )
 
 
@@ -40,15 +38,39 @@ def _update_import_status(job_id, **kwargs):
         conn.commit()
 
 
+def _run_import(job_id, table, rows):
+    """Helper to perform the actual row import."""
+    _update_import_status(job_id, status="in_progress", total_rows=len(rows))
+    errors: list[dict] = []
+    for idx, row in enumerate(rows, start=1):
+        try:
+            if create_record(table, row) is None:
+                raise Exception("Failed to create")
+        except Exception as exc:  # noqa: BLE001
+            errors.append({"row": idx, "message": str(exc)})
+        if idx % 10 == 0 or idx == len(rows):
+            _update_import_status(job_id, imported_rows=idx, errors=json.dumps(errors))
+    _update_import_status(job_id, status="complete")
+    return {"job_id": job_id, "imported": len(rows) - len(errors), "errors": errors}
+
+
 @huey.task()
 def process_import(job_id, table, rows):
     """Background task to create records from parsed CSV rows."""
-    _update_import_status(job_id, status="in_progress", total_rows=len(rows))
-    errors = []
-    for idx, row in enumerate(rows, start=1):
-        if create_record(table, row) is None:
-            errors.append({"row": idx, "message": "Failed to create"})
-        _update_import_status(job_id, imported_rows=idx, errors=json.dumps(errors))
-    _update_import_status(job_id, status="complete")
-    return {"imported": len(rows) - len(errors), "errors": errors}
+    return _run_import(job_id, table, rows)
+
+
+@huey.task()
+def import_rows(table, rows):
+    """Create a new import job and process the provided rows."""
+    init_import_table()
+    with get_connection() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO import_status (status, total_rows, imported_rows, errors) VALUES (?, ?, ?, ?)",
+            ("queued", len(rows), 0, "[]"),
+        )
+        job_id = cur.lastrowid
+        conn.commit()
+    return _run_import(job_id, table, rows)
 
