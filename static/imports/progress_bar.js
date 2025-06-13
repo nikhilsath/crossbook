@@ -13,17 +13,35 @@ document.addEventListener('DOMContentLoaded', () => {
     importBtn.disabled = true;
     statusContainer.classList.remove('hidden');
 
-    const formData = new FormData();
     const fileInput = document.querySelector('input[type="file"]');
-    formData.append('file', fileInput.files[0]);
-    formData.append('table', importBtn.dataset.table);
+    const payload = {
+      table: importBtn.dataset.table,
+      rows: window.importedRows || []
+    };
+
+    if (fileInput && fileInput.files.length > 0) {
+      // Fallback for old workflow using uploaded CSVs
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+      formData.append('table', payload.table);
+      fetch('/import-start', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(handleResponse);
+      return;
+    }
 
     fetch('/import-start', {
       method: 'POST',
-      body: formData
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     })
     .then(res => res.json())
-    .then(({ importId, totalRows }) => {
+    .then(handleResponse);
+
+    function handleResponse({ importId, totalRows }) {
       progressEl.max = totalRows;
       const interval = setInterval(() => {
         fetch(`/import-status?importId=${importId}`)
@@ -44,6 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           });
       }, 500);
-    });
+    }
   });
 });
