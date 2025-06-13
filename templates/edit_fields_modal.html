@@ -24,17 +24,8 @@
         <label class="block mb-2 text-sm font-medium">Field Name</label>
         <input name="field_name" type="text" class="w-full border px-3 py-2 rounded mb-4" required>
         <label class="block mb-2 text-sm font-medium">Field Type</label>
-        {% set types_seen = [] %}
         <select id="field_type" name="field_type" class="block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200">
           <option disabled selected>Select type</option>
-          {% for table_fields in field_schema.values() %}
-            {% for field, meta in table_fields.items() %}
-              {% if meta.type not in types_seen %}
-                {% do types_seen.append(meta.type) %}
-                <option value="{{ meta.type }}">{{ meta.type }}</option>
-              {% endif %}
-            {% endfor %}
-          {% endfor %}
         </select>
         <div id="field-options-container" class="hidden mb-4">
           <label class="block mb-2 text-sm font-medium">Options (comma-separated)</label>

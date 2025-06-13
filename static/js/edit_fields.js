@@ -2,9 +2,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const fieldTypeSelect = document.getElementById("field_type");
     const optionsContainer = document.getElementById("field-options-container");
     const fkSelectContainer = document.getElementById("fk-select-container");
-  
+
     if (!fieldTypeSelect) return;
-  
+
+    fetch('/api/field-types')
+      .then(res => res.json())
+      .then(types => {
+        types.forEach(t => {
+          const opt = document.createElement('option');
+          opt.value = t;
+          opt.textContent = t;
+          fieldTypeSelect.appendChild(opt);
+        });
+      })
+      .catch(() => {});
+
     fieldTypeSelect.addEventListener("change", () => {
       const type = fieldTypeSelect.value;
   

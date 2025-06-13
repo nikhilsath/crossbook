@@ -58,6 +58,41 @@ function updateFieldList() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  const select = document.getElementById('field_type');
+  if (select) {
+    fetch('/api/field-types')
+      .then(res => res.json())
+      .then(types => {
+        types.forEach(t => {
+          const opt = document.createElement('option');
+          opt.value = t;
+          opt.textContent = t;
+          select.appendChild(opt);
+        });
+      })
+      .catch(() => {});
+
+    select.addEventListener('change', () => {
+      const type = select.value;
+      const optionsContainer = document.getElementById('field-options-container');
+      const fkContainer = document.getElementById('fk-select-container');
+      if (optionsContainer) {
+        if (type === 'select' || type === 'multi_select') {
+          optionsContainer.classList.remove('hidden');
+        } else {
+          optionsContainer.classList.add('hidden');
+        }
+      }
+      if (fkContainer) {
+        if (type === 'foreign_key') {
+          fkContainer.classList.remove('hidden');
+        } else {
+          fkContainer.classList.add('hidden');
+        }
+      }
+    });
+  }
+
   document.getElementById('field-form').addEventListener('submit', addField);
 });
 
