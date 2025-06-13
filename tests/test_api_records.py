@@ -6,6 +6,13 @@ from urllib.parse import parse_qs
 # Ensure the app module can be imported
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from main import app
+from db.database import init_db_path
+
+init_db_path('data/crossbook.db')
+try:
+    os.remove('local_settings.py')
+except FileNotFoundError:
+    pass
 
 app.testing = True
 client = app.test_client()

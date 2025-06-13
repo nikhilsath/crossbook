@@ -67,6 +67,7 @@ def database_step():
                 init_db_path(save_path)
                 update_config('db_path', save_path)
                 write_local_settings(save_path)
+                reload_app_state()
         name = request.form.get('create_name')
         if name:
             filename = secure_filename(name)
@@ -78,6 +79,7 @@ def database_step():
             init_db_path(save_path)
             update_config('db_path', save_path)
             write_local_settings(save_path)
+            reload_app_state()
         progress['database'] = True
         session['wizard_progress'] = progress
         return redirect(url_for('wizard.settings_step'))
