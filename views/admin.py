@@ -6,6 +6,7 @@ from flask import (
     request,
     jsonify,
     current_app,
+    session,
 )
 import json
 import os
@@ -121,8 +122,16 @@ def update_database_file():
         open(save_path, 'a').close()
         update_config('db_path', save_path)
         write_local_settings(save_path)
+        session['wizard_progress'] = {'database': True, 'skip_import': True}
+        session.pop('wizard_complete', None)
+        current_app.config['WIZARD_REQUIRED'] = True
         if wants_json:
-            return jsonify({'db_path': save_path, 'status': check_db_status(save_path)})
+            return jsonify({
+                'db_path': save_path,
+                'status': check_db_status(save_path),
+                'redirect': url_for('wizard.wizard_start'),
+            })
+        return redirect(url_for('wizard.wizard_start'))
     if wants_json:
         return jsonify({'error': 'no_file'})
     return redirect(url_for('admin.config_page'))

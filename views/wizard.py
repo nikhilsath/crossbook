@@ -1,4 +1,12 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, current_app
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    session,
+    current_app,
+)
 from werkzeug.utils import secure_filename
 import os
 from db.database import DB_PATH, check_db_status
@@ -20,7 +28,7 @@ def _next_step():
         return 'wizard.settings_step'
     if not progress.get('table'):
         return 'wizard.table_step'
-    if not progress.get('import'):
+    if not progress.get('skip_import') and not progress.get('import'):
         return 'wizard.import_step'
     return None
 
@@ -110,6 +118,13 @@ def table_step():
 @wizard_bp.route('/wizard/import', methods=['GET', 'POST'])
 def import_step():
     progress = session.setdefault('wizard_progress', {})
+    if progress.get('skip_import'):
+        progress['import'] = True
+        session['wizard_progress'] = progress
+        session['wizard_complete'] = True
+        session.pop('wizard_progress', None)
+        return redirect(url_for('home'))
+
     base_tables = current_app.config.get('BASE_TABLES', [])
     if request.method == 'POST':
         table = request.form.get('table')
