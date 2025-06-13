@@ -26,6 +26,8 @@ from db.schema import (
     update_field_styling as db_update_field_styling,
 )
 from db.dashboard import sum_field as db_sum_field
+from db.config import get_layout_defaults
+from utils.field_registry import get_field_type, get_type_size_map
 
 records_bp = Blueprint('records', __name__)
 
@@ -232,13 +234,32 @@ def detail_view(table, record_id):
     field_schema_layout = {field: meta.get('layout', {}) for field, meta in raw_layout.items()}
     current_app.logger.debug("[DETAIL] Using layout: %s", field_schema_layout)
     history = get_edit_history(table, record_id)
+    defaults = get_layout_defaults() or {}
+    width_overrides = defaults.get('width', {})
+    height_overrides = defaults.get('height', {})
+    size_map = get_type_size_map()
+    field_layout_defaults = {}
+    for ftype in set(list(size_map.keys()) + list(width_overrides.keys()) + list(height_overrides.keys())):
+        ft = get_field_type(ftype)
+        base_width, base_height = size_map.get(
+            ftype,
+            (
+                ft.default_width if ft else 6,
+                ft.default_height if ft else 4,
+            ),
+        )
+        field_layout_defaults[ftype] = (
+            width_overrides.get(ftype, base_width),
+            height_overrides.get(ftype, base_height),
+        )
     return render_template(
         'detail_view.html',
         table=table,
         record=record,
         related=related,
         edit_history=history,
-        field_schema_layout=field_schema_layout
+        field_schema_layout=field_schema_layout,
+        field_layout_defaults=field_layout_defaults
     )
 
 @records_bp.route('/<table>/<int:record_id>/add-field', methods=['POST'])

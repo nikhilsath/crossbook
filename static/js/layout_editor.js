@@ -1,26 +1,15 @@
 const PCT_SNAP = 5;                // snap to 5% steps
 let CONTAINER_WIDTH;
 
-const defaultFieldWidth = {
-  textarea:  12,
-  select: 5,
-  text: 12,
-  foreign_key: 5,
-  boolean: 3,
-  number: 4,
-  multi_select: 6,
-  url: 12
-};
-const defaultFieldHeight = {
-  textarea:  18,
-  select: 4,
-  text: 4,
-  foreign_key: 10,
-  boolean: 7,
-  number: 3,
-  multi_select: 8,
-  url: 4
-};
+const defaultFieldWidth = {};
+const defaultFieldHeight = {};
+if (window.FIELD_LAYOUT_DEFAULTS) {
+  for (const [type, sizes] of Object.entries(window.FIELD_LAYOUT_DEFAULTS)) {
+    const [w, h] = sizes;
+    defaultFieldWidth[type] = w;
+    defaultFieldHeight[type] = h;
+  }
+}
 
 function initLayout() {
   const layoutGrid = document.getElementById('layout-grid');
