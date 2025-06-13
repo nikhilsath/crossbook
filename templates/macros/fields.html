@@ -162,8 +162,8 @@
        {% if styling.color %}style="color: {{ styling.color }}"{% endif %}
        data-styling='{{ styling | tojson }}'>
     {% set macro_name = field_macro_map.get(field_type) if field_macro_map else None %}
-    {% if macro_name and (_self|attr(macro_name)) %}
-      {{ (_self|attr(macro_name))(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) }}
+    {% if macro_name and (self|attr(macro_name)) %}
+      {{ (self|attr(macro_name))(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) }}
     {% else %}
       <span class="ml-1">{{ value }}</span>
     {% endif %}
