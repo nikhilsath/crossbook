@@ -25,6 +25,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
     - [list_view.html](#listviewhtml)
     - [detail_view.html](#detailviewhtml)
     - [macros/fields.html](#macrosfieldshtml)
+  - [Import Workflow](#import-workflow)
 
 ## Project Summary
 
@@ -72,7 +73,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Dashboard Grid Editing:** Widgets can be dragged, resized, and saved using `/dashboard/layout`.
 * **Numerical Summaries:** `/<table>/sum-field` returns the sum for numeric columns, used by dashboard charts.
 * **List API:** `/api/<table>/list` provides ID and label data for dropdowns.
-* **CSV Import Workflow (Experimental):** The `/import` page lets you upload CSV files, match columns to fields, and validate data before import.
+* **CSV Import Workflow:** Upload a CSV on `/import`, map fields, then start a background job via `/import-start` and poll `/import-status` for progress.
 
 ## Project Structure
 
@@ -90,9 +91,9 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 │   ├── relationships.py             # Many-to-many join helpers
 │   ├── validation.py                # Field and data validation logic
 │   └── edit_fields.py               # Field schema editing utilities
-├── imports/                         # CSV utilities and task queue setup (WIP)
-│   ├── import_csv.py                # CSV parsing helpers (not yet enabled)
-│   └── tasks.py                     # Huey instance (no tasks defined yet)
+├── imports/                         # CSV helpers and background tasks
+│   ├── import_csv.py                # parse_csv reads uploaded files into memory
+│   └── tasks.py                     # Huey tasks for processing imports
 ├── static/                          # Front-end assets
 │   ├── css/
 │   │   ├── overrides.css            # Tailwind override styles
@@ -144,6 +145,32 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
     └── huey.db                     # Task queue persistence database
 ```
 
+## Import Workflow
+
+1. **Start the worker**: run `huey_consumer.py imports.tasks.huey` from the project root so background jobs are processed.
+2. **Upload a CSV**: visit `/import`, choose a base table, and upload your CSV file. All rows are loaded into memory and shown for mapping.
+3. **Kick off the import**: after matching columns, click **Import Records** or POST to `/import-start`.
+
+   ```json
+   {
+     "table": "character",
+     "rows": [{"name": "Gandalf"}]
+   }
+   ```
+4. **Monitor progress**: poll `/import-status?importId=<id>`.
+
+   ```json
+   {
+     "status": "in_progress",
+     "totalRows": 1,
+     "importedRows": 0,
+     "errorCount": 0,
+     "errors": []
+   }
+   ```
+
+Large files are not streamed—they are fully loaded into memory during parsing, so extremely big uploads may exhaust memory.
+
 ## Application Architecture and Code Overview
 
 * **Routing & Views:** Defined in `main.py` using Flask decorators; routes handle list, detail, new record, and error pages. A context processor (`@app.context_processor`) injects the `field_schema`—the in-memory representation of all table fields, types, options, and layout—into all templates and front-end scripts for dynamic form generation and validation. Error handlers (e.g., `@app.errorhandler(404)`) and `abort()` calls manage invalid requests.
@@ -152,7 +179,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 
 * **Database Layer:** Uses Python’s built-in `sqlite3` in `db/database.py` for connection management. Schema introspection and migrations occur in `db/schema.py`. CRUD operations reside in `db/records.py`; many-to-many join logic in `db/relationships.py`. Validation rules live in `db/validation.py`, and field schema editing utilities in `db/edit_fields.py`.
 
-* **Background Tasks:** The Huey queue is initialized in `imports/tasks.py`, but no tasks are currently defined.
+* **Background Tasks:** Huey is initialized in `imports/tasks.py` and provides the `process_import` task used by the import workflow. Start a worker with `huey_consumer.py imports.tasks.huey`.
 
 * **Frontend Interaction:** Dynamic behaviors powered by JavaScript modules in `static/js/`:
 
