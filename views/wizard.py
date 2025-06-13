@@ -11,7 +11,7 @@ from werkzeug.utils import secure_filename
 import os
 import json
 import db.database as db_database
-from db.bootstrap import initialize_database
+from db.bootstrap import initialize_database, DEFAULT_CONFIGS
 from db.config import update_config, get_all_config
 from db.schema import create_base_table
 from db.edit_fields import add_column_to_table, add_field_to_schema
@@ -66,7 +66,6 @@ def database_step():
                 initialize_database(save_path, include_base_tables=False)
                 db_database.init_db_path(save_path)
                 update_config('db_path', save_path)
-                update_config('heading', 'Load the glass cannons')
                 write_local_settings(save_path)
                 reload_app_state()
         name = request.form.get('create_name')
@@ -79,7 +78,6 @@ def database_step():
             initialize_database(save_path, include_base_tables=False)
             db_database.init_db_path(save_path)
             update_config('db_path', save_path)
-            update_config('heading', 'Load the glass cannons')
             write_local_settings(save_path)
             reload_app_state()
         progress['database'] = True
@@ -94,16 +92,14 @@ def settings_step():
     progress = session.setdefault('wizard_progress', {})
     config = get_all_config()
     if request.method == 'POST':
-        heading = request.form.get('heading')
-        level = request.form.get('log_level')
-        if heading is not None:
-            update_config('heading', heading)
-        if level is not None:
-            update_config('log_level', level)
+        for key, _default, _section, _type in DEFAULT_CONFIGS:
+            val = request.form.get(key)
+            if val is not None:
+                update_config(key, val)
         progress['settings'] = True
         session['wizard_progress'] = progress
         return redirect(url_for('wizard.table_step'))
-    return render_template('wizard_settings.html', config=config)
+    return render_template('wizard_settings.html', config=config, defaults=DEFAULT_CONFIGS)
 
 
 @wizard_bp.route('/wizard/table', methods=['GET', 'POST'])

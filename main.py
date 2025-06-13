@@ -77,7 +77,7 @@ def inject_field_schema():
 
 @app.route("/")
 def home():
-    heading = get_all_config().get('heading', 'Load the Glass Cannon')
+    heading = get_all_config().get('heading')
     return render_template(
         "index.html",
         cards=current_app.config['CARD_INFO'],
