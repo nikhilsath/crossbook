@@ -29,8 +29,21 @@ function initDatabaseControls() {
       const fd = new FormData(uploadForm);
       fetch('/admin/config/db', {
         method: 'POST',
-        body: fd
-      }).then(() => window.location.reload());
+        body: fd,
+        headers: { 'Accept': 'application/json' }
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (data.db_path) {
+            const disp = document.getElementById('db-path-display');
+            if (disp) {
+              disp.textContent = data.db_path;
+              disp.classList.remove('text-red-600', 'text-green-600');
+              const color = data.status === 'valid' ? 'text-green-600' : 'text-red-600';
+              disp.classList.add(color);
+            }
+          }
+        });
     });
   }
 
@@ -41,8 +54,19 @@ function initDatabaseControls() {
       if (!name) return;
       const fd = new FormData();
       fd.append('create_name', name);
-      fetch('/admin/config/db', { method: 'POST', body: fd })
-        .then(() => window.location.reload());
+      fetch('/admin/config/db', { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } })
+        .then(r => r.json())
+        .then(data => {
+          if (data.db_path) {
+            const disp = document.getElementById('db-path-display');
+            if (disp) {
+              disp.textContent = data.db_path;
+              disp.classList.remove('text-red-600', 'text-green-600');
+              const color = data.status === 'valid' ? 'text-green-600' : 'text-red-600';
+              disp.classList.add(color);
+            }
+          }
+        });
     });
   }
 }

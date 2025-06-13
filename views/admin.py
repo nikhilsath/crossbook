@@ -24,7 +24,7 @@ from db.schema import create_base_table, refresh_card_cache
 from imports.import_csv import parse_csv
 from utils.validation import validation_sorter
 from db.schema import get_field_schema
-from db.database import get_connection
+from db.database import get_connection, check_db_status
 from imports.tasks import huey, process_import, init_import_table
 
 admin_bp = Blueprint('admin', __name__)
@@ -70,6 +70,7 @@ def config_page():
     configs = get_config_rows()
     sections = {}
     db_path = None
+    db_status = 'missing'
     for item in configs:
         if item.get('type') == 'json':
             try:
@@ -78,9 +79,10 @@ def config_page():
                 item['parsed'] = {}
         if item['key'] == 'db_path':
             db_path = item['value']
+            db_status = check_db_status(db_path)
             continue
         sections.setdefault(item['section'], []).append(item)
-    return render_template('config_admin.html', sections=sections, db_path=db_path)
+    return render_template('config_admin.html', sections=sections, db_path=db_path, db_status=db_status)
 
 @admin_bp.route('/admin/config/<path:key>', methods=['POST'])
 def update_config_route(key):
@@ -96,6 +98,7 @@ def update_config_route(key):
 @admin_bp.route('/admin/config/db', methods=['POST'])
 def update_database_file():
     """Handle uploaded or newly created database files."""
+    wants_json = 'application/json' in request.headers.get('Accept', '')
     if 'file' in request.files and request.files['file'].filename:
         file = request.files['file']
         filename = secure_filename(file.filename)
@@ -105,6 +108,8 @@ def update_database_file():
         file.save(save_path)
         update_config('db_path', save_path)
         write_local_settings(save_path)
+        if wants_json:
+            return jsonify({'db_path': save_path, 'status': check_db_status(save_path)})
         return redirect(url_for('admin.config_page'))
 
     name = request.form.get('create_name')
@@ -116,6 +121,10 @@ def update_database_file():
         open(save_path, 'a').close()
         update_config('db_path', save_path)
         write_local_settings(save_path)
+        if wants_json:
+            return jsonify({'db_path': save_path, 'status': check_db_status(save_path)})
+    if wants_json:
+        return jsonify({'error': 'no_file'})
     return redirect(url_for('admin.config_page'))
 
 @admin_bp.route('/dashboard/widget', methods=['POST'])
