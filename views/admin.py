@@ -28,6 +28,7 @@ from db.schema import get_field_schema
 from db.database import get_connection, check_db_status, init_db_path
 from db.bootstrap import initialize_database
 from imports.tasks import huey, process_import, init_import_table
+from utils.field_registry import FIELD_TYPES
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -258,6 +259,12 @@ def dashboard_filtered_records():
     except ValueError:
         return jsonify([]), 400
     return jsonify(data)
+
+
+@admin_bp.route('/api/field-types')
+def api_field_types():
+    """Return list of available field types."""
+    return jsonify(list(FIELD_TYPES.keys()))
 
 @admin_bp.route('/add-table', methods=['POST'])
 def add_table():
