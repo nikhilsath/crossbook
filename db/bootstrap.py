@@ -177,75 +177,18 @@ def _create_base_tables(cur: sqlite3.Cursor) -> None:
 
 
 def _insert_defaults(cur: sqlite3.Cursor, path: str, include_base_tables: bool = True) -> None:
-    cur.execute("SELECT COUNT(*) FROM config")
-    if cur.fetchone()[0] == 0:
-        defaults = list(DEFAULT_CONFIGS)
-        defaults.append(
-            (
-                "layout_defaults",
-                json.dumps(LAYOUT_DEFAULTS),
-                "layout",
-                "json",
-            )
-        )
-        defaults.append(("db_path", path, "database", "string"))
-        cur.executemany(
-            "INSERT INTO config (key, value, section, type, date_updated) "
-            "VALUES (?, ?, ?, ?, datetime('now'))",
-            defaults,
-        )
-
-    if include_base_tables:
-        cur.execute("SELECT COUNT(*) FROM config_base_tables")
-        if cur.fetchone()[0] == 0:
-            cur.executemany(
-                "INSERT INTO config_base_tables (table_name, display_name, description, sort_order) "
-                "VALUES (?, ?, ?, ?)",
-                DEFAULT_BASE_TABLE_ROWS,
-            )
-
-    if include_base_tables:
-        cur.execute("SELECT COUNT(*) FROM field_schema")
-        if cur.fetchone()[0] == 0:
-            rows = []
-            for table, fields in DEFAULT_FIELDS.items():
-                row_start = 0
-                for field, ftype in fields:
-                    rows.append(
-                        (
-                            table,
-                            field,
-                            ftype,
-                            None,
-                            None,
-                            0,
-                            0,
-                            row_start,
-                            0,
-                            None,
-                        )
-                    )
-                    row_start += 1
-            cur.executemany(
-                """
-                INSERT INTO field_schema (
-                    table_name, field_name, field_type, field_options, foreign_key,
-                    col_start, col_span, row_start, row_span, styling
-                )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                rows,
-            )
+    """Previously inserted sample data; now intentionally left blank."""
+    return
 
 
-def initialize_database(path: str, include_base_tables: bool = True) -> None:
-    """Create a new database with core tables and optional base tables."""
+def initialize_database(path: str, include_base_tables: bool = False) -> None:
+    """Create a new database with core tables."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with sqlite3.connect(path) as conn:
         cur = conn.cursor()
         _create_core_tables(cur)
         if include_base_tables:
             _create_base_tables(cur)
-        _insert_defaults(cur, path, include_base_tables=include_base_tables)
+        # Default records are no longer inserted
         conn.commit()
 
