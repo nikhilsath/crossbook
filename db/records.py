@@ -7,6 +7,70 @@ from db.schema import get_field_schema
 from db.validation import validate_table, validate_fields, validate_field
 
 
+def _normalize_filter_values(value):
+    """Return a list of non-empty filter values."""
+
+    values = value if isinstance(value, list) else [value]
+    return [v for v in values if v != ""]
+
+
+def _operator_snippet(field: str, value: str, op: str, params: list[str]) -> str:
+    """Build a SQL snippet for a single value based on the operator."""
+
+    if op == "equals":
+        params.append(value)
+        return f"{field} = ?"
+    if op == "starts_with":
+        params.append(f"{value}%")
+        return f"{field} LIKE ?"
+    if op == "ends_with":
+        params.append(f"%{value}")
+        return f"{field} LIKE ?"
+    if op == "not_contains":
+        params.append(f"%{value}%")
+        return f"{field} NOT LIKE ?"
+    if op == "regex":
+        if SUPPORTS_REGEX:
+            params.append(value)
+            return f"{field} REGEXP ?"
+        params.append(f"%{value}%")
+        return f"{field} LIKE ?"
+    # default is "contains"
+    params.append(f"%{value}%")
+    return f"{field} LIKE ?"
+
+
+def _build_field_clause(
+    field: str, values: list[str], op: str, mode: str, params: list[str]
+) -> str | None:
+    """Return a combined clause for all values of a field."""
+
+    snippets = [_operator_snippet(field, v, op, params) for v in values]
+    if not snippets:
+        return None
+    joiner = " AND " if mode == "all" else " OR "
+    return "(" + joiner.join(snippets) + ")"
+
+
+def _apply_date_ranges(
+    date_starts: dict, date_ends: dict, clauses: list[str], params: list[str]
+) -> None:
+    """Append SQL clauses for collected date range filters."""
+
+    for base in set(date_starts) | set(date_ends):
+        start = date_starts.get(base)
+        end = date_ends.get(base)
+        if start and end:
+            clauses.append(f"{base} BETWEEN ? AND ?")
+            params.extend([start, end])
+        elif start:
+            clauses.append(f"{base} >= ?")
+            params.append(start)
+        elif end:
+            clauses.append(f"{base} <= ?")
+            params.append(end)
+
+
 
 def _build_filters(table, search=None, filters=None, ops=None, modes=None):
     """Return SQL where clauses and params for the provided filters/search."""
@@ -22,12 +86,12 @@ def _build_filters(table, search=None, filters=None, ops=None, modes=None):
         ]
         validate_fields(table, valid_keys)
 
+        # Hold start/end pieces of date range filters until all values are parsed
         date_starts = {}
         date_ends = {}
 
         for fld, val in filters.items():
-            values = val if isinstance(val, list) else [val]
-            clean_values = [v for v in values if v != ""]
+            clean_values = _normalize_filter_values(val)
             if not clean_values:
                 continue
             if fld.endswith('_min'):
@@ -49,48 +113,15 @@ def _build_filters(table, search=None, filters=None, ops=None, modes=None):
             else:
                 op = (ops or {}).get(fld, "contains")
                 mode = (modes or {}).get(fld, "any")
-                field_clauses = []
-                for v in clean_values:
-                    if op == "equals":
-                        field_clauses.append(f"{fld} = ?")
-                        params.append(v)
-                    elif op == "starts_with":
-                        field_clauses.append(f"{fld} LIKE ?")
-                        params.append(f"{v}%")
-                    elif op == "ends_with":
-                        field_clauses.append(f"{fld} LIKE ?")
-                        params.append(f"%{v}")
-                    elif op == "not_contains":
-                        field_clauses.append(f"{fld} NOT LIKE ?")
-                        params.append(f"%{v}%")
-                    elif op == "regex":
-                        if SUPPORTS_REGEX:
-                            field_clauses.append(f"{fld} REGEXP ?")
-                            params.append(v)
-                        else:
-                            field_clauses.append(f"{fld} LIKE ?")
-                            params.append(f"%{v}%")
-                    else:  # contains
-                        field_clauses.append(f"{fld} LIKE ?")
-                        params.append(f"%{v}%")
-                if field_clauses:
-                    joiner = " AND " if mode == "all" else " OR "
-                    clauses.append("(" + joiner.join(field_clauses) + ")")
+                clause = _build_field_clause(fld, clean_values, op, mode, params)
+                if clause:
+                    clauses.append(clause)
 
-        for base in set(date_starts) | set(date_ends):
-            start = date_starts.get(base)
-            end = date_ends.get(base)
-            if start and end:
-                clauses.append(f"{base} BETWEEN ? AND ?")
-                params.extend([start, end])
-            elif start:
-                clauses.append(f"{base} >= ?")
-                params.append(start)
-            elif end:
-                clauses.append(f"{base} <= ?")
-                params.append(end)
+        # After processing all filters, turn date range pieces into clauses
+        _apply_date_ranges(date_starts, date_ends, clauses, params)
 
     if search:
+        # Build a search clause across all text-like fields
         search_term = search.strip()
         all_fields = get_field_schema()[table]
         search_fields = [
@@ -100,6 +131,7 @@ def _build_filters(table, search=None, filters=None, ops=None, modes=None):
         ]
         if search_fields:
             validate_fields(table, search_fields)
+            # Create "field LIKE" clauses for every searchable field
             subconds = [f"{f} LIKE ?" for f in search_fields]
             clauses.append("(" + " OR ".join(subconds) + ")")
             params.extend([f"%{search_term}%"] * len(subconds))
