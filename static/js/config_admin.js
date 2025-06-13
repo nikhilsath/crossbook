@@ -50,6 +50,10 @@ function initDatabaseControls() {
           return r.json();
         })
         .then(data => {
+          if (data.redirect) {
+            window.location.href = data.redirect;
+            return;
+          }
           if (data.db_path) {
             console.log('Database changed to', data.db_path);
             const disp = document.getElementById('db-path-display');
@@ -81,6 +85,10 @@ function initDatabaseControls() {
       fetch('/admin/config/db', { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } })
         .then(r => r.json())
         .then(data => {
+          if (data.redirect) {
+            window.location.href = data.redirect;
+            return;
+          }
           if (data.db_path) {
             const disp = document.getElementById('db-path-display');
             if (disp) {
