@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Setup - Database{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Step 1: Choose or Create Database</h1>
+<form method="post" enctype="multipart/form-data" class="space-y-4">
+  <div>
+    <label class="block mb-1">Upload Database File</label>
+    <input type="file" name="file" accept=".db" class="border rounded px-2 py-1">
+  </div>
+  <div>
+    <label class="block mb-1">Or create new database</label>
+    <input type="text" name="create_name" class="border rounded px-2 py-1" placeholder="name.db">
+  </div>
+  <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Continue</button>
+</form>
+<p class="text-sm mt-4">Current path: {{ db_path }} ({{ db_status }})</p>
+{% endblock %}
