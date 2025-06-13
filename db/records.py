@@ -415,7 +415,7 @@ def delete_record(table, record_id):
 
 def count_nonnull(table: str, field: str) -> int:
     validate_table(table)
-    logger.info(f"count_nonnull kickoff")
+    logger.info("count_nonnull kickoff")
     # Verify that the field exists and is not hidden or "id"
     fmeta = get_field_schema().get(table, {}).get(field)
     if fmeta is None or fmeta.get("type") == "hidden" or field == "id":
