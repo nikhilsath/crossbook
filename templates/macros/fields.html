@@ -6,8 +6,13 @@
     {{ input_element|safe }}
   </form>
 {%- endmacro %}
-{% macro render_editable_field(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) %}
+{% macro render_editable_field(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema, field_macro_map=None) %}
   {% set styling = field_schema[table][field].styling or {} %}
+  {% set macro_name = field_macro_map.get(field_type) if field_macro_map else None %}
+  {% set custom = macro_name and (_self|attr(macro_name)) or None %}
+  {% if custom %}
+    {{ custom(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) }}
+  {% else %}
   <div class="mt-2 h-full{{ ' font-bold' if styling.bold }}{{ ' italic' if styling.italic }}{{ ' underline' if styling.underline }}"
        {% if styling.color %}style="color: {{ styling.color }}"{% endif %}
        data-styling='{{ styling | tojson }}'>
@@ -153,4 +158,5 @@
         <span class="ml-1">{{ value }}</span>
       {% endif %}
   </div>
+  {% endif %}
 {% endmacro %}

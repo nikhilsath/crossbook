@@ -2,43 +2,20 @@ import re
 import csv
 import logging
 from db.schema import get_field_schema
+from utils.field_registry import register_type, get_field_type
 
 logger = logging.getLogger(__name__)
 SCHEMA = get_field_schema()
 
-# Map field types to a tuple of (log message, validator function)
-VALIDATION_DISPATCH = {
-    "text": ("Text Validation Triggered", lambda table, field, values: validate_text_column(values)),
-    "boolean": ("Boolean Validation Triggered", lambda table, field, values: validate_boolean_column(values)),
-    "foreign_key": (
-        "FK Validation Triggered",
-        lambda table, field, values: validate_select_column(values, SCHEMA[table][field]["options"]),
-    ),
-    "url": ("URL Validation Triggered", lambda table, field, values: validate_text_column(values)),
-    "multi_select": (
-        "Multi Validation Triggered",
-        lambda table, field, values: validate_multi_select_column(values, SCHEMA[table][field]["options"]),
-    ),
-    "number": ("Number Validation Triggered", lambda table, field, values: validate_number_column(values)),
-    "select": (
-        "Select Validation Triggered",
-        lambda table, field, values: validate_select_column(values, SCHEMA[table][field]["options"]),
-    ),
-    "textarea": ("Textarea Validation Triggered", lambda table, field, values: validate_textarea_column(values)),
-}
-
 def validation_sorter(table, field, header, fieldType, values):
     logger.debug("✅ Validation function was triggered.")
 
-    # Lookup validator and log message from dispatch table
-    dispatch_entry = VALIDATION_DISPATCH.get(fieldType)
-    if not dispatch_entry:
+    ft = get_field_type(fieldType)
+    if not ft or not ft.validator:
         logger.debug("no validation for this datatype")
         return {}
 
-    log_msg, validator = dispatch_entry
-    logger.debug(log_msg)
-    result = validator(table, field, values)
+    result = ft.validator(table, field, values)
 
     classes = []
     if result.get("blank", 0) > 0:
@@ -203,3 +180,14 @@ def validate_multi_select_column(values: list[str], options: list[str]) -> dict:
         "warning": warning,
         "details": details
     }
+
+# Register built-in field types with the registry
+register_type('text', sql_type='TEXT', validator=lambda t, f, v: validate_text_column(v), default_width=12, default_height=4)
+register_type('number', sql_type='REAL', validator=lambda t, f, v: validate_number_column(v), default_width=4, default_height=3)
+register_type('date', sql_type='TEXT', validator=lambda t, f, v: validate_text_column(v), default_width=6, default_height=4)
+register_type('select', sql_type='TEXT', validator=lambda t, f, v: validate_select_column(v, SCHEMA[t][f]['options']), default_width=5, default_height=4)
+register_type('multi_select', sql_type='TEXT', validator=lambda t, f, v: validate_multi_select_column(v, SCHEMA[t][f]['options']), default_width=6, default_height=8)
+register_type('foreign_key', sql_type='TEXT', validator=lambda t, f, v: validate_select_column(v, SCHEMA[t][f]['options']), default_width=5, default_height=10)
+register_type('boolean', sql_type='INTEGER', validator=lambda t, f, v: validate_boolean_column(v), default_width=3, default_height=7)
+register_type('textarea', sql_type='TEXT', validator=lambda t, f, v: validate_textarea_column(v), default_width=12, default_height=18)
+register_type('url', sql_type='TEXT', validator=lambda t, f, v: validate_text_column(v), default_width=12, default_height=4)
