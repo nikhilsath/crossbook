@@ -37,6 +37,9 @@ def _next_step():
 
 @wizard_bp.route('/wizard/')
 def wizard_start():
+    progress = session.get('wizard_progress')
+    if not progress:
+        return redirect(url_for('home'))
     next_ep = _next_step()
     if next_ep:
         return redirect(url_for(next_ep))
