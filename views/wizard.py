@@ -44,6 +44,14 @@ def wizard_start():
     return redirect(url_for('home'))
 
 
+@wizard_bp.route('/wizard/skip-import')
+def skip_import():
+    progress = session.setdefault('wizard_progress', {})
+    progress['skip_import'] = True
+    session['wizard_progress'] = progress
+    return redirect(url_for('wizard.wizard_start'))
+
+
 @wizard_bp.route('/wizard/database', methods=['GET', 'POST'])
 def database_step():
     progress = session.setdefault('wizard_progress', {})
