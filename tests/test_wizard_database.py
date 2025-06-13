@@ -32,7 +32,17 @@ def test_settings_step_after_db_creation():
 
     # restore original test database
     from db.database import init_db_path
+    from db.config import update_config
     init_db_path('data/crossbook.db')
+    update_config('db_path', 'data/crossbook.db')
+    from views.admin import reload_app_state
+    with app.app_context():
+        reload_app_state()
     if orig_settings:
         with open('local_settings.py', 'w') as fh:
             fh.write(orig_settings)
+    else:
+        try:
+            os.remove('local_settings.py')
+        except FileNotFoundError:
+            pass
