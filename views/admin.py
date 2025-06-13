@@ -25,7 +25,8 @@ from db.schema import create_base_table, refresh_card_cache
 from imports.import_csv import parse_csv
 from utils.validation import validation_sorter
 from db.schema import get_field_schema
-from db.database import get_connection, check_db_status
+from db.database import get_connection, check_db_status, init_db_path
+from db.bootstrap import initialize_database
 from imports.tasks import huey, process_import, init_import_table
 
 admin_bp = Blueprint('admin', __name__)
@@ -115,6 +116,8 @@ def update_database_file():
             return redirect(url_for('admin.database_page'))
         save_path = os.path.join('data', filename)
         file.save(save_path)
+        initialize_database(save_path)
+        init_db_path(save_path)
         update_config('db_path', save_path)
         write_local_settings(save_path)
         if wants_json:
@@ -128,6 +131,8 @@ def update_database_file():
             filename += '.db'
         save_path = os.path.join('data', filename)
         open(save_path, 'a').close()
+        initialize_database(save_path)
+        init_db_path(save_path)
         update_config('db_path', save_path)
         write_local_settings(save_path)
         session['wizard_progress'] = {'database': True, 'skip_import': True}

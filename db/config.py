@@ -87,7 +87,7 @@ def update_config(key: str, value: str) -> int:
         # use the newly configured location.
         from db.database import init_db_path
 
-        init_db_path()
+        init_db_path(value)
 
     return affected
 
