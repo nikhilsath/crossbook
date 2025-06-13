@@ -124,7 +124,6 @@ def update_database_file():
         write_local_settings(save_path)
         session['wizard_progress'] = {'database': True, 'skip_import': True}
         session.pop('wizard_complete', None)
-        current_app.config['WIZARD_REQUIRED'] = True
         if wants_json:
             return jsonify({
                 'db_path': save_path,
