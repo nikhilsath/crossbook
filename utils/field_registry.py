@@ -16,3 +16,11 @@ def register_type(name, sql_type='TEXT', validator=None, default_width=6, defaul
 def get_field_type(name):
     return FIELD_TYPES.get(name)
 
+
+def get_type_size_map():
+    """Return mapping of field type -> (default_width, default_height)."""
+    return {
+        name: (ft.default_width, ft.default_height)
+        for name, ft in FIELD_TYPES.items()
+    }
+

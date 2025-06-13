@@ -3,29 +3,7 @@ import json
 from db.database import get_connection
 from db.config import get_layout_defaults
 from db.validation import validate_table, validate_field
-from utils.field_registry import get_field_type
-
-DEFAULT_FIELD_WIDTH = {
-    "textarea":   12,
-    "select":      5,
-    "text":       12,
-    "foreign_key": 5,
-    "boolean":     3,
-    "number":      4,
-    "multi_select": 6,
-    "url":         12
-}
-
-DEFAULT_FIELD_HEIGHT = {
-    "textarea":   18,
-    "select":      4,
-    "text":         4,
-    "foreign_key": 10,
-    "boolean":      7,
-    "number":       3,
-    "multi_select":  8,
-    "url":           4
-}
+from utils.field_registry import get_field_type, get_type_size_map
 
 
 def add_field_to_schema(
@@ -55,15 +33,23 @@ def add_field_to_schema(
 
         # 3) Determine col_start, col_span, row_start, row_span
         defaults = get_layout_defaults() or {}
-        width_map = defaults.get('width', DEFAULT_FIELD_WIDTH)
-        height_map = defaults.get('height', DEFAULT_FIELD_HEIGHT)
+        width_overrides = defaults.get('width', {})
+        height_overrides = defaults.get('height', {})
+        size_map = get_type_size_map()
 
         ft = get_field_type(field_type)
 
         col_start = 0
-        col_span = width_map.get(field_type, ft.default_width if ft else 6)
+        base_width, base_height = size_map.get(
+            field_type,
+            (
+                ft.default_width if ft else 6,
+                ft.default_height if ft else 4,
+            ),
+        )
+        col_span = width_overrides.get(field_type, base_width)
         row_start = max_bottom
-        row_span = height_map.get(field_type, ft.default_height if ft else 4)
+        row_span = height_overrides.get(field_type, base_height)
 
         # 4) Insert into field_schema including the styling column
         cur.execute(
