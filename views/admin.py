@@ -8,6 +8,8 @@ from flask import (
     current_app,
 )
 import json
+import os
+from werkzeug.utils import secure_filename
 from logging_setup import configure_logging
 from db.config import get_config_rows, update_config, get_logging_config
 from db.dashboard import (
@@ -26,6 +28,15 @@ from db.database import get_connection
 from imports.tasks import huey, process_import, init_import_table
 
 admin_bp = Blueprint('admin', __name__)
+
+
+def write_local_settings(db_path: str, filename: str = 'local_settings.py') -> None:
+    """Persist the database path so init_db_path can load it on startup."""
+    try:
+        with open(filename, 'w') as fh:
+            fh.write(f"CROSSBOOK_DB_PATH = '{db_path}'\n")
+    except Exception as exc:
+        current_app.logger.exception('Failed to write %s: %s', filename, exc)
 
 @admin_bp.route('/dashboard')
 def dashboard():
@@ -58,21 +69,53 @@ def admin_html_redirect():
 def config_page():
     configs = get_config_rows()
     sections = {}
+    db_path = None
     for item in configs:
         if item.get('type') == 'json':
             try:
                 item['parsed'] = json.loads(item.get('value') or '{}')
             except Exception:
                 item['parsed'] = {}
+        if item['key'] == 'db_path':
+            db_path = item['value']
+            continue
         sections.setdefault(item['section'], []).append(item)
-    return render_template('config_admin.html', sections=sections)
+    return render_template('config_admin.html', sections=sections, db_path=db_path)
 
 @admin_bp.route('/admin/config/<path:key>', methods=['POST'])
 def update_config_route(key):
     value = request.form.get('value', '')
     update_config(key, value)
+    if key == 'db_path':
+        write_local_settings(value)
     if key in get_logging_config():
         configure_logging(current_app)
+    return redirect(url_for('admin.config_page'))
+
+
+@admin_bp.route('/admin/config/db', methods=['POST'])
+def update_database_file():
+    """Handle uploaded or newly created database files."""
+    if 'file' in request.files and request.files['file'].filename:
+        file = request.files['file']
+        filename = secure_filename(file.filename)
+        if not filename.endswith('.db'):
+            return redirect(url_for('admin.config_page'))
+        save_path = os.path.join('data', filename)
+        file.save(save_path)
+        update_config('db_path', save_path)
+        write_local_settings(save_path)
+        return redirect(url_for('admin.config_page'))
+
+    name = request.form.get('create_name')
+    if name:
+        filename = secure_filename(name)
+        if not filename.endswith('.db'):
+            filename += '.db'
+        save_path = os.path.join('data', filename)
+        open(save_path, 'a').close()
+        update_config('db_path', save_path)
+        write_local_settings(save_path)
     return redirect(url_for('admin.config_page'))
 
 @admin_bp.route('/dashboard/widget', methods=['POST'])
