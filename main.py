@@ -1,7 +1,7 @@
 from flask import Flask, render_template, current_app
 import logging
 from logging_setup import configure_logging
-from db.database import get_connection
+from db.database import get_connection, init_db_path
 from db.schema import (
     get_field_schema,
     update_foreign_field_options,
@@ -14,6 +14,7 @@ from utils.flask_helpers import start_timer, log_request, log_exception
 app = Flask(__name__, static_url_path='/static')
 app.jinja_env.add_extension('jinja2.ext.do')
 
+init_db_path()
 with get_connection() as conn:
     app.config['CARD_INFO'] = load_card_info(conn)
     app.config['BASE_TABLES'] = load_base_tables(conn)

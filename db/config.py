@@ -33,6 +33,21 @@ def get_logging_config():
     return config
 
 
+def get_database_config() -> dict:
+    """Return database-related configuration values from the database."""
+
+    with get_connection() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT key, value FROM config WHERE section = 'database'")
+        rows = cur.fetchall()
+
+    config = {}
+    for key, val in rows:
+        config[key] = val
+
+    return config
+
+
 def get_all_config():
     """Return the entire config table as a simple key/value dict."""
 

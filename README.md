@@ -148,7 +148,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 
 * **Routing & Views:** Defined in `main.py` using Flask decorators; routes handle list, detail, new record, and error pages. A context processor (`@app.context_processor`) injects the `field_schema`—the in-memory representation of all table fields, types, options, and layout—into all templates and front-end scripts for dynamic form generation and validation. Error handlers (e.g., `@app.errorhandler(404)`) and `abort()` calls manage invalid requests.
 
-* **Configuration & Environment:** Dependencies listed in `requirements.txt`. Configuration values such as the database path are defined directly in `main.py`.
+* **Configuration & Environment:** Dependencies listed in `requirements.txt`. The SQLite database path defaults to `data/crossbook.db` but can be overridden via the `CROSSBOOK_DB_PATH` environment variable or the `db_path` row of the `config` table.
 
 * **Database Layer:** Uses Python’s built-in `sqlite3` in `db/database.py` for connection management. Schema introspection and migrations occur in `db/schema.py`. CRUD operations reside in `db/records.py`; many-to-many join logic in `db/relationships.py`. Validation rules live in `db/validation.py`, and field schema editing utilities in `db/edit_fields.py`.
 
@@ -180,7 +180,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Logging & Monitoring:** Logging is configured via `logging_setup.py` and values stored in the database. Both Flask and root handlers are cleared, then a rotating or timed file handler is attached. Only error-level messages appear in the console. Werkzeug request logs are disabled. Logs capture errors and user actions.
 * **Utility Helpers:** Generic helper code lives in `utils/`. The `validation.py` module powers CSV import validation and can be reused across routes.
 
-* **Data Directory:** Runtime files under `data/`: `crossbook.db` (primary database) and `huey.db` (task queue store).
+* **Data Directory:** Runtime files under `data/`: `crossbook.db` (primary database) and `huey.db` (task queue store). The `db_path` entry in the `config` table can point the application at a different database file.
 
 
 
@@ -194,7 +194,7 @@ This is the core of the Flask application. It defines the web routes, handles da
 **Global configuration and variables in `main.py`:**
 
 - **Flask App Initialization:** The Flask app is created with `static_url_path='/static'` so that files in the `static/` directory are served at the `/static` URL path.
-- **`DB_PATH`:** Path to the SQLite database file defined in `db/database.py`. All modules obtain a connection using `with get_connection()` from that module.
+- **`DB_PATH`:** Path to the SQLite database file. Defaults to `data/crossbook.db` but may be overridden via the `CROSSBOOK_DB_PATH` environment variable or the `db_path` value stored in the `config` table. All modules obtain a connection using `with get_connection()` from `db/database.py`.
 - **`BASE_TABLES`:** Derived from the `config_base_tables` table via `load_base_tables()`. It contains all entity table names and is used to validate route parameters.
 - **`FIELD_SCHEMA`:** Retrieved via `get_field_schema()` whenever needed. It returns a dictionary in the form `{table: {field: {"type": ..., "options": [...], "foreign_key": ..., "layout": {...}, "styling": {...}}}}` describing how each field should be treated in the UI. The `styling` key contains any JSON-parsed styling instructions.
 - **`field_options`:** A `field_options` column in the `field_schema` table contains a JSON-encoded list of options for select fields (e.g., `["Elf", "Human"]`). These options are resolved on demand using the helper `get_field_options()`.
@@ -218,7 +218,7 @@ The following functions encapsulate the application logic:
 
 | Function & Signature                          | Purpose                                                             |
 |-----------------------------------------------|----------------------------------------------------------------------|
-| `get_connection()`                            | Context manager that yields a connection to the SQLite database at `DB_PATH`. Use `with get_connection()` to ensure it closes automatically. |
+| `get_connection()`                            | Context manager that yields a connection to the SQLite database using `DB_PATH`. The path may come from the `CROSSBOOK_DB_PATH` environment variable or the `db_path` setting in the `config` table. Use `with get_connection()` to ensure it closes automatically. |
 | `load_field_schema()`                         | Queries the database for all defined fields in the `field_schema` table and returns a nested dict of `{table: {field: {"type": ..., "options": [...], "foreign_key": ..., "layout": {...}}}}`. |
 | `get_field_options(table, field)`             | Retrieves a list of options for a given `select` field from the `field_schema` table. Returns a list parsed from the `field_options` column (assumed to be valid JSON), or an empty list if none is present or if parsing fails. Used at render time only inside templates that need it. |
 | `get_all_records(table, search=None)`         | Retrieves up to 1000 records from the specified table. If a `search` string is provided, it filters the results to those where any text-like field contains the search substring (case-insensitive). Only fields of type *text, textarea, select,* or *multi select* are searched. Returns a list of records as dictionaries (each dict maps field names to values). Logs the SQL query and catches any errors (returning an empty list on error). |
