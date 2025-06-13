@@ -1,4 +1,5 @@
 export function openBulkEditModal() {
+  updateSelectedCount();
   document.getElementById('bulkEditModal').classList.remove('hidden');
 }
 
@@ -9,12 +10,21 @@ export function closeBulkEditModal() {
 let tableName;
 let bulkBtn;
 
+function updateSelectedCount() {
+  const count = document.querySelectorAll('.row-select:checked').length;
+  const el = document.getElementById('bulk-edit-count');
+  if (el) {
+    el.textContent = `${count} record${count === 1 ? '' : 's'} selected`;
+  }
+}
+
 function updateBulkButtonState() {
   const any = document.querySelectorAll('.row-select:checked').length > 0;
   if (bulkBtn) {
     bulkBtn.disabled = !any;
     bulkBtn.classList.toggle('opacity-50', !any);
   }
+  updateSelectedCount();
 }
 
 function buildInput() {

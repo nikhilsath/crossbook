@@ -66,6 +66,7 @@ def database_step():
                 initialize_database(save_path, include_base_tables=False)
                 db_database.init_db_path(save_path)
                 update_config('db_path', save_path)
+                update_config('heading', 'Load the glass cannons')
                 write_local_settings(save_path)
                 reload_app_state()
         name = request.form.get('create_name')
@@ -78,6 +79,7 @@ def database_step():
             initialize_database(save_path, include_base_tables=False)
             db_database.init_db_path(save_path)
             update_config('db_path', save_path)
+            update_config('heading', 'Load the glass cannons')
             write_local_settings(save_path)
             reload_app_state()
         progress['database'] = True
