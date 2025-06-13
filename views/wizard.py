@@ -63,7 +63,7 @@ def database_step():
             if filename.endswith('.db'):
                 save_path = os.path.join('data', filename)
                 file.save(save_path)
-                initialize_database(save_path)
+                initialize_database(save_path, include_base_tables=False)
                 db_database.init_db_path(save_path)
                 update_config('db_path', save_path)
                 write_local_settings(save_path)
@@ -75,7 +75,7 @@ def database_step():
                 filename += '.db'
             save_path = os.path.join('data', filename)
             open(save_path, 'a').close()
-            initialize_database(save_path)
+            initialize_database(save_path, include_base_tables=False)
             db_database.init_db_path(save_path)
             update_config('db_path', save_path)
             write_local_settings(save_path)
