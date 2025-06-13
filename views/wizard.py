@@ -13,7 +13,7 @@ import json
 from db.database import DB_PATH, check_db_status, init_db_path
 from db.bootstrap import initialize_database
 from db.config import update_config, get_all_config
-from db.schema import create_base_table, refresh_card_cache
+from db.schema import create_base_table, refresh_card_cache, update_foreign_field_options
 from db.edit_fields import add_column_to_table, add_field_to_schema
 from imports.import_csv import parse_csv
 from db.records import create_record
@@ -67,6 +67,12 @@ def database_step():
                 init_db_path(save_path)
                 update_config('db_path', save_path)
                 write_local_settings(save_path)
+                card_info, base_tables = refresh_card_cache()
+                current_app.config['CARD_INFO'] = card_info
+                current_app.config['BASE_TABLES'] = base_tables
+                update_foreign_field_options()
+                from utils import validation
+                validation.reload_schema()
         name = request.form.get('create_name')
         if name:
             filename = secure_filename(name)
@@ -78,6 +84,12 @@ def database_step():
             init_db_path(save_path)
             update_config('db_path', save_path)
             write_local_settings(save_path)
+            card_info, base_tables = refresh_card_cache()
+            current_app.config['CARD_INFO'] = card_info
+            current_app.config['BASE_TABLES'] = base_tables
+            update_foreign_field_options()
+            from utils import validation
+            validation.reload_schema()
         progress['database'] = True
         session['wizard_progress'] = progress
         return redirect(url_for('wizard.settings_step'))
