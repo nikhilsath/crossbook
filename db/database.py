@@ -67,3 +67,22 @@ def get_connection():
         yield conn
     finally:
         conn.close()
+
+
+def check_db_status(path: str) -> str:
+    """Return 'valid', 'locked', 'corrupted', or 'missing' for a database file."""
+    if not path or not os.path.exists(path):
+        return 'missing'
+    try:
+        with sqlite3.connect(path) as conn:
+            cur = conn.execute('PRAGMA integrity_check')
+            row = cur.fetchone()
+            if row and row[0] == 'ok':
+                return 'valid'
+            return 'corrupted'
+    except sqlite3.OperationalError as exc:
+        if 'locked' in str(exc).lower():
+            return 'locked'
+        return 'corrupted'
+    except Exception:
+        return 'corrupted'

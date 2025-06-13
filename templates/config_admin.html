@@ -11,10 +11,10 @@
       Database
     </summary>
     <div class="p-4 space-y-4">
-      <input type="text" id="db-path-display" value="{{ db_path }}" readonly class="border border-gray-300 rounded px-2 py-1 text-sm w-full" />
+      <div id="db-path-display" class="px-2 py-1 text-sm font-mono rounded {{ 'text-green-600' if db_status == 'valid' else 'text-red-600' }}">{{ db_path }}</div>
       <form id="db-upload-form" class="flex items-center space-x-2" enctype="multipart/form-data">
         <input type="file" name="file" accept=".db" class="text-sm border border-gray-300 rounded" />
-        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded">Use DB</button>
+        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded border border-white hover:border-transparent">Change Database</button>
       </form>
       <button id="create-db-btn" type="button" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded">Create New DB</button>
     </div>
