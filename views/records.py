@@ -358,6 +358,40 @@ def update_field(table, record_id):
         )
     return redirect(url_for('records.detail_view', table=table, record_id=record_id))
 
+
+@records_bp.route('/<table>/bulk-update', methods=['POST'])
+def bulk_update(table):
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({'error': 'Invalid JSON'}), 400
+    ids = data.get('ids')
+    field = data.get('field')
+    value = data.get('value')
+    if not isinstance(ids, list) or not field:
+        return jsonify({'error': 'Missing ids or field'}), 400
+    schema = get_field_schema().get(table, {})
+    fmeta = schema.get(field)
+    if fmeta is None:
+        return jsonify({'error': 'Unknown field'}), 400
+    ftype = fmeta['type']
+    if ftype == 'boolean':
+        value = '1' if str(value).lower() in ('1', 'true', 'on') else '0'
+    elif ftype == 'number':
+        try:
+            value = int(value)
+        except (TypeError, ValueError):
+            value = 0
+    elif ftype == 'textarea':
+        from utils.html_sanitizer import sanitize_html
+        value = sanitize_html(value or '')
+
+    updated = 0
+    for rid in ids:
+        if update_field_value(table, rid, field, value):
+            append_edit_log(table, rid, field, None, str(value))
+            updated += 1
+    return jsonify({'success': True, 'updated': updated})
+
 @records_bp.route('/relationship', methods=['POST'])
 def manage_relationship():
     data = request.get_json()

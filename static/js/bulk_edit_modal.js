@@ -6,8 +6,83 @@ export function closeBulkEditModal() {
   document.getElementById('bulkEditModal').classList.add('hidden');
 }
 
+let tableName;
+let bulkBtn;
+
+function updateBulkButtonState() {
+  const any = document.querySelectorAll('.row-select:checked').length > 0;
+  if (bulkBtn) {
+    bulkBtn.disabled = !any;
+    bulkBtn.classList.toggle('opacity-50', !any);
+  }
+}
+
+function buildInput() {
+  const sel = document.getElementById('bulk-field');
+  const type = sel.selectedOptions[0].dataset.type;
+  const container = document.getElementById('bulk-input-container');
+  let html = '';
+  if (type === 'textarea') {
+    html = '<textarea id="bulk-value" class="w-full border px-2 py-1 rounded"></textarea>';
+  } else if (type === 'number') {
+    html = '<input id="bulk-value" type="number" class="w-full border px-2 py-1 rounded">';
+  } else if (type === 'boolean') {
+    html = '<select id="bulk-value" class="w-full border px-2 py-1 rounded"><option value="1">True</option><option value="0">False</option></select>';
+  } else {
+    html = '<input id="bulk-value" type="text" class="w-full border px-2 py-1 rounded">';
+  }
+  container.innerHTML = html;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  // Placeholder for future initialization
+  tableName = document.getElementById('records-table').dataset.table;
+  bulkBtn = document.getElementById('bulk_edit');
+  buildInput();
+  document.getElementById('bulk-field').addEventListener('change', buildInput);
+
+  document.querySelectorAll('.row-select').forEach(cb => {
+    cb.addEventListener('change', updateBulkButtonState);
+  });
+  const selectAll = document.getElementById('select-all-rows');
+  if (selectAll) {
+    selectAll.addEventListener('change', () => {
+      const checked = selectAll.checked;
+      document.querySelectorAll('.row-select').forEach(cb => {
+        cb.checked = checked;
+      });
+      updateBulkButtonState();
+    });
+  }
+  updateBulkButtonState();
+
+  document.getElementById('bulk-edit-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const ids = Array.from(document.querySelectorAll('.row-select:checked')).map(cb => cb.value);
+    const field = document.getElementById('bulk-field').value;
+    const value = document.getElementById('bulk-value').value;
+    fetch(`/${tableName}/bulk-update`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      body: JSON.stringify({ ids, field, value })
+    })
+      .then(resp => {
+        if (!resp.ok) throw new Error('error');
+        return resp.json();
+      })
+      .then(() => {
+        const status = document.getElementById('bulk-edit-status');
+        status.textContent = 'Updated!';
+        status.classList.remove('hidden', 'text-red-600');
+        status.classList.add('text-green-600');
+        setTimeout(() => location.reload(), 500);
+      })
+      .catch(() => {
+        const status = document.getElementById('bulk-edit-status');
+        status.textContent = 'Error updating records';
+        status.classList.remove('hidden', 'text-green-600');
+        status.classList.add('text-red-600');
+      });
+  });
 });
 
 window.openBulkEditModal = openBulkEditModal;
