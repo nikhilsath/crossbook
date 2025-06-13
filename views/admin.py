@@ -66,12 +66,22 @@ def admin_automation():
 def admin_html_redirect():
     return redirect(url_for('admin.admin_page'))
 
+@admin_bp.route('/admin/database')
+def database_page():
+    configs = get_config_rows()
+    db_path = None
+    db_status = 'missing'
+    for item in configs:
+        if item['key'] == 'db_path':
+            db_path = item['value']
+            db_status = check_db_status(db_path)
+            break
+    return render_template('database_admin.html', db_path=db_path, db_status=db_status)
+
 @admin_bp.route('/admin/config')
 def config_page():
     configs = get_config_rows()
     sections = {}
-    db_path = None
-    db_status = 'missing'
     for item in configs:
         if item.get('type') == 'json':
             try:
@@ -79,11 +89,9 @@ def config_page():
             except Exception:
                 item['parsed'] = {}
         if item['key'] == 'db_path':
-            db_path = item['value']
-            db_status = check_db_status(db_path)
             continue
         sections.setdefault(item['section'], []).append(item)
-    return render_template('config_admin.html', sections=sections, db_path=db_path, db_status=db_status)
+    return render_template('config_admin.html', sections=sections)
 
 @admin_bp.route('/admin/config/<path:key>', methods=['POST'])
 def update_config_route(key):
@@ -104,14 +112,14 @@ def update_database_file():
         file = request.files['file']
         filename = secure_filename(file.filename)
         if not filename.endswith('.db'):
-            return redirect(url_for('admin.config_page'))
+            return redirect(url_for('admin.database_page'))
         save_path = os.path.join('data', filename)
         file.save(save_path)
         update_config('db_path', save_path)
         write_local_settings(save_path)
         if wants_json:
             return jsonify({'db_path': save_path, 'status': check_db_status(save_path)})
-        return redirect(url_for('admin.config_page'))
+        return redirect(url_for('admin.database_page'))
 
     name = request.form.get('create_name')
     if name:
@@ -133,7 +141,7 @@ def update_database_file():
         return redirect(url_for('wizard.wizard_start'))
     if wants_json:
         return jsonify({'error': 'no_file'})
-    return redirect(url_for('admin.config_page'))
+    return redirect(url_for('admin.database_page'))
 
 @admin_bp.route('/dashboard/widget', methods=['POST'])
 def dashboard_create_widget():
