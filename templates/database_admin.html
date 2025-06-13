@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Database{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-6">Database</h1>
+<div class="mx-auto w-11/12 max-w-screen-md space-y-6">
+  <div class="bg-white rounded shadow p-4 space-y-4">
+    <div id="db-path-display" class="px-2 py-1 text-sm font-mono rounded {{ 'text-green-600' if db_status == 'valid' else 'text-red-600' }}">{{ db_path }}</div>
+    <form id="db-upload-form" class="flex items-center space-x-2" enctype="multipart/form-data">
+      <input type="file" name="file" accept=".db" class="text-sm border border-gray-300 rounded" />
+      <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded border border-white hover:border-transparent">Change Database</button>
+    </form>
+    <button id="create-db-btn" type="button" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded">Create New DB</button>
+  </div>
+</div>
+<script type="module" src="{{ url_for('static', filename='js/database_admin.js') }}"></script>
+{% endblock %}
