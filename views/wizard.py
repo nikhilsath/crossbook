@@ -10,7 +10,8 @@ from flask import (
 from werkzeug.utils import secure_filename
 import os
 import json
-from db.database import DB_PATH, check_db_status
+from db.database import DB_PATH, check_db_status, init_db_path
+from db.bootstrap import initialize_database
 from db.config import update_config, get_all_config
 from db.schema import create_base_table, refresh_card_cache
 from db.edit_fields import add_column_to_table, add_field_to_schema
@@ -62,6 +63,8 @@ def database_step():
             if filename.endswith('.db'):
                 save_path = os.path.join('data', filename)
                 file.save(save_path)
+                initialize_database(save_path)
+                init_db_path(save_path)
                 update_config('db_path', save_path)
                 write_local_settings(save_path)
         name = request.form.get('create_name')
@@ -71,6 +74,8 @@ def database_step():
                 filename += '.db'
             save_path = os.path.join('data', filename)
             open(save_path, 'a').close()
+            initialize_database(save_path)
+            init_db_path(save_path)
             update_config('db_path', save_path)
             write_local_settings(save_path)
         progress['database'] = True

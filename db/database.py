@@ -25,12 +25,25 @@ DB_PATH = os.path.abspath(
 )
 
 
-def init_db_path() -> None:
-    """Override DB_PATH using database config if available."""
-    global DB_PATH
+def init_db_path(path: str | None = None) -> None:
+    """Set DB_PATH from arguments, environment, local settings or database config."""
+    global DB_PATH, LOCAL_DB_PATH
+    if path:
+        DB_PATH = os.path.abspath(path)
+        return
+
     env_path = os.environ.get("CROSSBOOK_DB_PATH")
     if env_path:
         env_path = os.path.abspath(env_path)
+
+    try:
+        import importlib
+        ls = importlib.import_module("local_settings")
+        importlib.reload(ls)
+        LOCAL_DB_PATH = getattr(ls, "CROSSBOOK_DB_PATH", None)
+    except Exception:
+        LOCAL_DB_PATH = None
+
     local_path = LOCAL_DB_PATH
     if local_path:
         local_path = os.path.abspath(local_path)
