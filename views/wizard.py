@@ -10,7 +10,7 @@ from flask import (
 from werkzeug.utils import secure_filename
 import os
 import json
-from db.database import DB_PATH, check_db_status, init_db_path
+import db.database as db_database
 from db.bootstrap import initialize_database
 from db.config import update_config, get_all_config
 from db.schema import create_base_table
@@ -64,7 +64,7 @@ def database_step():
                 save_path = os.path.join('data', filename)
                 file.save(save_path)
                 initialize_database(save_path)
-                init_db_path(save_path)
+                db_database.init_db_path(save_path)
                 update_config('db_path', save_path)
                 write_local_settings(save_path)
                 reload_app_state()
@@ -76,15 +76,15 @@ def database_step():
             save_path = os.path.join('data', filename)
             open(save_path, 'a').close()
             initialize_database(save_path)
-            init_db_path(save_path)
+            db_database.init_db_path(save_path)
             update_config('db_path', save_path)
             write_local_settings(save_path)
             reload_app_state()
         progress['database'] = True
         session['wizard_progress'] = progress
         return redirect(url_for('wizard.settings_step'))
-    status = check_db_status(DB_PATH)
-    return render_template('wizard_database.html', db_path=DB_PATH, db_status=status)
+    status = db_database.check_db_status(db_database.DB_PATH)
+    return render_template('wizard_database.html', db_path=db_database.DB_PATH, db_status=status)
 
 
 @wizard_bp.route('/wizard/settings', methods=['GET', 'POST'])
