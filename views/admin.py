@@ -22,6 +22,8 @@ from db.schema import create_base_table, refresh_card_cache
 from imports.import_csv import parse_csv
 from utils.validation import validation_sorter
 from db.schema import get_field_schema
+from db.database import get_connection
+from imports.tasks import huey, process_import, init_import_table
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -274,3 +276,64 @@ def trigger_validation():
         report[header] = validation_sorter(table, field, header, field_type, values)
 
     return jsonify(report)
+
+
+@admin_bp.route('/import-start', methods=['POST'])
+def import_start_route():
+    """Start a background import job and return its ID."""
+    if request.is_json:
+        data = request.get_json(silent=True) or {}
+        table = data.get('table')
+        rows = data.get('rows') or []
+    else:
+        table = request.form.get('table')
+        rows = []
+        file = request.files.get('file')
+        if file and file.filename.endswith('.csv'):
+            _, rows = parse_csv(file)
+
+    if not table or not isinstance(rows, list) or not rows:
+        return jsonify({'error': 'Invalid import data'}), 400
+
+    init_import_table()
+    with get_connection() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            'INSERT INTO import_status (status, total_rows, imported_rows, errors) VALUES (?, ?, ?, ?)',
+            ('queued', len(rows), 0, '[]')
+        )
+        import_id = cur.lastrowid
+        conn.commit()
+
+    process_import(import_id, table, rows)
+    return jsonify({'importId': import_id, 'totalRows': len(rows)})
+
+
+@admin_bp.route('/import-status')
+def import_status_route():
+    """Return progress for a given import job."""
+    try:
+        import_id = int(request.args.get('importId', 0))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Invalid importId'}), 400
+
+    with get_connection() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            'SELECT status, total_rows, imported_rows, errors FROM import_status WHERE id = ?',
+            (import_id,)
+        )
+        row = cur.fetchone()
+
+    if not row:
+        return jsonify({'error': 'Import not found'}), 404
+
+    status, total_rows, imported_rows, errors_json = row
+    errors = json.loads(errors_json or '[]')
+    return jsonify({
+        'status': status,
+        'totalRows': total_rows,
+        'importedRows': imported_rows,
+        'errorCount': len(errors),
+        'errors': errors,
+    })
