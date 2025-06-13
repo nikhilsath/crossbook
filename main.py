@@ -1,7 +1,14 @@
 from flask import Flask, render_template, current_app
 import logging
+import sqlite3
 from logging_setup import configure_logging
-from db.database import get_connection, init_db_path
+from db.database import (
+    get_connection,
+    init_db_path,
+    check_db_status,
+    DB_PATH,
+)
+from db.bootstrap import initialize_database
 from db.schema import (
     get_field_schema,
     update_foreign_field_options,
@@ -15,6 +22,25 @@ app = Flask(__name__, static_url_path='/static')
 app.jinja_env.add_extension('jinja2.ext.do')
 
 init_db_path()
+
+needs_init = False
+status = check_db_status(DB_PATH)
+if status == 'missing':
+    needs_init = True
+else:
+    try:
+        with sqlite3.connect(DB_PATH) as conn:
+            cur = conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='config'"
+            )
+            if cur.fetchone() is None:
+                needs_init = True
+    except Exception:
+        needs_init = True
+
+if needs_init:
+    initialize_database(DB_PATH)
+
 with get_connection() as conn:
     app.config['CARD_INFO'] = load_card_info(conn)
     app.config['BASE_TABLES'] = load_base_tables(conn)
