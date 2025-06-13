@@ -1,0 +1,18 @@
+class FieldType:
+    def __init__(self, name, sql_type='TEXT', validator=None, default_width=6, default_height=4, macro=None):
+        self.name = name
+        self.sql_type = sql_type
+        self.validator = validator
+        self.default_width = default_width
+        self.default_height = default_height
+        self.macro = macro
+
+FIELD_TYPES = {}
+
+def register_type(name, sql_type='TEXT', validator=None, default_width=6, default_height=4, macro=None):
+    FIELD_TYPES[name] = FieldType(name, sql_type, validator, default_width, default_height, macro)
+
+
+def get_field_type(name):
+    return FIELD_TYPES.get(name)
+

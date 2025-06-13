@@ -3,6 +3,7 @@ import json
 from db.database import get_connection
 from db.config import get_layout_defaults
 from db.validation import validate_table, validate_field
+from utils.field_registry import get_field_type
 
 DEFAULT_FIELD_WIDTH = {
     "textarea":   12,
@@ -57,10 +58,12 @@ def add_field_to_schema(
         width_map = defaults.get('width', DEFAULT_FIELD_WIDTH)
         height_map = defaults.get('height', DEFAULT_FIELD_HEIGHT)
 
+        ft = get_field_type(field_type)
+
         col_start = 0
-        col_span = width_map.get(field_type, 6)
+        col_span = width_map.get(field_type, ft.default_width if ft else 6)
         row_start = max_bottom
-        row_span = height_map.get(field_type, 4)
+        row_span = height_map.get(field_type, ft.default_height if ft else 4)
 
         # 4) Insert into field_schema including the styling column
         cur.execute(
@@ -90,22 +93,10 @@ def add_column_to_table(table_name, field_name, field_type):
 
     validate_table(table_name)
 
-    # Map form types to SQL types
-    SQL_TYPE_MAP = {
-        "text": "TEXT",
-        "number": "REAL",
-        "date": "TEXT",
-        "boolean": "INTEGER",
-        "textarea": "TEXT",
-        "select": "TEXT",
-        "multi_select": "TEXT",
-        "foreign_key": "TEXT",
-        "url": "TEXT"
-    }
-
-    sql_type = SQL_TYPE_MAP.get(field_type)
-    if not sql_type:
+    ft = get_field_type(field_type)
+    if not ft:
         raise ValueError(f"Unsupported field type: {field_type}")
+    sql_type = ft.sql_type
 
     # Validate names are safe (simple alphanumeric check)
     if not table_name.isidentifier():

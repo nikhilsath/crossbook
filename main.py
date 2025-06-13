@@ -18,6 +18,7 @@ from db.schema import (
 )
 from db.config import get_all_config
 from utils.flask_helpers import start_timer, log_request, log_exception
+from utils.field_registry import FIELD_TYPES
 
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = os.environ.get('SECRET_KEY', 'crossbook-secret')
@@ -71,6 +72,7 @@ def inject_field_schema():
         'update_foreign_field_options': update_foreign_field_options,
         'nav_cards': current_app.config['CARD_INFO'],
         'base_tables': current_app.config['BASE_TABLES'],
+        'field_macro_map': {name: ft.macro for name, ft in FIELD_TYPES.items() if ft.macro},
     }
 
 @app.route("/")
