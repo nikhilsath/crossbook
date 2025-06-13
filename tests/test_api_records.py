@@ -40,3 +40,28 @@ def test_multi_select_all_mode():
     assert data['total_count'] == expected_count(tags, 'all')
     assert len(data['records']) == data['total_count']
 
+
+def test_bulk_update_route():
+    ids = []
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.execute('SELECT id, character FROM character LIMIT 2')
+        rows = cur.fetchall()
+        ids = [r[0] for r in rows]
+        originals = [r[1] for r in rows]
+
+    resp = client.post('/character/bulk-update', json={'ids': ids, 'field': 'character', 'value': 'TestName'})
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data['success'] and data['updated'] == len(ids)
+
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.execute('SELECT character FROM character WHERE id IN (?, ?)', ids)
+        values = [r[0] for r in cur.fetchall()]
+    assert set(values) == {'TestName'}
+
+    # revert changes
+    with sqlite3.connect(DB_PATH) as conn:
+        for i, val in zip(ids, originals):
+            conn.execute('UPDATE character SET character = ? WHERE id = ?', (val, i))
+        conn.commit()
+

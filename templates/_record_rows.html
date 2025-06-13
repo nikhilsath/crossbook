@@ -1,5 +1,8 @@
 {% for record in records %}
 <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location.href='/{{ table }}/{{ record.id }}'">
+  <td class="px-2 py-2" data-static onclick="event.stopPropagation()">
+    <input type="checkbox" class="row-select" value="{{ record.id }}">
+  </td>
   {% for field in fields if not field.startswith('_') %}
     <td class="px-4 py-2 whitespace-nowrap" data-field="{{ field }}">
       {% if field_schema[table][field].type == "textarea" %}
