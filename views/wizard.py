@@ -12,7 +12,7 @@ import os
 import json
 import db.database as db_database
 from db.bootstrap import initialize_database, DEFAULT_CONFIGS
-from db.config import update_config, get_all_config
+from db.config import update_config, get_all_config, get_config_rows
 from db.schema import create_base_table
 from db.edit_fields import add_column_to_table, add_field_to_schema
 from imports.import_csv import parse_csv
@@ -93,16 +93,39 @@ def database_step():
 @wizard_bp.route('/wizard/settings', methods=['GET', 'POST'])
 def settings_step():
     progress = session.setdefault('wizard_progress', {})
-    config = get_all_config()
+    rows = get_config_rows()
+    config = {row['key']: row['value'] for row in rows}
     if request.method == 'POST':
-        for key, _default, _section, _type in DEFAULT_CONFIGS:
+        handler_type = request.form.get('handler_type', config.get('handler_type'))
+        errors = {}
+        for row in rows:
+            key = row['key']
             val = request.form.get(key)
+            if row.get('required') and not val:
+                errors[key] = True
+        if handler_type == 'rotating':
+            for key in ('max_file_size', 'backup_count'):
+                if not request.form.get(key):
+                    errors[key] = True
+        elif handler_type == 'timed':
+            for key in ('backup_count', 'when_interval', 'interval_count'):
+                if not request.form.get(key):
+                    errors[key] = True
+        if errors:
+            return render_template(
+                'wizard_settings.html',
+                config=config,
+                defaults=rows,
+                errors=errors,
+            )
+        for row in rows:
+            val = request.form.get(row['key'])
             if val is not None:
-                update_config(key, val)
+                update_config(row['key'], val)
         progress['settings'] = True
         session['wizard_progress'] = progress
         return redirect(url_for('wizard.table_step'))
-    return render_template('wizard_settings.html', config=config, defaults=DEFAULT_CONFIGS)
+    return render_template('wizard_settings.html', config=config, defaults=rows, errors={})
 
 
 @wizard_bp.route('/wizard/table', methods=['GET', 'POST'])

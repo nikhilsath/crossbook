@@ -60,7 +60,10 @@ def _create_core_tables(cur: sqlite3.Cursor) -> None:
             section TEXT DEFAULT 'general',
             type TEXT DEFAULT 'string',
             description TEXT DEFAULT '',
-            date_updated TEXT
+            date_updated TEXT,
+            required BOOLEAN DEFAULT 0,
+            labels TEXT DEFAULT '',
+            options TEXT DEFAULT ''
         )
         """
     )
