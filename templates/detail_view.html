@@ -64,10 +64,6 @@
                  grid-row:    {{ row_start }} / span {{ row_span }};
                  {% if styling.color %}color: {{ styling.color }};{% endif %}
                ">
-            {#
-              Field labels are rendered within the individual field macros.
-              Remove the extra label container to avoid duplicate titles.
-            #}
             {{ fields.render_editable_field(
                  field, value, record.id, request,
                 'detail_view', 'records.update_field',
