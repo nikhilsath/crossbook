@@ -97,8 +97,9 @@ function makeEditable(displayEl) {
 
 export function attach(el) {
   fitText(el);
+  const container = el.parentElement || el;
   const observer = new ResizeObserver(() => fitText(el));
-  observer.observe(el);
+  observer.observe(container);
   el._autosizeObserver = observer;
   el.addEventListener('click', () => makeEditable(el));
 }
