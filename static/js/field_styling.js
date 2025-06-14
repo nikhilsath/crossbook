@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   let currentEl;
+  let keyListener;
 
   layoutGrid.addEventListener('contextmenu', e => {
     if (!layoutGrid.classList.contains('editing')) return;
@@ -65,10 +66,24 @@ document.addEventListener('DOMContentLoaded', () => {
     menu.style.left = `${e.pageX}px`;
     menu.style.top = `${e.pageY}px`;
     menu.classList.remove('hidden');
+    keyListener = evt => {
+      if (evt.key === 'Escape') {
+        menu.classList.add('hidden');
+        document.removeEventListener('keydown', keyListener);
+        keyListener = null;
+      }
+    };
+    document.addEventListener('keydown', keyListener);
   });
 
   document.addEventListener('click', e => {
-    if (!menu.contains(e.target)) menu.classList.add('hidden');
+    if (!menu.contains(e.target)) {
+      menu.classList.add('hidden');
+      if (keyListener) {
+        document.removeEventListener('keydown', keyListener);
+        keyListener = null;
+      }
+    }
   });
 
   menu.addEventListener('change', () => {
