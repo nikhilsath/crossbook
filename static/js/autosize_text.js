@@ -113,6 +113,7 @@ export function attach(el) {
   const observer = new ResizeObserver(() => fitText(el));
   observer.observe(container);
   el._autosizeObserver = observer;
+  fitText(el);
   el.addEventListener('click', () => makeEditable(el));
 }
 
@@ -120,10 +121,14 @@ export function initAutosizeText() {
   document.querySelectorAll('.autosize-text').forEach(el => attach(el));
 }
 
+function startAutosize() {
+  requestAnimationFrame(initAutosizeText);
+}
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initAutosizeText);
+  window.addEventListener('DOMContentLoaded', startAutosize);
 } else {
-  initAutosizeText();
+  startAutosize();
 }
 
 window.initAutosizeText = initAutosizeText;
