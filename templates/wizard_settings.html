@@ -12,10 +12,10 @@
       {{ item.labels or key.replace('_', ' ')|capitalize }}
       {% if item.required %}<span class="text-red-600">*</span>{% endif %}
     </label>
-    {% if key == 'log_level' %}
+    {% if typ == 'select' %}
       <select name="{{ key }}" id="{{ key }}" class="border rounded px-2 py-1">
-        {% for lvl in ['DEBUG','INFO','WARNING','ERROR'] %}
-        <option value="{{ lvl }}" {% if (config.get(key) or default) == lvl %}selected{% endif %}>{{ lvl }}</option>
+        {% for opt in item.options %}
+        <option value="{{ opt }}" {% if (config.get(key) or default) == opt %}selected{% endif %}>{{ opt }}</option>
         {% endfor %}
       </select>
     {% elif typ in ('integer', 'number') %}
