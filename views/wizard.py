@@ -11,7 +11,7 @@ from werkzeug.utils import secure_filename
 import os
 import json
 import db.database as db_database
-from db.bootstrap import initialize_database, DEFAULT_CONFIGS
+from db.bootstrap import initialize_database, ensure_default_configs
 from db.config import update_config, get_all_config, get_config_rows
 from db.schema import create_base_table
 from db.edit_fields import add_column_to_table, add_field_to_schema
@@ -67,6 +67,7 @@ def database_step():
                 save_path = os.path.join('data', filename)
                 file.save(save_path)
                 initialize_database(save_path, include_base_tables=False)
+                ensure_default_configs(save_path)
                 db_database.init_db_path(save_path)
                 update_config('db_path', save_path)
                 reload_app_state()
@@ -78,6 +79,7 @@ def database_step():
             save_path = os.path.join('data', filename)
             open(save_path, 'a').close()
             initialize_database(save_path, include_base_tables=False)
+            ensure_default_configs(save_path)
             db_database.init_db_path(save_path)
             update_config('db_path', save_path)
             reload_app_state()

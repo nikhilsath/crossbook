@@ -155,6 +155,21 @@ def _insert_defaults(cur: sqlite3.Cursor, path: str, include_base_tables: bool =
     return
 
 
+def ensure_default_configs(path: str) -> None:
+    """Insert DEFAULT_CONFIGS into the config table if it is empty."""
+    with sqlite3.connect(path) as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM config")
+        count = cur.fetchone()[0]
+        if count == 0:
+            for key, value, section, type_ in DEFAULT_CONFIGS:
+                cur.execute(
+                    "INSERT INTO config (key, value, section, type) VALUES (?, ?, ?, ?)",
+                    (key, str(value), section, type_),
+                )
+            conn.commit()
+
+
 def initialize_database(path: str, include_base_tables: bool = False) -> None:
     """Create a new database with core tables."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
