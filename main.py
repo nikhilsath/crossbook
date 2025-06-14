@@ -9,7 +9,7 @@ from db.database import (
     check_db_status,
     DB_PATH,
 )
-from db.bootstrap import initialize_database
+
 from db.schema import (
     get_field_schema,
     update_foreign_field_options,
@@ -26,27 +26,37 @@ app.jinja_env.add_extension('jinja2.ext.do')
 
 init_db_path()
 
-needs_init = False
+needs_wizard = False
 status = check_db_status(DB_PATH)
-if status == 'missing':
-    needs_init = True
-else:
+if status == 'valid':
     try:
         with sqlite3.connect(DB_PATH) as conn:
             cur = conn.execute(
                 "SELECT name FROM sqlite_master WHERE type='table' AND name='config'"
             )
             if cur.fetchone() is None:
-                needs_init = True
+                needs_wizard = True
+            else:
+                from db.config import get_database_config
+
+                cfg = get_database_config()
+                cfg_path = cfg.get('db_path')
+                if cfg_path:
+                    init_db_path(cfg_path)
     except Exception:
-        needs_init = True
+        needs_wizard = True
+else:
+    needs_wizard = True
 
-if needs_init:
-    initialize_database(DB_PATH)
+app.config['NEEDS_WIZARD'] = needs_wizard
 
-with get_connection() as conn:
-    app.config['CARD_INFO'] = load_card_info(conn)
-    app.config['BASE_TABLES'] = load_base_tables(conn)
+if not needs_wizard:
+    with get_connection() as conn:
+        app.config['CARD_INFO'] = load_card_info(conn)
+        app.config['BASE_TABLES'] = load_base_tables(conn)
+else:
+    app.config['CARD_INFO'] = []
+    app.config['BASE_TABLES'] = []
 
 configure_logging(app)
 
@@ -54,6 +64,11 @@ werk_logger = logging.getLogger("werkzeug")
 werk_logger.disabled = True
 
 app.before_request(start_timer)
+
+@app.before_request
+def wizard_redirect():
+    if current_app.config.get('NEEDS_WIZARD') and not request.path.startswith('/wizard'):
+        return redirect(url_for('wizard.wizard_start'))
 
 app.after_request(log_request)
 app.teardown_request(log_exception)

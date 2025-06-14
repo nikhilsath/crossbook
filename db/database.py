@@ -24,7 +24,7 @@ DB_PATH = os.path.abspath(LOCAL_DB_PATH or DEFAULT_DB_PATH)
 
 
 def init_db_path(path: str | None = None) -> None:
-    """Set DB_PATH from arguments, local settings or database config."""
+    """Set DB_PATH from an argument, local settings, or the DB config table."""
     global DB_PATH, LOCAL_DB_PATH
     if path:
         DB_PATH = os.path.abspath(path)
@@ -38,32 +38,17 @@ def init_db_path(path: str | None = None) -> None:
     except Exception:
         LOCAL_DB_PATH = None
 
-    local_path = LOCAL_DB_PATH
-    if local_path:
-        local_path = os.path.abspath(local_path)
-    cfg_path = None
+    DB_PATH = os.path.abspath(LOCAL_DB_PATH or DEFAULT_DB_PATH)
+
     try:
         from db.config import get_database_config
 
         cfg = get_database_config()
         cfg_path = cfg.get("db_path")
         if cfg_path:
-            cfg_path = os.path.abspath(cfg_path)
-        if cfg_path is None:
-            with get_connection() as conn:
-                conn.execute(
-                    "INSERT OR IGNORE INTO config (key, value, section, type, date_updated) VALUES (?, ?, 'database', 'string', datetime('now'))",
-                    ("db_path", DB_PATH),
-                )
-                conn.commit()
-            cfg_path = DB_PATH
+            DB_PATH = os.path.abspath(cfg_path)
     except Exception:
-        cfg_path = None
-
-    if local_path:
-        DB_PATH = local_path
-    elif cfg_path:
-        DB_PATH = cfg_path
+        pass
 
 
 @contextmanager
