@@ -44,17 +44,6 @@ def get_dashboard_widgets() -> list[dict]:
             return []
 
 
-def get_next_row_start() -> int:
-    """Return the next available row_start value for a new widget."""
-    with get_connection() as conn:
-        cur = conn.cursor()
-        cur.execute(
-            "SELECT COALESCE(MAX(row_start + row_span), 0) FROM dashboard_widget"
-        )
-        result = cur.fetchone()
-        return int(result[0]) if result else 0
-
-
 def create_widget(
     title: str,
     content: str,
@@ -64,9 +53,19 @@ def create_widget(
     row_start: int | None,
     row_span: int,
 ) -> int | None:
-    """Insert a new widget row and return its id."""
+    """Insert a new widget row and return its id.
+
+    If ``row_start`` is ``None`` the function automatically finds the next
+    available row in the grid so callers don't need to supply it.
+    """
     if row_start is None:
-        row_start = get_next_row_start()
+        with get_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT COALESCE(MAX(row_start + row_span), 0) FROM dashboard_widget"
+            )
+            result = cur.fetchone()
+            row_start = int(result[0]) if result else 0
 
     with get_connection() as conn:
         cur = conn.cursor()
