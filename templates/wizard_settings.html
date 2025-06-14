@@ -7,7 +7,7 @@
   {% set key = item.key %}
   {% set typ = item.type %}
   {% set default = item.value %}
-  <div>
+  <div class="setting-field" data-field="{{ key }}">
     <label class="block mb-1" for="{{ key }}">
       {{ item.labels or key.replace('_', ' ')|capitalize }}
       {% if item.required %}<span class="text-red-600">*</span>{% endif %}
