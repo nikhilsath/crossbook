@@ -35,11 +35,11 @@
     <div class="dashboard-widget draggable-field min-h-0 border p-2 rounded shadow bg-gray-50"
          data-widget="{{ widget.id }}"
          data-type="{{ widget.widget_type }}"
-         {% if widget.widget_type == 'chart' %}data-config='{{ widget.content }}'{% endif %}
+         {% if widget.widget_type in ['chart', 'value'] %}data-config='{{ widget.content }}'{% endif %}
          style="grid-column: {{ col_start }} / span {{ col_span }}; grid-row: {{ row_start }} / span {{ row_span }};">
       {% if widget.widget_type == 'value' %}
         <div class="font-semibold">{{ widget.title }}</div>
-        <div>{{ widget.content }}</div>
+        <div class="value-result">Loading...</div>
       {% elif widget.widget_type == 'chart' %}
         <div class="font-semibold mb-2">{{ widget.title }}</div>
         <canvas></canvas>
@@ -120,4 +120,5 @@
 <script type="module" src="{{ url_for('static', filename='js/dashboard_modal.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/dashboard_grid.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/dashboard_charts.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/dashboard_values.js') }}"></script>
 {% endblock %}
