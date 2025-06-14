@@ -133,13 +133,11 @@ def ensure_default_configs(path: str) -> None:
                 )
             conn.commit()
 
-
 def initialize_database(path: str) -> None:
     """Create a new database with core tables."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with sqlite3.connect(path) as conn:
         cur = conn.cursor()
         _create_core_tables(cur)
-        # Default records are no longer inserted
         conn.commit()
 
