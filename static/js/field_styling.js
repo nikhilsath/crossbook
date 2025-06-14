@@ -28,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
   window.fieldStyleMenu = menu;
   menu.className = 'absolute bg-white border rounded shadow p-2 space-y-1 hidden z-50 text-sm';
   menu.innerHTML = `
-    <label class="flex items-center space-x-2"><input type="checkbox" data-opt="hideName"> <span>Hide Name</span></label>
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="bold"> <span>Bold</span></label>
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="italic"> <span>Italic</span></label>
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="underline"> <span>Underline</span></label>
@@ -60,7 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     currentEl = fieldEl;
     const styling = fieldEl._styling || {};
-    menu.querySelector('[data-opt="hideName"]').checked = !!styling.hideName;
     menu.querySelector('[data-opt="bold"]').checked = !!styling.bold;
     menu.querySelector('[data-opt="italic"]').checked = !!styling.italic;
     menu.querySelector('[data-opt="underline"]').checked = !!styling.underline;
@@ -92,13 +90,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!currentEl) return;
     const table = layoutGrid.dataset.table;
     const field = currentEl.dataset.field;
-    const styling = {
-      hideName: menu.querySelector('[data-opt="hideName"]').checked,
+    const styling = Object.assign({}, currentEl._styling, {
       bold: menu.querySelector('[data-opt="bold"]').checked,
       italic: menu.querySelector('[data-opt="italic"]').checked,
       underline: menu.querySelector('[data-opt="underline"]').checked,
       color: colorInput.value
-    };
+    });
     currentEl._styling = styling;
     applyStyling(currentEl, styling);
     sendStyling(table, field, styling);
