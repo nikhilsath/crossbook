@@ -10,7 +10,10 @@
 {% endblock %}
 
 {% block content %}
-<h1 class="text-3xl font-bold mb-4">Dashboard</h1>
+<div class="flex items-center mb-4">
+  <h1 class="text-3xl font-bold mr-4">Dashboard</h1>
+  <button id="dashboard_update" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Update</button>
+</div>
 {% if not widgets %}
 <p class="text-gray-600">No widgets visible with current permissions please create new</p>
 {% endif %}
@@ -121,4 +124,5 @@
 <script type="module" src="{{ url_for('static', filename='js/dashboard_grid.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/dashboard_charts.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/dashboard_values.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/dashboard_update.js') }}"></script>
 {% endblock %}
