@@ -4,8 +4,20 @@ import json
 
 # Default configuration settings used by the setup wizard
 DEFAULT_CONFIGS = [
-    ("log_level", "INFO", "general", "string"),
-    ("handler_type", "rotating", "general", "string"),
+    (
+        "log_level",
+        "INFO",
+        "general",
+        "select",
+        ["DEBUG", "INFO", "WARNING", "ERROR"],
+    ),
+    (
+        "handler_type",
+        "rotating",
+        "general",
+        "select",
+        ["rotating", "timed", "stream"],
+    ),
     ("max_file_size", 5242880, "general", "integer"),
     ("backup_count", 3, "general", "integer"),
     ("when_interval", "midnight", "general", "string"),
@@ -126,11 +138,19 @@ def ensure_default_configs(path: str) -> None:
         cur.execute("SELECT COUNT(*) FROM config")
         count = cur.fetchone()[0]
         if count == 0:
-            for key, value, section, type_ in DEFAULT_CONFIGS:
-                cur.execute(
-                    "INSERT INTO config (key, value, section, type) VALUES (?, ?, ?, ?)",
-                    (key, str(value), section, type_),
-                )
+            for cfg in DEFAULT_CONFIGS:
+                if len(cfg) == 5:
+                    key, value, section, type_, options = cfg
+                    cur.execute(
+                        "INSERT INTO config (key, value, section, type, options) VALUES (?, ?, ?, ?, ?)",
+                        (key, str(value), section, type_, json.dumps(options)),
+                    )
+                else:
+                    key, value, section, type_ = cfg
+                    cur.execute(
+                        "INSERT INTO config (key, value, section, type) VALUES (?, ?, ?, ?)",
+                        (key, str(value), section, type_),
+                    )
             conn.commit()
 
 def initialize_database(path: str) -> None:
