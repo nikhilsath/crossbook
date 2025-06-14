@@ -83,8 +83,10 @@ app.register_blueprint(wizard_bp)
 
 @app.context_processor
 def inject_field_schema():
+    schema = get_field_schema()
+    print("Injected field schema keys:", list(schema.keys()))
     return {
-        'field_schema': get_field_schema(),
+        'field_schema': schema,
         'update_foreign_field_options': update_foreign_field_options,
         'nav_cards': current_app.config['CARD_INFO'],
         'base_tables': current_app.config['BASE_TABLES'],
