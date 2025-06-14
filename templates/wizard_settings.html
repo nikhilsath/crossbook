@@ -12,7 +12,7 @@
       {{ item.labels or key.replace('_', ' ')|capitalize }}
       {% if item.required %}<span class="text-red-600">*</span>{% endif %}
     </label>
-    {% if typ == 'select' %}
+    {% if item.options %}
       <select name="{{ key }}" id="{{ key }}" class="border rounded px-2 py-1">
         {% for opt in item.options %}
         <option value="{{ opt }}" {% if (config.get(key) or default) == opt %}selected{% endif %}>{{ opt }}</option>
