@@ -1,11 +1,11 @@
 import logging
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
-from db.config import get_logging_config
+from db.config import get_config_rows
 
 
 def configure_logging(app):
     """Configure application logging based on DB settings."""
-    cfg = get_logging_config()
+    cfg = {row["key"]: row["value"] for row in get_config_rows("logging")}
 
     # Clear existing handlers that Flask may have added
     app.logger.handlers.clear()

@@ -50,24 +50,6 @@ def get_config_rows(sections: str | list[str] | None = None):
     return result
 
 
-def get_logging_config() -> dict:
-    """Return logging-related configuration values from the database."""
-
-    return {row["key"]: row["value"] for row in get_config_rows("logging")}
-
-
-def get_database_config() -> dict:
-    """Return database-related configuration values from the database."""
-
-    return {row["key"]: row["value"] for row in get_config_rows("database")}
-
-
-def get_all_config():
-    """Return the entire config table as a simple key/value dict."""
-
-    return {row["key"]: row["value"] for row in get_config_rows()}
-
-
 def get_layout_defaults() -> dict:
     """Return layout width/height defaults from the config table."""
     with get_connection() as conn:

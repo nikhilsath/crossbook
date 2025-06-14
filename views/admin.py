@@ -12,7 +12,7 @@ import json
 import os
 from werkzeug.utils import secure_filename
 from logging_setup import configure_logging
-from db.config import get_config_rows, update_config, get_logging_config
+from db.config import get_config_rows, update_config
 from db.dashboard import (
     get_dashboard_widgets,
     create_widget,
@@ -105,7 +105,8 @@ def update_config_route(key):
     update_config(key, value)
     if key == 'db_path':
         reload_app_state()
-    if key in get_logging_config():
+    logging_keys = [row['key'] for row in get_config_rows('logging')]
+    if key in logging_keys:
         configure_logging(current_app)
     return redirect(url_for('admin.config_page'))
 

@@ -16,7 +16,7 @@ from db.schema import (
     load_base_tables,
     load_card_info,
 )
-from db.config import get_all_config
+from db.config import get_config_rows
 from utils.flask_helpers import start_timer, log_request, log_exception
 from utils.field_registry import FIELD_TYPES
 
@@ -37,9 +37,10 @@ if status == 'valid':
             if cur.fetchone() is None:
                 needs_wizard = True
             else:
-                from db.config import get_database_config
+                from db.config import get_config_rows
 
-                cfg = get_database_config()
+                rows = get_config_rows('database')
+                cfg = {row['key']: row['value'] for row in rows}
                 cfg_path = cfg.get('db_path')
                 if cfg_path:
                     init_db_path(cfg_path)
@@ -92,7 +93,9 @@ def inject_field_schema():
 
 @app.route("/")
 def home():
-    heading = get_all_config().get('heading')
+    rows = get_config_rows()
+    cfg = {row['key']: row['value'] for row in rows}
+    heading = cfg.get('heading')
     return render_template(
         "index.html",
         cards=current_app.config['CARD_INFO'],
