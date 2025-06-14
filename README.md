@@ -240,7 +240,7 @@ This is the core of the Flask application. It defines the web routes, handles da
  - Instead, templates call the `get_field_options(table, field)` helper to fetch options at render time.
 
 #### Request Logging
-The application logs each request's start, completion time, and status code. `start_timer` stores the start time, `log_request` records the duration, and `log_exception` captures uncaught errors. Werkzeug's default logging is disabled so only these messages appear.
+The application logs each request's start, completion time, and status code at the DEBUG level. `start_timer` stores the start time, `log_request` records the duration, and `log_exception` captures uncaught errors. Werkzeug's default logging is disabled so only these messages appear when the application is running in debug mode.
 
 #### Field Schema Injection
 The context processor `inject_field_schema` loads the field schema and navigation card data before rendering templates, exposing them and `update_foreign_field_options` globally.
