@@ -6,9 +6,9 @@ function applyStyling(el, styling) {
   el.classList.toggle('underline', !!styling.underline);
   el.style.color = styling.color || '';
   const label = el.querySelector('div.text-sm.font-bold.capitalize.mb-1');
-  if (label) label.classList.toggle('hidden', !!styling.hideName);
+  if (label) label.classList.remove('hidden');
   const inlineLabel = el.querySelector('.autosize-text b');
-  if (inlineLabel) inlineLabel.classList.toggle('hidden', !!styling.hideName);
+  if (inlineLabel) inlineLabel.classList.remove('hidden');
 }
 
 function sendStyling(table, field, styling) {
@@ -89,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!currentEl) return;
     const table = layoutGrid.dataset.table;
     const field = currentEl.dataset.field;
+
     const styling = Object.assign({}, currentEl._styling, {
       bold: menu.querySelector('[data-opt="bold"]').checked,
       italic: menu.querySelector('[data-opt="italic"]').checked,
