@@ -92,6 +92,11 @@ def database_step():
 def settings_step():
     progress = session.setdefault('wizard_progress', {})
     rows = get_config_rows()
+    for row in rows:
+        try:
+            row['options'] = json.loads(row.get('options') or '[]')
+        except Exception:
+            row['options'] = []
     config = {row['key']: row['value'] for row in rows}
     if request.method == 'POST':
         handler_type = request.form.get('handler_type', config.get('handler_type'))
