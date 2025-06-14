@@ -4,6 +4,10 @@ function updateConditionalFields() {
   const backup = document.querySelector('[name="backup_count"]');
   const whenInterval = document.querySelector('[name="when_interval"]');
   const intervalCount = document.querySelector('[name="interval_count"]');
+  const maxSizeContainer = document.querySelector('[data-field="max_file_size"]');
+  const backupContainer = document.querySelector('[data-field="backup_count"]');
+  const whenIntervalContainer = document.querySelector('[data-field="when_interval"]');
+  const intervalCountContainer = document.querySelector('[data-field="interval_count"]');
   if (!handler) return;
 
   const clearReq = el => {
@@ -13,6 +17,9 @@ function updateConditionalFields() {
     if (label) label.classList.remove('text-red-600');
   };
   [maxSize, backup, whenInterval, intervalCount].forEach(clearReq);
+  [maxSizeContainer, backupContainer, whenIntervalContainer, intervalCountContainer].forEach(c => {
+    if (c) c.classList.add('hidden');
+  });
 
   const markReq = el => {
     if (!el) return;
@@ -25,10 +32,15 @@ function updateConditionalFields() {
   if (type === 'rotating') {
     markReq(maxSize);
     markReq(backup);
+    if (maxSizeContainer) maxSizeContainer.classList.remove('hidden');
+    if (backupContainer) backupContainer.classList.remove('hidden');
   } else if (type === 'timed') {
     markReq(backup);
     markReq(whenInterval);
     markReq(intervalCount);
+    if (backupContainer) backupContainer.classList.remove('hidden');
+    if (whenIntervalContainer) whenIntervalContainer.classList.remove('hidden');
+    if (intervalCountContainer) intervalCountContainer.classList.remove('hidden');
   }
 }
 
