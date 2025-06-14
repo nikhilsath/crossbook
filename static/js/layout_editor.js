@@ -94,6 +94,7 @@ function handleSaveLayout() {
   const resetLayoutBtn      = document.getElementById('reset-layout');
   toggleEditLayoutBtn.classList.remove('hidden');
   layoutGrid.classList.remove('editing');
+  document.getElementById('field-style-menu')?.classList.add('hidden');
   addFieldBtn.classList.remove('hidden');
     document.querySelectorAll('.resize-handle')
 .forEach(h => h.classList.add('hidden'));

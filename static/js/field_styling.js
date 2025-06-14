@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!layoutGrid) return;
 
   const menu = document.createElement('div');
+  menu.id = 'field-style-menu';
+  window.fieldStyleMenu = menu;
   menu.className = 'absolute bg-white border rounded shadow p-2 space-y-1 hidden z-50 text-sm';
   menu.innerHTML = `
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="hideName"> <span>Hide Name</span></label>
