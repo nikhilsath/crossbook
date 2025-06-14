@@ -84,8 +84,8 @@ app.register_blueprint(wizard_bp)
 @app.context_processor
 def inject_field_schema():
     schema = get_field_schema()
-    print("Injected field schema keys:", list(schema.keys()))
-    current_app.logger.debug("Injected field schema keys: %s", list(schema.keys()))
+    print("Injected field schema keys 1:", list(schema.keys()))
+    current_app.logger.debug("Injected field schema keys 2: %s", list(schema.keys()))
     return {
         'field_schema': schema,
         'update_foreign_field_options': update_foreign_field_options,
