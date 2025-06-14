@@ -1,5 +1,4 @@
 import logging
-
 from flask import current_app
 from db.database import get_connection
 from db.schema import get_field_schema
@@ -10,7 +9,6 @@ logger = logging.getLogger(__name__)
 
 
 def sum_field(table: str, field: str) -> float:
-    """Return the sum of all values for a numeric field."""
     validate_table(table)
     fmeta = get_field_schema().get(table, {}).get(field)
     if fmeta is None or fmeta.get("type") != "number":
@@ -26,9 +24,8 @@ def sum_field(table: str, field: str) -> float:
             logger.warning(f"[sum_field] SQL error for {table}.{field}: {e}")
             return 0
 
-
+# Return all dashboard widgets ordered by id.
 def get_dashboard_widgets() -> list[dict]:
-    """Return all dashboard widgets ordered by id."""
     with get_connection() as conn:
         cursor = conn.cursor()
         try:
@@ -43,7 +40,6 @@ def get_dashboard_widgets() -> list[dict]:
             logger.warning("[get_dashboard_widgets] SQL error: %s", e)
             return []
 
-
 def create_widget(
     title: str,
     content: str,
@@ -53,11 +49,6 @@ def create_widget(
     row_start: int | None,
     row_span: int,
 ) -> int | None:
-    """Insert a new widget row and return its id.
-
-    If ``row_start`` is ``None`` the function automatically finds the next
-    available row in the grid so callers don't need to supply it.
-    """
     if row_start is None:
         with get_connection() as conn:
             cur = conn.cursor()
@@ -84,26 +75,21 @@ def create_widget(
             logger.warning("[create_widget] SQL error: %s", exc)
             return None
 
-
 def update_widget_layout(layout_items: list[dict]) -> int:
     """Update the grid layout data for dashboard widgets.
-
     Args:
         layout_items: A list of dicts each containing ``id``, ``colStart``,
             ``colSpan``, ``rowStart`` and ``rowSpan``.
-
     Returns:
         The number of widget rows updated.
     """
     with get_connection() as conn:
         cur = conn.cursor()
         updated = 0
-
         for item in layout_items:
             widget_id = item.get("id")
             if widget_id is None:
                 continue
-
             try:
                 col_start = float(item.get("colStart", 0))
                 col_span = float(item.get("colSpan", 0))
@@ -111,7 +97,6 @@ def update_widget_layout(layout_items: list[dict]) -> int:
                 row_span = float(item.get("rowSpan", 0))
             except (TypeError, ValueError):
                 continue
-
             cur.execute(
                 """
                 UPDATE dashboard_widget
@@ -125,9 +110,7 @@ def update_widget_layout(layout_items: list[dict]) -> int:
             )
             if cur.rowcount:
                 updated += 1
-
         conn.commit()
-
     return updated
 
 
@@ -151,17 +134,6 @@ def get_top_numeric_values(
     limit: int = 10,
     ascending: bool = False,
 ) -> list[dict]:
-    """Return records ordered by a numeric field.
-
-    Args:
-        table: Table name.
-        field: Numeric field to sort by.
-        limit: Number of records to return.
-        ascending: If True, return lowest values instead of highest.
-
-    Returns:
-        A list of ``{"id": id, "value": value}`` dictionaries.
-    """
     validate_table(table)
     fmeta = get_field_schema().get(table, {}).get(field)
     if fmeta is None or fmeta.get("type") != "number":
@@ -191,17 +163,6 @@ def get_filtered_records(
     order_by: str | None = None,
     limit: int = 10,
 ) -> list[dict]:
-    """Return filtered records from a table.
-
-    Args:
-        table: Table name.
-        filters: Optional search string applied across text fields.
-        order_by: Field to order results by.
-        limit: Maximum number of records to return.
-
-    Returns:
-        A list of record dictionaries.
-    """
     validate_table(table)
     try:
         rows = get_all_records(
