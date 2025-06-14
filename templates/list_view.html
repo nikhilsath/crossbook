@@ -51,9 +51,8 @@
     </button>
     <div id="column-dropdown" class="absolute z-10 mt-2 bg-white border rounded shadow hidden p-2 space-y-1 w-48">
       {% for field in fields if not field.startswith('_') %}
-        {% set styling = field_schema[table][field].styling or {} %}
         <label class="flex items-center space-x-2">
-          <input type="checkbox" class="column-toggle" value="{{ field }}" {% if not styling.hideName %}checked{% endif %}>
+          <input type="checkbox" class="column-toggle" value="{{ field }}" checked>
           <span class="text-sm">{{ field }}</span>
         </label>
       {% endfor %}
