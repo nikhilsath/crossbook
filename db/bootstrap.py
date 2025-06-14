@@ -119,13 +119,6 @@ def _create_core_tables(cur: sqlite3.Cursor) -> None:
     )
 
 
-
-
-def _insert_defaults(cur: sqlite3.Cursor, path: str, include_base_tables: bool = True) -> None:
-    """Previously inserted sample data; now intentionally left blank."""
-    return
-
-
 def ensure_default_configs(path: str) -> None:
     """Insert DEFAULT_CONFIGS into the config table if it is empty."""
     with sqlite3.connect(path) as conn:
