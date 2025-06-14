@@ -2,15 +2,6 @@ import os
 import sqlite3
 import json
 
-BASE_TABLES = [
-    "content",
-    "character",
-    "thing",
-    "faction",
-    "location",
-    "topic",
-]
-
 # Default configuration settings used by the setup wizard
 DEFAULT_CONFIGS = [
     ("log_level", "INFO", "general", "string"),
@@ -128,26 +119,6 @@ def _create_core_tables(cur: sqlite3.Cursor) -> None:
     )
 
 
-def _create_base_tables(cur: sqlite3.Cursor) -> None:
-    for table in BASE_TABLES:
-        cur.execute(
-            f"CREATE TABLE IF NOT EXISTS {table} ("
-            "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-            f" {table} TEXT"
-            ")"
-        )
-
-    # join tables for many-to-many relationships
-    for i in range(len(BASE_TABLES)):
-        for j in range(i + 1, len(BASE_TABLES)):
-            a, b = sorted([BASE_TABLES[i], BASE_TABLES[j]])
-            cur.execute(
-                f"CREATE TABLE IF NOT EXISTS {a}_{b} ("
-                f"{a}_id INTEGER,"
-                f"{b}_id INTEGER,"
-                f"UNIQUE({a}_id, {b}_id)"
-                ")"
-            )
 
 
 def _insert_defaults(cur: sqlite3.Cursor, path: str, include_base_tables: bool = True) -> None:
@@ -170,14 +141,12 @@ def ensure_default_configs(path: str) -> None:
             conn.commit()
 
 
-def initialize_database(path: str, include_base_tables: bool = False) -> None:
+def initialize_database(path: str) -> None:
     """Create a new database with core tables."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with sqlite3.connect(path) as conn:
         cur = conn.cursor()
         _create_core_tables(cur)
-        if include_base_tables:
-            _create_base_tables(cur)
         # Default records are no longer inserted
         conn.commit()
 
