@@ -3,14 +3,24 @@ from db.database import get_connection
 import json
 
 
-def get_config_rows():
-    """Return all configuration rows with metadata."""
+def get_config_rows(sections: str | list[str] | None = None):
+    """Return configuration rows with metadata, optionally filtered by section."""
+
+    query = (
+        "SELECT key, value, section, type, description, "
+        "date_updated, required, labels, options FROM config"
+    )
+    params: list[str] = []
+    if sections:
+        if isinstance(sections, str):
+            sections = [sections]
+        placeholders = ", ".join(["?"] * len(sections))
+        query += f" WHERE section IN ({placeholders})"
+        params = list(sections)
 
     with get_connection() as conn:
         cur = conn.cursor()
-        cur.execute(
-            "SELECT key, value, section, type, description, date_updated, required, labels, options FROM config"
-        )
+        cur.execute(query, params)
         rows = cur.fetchall()
 
     columns = [
@@ -40,35 +50,16 @@ def get_config_rows():
     return result
 
 
-def get_logging_config():
+def get_logging_config() -> dict:
     """Return logging-related configuration values from the database."""
 
-    with get_connection() as conn:
-        cur = conn.cursor()
-
-        cur.execute("SELECT key, value FROM config WHERE section = 'logging'")
-        rows = cur.fetchall()
-
-    config = {}
-    for key, val in rows:
-        config[key] = val
-
-    return config
+    return {row["key"]: row["value"] for row in get_config_rows("logging")}
 
 
 def get_database_config() -> dict:
     """Return database-related configuration values from the database."""
 
-    with get_connection() as conn:
-        cur = conn.cursor()
-        cur.execute("SELECT key, value FROM config WHERE section = 'database'")
-        rows = cur.fetchall()
-
-    config = {}
-    for key, val in rows:
-        config[key] = val
-
-    return config
+    return {row["key"]: row["value"] for row in get_config_rows("database")}
 
 
 def get_all_config():
