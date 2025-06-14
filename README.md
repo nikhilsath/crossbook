@@ -199,6 +199,7 @@ Large files are not streamed—they are fully loaded into memory during parsing,
 
   * `add_table.js` for creating new tables
   * `autosize_text.js` provides inline text editing
+  * `click_to_edit.js` enables clicking a non-boolean field to enter edit mode
   * `bulk_edit_modal.js` for multi-record editing
   * `column_visibility.js` to toggle table columns
   * `dashboard_modal.js` for dashboard widgets
