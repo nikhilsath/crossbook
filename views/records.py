@@ -501,6 +501,8 @@ def update_layout(table):
         updated = db_update_layout(table, layout_items)
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
+    current_app.logger.info('[layout] update_layout %s updated=%s', table, updated)
+    current_app.logger.debug('[layout] payload %s', layout_items)
     return jsonify({'success': True, 'updated': updated})
 
 
@@ -520,4 +522,6 @@ def update_style(table):
         success = db_update_field_styling(table, field, styling)
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
+    current_app.logger.info('[style] update_style %s.%s success=%s', table, field, bool(success))
+    current_app.logger.debug('[style] payload %s', styling)
     return jsonify({'success': bool(success)})

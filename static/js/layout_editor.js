@@ -14,7 +14,6 @@ if (window.FIELD_LAYOUT_DEFAULTS) {
 function initLayout() {
   const layoutGrid = document.getElementById('layout-grid');
   CONTAINER_WIDTH = layoutGrid.clientWidth;
-  console.info("[layout] initLayout → container width=", CONTAINER_WIDTH);
 }
 
 function bindEventHandlers() {
@@ -22,14 +21,11 @@ function bindEventHandlers() {
   const resetLayoutBtn = document.getElementById('reset-layout');
   saveLayoutBtn.addEventListener('click', handleSaveLayout);
   resetLayoutBtn.addEventListener('click', resetLayout);
-  console.debug("[layout] bindEventHandlers registered save+reset click");
 }
 
 function onLoadJS(){
-  console.info("[layout] onLoadJS start");
   initLayout();
   bindEventHandlers();
-  console.info("[layout] onLoadJS end");
 }
 
 function intersects(a, b) {
@@ -44,7 +40,7 @@ function intersects(a, b) {
 function revertPosition(el) {
   const prev = el._prevRect;
   if (!prev) {
-    console.warn("[layout] revertPosition: no previous rect for", el.dataset.field);
+    // Intentionally silent if no previous rect
     return;
   }
   const startCol = prev.colStart;
@@ -59,11 +55,9 @@ function revertPosition(el) {
   el.style.height   = '';
   el.style.position = '';
   layoutCache[el.dataset.field] = { ...prev };
-  console.info("[layout] revertPosition called for", el.dataset.field, "previous rect=", prev);
 }
 
 function resetLayout() {
-  console.groupCollapsed("[layout] resetLayout start");
   let curRow = 1;
   Object.entries(layoutCache).forEach(([field, rect]) => {
     const el = document.querySelector(`.draggable-field[data-field=\"${field}\"]`);
@@ -77,16 +71,13 @@ function resetLayout() {
     layoutCache[field] = { colStart, colSpan: widthUnits, rowStart, rowSpan };
     el.style.gridColumn = `${colStart} / span ${widthUnits}`;
     el.style.gridRow    = `${rowStart} / span ${rowSpan}`;
-    console.debug(`[layout] resetLayout field "${field}": col ${colStart}→span ${widthUnits}, row ${rowStart}→span ${rowSpan}em → cache:`, layoutCache[field]);
   });
-  console.groupEnd();
   if (window.initAutosizeText) {
     window.initAutosizeText();
   }
 }
 
 function handleSaveLayout() {
-  console.groupCollapsed("[layout] saveLayout start");
   const layoutGrid          = document.getElementById('layout-grid');
   const toggleEditLayoutBtn = document.getElementById('toggle-edit-layout');
   const addFieldBtn         = document.getElementById('add-field');
@@ -103,28 +94,24 @@ function handleSaveLayout() {
     .filter(([field]) => document.querySelector(`.draggable-field[data-field=\"${field}\"]`))
     .map(([field, rect]) => ({ field, colStart: rect.colStart, colSpan: rect.colSpan, rowStart: rect.rowStart, rowSpan: rect.rowSpan }));
   const payload = { layout: layoutEntries };
-  console.debug("[layout] saveLayout payload", payload);
   fetch(`/${table}/layout`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   })
     .then(response => {
-      console.info(`[layout] saveLayout response status: ${response.status}`);
-      if (!response.ok) console.warn("[layout] saveLayout non-OK status", response.status);
+      // ignore status logging in browser
       return response.json();
     })
     .then(data => {
-      console.debug("[layout] saveLayout result", data);
       resetLayoutBtn.classList.add('hidden');
       saveLayoutBtn.classList.add('hidden');
-      console.info("[layout] saveLayout end");
-      console.groupEnd();
+      // layout save complete
       if (window.initAutosizeText) {
         window.initAutosizeText();
       }
     })
-    .catch(err => { console.error("[layout] saveLayout error", err); console.groupEnd(); });
+    .catch(() => {});
 }
 
 function editModeButtons() {
@@ -133,7 +120,6 @@ function editModeButtons() {
   const addFieldBtn         = document.getElementById('add-field');
   const saveLayoutBtn       = document.getElementById('save-layout');
   const layoutGrid          = document.getElementById('layout-grid');
-  console.debug("[layout] editModeButtons toggling edit-mode controls");
   layoutGrid.classList.add('editing');
   resetLayoutBtn.classList.remove('hidden');
   addFieldBtn.classList.add('hidden');
@@ -227,7 +213,6 @@ function enableVanillaDrag() {
     // Clearing up the following is required to allow resize again
     fieldEl.style.width  = '';
     fieldEl.style.height = '';
-    console.debug("[layout] drag:end gridPos", fieldEl.style.gridColumn, fieldEl.style.gridRow);
 
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
@@ -318,13 +303,11 @@ function enableVanillaResize() {
       rowStart: parseInt(partsRow[0]),
       rowSpan:  parseInt(partsRow[3]),
     };
-    console.log(`[layout][resize–end] "${field}": proposed newRect=`, newRect);
 
     // collision check
     const hasOverlap = Object.entries(layoutCache).some(([key, rect]) =>
       key !== field && intersects(newRect, rect)
     );
-    console.log(`[layout][resize–end] "${field}": hasOverlap=`, hasOverlap);
     if (hasOverlap) {
       revertPosition(fieldEl);
     } else {
@@ -347,15 +330,5 @@ document.addEventListener('DOMContentLoaded', function() {
     editModeButtons();
     enableVanillaDrag();
     enableVanillaResize();
-
-    layoutGrid.addEventListener('mousedown', function(e) {
-      const fieldEl = e.target.closest('.draggable-field');
-      const field = fieldEl?.dataset.field;
-      if (!fieldEl || !field) return;
-
-      console.debug("[layout] drag:activate", field);
-    });
-
-    console.debug("[layout] domContentLoaded initialCache", layoutCache);  // Fires on entering edit mode; shows starting coordinates
   });
 });
