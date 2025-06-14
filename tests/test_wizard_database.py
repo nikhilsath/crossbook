@@ -3,7 +3,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from main import app
 import db.database as db_database
-from db.config import get_all_config
+from db.config import get_config_rows
 
 app.testing = True
 client = app.test_client()
@@ -22,7 +22,8 @@ def test_settings_step_after_db_creation():
     assert b'Step 2' in resp.data
     assert os.path.abspath(os.path.join('data', new_name)) == db_database.DB_PATH
 
-    config = get_all_config()
+    rows = get_config_rows()
+    config = {row['key']: row['value'] for row in rows}
     assert config.get('db_path')
     assert config.get('heading') == ''
     # ensure other defaults exist

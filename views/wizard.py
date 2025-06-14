@@ -12,7 +12,7 @@ import os
 import json
 import db.database as db_database
 from db.bootstrap import initialize_database, ensure_default_configs
-from db.config import update_config, get_all_config, get_config_rows
+from db.config import update_config, get_config_rows
 from db.schema import create_base_table
 from db.edit_fields import add_column_to_table, add_field_to_schema
 from imports.import_csv import parse_csv

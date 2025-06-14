@@ -86,7 +86,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 ├── logging_setup.py                 # Logging configuration helper
 ├── requirements.txt                 # Python dependencies
 ├── db/                              # Database layer modules
-│   ├── config.py                    # Database-backed configuration helper
+│   ├── config.py                    # Configuration helpers (get_config_rows, update_config)
 │   ├── database.py                  # Connection and session management
 │   ├── schema.py                    # Schema introspection and migrations
 │   ├── records.py                   # CRUD operations

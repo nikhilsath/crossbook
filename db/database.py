@@ -29,9 +29,10 @@ def init_db_path(path: str | None = None) -> None:
     DB_PATH = os.path.abspath(DEFAULT_DB_PATH)
 
     try:
-        from db.config import get_database_config
+        from db.config import get_config_rows
 
-        cfg = get_database_config()
+        rows = get_config_rows("database")
+        cfg = {row["key"]: row["value"] for row in rows}
         cfg_path = cfg.get("db_path")
         if cfg_path:
             DB_PATH = os.path.abspath(cfg_path)
