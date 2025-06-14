@@ -37,15 +37,6 @@ from utils.field_registry import FIELD_TYPES
 admin_bp = Blueprint('admin', __name__)
 
 
-def write_local_settings(db_path: str, filename: str = 'local_settings.py') -> None:
-    """Persist the database path so init_db_path can load it on startup."""
-    try:
-        with open(filename, 'w') as fh:
-            fh.write(f"CROSSBOOK_DB_PATH = '{db_path}'\n")
-    except Exception as exc:
-        current_app.logger.exception('Failed to write %s: %s', filename, exc)
-
-
 def reload_app_state() -> None:
     """Refresh cached navigation and schema data after a DB change."""
     card_info, base_tables = refresh_card_cache()
@@ -113,7 +104,6 @@ def update_config_route(key):
     value = request.form.get('value', '')
     update_config(key, value)
     if key == 'db_path':
-        write_local_settings(value)
         reload_app_state()
     if key in get_logging_config():
         configure_logging(current_app)
@@ -134,7 +124,6 @@ def update_database_file():
         initialize_database(save_path, include_base_tables=False)
         init_db_path(save_path)
         update_config('db_path', save_path)
-        write_local_settings(save_path)
         reload_app_state()
         if wants_json:
             return jsonify({'db_path': save_path, 'status': check_db_status(save_path)})
@@ -150,7 +139,6 @@ def update_database_file():
         initialize_database(save_path, include_base_tables=False)
         init_db_path(save_path)
         update_config('db_path', save_path)
-        write_local_settings(save_path)
         reload_app_state()
         session['wizard_progress'] = {'database': True, 'skip_import': True}
         session.pop('wizard_complete', None)

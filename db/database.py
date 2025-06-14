@@ -5,10 +5,6 @@ import os
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 DEFAULT_DB_PATH = os.path.join(PROJECT_ROOT, "data", "crossbook.db")
 
-try:
-    from local_settings import CROSSBOOK_DB_PATH as LOCAL_DB_PATH
-except Exception:
-    LOCAL_DB_PATH = None
 from contextlib import contextmanager
 
 try:
@@ -20,25 +16,17 @@ try:
 except Exception:
     SUPPORTS_REGEX = False
 
-DB_PATH = os.path.abspath(LOCAL_DB_PATH or DEFAULT_DB_PATH)
+DB_PATH = os.path.abspath(DEFAULT_DB_PATH)
 
 
 def init_db_path(path: str | None = None) -> None:
-    """Set DB_PATH from an argument, local settings, or the DB config table."""
-    global DB_PATH, LOCAL_DB_PATH
+    """Set DB_PATH from an argument or the DB config table."""
+    global DB_PATH
     if path:
         DB_PATH = os.path.abspath(path)
         return
 
-    try:
-        import importlib
-        ls = importlib.import_module("local_settings")
-        importlib.reload(ls)
-        LOCAL_DB_PATH = getattr(ls, "CROSSBOOK_DB_PATH", None)
-    except Exception:
-        LOCAL_DB_PATH = None
-
-    DB_PATH = os.path.abspath(LOCAL_DB_PATH or DEFAULT_DB_PATH)
+    DB_PATH = os.path.abspath(DEFAULT_DB_PATH)
 
     try:
         from db.config import get_database_config

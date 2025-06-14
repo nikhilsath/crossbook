@@ -11,10 +11,6 @@ client = app.test_client()
 
 def test_settings_step_after_db_creation():
     new_name = 'test_created.db'
-    orig_settings = ''
-    if os.path.exists('local_settings.py'):
-        with open('local_settings.py') as fh:
-            orig_settings = fh.read()
     # ensure file removed if exists from prior runs
     try:
         os.remove(os.path.join('data', new_name))
@@ -38,11 +34,3 @@ def test_settings_step_after_db_creation():
     from views.admin import reload_app_state
     with app.app_context():
         reload_app_state()
-    if orig_settings:
-        with open('local_settings.py', 'w') as fh:
-            fh.write(orig_settings)
-    else:
-        try:
-            os.remove('local_settings.py')
-        except FileNotFoundError:
-            pass

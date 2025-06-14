@@ -17,7 +17,7 @@ from db.schema import create_base_table
 from db.edit_fields import add_column_to_table, add_field_to_schema
 from imports.import_csv import parse_csv
 from db.records import create_record
-from views.admin import write_local_settings, reload_app_state
+from views.admin import reload_app_state
 
 wizard_bp = Blueprint('wizard', __name__)
 
@@ -69,7 +69,6 @@ def database_step():
                 initialize_database(save_path, include_base_tables=False)
                 db_database.init_db_path(save_path)
                 update_config('db_path', save_path)
-                write_local_settings(save_path)
                 reload_app_state()
         name = request.form.get('create_name')
         if name:
@@ -81,7 +80,6 @@ def database_step():
             initialize_database(save_path, include_base_tables=False)
             db_database.init_db_path(save_path)
             update_config('db_path', save_path)
-            write_local_settings(save_path)
             reload_app_state()
         progress['database'] = True
         session['wizard_progress'] = progress
