@@ -17,7 +17,6 @@ from db.schema import (
     load_card_info,
 )
 from db.config import get_config_rows
-from utils.flask_helpers import start_timer, log_request, log_exception
 from utils.field_registry import FIELD_TYPES
 import utils.validation  # ensure register_type() runs at startup
 
@@ -65,15 +64,11 @@ configure_logging(app)
 werk_logger = logging.getLogger("werkzeug")
 werk_logger.disabled = True
 
-app.before_request(start_timer)
-
 @app.before_request
 def wizard_redirect():
     if current_app.config.get('NEEDS_WIZARD') and not request.path.startswith('/wizard'):
         return redirect(url_for('wizard.wizard_start'))
 
-app.after_request(log_request)
-app.teardown_request(log_exception)
 
 from views.admin import admin_bp
 from views.records import records_bp

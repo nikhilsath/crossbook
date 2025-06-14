@@ -11,7 +11,6 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 - [Project Structure](#project-structure)
 - [Application Architecture and Code Overview](#application-architecture-and-code-overview)
   - [Main Application – `main.py`](#main-application-mainpy)
-    - [Request Logging](#request-logging)
     - [Field Schema Injection](#field-schema-injection)
     - [Record Fetching](#record-fetching)
     - [Update Logic](#update-logic)
@@ -145,7 +144,6 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 │   └── wizard.py                    # Setup wizard workflow
 ├── utils/                           # Shared helper modules
 │   ├── field_registry.py            # Field type registry and defaults
-│   ├── flask_helpers.py             # Flask utilities
 │   ├── html_sanitizer.py            # Sanitize editor HTML
 │   └── validation.py                # CSV import validation functions
 ├── tests/                           # Automated tests
@@ -217,7 +215,7 @@ Large files are not streamed—they are fully loaded into memory during parsing,
 * **Templating & Macros:** Jinja2 templates in `templates/` include the core pages (`base.html`, `index.html`, `list_view.html`, `detail_view.html`, `new_record.html`, `dashboard.html`) plus admin and import views. Partial templates like `edit_fields_modal.html` and `bulk_edit_modal.html` are used for modals. Reusable macros live in `templates/macros/fields.html` and `filter_controls.html`.
 
 * **Logging & Monitoring:** Logging is configured via `logging_setup.py` and values stored in the database. Both Flask and root handlers are cleared, then a rotating or timed file handler is attached. Only error-level messages appear in the console. Werkzeug request logs are disabled. Logs capture errors and user actions.
-* **Utility Helpers:** Helper modules in `utils/` include field type registration, Flask helpers, HTML sanitization and the CSV import validator.
+* **Utility Helpers:** Helper modules in `utils/` include field type registration, HTML sanitization and the CSV import validator.
 
 * **Data Directory:** Runtime files under `data/`: `crossbook.db` (primary database) and `huey.db` (task queue store). The `db_path` entry in the `config` table can point the application at a different database file.
 
@@ -238,9 +236,6 @@ This is the core of the Flask application. It defines the web routes, handles da
 - **`FIELD_SCHEMA`:** Retrieved via `get_field_schema()` whenever needed. It returns a dictionary in the form `{table: {field: {"type": ..., "options": [...], "foreign_key": ..., "layout": {...}, "styling": {...}}}}` describing how each field should be treated in the UI. The `styling` key contains any JSON-parsed styling instructions.
 - **`field_options`:** A `field_options` column in the `field_schema` table contains a JSON-encoded list of options for select fields (e.g., `["Elf", "Human"]`). These options are resolved on demand using the helper `get_field_options()`.
  - Instead, templates call the `get_field_options(table, field)` helper to fetch options at render time.
-
-#### Request Logging
-The application logs each request's start, completion time, and status code at the DEBUG level. `start_timer` stores the start time, `log_request` records the duration, and `log_exception` captures uncaught errors. Werkzeug's default logging is disabled so only these messages appear when the application is running in debug mode.
 
 #### Field Schema Injection
 The context processor `inject_field_schema` loads the field schema and navigation card data before rendering templates, exposing them and `update_foreign_field_options` globally.
