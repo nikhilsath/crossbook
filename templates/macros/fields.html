@@ -158,6 +158,7 @@
        data-styling='{{ styling | tojson }}'>
     {% set macro_name = field_macro_map.get(field_type) if field_macro_map else None %}
     {% if macro_name and (self|attr(macro_name)) %}
+      {{ current_app.logger.debug('--- form rendered for ' ~ field) }}
       {{ (self|attr(macro_name))(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) }}
     {% else %}
       <span class="ml-1" data-field="{{ field }}"><b>{{ field|capitalize }}:</b> {{ value }}</span>
