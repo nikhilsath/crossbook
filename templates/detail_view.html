@@ -39,6 +39,7 @@
     <div id="layout-grid"
          class="relative w-full grid"
          data-table="{{ table }}"
+         data-record-id="{{ record.id }}"
          style="
            grid-template-columns: repeat(20, 1fr);
            grid-auto-rows: 1em;
@@ -205,6 +206,7 @@
 </script>
 <script type="module" src="{{ url_for('static', filename='js/field_ajax.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/autosize_text.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/click_to_edit.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/editor.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/undo_edit.js') }}"></script>
 
