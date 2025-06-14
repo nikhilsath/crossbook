@@ -24,7 +24,9 @@ def test_settings_step_after_db_creation():
 
     config = get_all_config()
     assert config.get('db_path')
-    assert 'heading' not in config
+    assert config.get('heading') == ''
+    # ensure other defaults exist
+    assert 'log_level' in config
 
     # restore original test database
     from db.database import init_db_path
