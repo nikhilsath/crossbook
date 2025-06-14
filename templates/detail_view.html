@@ -64,9 +64,6 @@
                  grid-row:    {{ row_start }} / span {{ row_span }};
                  {% if styling.color %}color: {{ styling.color }};{% endif %}
                ">
-            {% if field_schema[table][field].type != 'text' %}
-            <div class="text-sm font-bold capitalize mb-1">{{ field }}</div>
-            {% endif %}
             {{ fields.render_editable_field(
                  field, value, record.id, request,
                 'detail_view', 'records.update_field',
