@@ -53,7 +53,8 @@
           {% set col_span  = layout.colSpan  or 1 %}
           {% set row_start = layout.rowStart or 1 %}
           {% set row_span  = layout.rowSpan  or 1 %}
-          <div class="draggable-field border p-2 rounded shadow bg-gray-50{{ ' font-bold' if styling.bold }}{{ ' italic' if styling.italic }}{{ ' underline' if styling.underline }}"
+          <div id="draggable-field-{{ field }}"
+               class="draggable-field border p-2 rounded shadow bg-gray-50{{ ' font-bold' if styling.bold }}{{ ' italic' if styling.italic }}{{ ' underline' if styling.underline }}"
                data-field="{{ field }}"
                data-type="{{ field_schema[table][field].type }}"
                data-styling='{{ styling | tojson }}'
