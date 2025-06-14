@@ -1,53 +1,13 @@
-let measureCanvas;
+// Simplified text editing behaviour. The previous implementation dynamically
+// resized text to fit its container, but this added a lot of complexity and
+// often produced inconsistent results.  The logic below simply enables inline
+// editing without attempting to measure or resize the font.
 
-export function fitText(el) {
-
-  if (!measureCanvas) {
-    measureCanvas = document.createElement('canvas');
-  }
-  const ctx = measureCanvas.getContext('2d');
-
-  console.groupCollapsed('[autosize_text] fitText', el.dataset.field || el.textContent.trim());
-
-  // Reset any previous inline size
-  el.style.fontSize = '';
-
-  const text = el.textContent.trim();
-  if (!text) {
-    console.warn('[autosize_text] empty text');
-    console.groupEnd();
-    return;
-  }
-
-  const style = window.getComputedStyle(el);
-  const fontFamily = style.fontFamily || 'sans-serif';
-  const fontWeight = style.fontWeight || 'normal';
-  ctx.font = `${fontWeight} 10px ${fontFamily}`;
-  const metrics = ctx.measureText(text);
-
-  const width = el.clientWidth;
-  const height = el.clientHeight;
-  if (!width || !height) {
-    console.warn('[autosize_text] zero size', width, height);
-    console.groupEnd();
-    return;
-  }
-
-  const sizeByWidth = (width * 0.9 / metrics.width) * 10;
-  const sizeByHeight = height * 0.9; // because metrics were for 10px height
-  let newSize = Math.floor(Math.min(sizeByWidth, sizeByHeight));
-  if (newSize < 4) newSize = 4;
-  console.debug('[autosize_text] metrics.width=', metrics.width, 'sizeByWidth=', sizeByWidth, 'sizeByHeight=', sizeByHeight, 'newSize=', newSize);
-  el.style.fontSize = `${newSize}px`;
-  console.debug('[autosize_text] applied fontSize', el.style.fontSize);
-  console.groupEnd();
+function fitText() {
+  // no-op: resizing has been removed
 }
 
 function makeEditable(displayEl) {
-  if (displayEl._autosizeObserver) {
-    displayEl._autosizeObserver.disconnect();
-    delete displayEl._autosizeObserver;
-  }
   const value = displayEl.dataset.rawValue || displayEl.textContent.trim();
   const form = document.createElement('form');
   form.method = 'POST';
@@ -96,23 +56,6 @@ function makeEditable(displayEl) {
 }
 
 export function attach(el) {
-  fitText(el);
-  let container;
-  if (el.dataset.field) {
-    container = document.getElementById(`draggable-field-${el.dataset.field}`);
-  }
-  if (!container) {
-    if (el.parentElement && el.parentElement.parentElement) {
-      container = el.parentElement.parentElement;
-    } else if (el.parentElement) {
-      container = el.parentElement;
-    } else {
-      container = el;
-    }
-  }
-  const observer = new ResizeObserver(() => fitText(el));
-  observer.observe(container);
-  el._autosizeObserver = observer;
   fitText(el);
   el.addEventListener('click', () => makeEditable(el));
 }
