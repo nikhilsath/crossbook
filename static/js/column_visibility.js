@@ -1,6 +1,17 @@
 document.addEventListener("DOMContentLoaded", () => {
   const checkboxes = () => document.querySelectorAll(".column-toggle");
 
+  const table = document.getElementById("records-table")?.dataset.table;
+
+  const sendStyling = (field, hide) => {
+    if (!table) return;
+    fetch(`/${table}/style`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ field, styling: { hideName: hide } })
+    }).catch(err => console.error("Styling update failed", err));
+  };
+
   const getSelectedFields = () =>
     Array.from(checkboxes())
       .filter(cb => cb.checked)
@@ -39,7 +50,12 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Attach listeners
-  checkboxes().forEach(cb => cb.addEventListener("change", updateVisibility));
+  checkboxes().forEach(cb =>
+    cb.addEventListener("change", () => {
+      updateVisibility();
+      sendStyling(cb.value, !cb.checked);
+    })
+  );
 
   // Initial update
   updateVisibility();

@@ -10,13 +10,14 @@
 {# Field-specific rendering macros #}
 
 {% macro render_text(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) %}
+  {% set styling = field_schema[table][field].styling or {} %}
   <div class="autosize-text"
        data-field="{{ field }}"
        data-record-id="{{ record_id }}"
        data-update-url="{{ url_for(update_endpoint, table=table, record_id=record_id) }}"
        data-raw-value="{{ value }}"
        data-label="{{ field|capitalize }}">
-    <b>{{ field|capitalize }}:</b> {{ value }}
+    {% if not styling.hideName %}<b>{{ field|capitalize }}:</b>{% endif %} {{ value }}
   </div>
 {% endmacro %}
 
