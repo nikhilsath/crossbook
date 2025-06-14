@@ -97,7 +97,19 @@ function makeEditable(displayEl) {
 
 export function attach(el) {
   fitText(el);
-  const container = el.parentElement || el;
+  let container;
+  if (el.dataset.field) {
+    container = document.getElementById(`draggable-field-${el.dataset.field}`);
+  }
+  if (!container) {
+    if (el.parentElement && el.parentElement.parentElement) {
+      container = el.parentElement.parentElement;
+    } else if (el.parentElement) {
+      container = el.parentElement;
+    } else {
+      container = el;
+    }
+  }
   const observer = new ResizeObserver(() => fitText(el));
   observer.observe(container);
   el._autosizeObserver = observer;
