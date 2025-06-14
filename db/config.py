@@ -9,11 +9,21 @@ def get_config_rows():
     with get_connection() as conn:
         cur = conn.cursor()
         cur.execute(
-            "SELECT key, value, section, type, description, date_updated FROM config"
+            "SELECT key, value, section, type, description, date_updated, required, labels, options FROM config"
         )
         rows = cur.fetchall()
 
-    columns = ["key", "value", "section", "type", "description", "date_updated"]
+    columns = [
+        "key",
+        "value",
+        "section",
+        "type",
+        "description",
+        "date_updated",
+        "required",
+        "labels",
+        "options",
+    ]
     return [dict(zip(columns, row)) for row in rows]
 
 
