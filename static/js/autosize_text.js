@@ -44,6 +44,10 @@ export function fitText(el) {
 }
 
 function makeEditable(displayEl) {
+  if (displayEl._autosizeObserver) {
+    displayEl._autosizeObserver.disconnect();
+    delete displayEl._autosizeObserver;
+  }
   const value = displayEl.dataset.rawValue || displayEl.textContent.trim();
   const form = document.createElement('form');
   form.method = 'POST';
@@ -93,6 +97,9 @@ function makeEditable(displayEl) {
 
 export function attach(el) {
   fitText(el);
+  const observer = new ResizeObserver(() => fitText(el));
+  observer.observe(el);
+  el._autosizeObserver = observer;
   el.addEventListener('click', () => makeEditable(el));
 }
 
