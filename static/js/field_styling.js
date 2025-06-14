@@ -31,12 +31,11 @@ document.addEventListener('DOMContentLoaded', () => {
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="bold"> <span>Bold</span></label>
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="italic"> <span>Italic</span></label>
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="underline"> <span>Underline</span></label>
-    <input id="field-color-input" type="color" data-opt="color" class="w-full h-6 p-0 border rounded cursor-pointer">
     <div id="color-presets" class="flex space-x-1 mt-1"></div>
   `;
   document.body.appendChild(menu);
 
-  const colorInput = menu.querySelector('#field-color-input');
+  let selectedColor = '#000000';
   const presetsDiv = menu.querySelector('#color-presets');
   const presetColors = ['#000000', '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
   presetsDiv.innerHTML = presetColors.map(c =>
@@ -44,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
   ).join('');
   presetsDiv.addEventListener('click', e => {
     if (e.target.dataset.color) {
-      colorInput.value = e.target.dataset.color;
+      selectedColor = e.target.dataset.color;
       menu.dispatchEvent(new Event('change'));
     }
   });
@@ -62,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     menu.querySelector('[data-opt="bold"]').checked = !!styling.bold;
     menu.querySelector('[data-opt="italic"]').checked = !!styling.italic;
     menu.querySelector('[data-opt="underline"]').checked = !!styling.underline;
-    colorInput.value = styling.color || '#000000';
+    selectedColor = styling.color || '#000000';
     menu.style.left = `${e.pageX}px`;
     menu.style.top = `${e.pageY}px`;
     menu.classList.remove('hidden');
@@ -94,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
       bold: menu.querySelector('[data-opt="bold"]').checked,
       italic: menu.querySelector('[data-opt="italic"]').checked,
       underline: menu.querySelector('[data-opt="underline"]').checked,
-      color: colorInput.value
+      color: selectedColor
     });
     currentEl._styling = styling;
     applyStyling(currentEl, styling);
