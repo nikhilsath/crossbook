@@ -102,7 +102,6 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 │   │   └── styles.css               # Additional global styles
 │   ├── js/
 │   │   ├── add_table.js             # Create new tables dynamically
-│   │   ├── autosize_text.js         # Inline text editing for simple fields
 │   │   ├── bulk_edit_modal.js       # Bulk edit modal logic
 │   │   ├── column_visibility.js     # Column toggle logic
 │   │   ├── dashboard_modal.js       # Dashboard widgets
@@ -198,8 +197,6 @@ Large files are not streamed—they are fully loaded into memory during parsing,
 * **Frontend Interaction:** Dynamic behaviors powered by JavaScript modules in `static/js/`:
 
   * `add_table.js` for creating new tables
-  * `autosize_text.js` provides inline text editing
-  * `click_to_edit.js` enables clicking a non-boolean field to enter edit mode
   * `bulk_edit_modal.js` for multi-record editing
   * `column_visibility.js` to toggle table columns
   * `dashboard_modal.js` for dashboard widgets

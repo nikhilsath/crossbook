@@ -10,15 +10,9 @@
 {# Field-specific rendering macros #}
 
 {% macro render_text(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) %}
-  {% set styling = field_schema[table][field].styling or {} %}
-  <div class="autosize-text"
-       data-field="{{ field }}"
-       data-record-id="{{ record_id }}"
-       data-update-url="{{ url_for(update_endpoint, table=table, record_id=record_id) }}"
-       data-raw-value="{{ value }}"
-       data-label="{{ field|capitalize }}">
-    <b>{{ field|capitalize }}:</b> {{ value }}
-  </div>
+  {{ inline_input(field, update_endpoint, table, record_id,
+        '<input type="text" name="new_value" value="' ~ value ~
+        '" class="border px-1 py-0.5 text-sm rounded" onchange="submitFieldAjax(this.form)">\n<span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>' ) }}
 {% endmacro %}
 
 {% macro render_textarea(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) %}
