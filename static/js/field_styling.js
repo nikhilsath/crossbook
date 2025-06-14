@@ -7,8 +7,6 @@ function applyStyling(el, styling) {
   el.style.color = styling.color || '';
   const label = el.querySelector('div.text-sm.font-bold.capitalize.mb-1');
   if (label) label.classList.remove('hidden');
-  const inlineLabel = el.querySelector('.autosize-text b');
-  if (inlineLabel) inlineLabel.classList.remove('hidden');
 }
 
 function sendStyling(table, field, styling) {
