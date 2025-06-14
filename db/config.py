@@ -24,7 +24,20 @@ def get_config_rows():
         "labels",
         "options",
     ]
-    return [dict(zip(columns, row)) for row in rows]
+    result = []
+    for row in rows:
+        item = dict(zip(columns, row))
+        opts = item.get("options")
+        if opts:
+            try:
+                item["options"] = json.loads(opts)
+            except Exception:
+                item["options"] = []
+        else:
+            item["options"] = []
+        result.append(item)
+
+    return result
 
 
 def get_logging_config():
