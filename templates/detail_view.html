@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% import "macros/fields.html" as fields %}
+{% import "macros/fields.html" as fields with context %}
 {% set title_display = record.get(table) %}
 {% block title %}{{ table|capitalize }} {{ title_display }}{% endblock %}
 {% block content %}
