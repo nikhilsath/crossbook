@@ -219,4 +219,9 @@ input[type=number] {
   background-repeat: repeat, repeat;
 }
 
+/* Ensure sidebar overlays the header */
+#sidebar {
+  z-index: 100;
+}
+
 
