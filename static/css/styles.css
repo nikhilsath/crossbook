@@ -47,5 +47,6 @@
 /* Add a subtle outline around dashboard widgets */
 .dashboard-widget {
   outline: 1px solid #e5e7eb; /* tailwind gray-200 */
+  height: 100%;
 }
 
