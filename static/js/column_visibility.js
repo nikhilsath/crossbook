@@ -24,20 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   };
-
-  document.getElementById("toggle-columns").addEventListener("click", (e) => {
-    e.stopPropagation();
-    document.getElementById("column-dropdown").classList.toggle("hidden");
-  });
-
-  document.addEventListener("click", () => {
-    document.getElementById("column-dropdown").classList.add("hidden");
-  });
-
-  document.getElementById("column-dropdown").addEventListener("click", (e) => {
-    e.stopPropagation();
-  });
-
   // Attach listeners
   checkboxes().forEach(cb =>
     cb.addEventListener("change", () => {
