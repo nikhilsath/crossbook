@@ -24,6 +24,15 @@
             data-field="{{ title_field }}"
             {% endif %}>{{ display_value }}</span>
       <span class="text-gray-500 text-base">(ID {{ record.id }})</span>
+      {% set date_added = record.get('date_added') or record.get('date_created') %}
+      {% set last_updated = record.get('last_updated') or record.get('last_edited') %}
+      {% if date_added or last_updated %}
+        <span class="text-gray-500 text-sm font-mono ml-2">
+          {% if date_added %}Added {{ date_added }}{% endif %}
+          {% if date_added and last_updated %} | {% endif %}
+          {% if last_updated %}Updated {{ last_updated }}{% endif %}
+        </span>
+      {% endif %}
     </h1>
 
     <div id="detail-button-container" class="flex space-x-2 mb-4">
@@ -56,7 +65,7 @@
          ">
 
       {% for field, value in record.items() %}
-        {% if field_schema[table][field].type not in ['hidden', 'title'] %}
+        {% if field_schema[table][field].type not in ['hidden', 'title'] and field not in ['date_added', 'date_created', 'last_updated', 'last_edited'] %}
           {% set layout     = field_schema_layout[field] %}
           {% set styling    = field_schema[table][field].styling or {} %}
           {# Compute 1-based start lines and spans using PCT_SNAP #}
