@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const html = await fetchFieldHTML(field, true);
     if (!html) return;
     fieldEl.innerHTML = html;
+    fieldEl.classList.add('active-edit');
     initQuill(fieldEl);
     currentEl = fieldEl;
 
@@ -76,6 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (newHtml) {
           fieldEl.innerHTML = newHtml;
         }
+        fieldEl.classList.remove('active-edit');
         currentEl = null;
       }
     };

@@ -170,20 +170,26 @@
 <script>const layoutCache = {{ field_schema_layout | tojson }};</script>
 <script>window.FIELD_LAYOUT_DEFAULTS = {{ field_layout_defaults | tojson }};</script>
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.draggable-field').forEach(el => {
-      let data = el.dataset.styling;
-      try {
-        el._styling = data ? JSON.parse(data) : {};
-      } catch (e) {
-        el._styling = {};
-      }
-      if (window.applyFieldStyling) {
-        window.applyFieldStyling(el, el._styling);
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.draggable-field').forEach(el => {
+        let data = el.dataset.styling;
+        try {
+          el._styling = data ? JSON.parse(data) : {};
+        } catch (e) {
+          el._styling = {};
+        }
+        if (window.applyFieldStyling) {
+          window.applyFieldStyling(el, el._styling);
+        }
+      });
+      const params = new URLSearchParams(window.location.search);
+      const editField = params.get('edit');
+      if (editField) {
+        const activeEl = document.getElementById(`draggable-field-${editField}`);
+        if (activeEl) activeEl.classList.add('active-edit');
       }
     });
-  });
-</script>
+  </script>
 <script src="{{ url_for('static', filename='js/layout_editor.js') }}"></script>
 <script src="{{ url_for('static', filename='js/field_styling.js') }}"></script>
 
