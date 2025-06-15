@@ -1,4 +1,3 @@
-import sqlite3
 import json
 from db.database import get_connection
 from db.config import get_layout_defaults

@@ -13,6 +13,5 @@ def validate_field(table: str, field: str):
         raise ValueError(f"Invalid column `{field}` for table `{table}`")
 
 def validate_fields(table: str, fields: list[str]):
-    from db.schema import get_field_schema
     for f in fields:
         validate_field(table, f)
