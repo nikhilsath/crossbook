@@ -2,12 +2,19 @@ const sidebar = document.getElementById('sidebar');
 const collapseBtn = document.getElementById('sidebarCollapse');
 const sidebarHandle = document.getElementById('sidebar-handle');
 
+function isSidebarOpen() {
+  if (window.innerWidth < 768) {
+    return !sidebar.classList.contains('hidden');
+  }
+  return sidebar.classList.contains('md:block');
+}
+
 function setToggleIcon() {
-  collapseBtn.innerHTML = sidebar.classList.contains('md:block') ? '&laquo;' : '&raquo;';
+  collapseBtn.innerHTML = isSidebarOpen() ? '&laquo;' : '&raquo;';
 }
 
 function updateHandleVisibility() {
-  if (sidebar.classList.contains('md:block')) {
+  if (isSidebarOpen()) {
     sidebarHandle.classList.add('hidden');
   } else {
     sidebarHandle.classList.remove('hidden');
@@ -15,7 +22,11 @@ function updateHandleVisibility() {
 }
 
 function toggleSidebar() {
-  sidebar.classList.toggle('md:block');
+  if (window.innerWidth < 768) {
+    sidebar.classList.toggle('hidden');
+  } else {
+    sidebar.classList.toggle('md:block');
+  }
   setToggleIcon();
   updateHandleVisibility();
 }
