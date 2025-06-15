@@ -400,7 +400,7 @@ Key features of the detail view:
     - `request` (to check query parameters, specifically if an edit is in progress).
   - The macro `render_editable_field` (defined in **`macros/fields.html`**, explained below) will either display the field value or an edit form input depending on whether the user is currently editing that field (indicated by a query param like `?edit=fieldname` in the URL).
 - **Edit / View Mode:** The `render_editable_field` macro uses `request.args.get('edit')` to see if the current field is the one being edited. 
-  - If yes, it outputs a `<form>` with the appropriate input for that field type, pre-filled with the current value, and Save/Cancel controls. For example:
+  - If yes, it outputs a `<form>` with the appropriate input for that field type, pre-filled with the current value. Inputs save automatically via AJAX on change. For example:
     - Text fields -> a simple text input.
     - Number fields -> a number input.
     - Date fields -> an HTML date picker.
@@ -448,7 +448,6 @@ Overall, `detail_view.html` works in tandem with `macros/fields.html` and the JS
     - **date:** Renders a date picker (`<input type="date">`) with the current value.
     - **default (text):** Renders a basic text input for any other field type (e.g., simple text or unrecognized types).
     - For number fields, the input’s `onchange` handler calls `field_ajax.js` to save the new value via `fetch`, displaying a short “Saved” indicator without refreshing the page.
-  - After the input, a "Save" submit button and a "Cancel" link are provided. The Cancel link leads back to the detail view of the record (without the `edit` param), effectively canceling edit mode.
 - If the field is **not** being edited (normal display mode):
   - For **textarea** fields (which contain HTML content), it wraps the value in a `<div class="prose">` and marks it safe, so the HTML formatting is rendered. This nicely displays paragraphs, links, etc., with Tailwind’s typography styles.
   - For **select/multi_select** (if they were to be used), and **date** fields: it simply displays the value in a span. (Currently select fields have no special behavior because support is not implemented yet, so they just show whatever value is stored.)
