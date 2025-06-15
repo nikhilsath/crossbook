@@ -10,7 +10,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 - [Implemented Features](#implemented-features)
 - [Project Structure](#project-structure)
 - [Application Architecture and Code Overview](#application-architecture-and-code-overview)
-  - [Main Application – `main.py`](#main-application-mainpy)
+  - [Application Entry – `main.py`](#application-entry-mainpy)
     - [Field Schema Injection](#field-schema-injection)
     - [Record Fetching](#record-fetching)
     - [Update Logic](#update-logic)
@@ -31,9 +31,9 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Tech Stack:** Python 3.x, Flask (web framework), Jinja2 (templating), Tailwind CSS (styling via CDN), SQLite (relational database). JavaScript libraries include custom JavaScript for layout editing and custom scripts under `static/js/` for validation and UI behavior.
 * **Dynamic UI Generation:** Automated list and detail views based on database schema introspection.
 * **Search & Visibility Controls:** Text-based search filters and toggleable columns for list views, with filter controls implemented via Jinja macros.
-* **Navigation:** Centralized in `templates/base.html`, providing consistent header navigation and action buttons across all entity pages.
+* **Navigation:** Collapsible sidebar in `templates/base.html` provides quick links to all tables and action buttons.
 * **Database Layer:** Abstracted in the `db/` package (`database.py`, `schema.py`, `records.py`, `relationships.py`) for connection handling, schema loading, CRUD operations, and relationship management.
-* **Logging:** Python’s `logging` module tracks errors and activity. Flask session is not currently used.
+* **Logging:** Python’s `logging` module tracks errors and activity. The setup wizard uses Flask sessions to store progress.
 
 ### Future Cloud Migration
 
@@ -54,7 +54,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Relationship Management:** Displays related records and allows adding/removing relationships through a modal interface (+ to add, ✖ to remove), using AJAX to update join tables dynamically.
 * **Rich Text Support:** Textareas are enhanced with [Quill](https://quilljs.com/) for WYSIWYG editing.
 * **Edit History:** Tracks each record’s modifications in an `edit_log`, viewable via an expandable history section. Individual entries now include an **Undo** link to revert that change.
-* **Navigation Bar:** A consistent top navigation (`base.html`) links to Home and all base table sections.
+* **Sidebar Navigation:** The sidebar lists all base tables and can be collapsed on smaller screens.
 * **Bulk Edit Modal:** Select rows in a list view and update a single field across all of them at once.
 * **Supported Field Types:** text, number, date, select, multi-select, foreign-key, boolean, textarea, and url, each rendered with the appropriate input control.
 * **Field Type Registry:** New types can register their SQL storage and validation logic. Rendering macros for the built-in field types are now hardcoded in `macros/fields.html` instead of being looked up dynamically.
@@ -105,18 +105,24 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 │   │   ├── bulk_edit_modal.js       # Bulk edit modal logic
 │   │   ├── column_visibility.js     # Column toggle logic
 │   │   ├── dashboard_modal.js       # Dashboard widgets
+│   │   ├── dashboard_update.js      # Refresh dashboard
+│   │   ├── dashboard_values.js      # Render value widgets
+│   │   ├── dashboard_grid.js        # Drag and resize dashboard widgets
+│   │   ├── dashboard_charts.js      # Render charts from field data
+│   │   ├── database_admin.js        # Database upload helper
 │   │   ├── edit_fields.js           # Client-side field schema editing
 │   │   ├── editor.js                # Initialize Quill editors
 │   │   ├── field_ajax.js            # Inline updates via fetch
-│   │   ├── click_to_edit.js        # Click a field to toggle edit mode
+│   │   ├── field_styling.js         # Style fields in layout editors
+│   │   ├── click_to_edit.js         # Click a field to toggle edit mode
 │   │   ├── filter_visibility.js     # Show/hide filter controls
 │   │   ├── layout_editor.js         # Drag/drop & layout persistence
-│   │   ├── dashboard_grid.js       # Drag and resize dashboard widgets
-│   │   ├── dashboard_charts.js     # Render charts from field data
-│   │   ├── config_admin.js         # Helpers for editing config JSON
-│   │   ├── undo_edit.js            # Undo actions via AJAX
 │   │   ├── relations.js             # AJAX for add/remove relationships
-│   │   └── tag_selector.js          # Multi-select tag UI helper
+│   │   ├── sidebar_toggle.js        # Collapse/expand the sidebar
+│   │   ├── tag_selector.js          # Multi-select tag UI helper
+│   │   ├── undo_edit.js             # Undo actions via AJAX
+│   │   ├── wizard_settings.js       # Setup wizard settings page
+│   │   └── wizard_table.js          # Wizard table creation step
 │   └── imports/
 │       ├── import_start.js          # Import page bootstrap (unused)
 │       ├── progress_bar.js          # Progress bar helper (unused)
@@ -227,9 +233,8 @@ Large files are not streamed—they are fully loaded into memory during parsing,
 
 
 
-### **Main Application – `main.py`**
-
-This is the core of the Flask application. It defines the web routes, handles database interactions, and implements the logic for listing records, showing details, editing fields, and managing relationships. The application uses a single Flask app instance and a single SQLite database file.
+### **Application Entry – `main.py`**
+`main.py` initializes the Flask app, registers blueprints from the `views` package, and configures logging. Routes reside in `views/admin.py`, `views/records.py`, and `views/wizard.py`.
 
 **Global configuration and variables in `main.py`:**
 
@@ -281,7 +286,7 @@ The following functions encapsulate the application logic:
 | `dashboard_create_widget()` | **Route:** POST `/dashboard/widget` – Creates a new dashboard widget. |
 | `dashboard_update_layout()` | **Route:** POST `/dashboard/layout` – Saves the positions of dashboard widgets. |
 | `add_table()` | **Route:** POST `/add-table` – Adds a new base table and join tables. |
-All routes and functions above are actively used by the application (there is no dead code in `main.py`). When run directly, the app simply calls `update_foreign_field_options()` and then starts with `app.run(debug=True)`.
+These endpoints live in the blueprint modules under `views/`. `main.py` merely registers the blueprints and starts the server.
 
 ### **Front-End Scripts – `static/js/`
 
@@ -345,12 +350,12 @@ The Flask Jinja2 templates define the structure of the HTML pages. The templates
 
 #### 📄 **`base.html`**
 
-**Purpose:** Base layout template that all other pages extend. It defines the overall HTML structure, including the `<head>` (where Tailwind CSS is included via CDN) and a consistent header/navigation bar.
+**Purpose:** Base layout template that all other pages extend. It defines the overall HTML structure, including the `<head>` (where Tailwind CSS is included via CDN) and a consistent collapsible sidebar navigation.
 
 **Layout and Features:**
 
 - **Tailwind Inclusion:** Loads Tailwind CSS from the official CDN for styling. No separate CSS files are used; styles are from Tailwind utility classes.
-- **Navigation Bar:** A responsive `<nav>` bar at the top lists sections from the `config_base_tables` table (plus Home). This means new tables automatically appear in the nav with their configured display names.
+* **Sidebar Navigation:** The sidebar lists all base tables and can be collapsed on smaller screens.
 - **Content Block:** Uses Jinja `{% block content %}{% endblock %}` to define where child templates insert their page-specific content. Similarly, a `{% block title %}` sets the `<title>` tag for each page (so pages can specify a custom title, like “Characters List” or “Character 5”). The base provides a padded container `<div class="p-6">` around the content block for consistent spacing.
 - **Global Context:** Thanks to the `inject_field_schema` context processor, every template extending base.html automatically has access to `field_schema` (the schema dict) as well as other Flask globals like `request`. This base does not itself display dynamic data (aside from the nav links), but it provides the framework within which other templates render their content.
 
