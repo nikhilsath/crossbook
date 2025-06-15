@@ -18,6 +18,14 @@ function sendStyling(table, field, styling) {
   }).catch(err => console.error('Styling update failed', err));
 }
 
+function sendDashboardStyling(widgetId, styling) {
+  fetch('/dashboard/style', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ widget_id: widgetId, styling })
+  }).catch(err => console.error('Dashboard styling update failed', err));
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const layoutGrid = document.getElementById('layout-grid') ||
                      document.getElementById('dashboard-grid');
@@ -139,6 +147,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const table = layoutGrid.dataset.table;
       const field = currentEl.dataset.field;
       sendStyling(table, field, styling);
+    } else {
+      const widgetId = currentEl.dataset.widget;
+      if (widgetId) {
+        sendDashboardStyling(widgetId, styling);
+      }
     }
   });
 });

@@ -1,4 +1,5 @@
 import logging
+import json
 from flask import current_app
 from db.database import get_connection
 from db.schema import get_field_schema
@@ -30,8 +31,8 @@ def get_dashboard_widgets() -> list[dict]:
         cursor = conn.cursor()
         try:
             cursor.execute(
-                "SELECT id, title, content, widget_type, col_start, col_span, row_start, row_span"
-                " FROM dashboard_widget ORDER BY id"
+                "SELECT id, title, content, widget_type, col_start, col_span, row_start, row_span, styling "
+                "FROM dashboard_widget ORDER BY id"
             )
             rows = cursor.fetchall()
             cols = [d[0] for d in cursor.description]
@@ -112,6 +113,32 @@ def update_widget_layout(layout_items: list[dict]) -> int:
                 updated += 1
         conn.commit()
     return updated
+
+
+def update_widget_styling(widget_id: int, styling: dict) -> bool:
+    """Update the styling JSON for a dashboard widget."""
+    try:
+        styling_json = json.dumps(styling or {})
+    except (TypeError, ValueError) as exc:
+        logger.warning("[update_widget_styling] invalid styling for %s: %s", widget_id, exc)
+        return False
+
+    with get_connection() as conn:
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                """
+                UPDATE dashboard_widget
+                   SET styling = ?
+                 WHERE id = ?
+                """,
+                (styling_json, widget_id),
+            )
+            conn.commit()
+            return cur.rowcount > 0
+        except Exception as exc:
+            logger.warning("[update_widget_styling] SQL error: %s", exc)
+            return False
 
 
 def get_base_table_counts() -> list[dict]:

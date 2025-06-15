@@ -17,6 +17,7 @@ from db.dashboard import (
     get_dashboard_widgets,
     create_widget,
     update_widget_layout,
+    update_widget_styling,
     get_base_table_counts,
     get_top_numeric_values,
     get_filtered_records,
@@ -218,6 +219,17 @@ def dashboard_update_layout():
     layout_items = data['layout']
     updated = update_widget_layout(layout_items)
     return jsonify({'success': True, 'updated': updated})
+
+
+@admin_bp.route('/dashboard/style', methods=['POST'])
+def dashboard_update_style():
+    data = request.get_json(silent=True) or {}
+    widget_id = data.get('widget_id')
+    styling = data.get('styling')
+    if widget_id is None or not isinstance(styling, dict):
+        return jsonify({'error': 'Invalid data'}), 400
+    success = update_widget_styling(widget_id, styling)
+    return jsonify({'success': bool(success)})
 
 
 @admin_bp.route('/dashboard/base-count')
