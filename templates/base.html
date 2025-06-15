@@ -2,8 +2,10 @@
 <html>
 <head>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/overrides.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flowbite@1.6.5/dist/flowbite.min.css" />
   <link rel="stylesheet" href="{{ url_for('static', filename='lib/quill.snow.css') }}">
   <script src="{{ url_for('static', filename='lib/quill.js') }}"></script>
   {# Dashboard views load chart libraries explicitly #}
@@ -13,30 +15,54 @@
     {% set segments = request.path.strip('/').split('/') %}
     {% set current_table = segments[0] %}
     {% set current_id = segments[1] if segments|length > 1 else None %}
-  <nav class="bg-gray-800 dark:bg-gray-900 text-gray-100 p-4 flex justify-between items-center">
-    <div class="flex space-x-4">
-      <a href="/" class="px-2 {{ 'text-white border-b-2 border-white' if not current_table else 'text-gray-300 hover:text-white' }} font-semibold">Home</a>
-      {% for nav in nav_cards if nav.table_name != 'dashboard' %}
-        <a href="/{{ nav.table_name }}" class="px-2 {{ 'text-white border-b-2 border-white' if current_table == nav.table_name else 'text-gray-300 hover:text-white' }}">{{ nav.display_name }}</a>
-      {% endfor %}
+
+  <div id="sidebarBackdrop" class="modal hidden md:hidden"></div>
+  <div class="flex min-h-screen">
+    <aside id="sidebar" class="fixed md:static top-0 left-0 z-40 w-64 h-screen pt-4 bg-gray-800 text-gray-100 transform -translate-x-full md:translate-x-0 transition-transform">
+      <nav class="h-full overflow-y-auto px-3 space-y-2">
+        <a href="/" class="block px-2 py-1 rounded hover:bg-gray-700 {{ 'bg-gray-700' if not current_table else '' }}">Home</a>
+        {% for nav in nav_cards if nav.table_name != 'dashboard' %}
+          <a href="/{{ nav.table_name }}" class="block px-2 py-1 rounded hover:bg-gray-700 {{ 'bg-gray-700' if current_table == nav.table_name else '' }}">{{ nav.display_name }}</a>
+        {% endfor %}
+      </nav>
+    </aside>
+
+    <div class="flex-1 flex flex-col md:ml-64">
+      <header class="bg-gray-800 text-gray-100 p-4 flex items-center">
+        <button id="sidebarToggle" class="mr-2 md:hidden btn-secondary px-2 py-1 rounded">
+          &#9776;
+        </button>
+        <div class="ml-auto flex space-x-2">
+          {% if current_table in field_schema %}
+            <a href="/{{ current_table }}/new" class="btn-primary px-3 py-1 rounded">+ Add</a>
+            {% if current_id %}
+              <form method="post" action="/{{ current_table }}/{{ current_id }}/delete" onsubmit="return confirm('Are you sure?')">
+                <button type="submit" class="btn-danger px-3 py-1 rounded">Delete</button>
+              </form>
+            {% endif %}
+          {% endif %}
+          {% block nav_buttons %}{% endblock %}
+        </div>
+      </header>
+
+      <main class="p-6 card m-4">
+        {% block content %}{% endblock %}
+      </main>
     </div>
-
-
-    <div class="ml-auto flex space-x-2">
-      {% if current_table in field_schema %}
-        <a href="/{{ current_table }}/new" class="btn-primary px-3 py-1 rounded">+ Add</a>
-        {% if current_id %}
-          <form method="post" action="/{{ current_table }}/{{ current_id }}/delete" onsubmit="return confirm('Are you sure?')">
-            <button type="submit" class="btn-danger px-3 py-1 rounded">Delete</button>
-          </form>
-        {% endif %}
-      {% endif %}
-      {% block nav_buttons %}{% endblock %}
-    </div>
-  </nav>
-
-  <div class="p-6">
-    {% block content %}{% endblock %}
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@1.6.5/dist/flowbite.min.js"></script>
+  <script>
+    document.getElementById('sidebarToggle').addEventListener('click', function() {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      sidebar.classList.toggle('-translate-x-full');
+      backdrop.classList.toggle('hidden');
+    });
+    document.getElementById('sidebarBackdrop').addEventListener('click', function() {
+      document.getElementById('sidebar').classList.add('-translate-x-full');
+      this.classList.add('hidden');
+    });
+  </script>
 </body>
 </html>
