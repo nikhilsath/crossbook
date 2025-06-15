@@ -157,7 +157,9 @@ input[type=number] {
 
 /* Keep record tables within the viewport width */
 .list-view-page .records-table-wrapper {
+
   max-width: 100%;
+
   overflow-x: auto;
 }
 
