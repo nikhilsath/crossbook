@@ -215,6 +215,25 @@ def get_record_by_id(table, record_id):
             return dict(zip(fields, row))
     return None
 
+
+def touch_last_edited(table: str, record_id: int) -> None:
+    """Update the last_edited timestamp for a record if the column exists."""
+    validate_table(table)
+
+    timestamp = datetime.datetime.utcnow().isoformat(timespec="seconds")
+
+    with get_connection() as conn:
+        cur = conn.cursor()
+        cur.execute(f"PRAGMA table_info({table})")
+        cols = [row[1] for row in cur.fetchall()]
+        if "last_edited" not in cols:
+            return
+        cur.execute(
+            f"UPDATE {table} SET last_edited = ? WHERE id = ?",
+            (timestamp, record_id),
+        )
+        conn.commit()
+
 def update_field_value(table, record_id, field, new_value):
     validate_table(table)
     validate_field(table, field)
@@ -239,10 +258,13 @@ def update_field_value(table, record_id, field, new_value):
             logger.info(
                 f"Updated {table}.{field} for id={record_id} to {new_value!r}"
             )
-            return True
+            success = True
         except Exception as e:
             logger.error(f"[UPDATE ERROR] {e}")
-            return False
+            success = False
+        if success:
+            touch_last_edited(table, record_id)
+        return success
 
 
 def append_edit_log(
@@ -383,6 +405,12 @@ def create_record(table, form_data):
                 if meta["type"] == "textarea":
                     value = sanitize_html(value)
                 insert_data[f] = value
+
+            timestamp = datetime.datetime.utcnow().isoformat(timespec="seconds")
+            if "date_created" in cols:
+                insert_data.setdefault("date_created", timestamp)
+            if "last_edited" in cols:
+                insert_data.setdefault("last_edited", timestamp)
 
             if not insert_data:
                 return None
