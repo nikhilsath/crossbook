@@ -17,7 +17,6 @@
     {% set current_id = segments[1] if segments|length > 1 else None %}
 
   <div class="flex min-h-screen">
-    <button id="sidebarCollapse" class="fixed top-2 left-2 z-50 p-2 text-lg bg-gray-800 text-gray-100 rounded" aria-label="Toggle sidebar">&laquo;</button>
     <aside id="sidebar" class="fixed md:static top-0 left-0 z-40 w-64 h-screen pt-4 bg-gray-800 text-gray-100 hidden md:block flex flex-col flex-shrink-0">
       <nav class="flex-1 overflow-y-auto px-3 space-y-2">
         <a href="/" class="block px-2 py-1 rounded hover:bg-gray-700 {{ 'bg-gray-700' if not current_table else '' }}">Home</a>
@@ -32,7 +31,7 @@
 
     <div class="flex-1 flex flex-col">
       <header class="bg-gray-800 text-gray-100 p-4 flex items-center">
-        <div class="ml-auto flex space-x-2">
+        <div class="ml-auto flex items-center space-x-2">
           {% if current_table in field_schema %}
             <a href="/{{ current_table }}/new" class="btn-primary px-3 py-1 rounded">+ Add</a>
             {% if current_id %}
@@ -41,6 +40,7 @@
               </form>
             {% endif %}
           {% endif %}
+          <button id="sidebarCollapse" class="p-2 text-lg bg-gray-800 text-gray-100 rounded" aria-label="Toggle sidebar">&laquo;</button>
         </div>
       </header>
 
@@ -51,15 +51,6 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/flowbite@1.6.5/dist/flowbite.min.js"></script>
-  <script>
-    const sidebar = document.getElementById('sidebar');
-    const collapseBtn = document.getElementById('sidebarCollapse');
-    collapseBtn.innerHTML = sidebar.classList.contains('hidden') ? '&raquo;' : '&laquo;';
-    function toggleSidebar() {
-      sidebar.classList.toggle('hidden');
-      collapseBtn.innerHTML = sidebar.classList.contains('hidden') ? '&raquo;' : '&laquo;';
-    }
-    collapseBtn.addEventListener('click', toggleSidebar);
-  </script>
+  <script src="{{ url_for('static', filename='js/sidebar_toggle.js') }}"></script>
 </body>
 </html>
