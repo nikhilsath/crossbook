@@ -1,4 +1,4 @@
-// Context menu for styling fields on the detail view
+// Context menu for styling fields on the detail view and dashboard widgets
 
 function applyStyling(el, styling) {
   el.classList.toggle('font-bold', !!styling.bold);
@@ -19,8 +19,10 @@ function sendStyling(table, field, styling) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const layoutGrid = document.getElementById('layout-grid');
+  const layoutGrid = document.getElementById('layout-grid') ||
+                     document.getElementById('dashboard-grid');
   if (!layoutGrid) return;
+  const isDashboard = layoutGrid.id === 'dashboard-grid';
 
   const menu = document.createElement('div');
   menu.id = 'field-style-menu';
@@ -91,8 +93,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   menu.addEventListener('change', () => {
     if (!currentEl) return;
-    const table = layoutGrid.dataset.table;
-    const field = currentEl.dataset.field;
 
     const styling = Object.assign({}, currentEl._styling, {
       bold: menu.querySelector('[data-opt="bold"]').checked,
@@ -103,7 +103,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     currentEl._styling = styling;
     applyStyling(currentEl, styling);
-    sendStyling(table, field, styling);
+
+    if (!isDashboard) {
+      const table = layoutGrid.dataset.table;
+      const field = currentEl.dataset.field;
+      sendStyling(table, field, styling);
+    }
   });
 });
 
