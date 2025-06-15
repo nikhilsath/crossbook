@@ -87,6 +87,9 @@ function handleSaveLayout() {
   layoutGrid.classList.remove('editing');
   document.getElementById('field-style-menu')?.classList.add('hidden');
   addFieldBtn.classList.remove('hidden');
+  if (window.showSpecialFieldToggles) {
+    window.showSpecialFieldToggles(false);
+  }
     document.querySelectorAll('.resize-handle')
 .forEach(h => h.classList.add('hidden'));
   const table = layoutGrid.dataset.table;
@@ -125,6 +128,9 @@ function editModeButtons() {
   addFieldBtn.classList.add('hidden');
   toggleEditLayoutBtn.classList.add('hidden');
   saveLayoutBtn.classList.remove('hidden');
+  if (window.showSpecialFieldToggles) {
+    window.showSpecialFieldToggles(true);
+  }
 }
 
 function enableVanillaDrag() {

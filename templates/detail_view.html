@@ -23,7 +23,7 @@
             data-record-id="{{ record.id }}"
             data-field="{{ title_field }}"
             {% endif %}>{{ display_value }}</span>
-      <span class="text-gray-500 text-base">(ID {{ record.id }})</span>
+      <span id="record-id" class="text-gray-500 text-base">(ID {{ record.id }})</span>
     </h1>
 
     <div id="detail-button-container" class="flex space-x-2 mb-4">
@@ -43,6 +43,27 @@
       >
         Edit Fields
       </button>
+      <div id="special-fields-wrapper" class="relative inline-block text-left ml-2 hidden">
+        <button id="toggle-special-fields" type="button" data-dropdown-toggle="special-fields-dropdown" class="px-2 py-1 bg-gray-200 rounded text-sm">
+          Special Fields
+        </button>
+        <div id="special-fields-dropdown" class="z-10 hidden mt-2 bg-white border rounded shadow p-2 space-y-1 text-sm">
+          <label class="flex items-center space-x-1">
+            <input type="checkbox" id="toggle-title" checked>
+            <span>Title</span>
+          </label>
+          <label class="flex items-center space-x-1">
+            <input type="checkbox" id="toggle-id" checked>
+            <span>ID</span>
+          </label>
+          {% if 'date_created' in record %}
+          <label class="flex items-center space-x-1">
+            <input type="checkbox" id="toggle-date-created" checked>
+            <span>Date Created</span>
+          </label>
+          {% endif %}
+        </div>
+      </div>
     </div>
 
     <!-- Layout container with computed initial height -->
@@ -200,6 +221,7 @@
       }
     });
   </script>
+<script src="{{ url_for('static', filename='js/special_field_visibility.js') }}"></script>
 <script src="{{ url_for('static', filename='js/layout_editor.js') }}"></script>
 <script src="{{ url_for('static', filename='js/field_styling.js') }}"></script>
 
