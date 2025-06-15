@@ -182,6 +182,7 @@ def validate_multi_select_column(values: list[str], options: list[str]) -> dict:
     }
 
 # Register built-in field types with the registry
+register_type('title', sql_type='TEXT', validator=lambda t, f, v: validate_text_column(v), default_width=12, default_height=4, macro='render_text')
 register_type('text', sql_type='TEXT', validator=lambda t, f, v: validate_text_column(v), default_width=12, default_height=4, macro='render_text')
 register_type('number', sql_type='REAL', validator=lambda t, f, v: validate_number_column(v), default_width=4, default_height=3, macro='render_number')
 register_type('date', sql_type='TEXT', validator=lambda t, f, v: validate_text_column(v), default_width=6, default_height=4, macro='render_date')
