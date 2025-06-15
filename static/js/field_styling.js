@@ -32,9 +32,12 @@ document.addEventListener('DOMContentLoaded', () => {
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="bold"> <span>Bold</span></label>
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="italic"> <span>Italic</span></label>
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="underline"> <span>Underline</span></label>
-    <label class="flex items-center space-x-2">
-      <span class="whitespace-nowrap">Size</span>
-      <input type="number" data-opt="size" min="10" max="48" step="1" class="w-16 border rounded px-1 text-xs">
+    <label class="flex items-center space-x-1">
+      <span class="whitespace-nowrap mr-1">Size</span>
+      <button type="button" data-size-act="dec" class="px-1 border rounded">-</button>
+      <span data-opt="size-display" class="px-1 w-6 text-center"></span>
+      <button type="button" data-size-act="inc" class="px-1 border rounded">+</button>
+      <input type="hidden" data-opt="size" value="">
     </label>
     <div id="color-presets" class="flex space-x-1 mt-1"></div>
   `;
@@ -42,6 +45,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let selectedColor = '#000000';
   const presetsDiv = menu.querySelector('#color-presets');
+  const sizeInput = menu.querySelector('[data-opt="size"]');
+  const sizeDisplay = menu.querySelector('[data-opt="size-display"]');
+  const SIZE_MIN = 10;
+  const SIZE_MAX = 48;
+  const SIZE_STEP = 1;
+
+  function updateSizeDisplay(val) {
+    sizeDisplay.textContent = val || '';
+  }
+
+  menu.querySelector('[data-size-act="dec"]').addEventListener('click', () => {
+    let val = parseInt(sizeInput.value, 10);
+    if (isNaN(val)) val = 14;
+    val = Math.max(SIZE_MIN, val - SIZE_STEP);
+    sizeInput.value = val;
+    updateSizeDisplay(val);
+    menu.dispatchEvent(new Event('change'));
+  });
+
+  menu.querySelector('[data-size-act="inc"]').addEventListener('click', () => {
+    let val = parseInt(sizeInput.value, 10);
+    if (isNaN(val)) val = 14;
+    val = Math.min(SIZE_MAX, val + SIZE_STEP);
+    sizeInput.value = val;
+    updateSizeDisplay(val);
+    menu.dispatchEvent(new Event('change'));
+  });
   const presetColors = ['#000000', '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
   presetsDiv.innerHTML = presetColors.map(c =>
     `<button type="button" data-color="${c}" class="w-4 h-4 rounded border" style="background-color:${c}"></button>`
@@ -66,7 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
     menu.querySelector('[data-opt="bold"]').checked = !!styling.bold;
     menu.querySelector('[data-opt="italic"]').checked = !!styling.italic;
     menu.querySelector('[data-opt="underline"]').checked = !!styling.underline;
-    menu.querySelector('[data-opt="size"]').value = styling.size || '';
+    sizeInput.value = styling.size || '';
+    updateSizeDisplay(sizeInput.value);
     selectedColor = styling.color || '#000000';
     menu.style.left = `${e.pageX}px`;
     menu.style.top = `${e.pageY}px`;
@@ -99,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
       italic: menu.querySelector('[data-opt="italic"]').checked,
       underline: menu.querySelector('[data-opt="underline"]').checked,
       color: selectedColor,
-      size: parseInt(menu.querySelector('[data-opt="size"]').value, 10) || null
+      size: parseInt(sizeInput.value, 10) || null
     });
     currentEl._styling = styling;
     applyStyling(currentEl, styling);
