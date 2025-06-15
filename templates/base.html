@@ -24,10 +24,10 @@
 
     <div class="ml-auto flex space-x-2">
       {% if current_table in field_schema %}
-        <a href="/{{ current_table }}/new" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">+ Add</a>
+        <a href="/{{ current_table }}/new" class="btn-primary px-3 py-1 rounded">+ Add</a>
         {% if current_id %}
           <form method="post" action="/{{ current_table }}/{{ current_id }}/delete" onsubmit="return confirm('Are you sure?')">
-            <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Delete</button>
+            <button type="submit" class="btn-danger px-3 py-1 rounded">Delete</button>
           </form>
         {% endif %}
       {% endif %}

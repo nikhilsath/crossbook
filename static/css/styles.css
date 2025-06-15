@@ -74,3 +74,41 @@ body {
   flex: 1 1 auto;
 }
 
+/* Button styles */
+.btn-primary,
+.btn-secondary,
+.btn-danger {
+  color: #fff;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+  display: inline-block;
+}
+
+.btn-primary { background-color: var(--color-primary); }
+.btn-secondary { background-color: var(--color-secondary); }
+.btn-danger { background-color: var(--color-danger); }
+
+.btn-primary:hover,
+.btn-secondary:hover,
+.btn-danger:hover {
+  filter: brightness(90%);
+}
+
+/* Card component */
+.card {
+  background-color: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Modal container */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+}
