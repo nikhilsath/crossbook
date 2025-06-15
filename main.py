@@ -92,6 +92,7 @@ def inject_field_schema():
         'nav_cards': current_app.config['CARD_INFO'],
         'base_tables': current_app.config['BASE_TABLES'],
         'field_macro_map': macro_map,
+        'current_app': current_app,
     }
 
 @app.route("/")
