@@ -70,8 +70,8 @@
   {% if records %}
   <div id="loading-indicator" class="hidden text-sm text-gray-600 mb-2">Loading...</div>
   {% include '_record_count.html' %}
-  <div class="overflow-x-auto rounded-lg border border-gray-200">
-    <table id="records-table" data-table="{{ table }}" class="min-w-full divide-y divide-gray-200 text-sm">
+  <div class="overflow-x-auto rounded-lg border border-gray-200 w-full">
+    <table id="records-table" data-table="{{ table }}" class="min-w-max divide-y divide-gray-200 text-sm">
       <thead class="bg-gray-50">
         <tr>
           <th scope="col" class="px-2 py-2" data-static>
