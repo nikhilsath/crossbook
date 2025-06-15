@@ -1,5 +1,5 @@
 {% for record in records %}
-<tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location.href='/{{ table }}/{{ record.id }}'">
+<tr id="record-{{ record.id }}" class="hover:bg-gray-50 cursor-pointer" onclick="window.location.href='/{{ table }}/{{ record.id }}'">
   <td class="px-2 py-2" data-static onclick="event.stopPropagation()">
     <input type="checkbox" class="row-select" value="{{ record.id }}">
   </td>
