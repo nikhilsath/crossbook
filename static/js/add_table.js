@@ -1,9 +1,23 @@
+let addTableTrigger = null;
+let escHandler = (e) => {
+  if (e.key === 'Escape') {
+    closeAddTableModal();
+  }
+};
+
 export function openAddTableModal() {
+  addTableTrigger = document.activeElement;
   document.getElementById('addTableModal').classList.remove('hidden');
+  document.addEventListener('keydown', escHandler);
 }
 
 export function closeAddTableModal() {
   document.getElementById('addTableModal').classList.add('hidden');
+  document.removeEventListener('keydown', escHandler);
+  if (addTableTrigger) {
+    addTableTrigger.focus();
+    addTableTrigger = null;
+  }
   const err = document.getElementById('tableError');
   if (err) {
     err.textContent = '';

@@ -1,10 +1,18 @@
 let modalData = {}; // Holds context for the modal interaction (source table, source id, and target table)
+let relationTrigger = null;
+let escHandler = (e) => {
+  if (e.key === 'Escape') {
+    closeModal();
+  }
+};
 
 // Opens the relation modal and populates it with entries from the target table
 export function openAddRelationModal(tableA, idA, tableB) {
   modalData = { tableA, idA, tableB }; // Save context for use during submit
+  relationTrigger = document.activeElement;
   const modal = document.getElementById('relationModal');
   modal.classList.remove('hidden'); // Show modal
+  document.addEventListener('keydown', escHandler);
 
   const select = document.getElementById('relationOptions');
   select.innerHTML = '<option>Loading...</option>'; // Temporary placeholder
@@ -31,6 +39,11 @@ export function openAddRelationModal(tableA, idA, tableB) {
 // Closes the modal (used by the Cancel button)
 export function closeModal() {
   document.getElementById('relationModal').classList.add('hidden');
+  document.removeEventListener('keydown', escHandler);
+  if (relationTrigger) {
+    relationTrigger.focus();
+    relationTrigger = null;
+  }
 }
 
 // Called when user clicks Add inside the modal to submit the selected relation
