@@ -450,14 +450,14 @@ Overall, `detail_view.html` works in tandem with `macros/fields.html` and the JS
     - For number fields, the input’s `onchange` handler calls `field_ajax.js` to save the new value via `fetch`, displaying a short “Saved” indicator without refreshing the page.
 - If the field is **not** being edited (normal display mode):
   - For **textarea** fields (which contain HTML content), it wraps the value in a `<div class="prose">` and marks it safe, so the HTML formatting is rendered. This nicely displays paragraphs, links, etc., with Tailwind’s typography styles.
-  - For **select/multi_select** (if they were to be used), and **date** fields: it simply displays the value in a span. (Currently select fields have no special behavior because support is not implemented yet, so they just show whatever value is stored.)
+  - For **select** fields: the chosen option is shown as plain text. **multi_select** and **foreign_key** values appear as blue tag badges. When in edit mode these fields use searchable dropdowns with checkboxes.
+  - For **date** fields: simply display the stored date string.
   - For **foreign_key** fields: displays the value in a span with italic, blue styling as a hint that it’s a reference. (This is a placeholder; ideally it would be a link to that related record’s page, but that requires additional context which is not yet provided to the template.)
   - For **boolean** fields: Instead of a plain text "True/False", it provides a quick toggle UI even in view mode. It renders a small form with a hidden field specifying the field name and another hidden field `new_value_override` flipping the boolean (if current value is true, `new_value_override` is "0", otherwise "1"). It then shows a button that is green and labeled "Yes" if true (or red and "No" if false). Clicking this button submits the form to the `update_field` route, toggling the value immediately. This design means booleans can be toggled without entering an edit state.
   - For all other fields (text, number, etc.): it simply displays the value in a span.
-  - In addition, for any non-boolean field in view mode, an edit icon link (✏️) is shown after the value. Clicking this link reloads the page with the `?edit=<field>` parameter to activate the edit form (as described above).
   - When a field is edited via the `?edit=<field>` query parameter, the macro now logs `[DEBUG: field → field_type]` to the Flask logger. This provides helpful context without cluttering the rendered page.
 
-By using this macro in `detail_view.html`, the template stays cleaner and any changes to how fields are rendered (view or edit) can be made in one place. For example, when select fields are implemented, the macro can be updated to handle `field_type == "select"` differently (perhaps render a dropdown with options) without having to touch the main template logic.
+By using this macro in `detail_view.html`, the template stays cleaner and any changes to how fields are rendered (view or edit) can be made in one place. If new field types are introduced later, this macro can be extended to render them appropriately without touching the main template logic.
 
 ## Styling
 
