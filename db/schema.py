@@ -290,12 +290,14 @@ def create_base_table(table_name: str, description: str, title_field: str) -> bo
                 logger.error("Table %s already exists", table_name)
                 return False
 
-            # Create the base table
+            # Create the base table with timestamp columns
             cur.execute(
                 f"""
                 CREATE TABLE {table_name} (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    {title_field} TEXT
+                    {title_field} TEXT,
+                    date_created TEXT,
+                    last_edited TEXT
                 )
                 """
             )
@@ -304,6 +306,8 @@ def create_base_table(table_name: str, description: str, title_field: str) -> bo
             defaults = [
                 (table_name, "id", "hidden", None, None, 0, 0, 0, 0),
                 (table_name, title_field, "title", None, None, 0, 0, 0, 0),
+                (table_name, "date_created", "date", None, None, 0, 0, 0, 0),
+                (table_name, "last_edited", "hidden", None, None, 0, 0, 0, 0),
             ]
             cur.executemany(
                 """

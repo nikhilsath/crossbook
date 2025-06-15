@@ -3,6 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 from db.database import get_connection
 from db.validation import validate_table
+from db.records import touch_last_edited
 
 
 def get_related_records(source_table, record_id):
@@ -95,10 +96,14 @@ def add_relationship(table_a, id_a, table_b, id_b):
                 vals,
             )
             conn.commit()
-            return True
+            success = True
         except Exception as e:
             logger.warning(f"[RELATIONSHIP ADD ERROR] {e}")
-            return False
+            success = False
+        if success:
+            touch_last_edited(table_a, id_a)
+            touch_last_edited(table_b, id_b)
+        return success
 
 
 def remove_relationship(table_a, id_a, table_b, id_b):
@@ -134,7 +139,11 @@ def remove_relationship(table_a, id_a, table_b, id_b):
                 vals,
             )
             conn.commit()
-            return True
+            success = True
         except Exception as e:
             logger.warning(f"[RELATIONSHIP REMOVE ERROR] {e}")
-            return False
+            success = False
+        if success:
+            touch_last_edited(table_a, id_a)
+            touch_last_edited(table_b, id_b)
+        return success
