@@ -70,7 +70,7 @@
         {% endfor %}
       </div>
     </div>
-    <div id="validationOverlay" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden flex justify-center items-center z-50"
+    <div id="validationOverlay" class="modal-container hidden"
          onclick="if(event.target.id === 'validationOverlay') this.classList.add('hidden')">
         <div id="validation-popup" class="bg-white p-6 rounded-lg shadow-lg w-auto max-w-[70vw] max-h-[66vh] overflow-auto relative">
             <button type="button" onclick="document.getElementById('validationOverlay').classList.add('hidden')" class="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-xl">&times;</button>

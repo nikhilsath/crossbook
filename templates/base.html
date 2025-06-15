@@ -22,9 +22,9 @@
         <button id="sidebarCollapse" class="p-2 text-lg bg-gray-800 text-gray-100 rounded" aria-label="Toggle sidebar">&laquo;</button>
       </div>
       <nav class="flex-1 overflow-y-auto px-3 space-y-2">
-        <a href="/" class="block px-2 py-1 rounded hover:bg-gray-700 {{ 'bg-gray-700' if not current_table else '' }}">Home</a>
+        <a href="/" class="nav-link {{ 'bg-gray-700' if not current_table else '' }}">Home</a>
         {% for nav in nav_cards if nav.table_name != 'dashboard' %}
-          <a href="/{{ nav.table_name }}" class="block px-2 py-1 rounded hover:bg-gray-700 {{ 'bg-gray-700' if current_table == nav.table_name else '' }}">{{ nav.display_name }}</a>
+          <a href="/{{ nav.table_name }}" class="nav-link {{ 'bg-gray-700' if current_table == nav.table_name else '' }}">{{ nav.display_name }}</a>
         {% endfor %}
       </nav>
       <div class="p-3 grid grid-cols-2 gap-2">
