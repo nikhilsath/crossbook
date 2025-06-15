@@ -18,7 +18,8 @@
 
   <div id="sidebarBackdrop" class="modal hidden md:hidden"></div>
   <div class="flex min-h-screen">
-    <aside id="sidebar" class="fixed md:static top-0 left-0 z-40 w-64 h-screen pt-4 bg-gray-800 text-gray-100 transform -translate-x-full md:translate-x-0 transition-transform flex flex-col">
+    <aside id="sidebar" class="fixed md:static top-0 left-0 z-40 w-64 h-screen pt-4 bg-gray-800 text-gray-100 transform -translate-x-full md:translate-x-0 transition-transform flex flex-col flex-shrink-0">
+      <button id="sidebarCollapse" class="hidden md:block self-end mr-2 mb-2 text-lg" aria-label="Collapse sidebar">&laquo;</button>
       <nav class="flex-1 overflow-y-auto px-3 space-y-2">
         <a href="/" class="block px-2 py-1 rounded hover:bg-gray-700 {{ 'bg-gray-700' if not current_table else '' }}">Home</a>
         {% for nav in nav_cards if nav.table_name != 'dashboard' %}
@@ -32,7 +33,7 @@
 
     <div class="flex-1 flex flex-col md:ml-64">
       <header class="bg-gray-800 text-gray-100 p-4 flex items-center">
-        <button id="sidebarToggle" class="mr-2 md:hidden btn-secondary px-2 py-1 rounded">
+        <button id="sidebarToggle" class="mr-2 btn-secondary px-2 py-1 rounded" aria-label="Toggle sidebar">
           &#9776;
         </button>
         <div class="ml-auto flex space-x-2">
@@ -47,7 +48,7 @@
         </div>
       </header>
 
-      <main class="p-6 card m-4">
+      <main class="p-4 card m-4 mt-2">
         {% block content %}{% endblock %}
       </main>
     </div>
@@ -55,14 +56,18 @@
 
   <script src="https://cdn.jsdelivr.net/npm/flowbite@1.6.5/dist/flowbite.min.js"></script>
   <script>
+    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
     document.getElementById('sidebarToggle').addEventListener('click', function() {
-      const sidebar = document.getElementById('sidebar');
-      const backdrop = document.getElementById('sidebarBackdrop');
       sidebar.classList.toggle('-translate-x-full');
       backdrop.classList.toggle('hidden');
     });
+    document.getElementById('sidebarCollapse').addEventListener('click', function() {
+      sidebar.classList.add('-translate-x-full');
+      backdrop.classList.add('hidden');
+    });
     document.getElementById('sidebarBackdrop').addEventListener('click', function() {
-      document.getElementById('sidebar').classList.add('-translate-x-full');
+      sidebar.classList.add('-translate-x-full');
       this.classList.add('hidden');
     });
   </script>
