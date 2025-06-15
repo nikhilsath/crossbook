@@ -6,7 +6,7 @@
 {# Define the percentage snap constant (# of % per grid column) #}
 {% set PCT_SNAP = 5 %}
 
-<div class="max-w-6xl mx-auto bg-white p-6 rounded shadow-md flex space-x-6">
+<div class="max-w-6xl mx-auto bg-white p-6 rounded shadow-md flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-6">
 
   <!-- Left: Main Details -->
   <div class="flex-1">
@@ -109,7 +109,7 @@
   </div>
 
   <!-- Right: Related Content -->
-  <div class="w-64 border-l-2 border-blue-200 pl-6">
+  <div class="w-full md:w-64 md:border-l-2 border-blue-200 md:pl-6">
     <h2 class="text-xl font-semibold mb-2">Related Pages</h2>
     <ul class="space-y-2 text-blue-700 text-sm">
       {% for section, group in related.items() %}
