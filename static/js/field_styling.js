@@ -5,6 +5,7 @@ function applyStyling(el, styling) {
   el.classList.toggle('italic', !!styling.italic);
   el.classList.toggle('underline', !!styling.underline);
   el.style.color = styling.color || '';
+  el.style.fontSize = styling.size ? `${styling.size}px` : '';
   const label = el.querySelector('div.text-sm.font-bold.capitalize.mb-1');
   if (label) label.classList.remove('hidden');
 }
@@ -29,6 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="bold"> <span>Bold</span></label>
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="italic"> <span>Italic</span></label>
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="underline"> <span>Underline</span></label>
+    <label class="flex items-center space-x-2">
+      <span class="whitespace-nowrap">Size</span>
+      <input type="number" data-opt="size" min="10" max="48" step="1" class="w-16 border rounded px-1 text-xs">
+    </label>
     <div id="color-presets" class="flex space-x-1 mt-1"></div>
   `;
   document.body.appendChild(menu);
@@ -59,6 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     menu.querySelector('[data-opt="bold"]').checked = !!styling.bold;
     menu.querySelector('[data-opt="italic"]').checked = !!styling.italic;
     menu.querySelector('[data-opt="underline"]').checked = !!styling.underline;
+    menu.querySelector('[data-opt="size"]').value = styling.size || '';
     selectedColor = styling.color || '#000000';
     menu.style.left = `${e.pageX}px`;
     menu.style.top = `${e.pageY}px`;
@@ -92,7 +98,8 @@ document.addEventListener('DOMContentLoaded', () => {
       bold: menu.querySelector('[data-opt="bold"]').checked,
       italic: menu.querySelector('[data-opt="italic"]').checked,
       underline: menu.querySelector('[data-opt="underline"]').checked,
-      color: selectedColor
+      color: selectedColor,
+      size: parseInt(menu.querySelector('[data-opt="size"]').value, 10) || null
     });
     currentEl._styling = styling;
     applyStyling(currentEl, styling);

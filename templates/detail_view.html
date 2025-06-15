@@ -54,17 +54,19 @@
           {% set col_span  = layout.colSpan  or 1 %}
           {% set row_start = layout.rowStart or 1 %}
           {% set row_span  = layout.rowSpan  or 1 %}
+          {% set style_parts = [
+            'position: relative',
+            'grid-column: ' ~ col_start ~ ' / span ' ~ col_span,
+            'grid-row: ' ~ row_start ~ ' / span ' ~ row_span
+          ] %}
+          {% if styling.color %}{% set _ = style_parts.append('color: ' ~ styling.color) %}{% endif %}
+          {% if styling.size %}{% set _ = style_parts.append('font-size: ' ~ styling.size ~ 'px') %}{% endif %}
           <div id="draggable-field-{{ field }}"
                class="draggable-field border p-2 rounded shadow bg-gray-50{{ ' font-bold' if styling.bold }}{{ ' italic' if styling.italic }}{{ ' underline' if styling.underline }}"
                data-field="{{ field }}"
                data-type="{{ field_schema[table][field].type }}"
                data-styling='{{ styling | tojson }}'
-               style="
-                position: relative;
-                 grid-column: {{ col_start }} / span {{ col_span }};
-                 grid-row:    {{ row_start }} / span {{ row_span }};
-                 {% if styling.color %}color: {{ styling.color }};{% endif %}
-               ">
+               style="{{ style_parts | join('; ') }}">
             {{ fields.render_editable_field(
                  field, value, record.id, request,
                 'detail_view', 'records.update_field',

@@ -198,8 +198,11 @@
 {% macro render_editable_field(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema, field_macro_map=None) %}
   {% set edit_param = request.args.get('edit') %}
   {% set styling = field_schema[table][field].styling or {} %}
+  {% set style_parts = [] %}
+  {% if styling.color %}{% set _ = style_parts.append('color: ' ~ styling.color) %}{% endif %}
+  {% if styling.size %}{% set _ = style_parts.append('font-size: ' ~ styling.size ~ 'px') %}{% endif %}
   <div class="mt-2 h-full{{ ' font-bold' if styling.bold }}{{ ' italic' if styling.italic }}{{ ' underline' if styling.underline }}"
-       {% if styling.color %}style="color: {{ styling.color }}"{% endif %}
+       {% if style_parts %}style="{{ style_parts|join('; ') }}"{% endif %}
        data-styling='{{ styling | tojson }}'>
     {% do current_app.logger.debug('[render] field=%s type=%s edit_param=%s', field, field_type, edit_param) %}
     <label class="block text-sm font-medium capitalize">{{ field }}</label>
