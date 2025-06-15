@@ -17,7 +17,12 @@
     {% set display_value = record.get(table) or record.get("title") or record.get("name") or "Untitled" %}
     {% endif %}
     <h1 class="text-2xl font-bold mb-4">
-      {{ display_value }}
+      <span id="record-title"
+            {% if title_field %}
+            data-table="{{ table }}"
+            data-record-id="{{ record.id }}"
+            data-field="{{ title_field }}"
+            {% endif %}>{{ display_value }}</span>
       <span class="text-gray-500 text-base">(ID {{ record.id }})</span>
     </h1>
 
@@ -219,6 +224,7 @@
 </script>
 <script type="module" src="{{ url_for('static', filename='js/field_ajax.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/click_to_edit.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/title_edit.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/editor.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/undo_edit.js') }}"></script>
 
