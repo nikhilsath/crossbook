@@ -455,7 +455,7 @@ Overall, `detail_view.html` works in tandem with `macros/fields.html` and the JS
   - For **boolean** fields: Instead of a plain text "True/False", it provides a quick toggle UI even in view mode. It renders a small form with a hidden field specifying the field name and another hidden field `new_value_override` flipping the boolean (if current value is true, `new_value_override` is "0", otherwise "1"). It then shows a button that is green and labeled "Yes" if true (or red and "No" if false). Clicking this button submits the form to the `update_field` route, toggling the value immediately. This design means booleans can be toggled without entering an edit state.
   - For all other fields (text, number, etc.): it simply displays the value in a span.
   - In addition, for any non-boolean field in view mode, an edit icon link (✏️) is shown after the value. Clicking this link reloads the page with the `?edit=<field>` parameter to activate the edit form (as described above).
-  - Earlier versions of the macro printed a small debug line (`[DEBUG: field → field_type]`) in edit mode to show the field name and type. That line has been removed from the code to keep the template output clean.
+  - When a field is edited via the `?edit=<field>` query parameter, the macro now logs `[DEBUG: field → field_type]` to the Flask logger. This provides helpful context without cluttering the rendered page.
 
 By using this macro in `detail_view.html`, the template stays cleaner and any changes to how fields are rendered (view or edit) can be made in one place. For example, when select fields are implemented, the macro can be updated to handle `field_type == "select"` differently (perhaps render a dropdown with options) without having to touch the main template logic.
 
