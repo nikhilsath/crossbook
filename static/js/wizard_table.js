@@ -1,11 +1,24 @@
 let fields = [];
+let addFieldTrigger = null;
+let escHandler = (e) => {
+  if (e.key === 'Escape') {
+    hideAddFieldModal();
+  }
+};
 
 function showAddFieldModal() {
+  addFieldTrigger = document.activeElement;
   document.getElementById('addFieldModal').classList.remove('hidden');
+  document.addEventListener('keydown', escHandler);
 }
 
 function hideAddFieldModal() {
   document.getElementById('addFieldModal').classList.add('hidden');
+  document.removeEventListener('keydown', escHandler);
+  if (addFieldTrigger) {
+    addFieldTrigger.focus();
+    addFieldTrigger = null;
+  }
 }
 
 function resetAddFieldForm() {

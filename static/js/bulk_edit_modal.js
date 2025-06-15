@@ -1,10 +1,24 @@
+let bulkTrigger = null;
+let escHandler = (e) => {
+  if (e.key === 'Escape') {
+    closeBulkEditModal();
+  }
+};
+
 export function openBulkEditModal() {
   updateSelectedCount();
+  bulkTrigger = document.activeElement;
   document.getElementById('bulkEditModal').classList.remove('hidden');
+  document.addEventListener('keydown', escHandler);
 }
 
 export function closeBulkEditModal() {
   document.getElementById('bulkEditModal').classList.add('hidden');
+  document.removeEventListener('keydown', escHandler);
+  if (bulkTrigger) {
+    bulkTrigger.focus();
+    bulkTrigger = null;
+  }
 }
 
 let tableName;

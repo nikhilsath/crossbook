@@ -1,9 +1,23 @@
+let dashboardTrigger = null;
+let escHandler = (e) => {
+  if (e.key === 'Escape') {
+    closeDashboardModal();
+  }
+};
+
 export function openDashboardModal() {
+  dashboardTrigger = document.activeElement;
   document.getElementById('dashboardModal').classList.remove('hidden');
+  document.addEventListener('keydown', escHandler);
 }
 
 export function closeDashboardModal() {
   document.getElementById('dashboardModal').classList.add('hidden');
+  document.removeEventListener('keydown', escHandler);
+  if (dashboardTrigger) {
+    dashboardTrigger.focus();
+    dashboardTrigger = null;
+  }
 }
 
 let selectedOperation = null;
