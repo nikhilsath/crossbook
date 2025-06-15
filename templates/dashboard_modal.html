@@ -3,20 +3,21 @@
      onclick="if(event.target.id === 'dashboardModal') closeDashboardModal()">
   <div class="bg-white p-6 rounded-lg shadow-lg w-fit min-w-[24rem] max-w-full relative">
     <button onclick="closeDashboardModal()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-xl">&times;</button>
-    <div class="mb-4">
-      <ul class="flex border-b border-gray-200">
-        <li class="-mb-px mr-1">
-          <button id="tab-value" class="bg-white inline-block py-2 px-4 font-semibold border-b-2 border-blue-600">Value</button>
+    <div class="mb-4 border-b border-gray-200">
+      <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="dashboardTab" data-tabs-toggle="#dashboardTabContent" role="tablist">
+        <li class="mr-2" role="presentation">
+          <button id="tab-value" data-tabs-target="#pane-value" type="button" role="tab" aria-controls="pane-value" aria-selected="true" class="inline-block p-2 rounded-t-lg border-b-2 text-blue-600 border-blue-600">Value</button>
         </li>
-        <li class="-mb-px mr-1">
-          <button id="tab-table" class="bg-white inline-block py-2 px-4 font-semibold text-gray-600 hover:text-gray-800 border-b-2 border-transparent">Table</button>
+        <li class="mr-2" role="presentation">
+          <button id="tab-table" data-tabs-target="#pane-table" type="button" role="tab" aria-controls="pane-table" aria-selected="false" class="inline-block p-2 rounded-t-lg border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300">Table</button>
         </li>
-        <li class="-mb-px">
-          <button id="tab-chart" class="bg-white inline-block py-2 px-4 font-semibold text-gray-600 hover:text-gray-800 border-b-2 border-transparent">Chart</button>
+        <li role="presentation">
+          <button id="tab-chart" data-tabs-target="#pane-chart" type="button" role="tab" aria-controls="pane-chart" aria-selected="false" class="inline-block p-2 rounded-t-lg border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300">Chart</button>
         </li>
       </ul>
     </div>
-    <div id="pane-value">
+    <div id="dashboardTabContent">
+    <div id="pane-value" role="tabpanel" aria-labelledby="tab-value">
       <form id="dashboardTableForm" class="relative w-full" onsubmit="event.preventDefault();">
 
         <div id="dashboardOperation" class="flex gap-2 mb-4">
@@ -227,6 +228,7 @@
         <button id="chartCreateBtn" type="submit" class="btn-primary px-4 py-2 rounded block ml-auto hidden">Create</button>
       </form>
     </div>
+  </div>
   </div>
 </div>
 

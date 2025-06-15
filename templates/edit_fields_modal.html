@@ -2,22 +2,23 @@
      onclick="if(event.target.id === 'layoutModal') closeLayoutModal()">
   <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full relative">
     <button type="button" onclick="closeLayoutModal()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-xl">&times;</button>
-    <div class="mb-4">
-      <ul class="flex border-b border-gray-200">
-        <li class="-mb-px mr-1">
-          <button id="tab-add" class="bg-white inline-block py-2 px-4 font-semibold border-b-2 border-blue-600">
+    <div class="mb-4 border-b border-gray-200">
+      <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="editFieldsTabs" data-tabs-toggle="#editFieldsContent" role="tablist">
+        <li class="mr-2" role="presentation">
+          <button id="tab-add" data-tabs-target="#pane-add" type="button" role="tab" aria-controls="pane-add" aria-selected="true" class="inline-block p-2 rounded-t-lg border-b-2 text-blue-600 border-blue-600">
             Add Field
           </button>
         </li>
-        <li class="-mb-px">
-          <button id="tab-remove" class="bg-white inline-block py-2 px-4 font-semibold text-gray-600 hover:text-gray-800 border-b-2 border-transparent">
+        <li role="presentation">
+          <button id="tab-remove" data-tabs-target="#pane-remove" type="button" role="tab" aria-controls="pane-remove" aria-selected="false" class="inline-block p-2 rounded-t-lg border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300">
             Remove Field
           </button>
         </li>
       </ul>
     </div>
+    <div id="editFieldsContent">
     <!-- Add Field Pane -->
-    <div id="pane-add">
+    <div id="pane-add" role="tabpanel" aria-labelledby="tab-add">
       <h3 class="text-lg font-bold mb-4">Add Field to {{table}}</h3>
       <form method="POST" id="add-field-form" action="/{{ table }}/{{ record.id }}/add-field">
         <input type="hidden" name="record_id" value="{{ record.id }}">
@@ -96,4 +97,5 @@
       </form>
     </div>
  </div>
+</div>
 </div>

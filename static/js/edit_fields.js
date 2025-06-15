@@ -39,27 +39,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   
 
-// Initialize Add/Remove tabs
-function initEditFieldsTabs() {
-  const tabAdd = document.getElementById("tab-add");
-  const tabRemove = document.getElementById("tab-remove");
-  const paneAdd = document.getElementById("pane-add");
-  const paneRemove = document.getElementById("pane-remove");
-
-  tabAdd.addEventListener("click", () => {
-    tabAdd.classList.add("border-blue-600", "text-blue-600");
-    tabRemove.classList.remove("border-blue-600", "text-blue-600");
-    paneAdd.classList.remove("hidden");
-    paneRemove.classList.add("hidden");
-  });
-
-  tabRemove.addEventListener("click", () => {
-    tabRemove.classList.add("border-blue-600", "text-blue-600");
-    tabAdd.classList.remove("border-blue-600", "text-blue-600");
-    paneRemove.classList.remove("hidden");
-    paneAdd.classList.add("hidden");
-  });
-}
 
 // Store fetched counts here
 let removeCounts = {};
@@ -114,6 +93,3 @@ function updateRemoveInfo(count) {
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  initEditFieldsTabs();
-});
