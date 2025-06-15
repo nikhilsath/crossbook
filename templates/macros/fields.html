@@ -10,123 +10,167 @@
 {# Field-specific rendering macros #}
 
 {% macro render_text(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) %}
-  {{ inline_input(field, update_endpoint, table, record_id,
+  {% if request.args.get('edit') == field %}
+    {{ inline_input(field, update_endpoint, table, record_id,
         '<input type="text" name="new_value" value="' ~ value ~
         '" class="border px-1 py-0.5 text-sm rounded" onchange="submitFieldAjax(this.form)">\n<span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>' ) }}
+  {% else %}
+    <span class="ml-1" data-field="{{ field }}">{{ value }}</span>
+  {% endif %}
 {% endmacro %}
 
 {% macro render_textarea(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) %}
-  <form method="POST"
-        action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}"
-        class="w-full mb-2"
-        data-autosave>
-    <input type="hidden" name="field" value="{{ field }}">
-    <input type="hidden" name="new_value" value="{{ value|e }}">
-    <div class="quill-editor" data-quill>{{ value|safe }}</div>
-    <span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>
-  </form>
+  {% if request.args.get('edit') == field %}
+    <form method="POST"
+          action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}"
+          class="w-full mb-2"
+          data-autosave>
+        <input type="hidden" name="field" value="{{ field }}">
+        <input type="hidden" name="new_value" value="{{ value|e }}">
+        <div class="quill-editor" data-quill>{{ value|safe }}</div>
+        <span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>
+    </form>
+  {% else %}
+    <div class="prose" data-field="{{ field }}">{{ value|safe }}</div>
+  {% endif %}
 {% endmacro %}
 
 {% macro render_select(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) %}
-  <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline">
-    <input type="hidden" name="field" value="{{ field }}">
-    <select name="new_value"
-            class="block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200"
-            onchange="submitFieldAjax(this.form)">
-      {% for option in field_schema[table][field].options %}
-        <option value="{{ option }}" {% if option == value %}selected{% endif %}>{{ option }}</option>
-      {% endfor %}
-    </select>
-    <span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>
-  </form>
+  {% if request.args.get('edit') == field %}
+    <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline">
+      <input type="hidden" name="field" value="{{ field }}">
+      <select name="new_value"
+              class="block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200"
+              onchange="submitFieldAjax(this.form)">
+        {% for option in field_schema[table][field].options %}
+          <option value="{{ option }}" {% if option == value %}selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+      </select>
+      <span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>
+    </form>
+  {% else %}
+    <span class="ml-1" data-field="{{ field }}">{{ value }}</span>
+  {% endif %}
 {% endmacro %}
 
 {% macro render_multi_select(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) %}
-  <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="relative w-full multiselect" data-multiselect-dropdown onsubmit="event.preventDefault();">
-    <input type="hidden" name="field" value="{{ field }}">
+  {% if request.args.get('edit') == field %}
+    <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="relative w-full multiselect" data-multiselect-dropdown onsubmit="event.preventDefault();">
+      <input type="hidden" name="field" value="{{ field }}">
+      {% set selected_options = (value or '').split(', ') %}
+
+      <div class="flex flex-wrap gap-1 mb-2">
+        {% for tag in selected_options if tag %}
+          <span class="inline-flex items-center bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
+            {{ tag }}
+            <button type="button" class="ml-1 text-blue-500 hover:text-red-500" onclick="this.closest('form').querySelector('input[value=\'{{ tag }}\']').checked = false; submitMultiSelectAuto(this.closest('form'))">×</button>
+          </span>
+        {% endfor %}
+      </div>
+
+      <button type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-left focus:outline-none focus:ring-2 focus:ring-blue-500" onclick="this.nextElementSibling.classList.toggle('hidden')">
+        Choose Tags
+      </button>
+
+      <div class="absolute z-10 mt-1 w-full bg-white border rounded shadow hidden max-h-64 overflow-y-auto p-2 space-y-1" data-options>
+        <input type="text" placeholder="Search..." class="w-full px-2 py-1 border rounded text-sm mb-2" oninput="const v=this.value.toLowerCase();[...this.parentElement.querySelectorAll('label')].forEach(l => l.classList.toggle('hidden', !l.textContent.toLowerCase().includes(v)))">
+
+        {% for option in field_schema[table][field].options %}
+          <label class="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              name="new_value[]"
+              value="{{ option }}"
+              {% if option in selected_options %}checked{% endif %}
+              onchange="submitMultiSelectAuto(this.form)"
+              class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500"
+            >
+            <span class="text-sm">{{ option }}</span>
+          </label>
+        {% endfor %}
+      </div>
+    </form>
+  {% else %}
     {% set selected_options = (value or '').split(', ') %}
-
-    <div class="flex flex-wrap gap-1 mb-2">
+    <div class="flex flex-wrap gap-1" data-field="{{ field }}">
       {% for tag in selected_options if tag %}
-        <span class="inline-flex items-center bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
-          {{ tag }}
-          <button type="button" class="ml-1 text-blue-500 hover:text-red-500" onclick="this.closest('form').querySelector('input[value=\'{{ tag }}\']').checked = false; submitMultiSelectAuto(this.closest('form'))">×</button>
-        </span>
+        <span class="inline-flex items-center bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">{{ tag }}</span>
       {% endfor %}
+      {% if selected_options|reject('equalto', '')|list|length == 0 %}
+        <span class="text-gray-500">None</span>
+      {% endif %}
     </div>
-
-    <button type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-left focus:outline-none focus:ring-2 focus:ring-blue-500" onclick="this.nextElementSibling.classList.toggle('hidden')">
-      Choose Tags
-    </button>
-
-    <div class="absolute z-10 mt-1 w-full bg-white border rounded shadow hidden max-h-64 overflow-y-auto p-2 space-y-1" data-options>
-      <input type="text" placeholder="Search..." class="w-full px-2 py-1 border rounded text-sm mb-2" oninput="const v=this.value.toLowerCase();[...this.parentElement.querySelectorAll('label')].forEach(l => l.classList.toggle('hidden', !l.textContent.toLowerCase().includes(v)))">
-
-      {% for option in field_schema[table][field].options %}
-        <label class="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            name="new_value[]"
-            value="{{ option }}"
-            {% if option in selected_options %}checked{% endif %}
-            onchange="submitMultiSelectAuto(this.form)"
-            class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500"
-          >
-          <span class="text-sm">{{ option }}</span>
-        </label>
-      {% endfor %}
-    </div>
-  </form>
+  {% endif %}
 {% endmacro %}
 
 {% macro render_number(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) %}
-  {{ inline_input(field, update_endpoint, table, record_id,
+  {% if request.args.get('edit') == field %}
+    {{ inline_input(field, update_endpoint, table, record_id,
         '<input type="number" name="new_value" value="' ~ value ~
         '" class="appearance-none border px-1 py-0.5 text-sm rounded"  onchange="submitFieldAjax(this.form)"><span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>' ) }}
+  {% else %}
+    <span class="ml-1" data-field="{{ field }}">{{ value }}</span>
+  {% endif %}
 {% endmacro %}
 
 {% macro render_date(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) %}
-  {{ inline_input(field, update_endpoint, table, record_id,
+  {% if request.args.get('edit') == field %}
+    {{ inline_input(field, update_endpoint, table, record_id,
         '<input type="date" name="new_value" value="' ~ value ~
         '" class="border px-1 py-0.5 text-sm rounded" onchange="submitFieldAjax(this.form)"><span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>' ) }}
+  {% else %}
+    <span class="ml-1" data-field="{{ field }}">{{ value }}</span>
+  {% endif %}
 {% endmacro %}
 
 {% macro render_foreign_key(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) %}
-  <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="relative w-full" data-multiselect-dropdown onsubmit="event.preventDefault();">
-    <input type="hidden" name="field" value="{{ field }}">
+  {% if request.args.get('edit') == field %}
+    <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="relative w-full" data-multiselect-dropdown onsubmit="event.preventDefault();">
+      <input type="hidden" name="field" value="{{ field }}">
+      {% set selected_options = (value or '').split(', ') %}
+
+      <div class="flex flex-wrap gap-1 mb-2">
+        {% for tag in selected_options if tag %}
+          <span class="inline-flex items-center bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
+            {{ tag }}
+            <button type="button" class="ml-1 text-blue-500 hover:text-red-500" onclick="this.closest('form').querySelector('input[value=\'{{ tag }}\']').checked = false; submitMultiSelectAuto(this.closest('form'))">×</button>
+          </span>
+        {% endfor %}
+      </div>
+
+      <button type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-left focus:outline-none focus:ring-2 focus:ring-blue-500" onclick="this.nextElementSibling.classList.toggle('hidden')">
+        Choose Tags
+      </button>
+
+      <div class="absolute z-10 mt-1 w-full bg-white border rounded shadow hidden max-h-64 overflow-y-auto p-2 space-y-1" data-options>
+        <input type="text" placeholder="Search..." class="w-full px-2 py-1 border rounded text-sm mb-2" oninput="const v=this.value.toLowerCase();[...this.parentElement.querySelectorAll('label')].forEach(l => l.classList.toggle('hidden', !l.textContent.toLowerCase().includes(v)))">
+
+        {% for option in field_schema[table][field].options %}
+          <label class="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              name="new_value[]"
+              value="{{ option }}"
+              {% if option in selected_options %}checked{% endif %}
+              onchange="submitMultiSelectAuto(this.form)"
+              class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500"
+            >
+            <span class="text-sm">{{ option }}</span>
+          </label>
+        {% endfor %}
+      </div>
+    </form>
+  {% else %}
     {% set selected_options = (value or '').split(', ') %}
-
-    <div class="flex flex-wrap gap-1 mb-2">
+    <div class="flex flex-wrap gap-1" data-field="{{ field }}">
       {% for tag in selected_options if tag %}
-        <span class="inline-flex items-center bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
-          {{ tag }}
-          <button type="button" class="ml-1 text-blue-500 hover:text-red-500" onclick="this.closest('form').querySelector('input[value=\'{{ tag }}\']').checked = false; submitMultiSelectAuto(this.closest('form'))">×</button>
-        </span>
+        <span class="inline-flex items-center bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">{{ tag }}</span>
       {% endfor %}
+      {% if selected_options|reject('equalto', '')|list|length == 0 %}
+        <span class="text-gray-500">None</span>
+      {% endif %}
     </div>
-
-    <button type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-left focus:outline-none focus:ring-2 focus:ring-blue-500" onclick="this.nextElementSibling.classList.toggle('hidden')">
-      Choose Tags
-    </button>
-
-    <div class="absolute z-10 mt-1 w-full bg-white border rounded shadow hidden max-h-64 overflow-y-auto p-2 space-y-1" data-options>
-      <input type="text" placeholder="Search..." class="w-full px-2 py-1 border rounded text-sm mb-2" oninput="const v=this.value.toLowerCase();[...this.parentElement.querySelectorAll('label')].forEach(l => l.classList.toggle('hidden', !l.textContent.toLowerCase().includes(v)))">
-
-      {% for option in field_schema[table][field].options %}
-        <label class="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            name="new_value[]"
-            value="{{ option }}"
-            {% if option in selected_options %}checked{% endif %}
-            onchange="submitMultiSelectAuto(this.form)"
-            class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500"
-          >
-          <span class="text-sm">{{ option }}</span>
-        </label>
-      {% endfor %}
-    </div>
-  </form>
+  {% endif %}
 {% endmacro %}
 
 {% macro render_boolean(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) %}
@@ -142,7 +186,7 @@
 {% endmacro %}
 
 {% macro render_url(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) %}
-  {% if request.args.get('edit') %}
+  {% if request.args.get('edit') == field %}
     {{ inline_input(field, update_endpoint, table, record_id,
           '<input type="url" name="new_value" value="' ~ value ~
           '" class="border px-1 py-0.5 text-sm rounded" onchange="submitFieldAjax(this.form)">\n<span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>' ) }}
