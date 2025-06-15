@@ -54,6 +54,34 @@ LAYOUT_DEFAULTS = {
 }
 
 
+def _copy_config_metadata(cur: sqlite3.Cursor, dest_path: str) -> None:
+    """Copy config metadata from the default database."""
+    from db.database import DEFAULT_DB_PATH
+
+    src_path = os.path.abspath(DEFAULT_DB_PATH)
+    dest_path = os.path.abspath(dest_path)
+    if src_path == dest_path or not os.path.exists(src_path):
+        return
+
+    with sqlite3.connect(src_path) as src_conn:
+        src_cur = src_conn.cursor()
+        src_cur.execute(
+            "SELECT key, section, type, description, required, options FROM config"
+        )
+        for key, section, type_, desc, req, opts in src_cur.fetchall():
+            cur.execute("SELECT 1 FROM config WHERE key = ?", (key,))
+            if cur.fetchone():
+                cur.execute(
+                    "UPDATE config SET section=?, type=?, description=?, required=?, options=? WHERE key=?",
+                    (section, type_, desc, req, opts, key),
+                )
+            else:
+                cur.execute(
+                    "INSERT INTO config (key, value, section, type, description, required, options) VALUES (?, '', ?, ?, ?, ?, ?)",
+                    (key, section, type_, desc, req, opts),
+                )
+
+
 def _create_core_tables(cur: sqlite3.Cursor) -> None:
     cur.execute(
         """
@@ -152,6 +180,8 @@ def ensure_default_configs(path: str) -> None:
                         (key, str(value), section, type_),
                     )
             conn.commit()
+
+        _copy_config_metadata(cur, path)
 
 def initialize_database(path: str) -> None:
     """Create a new database with core tables."""

@@ -26,8 +26,12 @@ def test_settings_step_after_db_creation():
     config = {row['key']: row['value'] for row in rows}
     assert config.get('db_path')
     assert config.get('heading') == ''
-    # ensure other defaults exist
+    # ensure other defaults exist and metadata copied
     assert 'log_level' in config
+    meta = {row['key']: row for row in rows}
+    assert meta['log_level']['section'] == 'logging'
+    assert meta['log_level']['type'] == 'select'
+    assert meta['log_level']['options']
 
     # restore original test database
     from db.database import init_db_path

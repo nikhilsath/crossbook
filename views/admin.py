@@ -31,7 +31,7 @@ from imports.import_csv import parse_csv
 from utils.validation import validation_sorter
 from db.schema import get_field_schema
 from db.database import get_connection, check_db_status, init_db_path
-from db.bootstrap import initialize_database
+from db.bootstrap import initialize_database, ensure_default_configs
 from imports.tasks import process_import, init_import_table
 from utils.field_registry import FIELD_TYPES
 
@@ -124,6 +124,7 @@ def update_database_file():
         save_path = os.path.join('data', filename)
         file.save(save_path)
         initialize_database(save_path)
+        ensure_default_configs(save_path)
         init_db_path(save_path)
         update_config('db_path', save_path)
         reload_app_state()
@@ -139,6 +140,7 @@ def update_database_file():
         save_path = os.path.join('data', filename)
         open(save_path, 'a').close()
         initialize_database(save_path)
+        ensure_default_configs(save_path)
         init_db_path(save_path)
         update_config('db_path', save_path)
         reload_app_state()
