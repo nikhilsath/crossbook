@@ -98,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!layoutGrid.classList.contains('editing')) return;
     const fieldEl = e.target.closest('.draggable-field');
     if (!fieldEl) return;
+    if (fieldEl.dataset.type === 'textarea') return;
     e.preventDefault();
     currentEl = fieldEl;
     const styling = fieldEl._styling || {};
