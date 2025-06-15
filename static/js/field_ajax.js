@@ -4,7 +4,7 @@ export function submitFieldAjax(formEl) {
     statusEl.textContent = 'Saving…';
     statusEl.classList.remove('hidden');
   }
-  fetch(formEl.action, {
+  return fetch(formEl.action, {
     method: formEl.method || 'POST',
     headers: { 'X-Requested-With': 'XMLHttpRequest' },
     body: new FormData(formEl)
@@ -15,12 +15,14 @@ export function submitFieldAjax(formEl) {
         statusEl.textContent = 'Saved';
         setTimeout(() => statusEl.classList.add('hidden'), 2000);
       }
+      return resp;
     })
-    .catch(() => {
+    .catch(err => {
       if (statusEl) {
         statusEl.textContent = 'Error';
         setTimeout(() => statusEl.classList.add('hidden'), 2000);
       }
+      throw err;
     });
 }
 window.submitFieldAjax = submitFieldAjax;
