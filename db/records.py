@@ -166,7 +166,7 @@ def get_all_records(
                 try:
                     validate_field(table, sort_field)
                     dir_sql = "DESC" if str(direction).lower() == "desc" else "ASC"
-                    sql += f" ORDER BY {sort_field} {dir_sql}"
+                    sql += f" ORDER BY {sort_field} COLLATE NOCASE {dir_sql}"
                 except Exception:
                     logger.warning("Invalid sort field: %s", sort_field)
 
