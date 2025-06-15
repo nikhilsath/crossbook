@@ -10,24 +10,24 @@
 {% block content %}
 <h1 class="text-4xl font-bold text-center mb-10">{{ heading }}</h1>
 <div id="card-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-  <a href="/dashboard" class="bg-white rounded-xl shadow-md p-6 hover:bg-gray-50 transition">
+  <a href="/dashboard" class="card-link">
     <h2 class="text-2xl font-bold mb-2">Dashboard</h2>
     <p class="text-gray-600">View overall summary and stats</p>
   </a>
   {% for card in cards %}
   <a href="/{{ card.table_name }}"
-     class="bg-white rounded-xl shadow-md p-6 hover:bg-gray-50 transition">
+     class="card-link">
     <h2 class="text-2xl font-bold mb-2">{{ card.display_name }}</h2>
     <p class="text-gray-600">{{ card.description }}</p>
   </a>
   {% endfor %}
-  <a href="#" onclick="openAddTableModal()" class="bg-white rounded-xl shadow-md p-6 hover:bg-gray-50 transition flex items-center justify-center">
+  <a href="#" onclick="openAddTableModal()" class="card-link flex items-center justify-center">
     <span class="text-blue-500 text-5xl font-bold">+</span>
   </a>
 </div>
 
 <!-- Add Table Modal -->
-<div id="addTableModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden flex justify-center items-center z-50"
+<div id="addTableModal" class="modal-container hidden"
      onclick="if(event.target.id === 'addTableModal') closeAddTableModal()">
   <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full relative">
     <button type="button" onclick="closeAddTableModal()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-xl">&times;</button>

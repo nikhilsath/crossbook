@@ -112,3 +112,36 @@ body {
   backdrop-filter: blur(4px);
   z-index: 50;
 }
+
+/* Utility classes */
+.nav-link {
+  display: block;
+  padding: 0.25rem 0.5rem; /* py-1 px-2 */
+  border-radius: 0.25rem;
+}
+.nav-link:hover {
+  background-color: #374151; /* gray-700 */
+}
+
+.card-link {
+  display: block;
+  background-color: #fff;
+  border-radius: 0.75rem; /* rounded-xl */
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+  padding: 1.5rem; /* p-6 */
+  transition: background-color 0.2s;
+}
+.card-link:hover {
+  background-color: #f9fafb; /* gray-50 */
+}
+
+.modal-container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px); /* blur-sm */
+  z-index: 50;
+}
