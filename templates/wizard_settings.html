@@ -28,7 +28,7 @@
     {% endif %}
   </div>
   {% endfor %}
-  <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Continue</button>
+  <button type="submit" class="btn-primary px-4 py-2 rounded">Continue</button>
   <a href="{{ url_for('wizard.database_step') }}" class="ml-4 text-blue-600 underline">Back</a>
 </form>
 <script src="{{ url_for('static', filename='js/wizard_settings.js') }}"></script>
