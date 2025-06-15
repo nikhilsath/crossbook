@@ -38,6 +38,7 @@
          data-widget="{{ widget.id }}"
          data-type="{{ widget.widget_type }}"
          {% if widget.widget_type in ['chart', 'value'] %}data-config='{{ widget.content }}'{% endif %}
+         data-styling="{{ widget.styling or '{}' }}"
          style="grid-column: {{ col_start }} / span {{ col_span }}; grid-row: {{ row_start }} / span {{ row_span }};">
       {% if widget.widget_type == 'value' %}
         <div class="font-semibold">{{ widget.title }}</div>
