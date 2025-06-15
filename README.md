@@ -66,7 +66,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Layout Editor Persistence:** detail page layouts save to the database via the `/<table>/layout` endpoint.
 * **Automatic Dashboard Widget Placement:** New widgets are inserted at the next
   available row in the grid without specifying `row_start`.
-* **Dashboard Charts:** Pie, bar and line chart widgets rely on Flowbite Charts. The repo ships a placeholder `flowbite-charts.min.js`; download the real library for production use.
+* **Dashboard Charts:** Pie, bar and line chart widgets rely on Flowbite Charts. The library is loaded only on the dashboard view. The repo ships a placeholder `flowbite-charts.min.js`; download the real library for production use.
 * **Table Widget:** Displays simple tabular data such as base table record counts.
 * **Select Value Counts:** Table widget option that shows counts of each choice for a select or multi-select field.
 * **Top/Bottom Numeric:** Table widget listing records with the highest or lowest values for a numeric field.
