@@ -110,6 +110,7 @@ input[type=number] {
 #dashboard-grid .dashboard-widget {
   padding: 0.5rem !important;   /* Tailwind p-2 */
   box-sizing: border-box;       /* so h-full includes padding */
+  height: 100%;                 /* keep content within grid cell */
 }
 #dashboard-grid .resize-handle {
   position: absolute;
