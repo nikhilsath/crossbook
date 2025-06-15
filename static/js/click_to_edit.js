@@ -1,3 +1,5 @@
+import { submitFieldAjax } from './field_ajax.js';
+
 document.addEventListener('DOMContentLoaded', () => {
   const grid = document.getElementById('layout-grid');
   if (!grid) return;
@@ -30,4 +32,21 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = url.pathname + url.search;
     }
   });
+
+  const url = new URL(window.location.href);
+  const editField = url.searchParams.get('edit');
+  if (editField) {
+    const activeEl = document.querySelector(`.draggable-field[data-field="${editField}"]`);
+    const form = activeEl ? activeEl.querySelector('form') : null;
+    const handleClickAway = (e) => {
+      if (activeEl && activeEl.contains(e.target)) return;
+      document.removeEventListener('click', handleClickAway);
+      Promise.resolve(form ? submitFieldAjax(form) : null).finally(() => {
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.delete('edit');
+        window.location.href = newUrl.pathname + newUrl.search;
+      });
+    };
+    document.addEventListener('click', handleClickAway);
+  }
 });
