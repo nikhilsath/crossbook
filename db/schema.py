@@ -95,7 +95,11 @@ def update_foreign_field_options():
                 cols = [r[1] for r in cur.fetchall()]
                 if not cols:
                     raise ValueError(f"No columns in {foreign_table}")
-                label_field = cols[1] if len(cols) > 1 else cols[0]
+                title_field = get_title_field(foreign_table)
+                if title_field and title_field in cols:
+                    label_field = title_field
+                else:
+                    label_field = cols[1] if len(cols) > 1 else cols[0]
                 if label_field not in cols:
                     continue
                 cur.execute(f"SELECT id, {label_field} FROM {foreign_table}")
@@ -123,6 +127,16 @@ def update_foreign_field_options():
 
 def get_field_schema():
     return load_field_schema()
+
+
+def get_title_field(table: str) -> str | None:
+    """Return the field marked as the title for the table, if any."""
+    schema = load_field_schema()
+    tbl = schema.get(table, {})
+    for field, meta in tbl.items():
+        if meta.get("type") == "title":
+            return field
+    return None
 
 def load_card_info(conn):
     """Return card metadata from the config_base_tables table."""
@@ -255,10 +269,13 @@ def update_field_styling(table: str, field: str, styling_dict: dict) -> bool:
     return updated
 
 
-def create_base_table(table_name: str, description: str) -> bool:
+def create_base_table(table_name: str, description: str, title_field: str) -> bool:
     """Create a new base table and associated metadata."""
     if not table_name.isidentifier():
         logger.error("Invalid table name: %s", table_name)
+        return False
+    if not title_field.isidentifier():
+        logger.error("Invalid title field: %s", title_field)
         return False
 
     with get_connection() as conn:
@@ -278,7 +295,7 @@ def create_base_table(table_name: str, description: str) -> bool:
                 f"""
                 CREATE TABLE {table_name} (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    {table_name} TEXT
+                    {title_field} TEXT
                 )
                 """
             )
@@ -286,7 +303,7 @@ def create_base_table(table_name: str, description: str) -> bool:
             # Insert default field schema rows
             defaults = [
                 (table_name, "id", "hidden", None, None, 0, 0, 0, 0),
-                (table_name, table_name, "text", None, None, 0, 0, 0, 0),
+                (table_name, title_field, "title", None, None, 0, 0, 0, 0),
             ]
             cur.executemany(
                 """

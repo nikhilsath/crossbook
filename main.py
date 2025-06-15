@@ -15,6 +15,7 @@ from db.schema import (
     update_foreign_field_options,
     load_base_tables,
     load_card_info,
+    get_title_field,
 )
 from db.config import get_config_rows
 from utils.field_registry import FIELD_TYPES
@@ -88,6 +89,7 @@ def inject_field_schema():
     return {
         'field_schema': schema,
         'update_foreign_field_options': update_foreign_field_options,
+        'get_title_field': get_title_field,
         'nav_cards': current_app.config['CARD_INFO'],
         'base_tables': current_app.config['BASE_TABLES'],
         'field_macro_map': macro_map,

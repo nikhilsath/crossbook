@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% import "macros/fields.html" as fields with context %}
-{% set title_display = record.get(table) %}
+{% set title_field = get_title_field(table) %}
+{% set title_display = record.get(title_field) if title_field else record.get(table) %}
 {% block title %}{{ table|capitalize }} {{ title_display }}{% endblock %}
 {% block content %}
 {# Define the percentage snap constant (# of % per grid column) #}
@@ -10,7 +11,11 @@
 
   <!-- Left: Main Details -->
   <div class="flex-1">
+    {% if title_field %}
+    {% set display_value = record.get(title_field) or "Untitled" %}
+    {% else %}
     {% set display_value = record.get(table) or record.get("title") or record.get("name") or "Untitled" %}
+    {% endif %}
     <h1 class="text-2xl font-bold mb-4">
       {{ display_value }}
       <span class="text-gray-500 text-base">(ID {{ record.id }})</span>
@@ -46,7 +51,7 @@
          ">
 
       {% for field, value in record.items() %}
-        {% if field_schema[table][field].type != 'hidden' %}
+        {% if field_schema[table][field].type not in ['hidden', 'title'] %}
           {% set layout     = field_schema_layout[field] %}
           {% set styling    = field_schema[table][field].styling or {} %}
           {# Compute 1-based start lines and spans using PCT_SNAP #}

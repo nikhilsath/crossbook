@@ -299,7 +299,7 @@ def add_table():
     if not table_name.isidentifier():
         return jsonify({'error': 'Invalid table name'}), 400
     try:
-        success = create_base_table(table_name, description)
+        success = create_base_table(table_name, description, table_name)
     except Exception as exc:
         current_app.logger.exception('Failed to create table %s: %s', table_name, exc)
         return jsonify({'error': str(exc)}), 400

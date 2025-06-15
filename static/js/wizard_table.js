@@ -77,6 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(res => res.json())
       .then(types => {
         types.forEach(t => {
+          if (t === 'title') return;
           const opt = document.createElement('option');
           opt.value = t;
           opt.textContent = t;

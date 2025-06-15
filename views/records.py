@@ -24,6 +24,7 @@ from db.schema import (
     get_field_schema,
     update_layout as db_update_layout,
     update_field_styling as db_update_field_styling,
+    get_title_field,
 )
 from db.dashboard import sum_field as db_sum_field
 from db.config import get_layout_defaults
@@ -159,7 +160,10 @@ def api_list(table):
         cols = [r[1] for r in cur.fetchall()]
         if not cols:
             return jsonify([])
-        if table in cols:
+        title_field = get_title_field(table)
+        if title_field:
+            label_field = title_field
+        elif table in cols:
             label_field = table
         elif len(cols) > 1:
             label_field = cols[1]
@@ -274,6 +278,8 @@ def add_field_route(table, record_id):
         )
         current_app.logger.info('table=%s record_id=%s form=%s', table, record_id, dict(request.form))
         field_type = request.form['field_type']
+        if field_type == 'title':
+            return 'Cannot add additional title field', 400
         field_options_raw = request.form.get('field_options', '')
         foreign_key = request.form.get('foreign_key_target', None)
         styling_raw = request.form.get('styling')

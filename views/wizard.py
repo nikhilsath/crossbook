@@ -138,11 +138,12 @@ def table_step():
     progress = session.setdefault('wizard_progress', {})
     if request.method == 'POST':
         table_name = (request.form.get('table_name') or '').strip()
+        title_field = (request.form.get('title_field') or '').strip()
         description = (request.form.get('description') or '').strip()
         fields_json = request.form.get('fields_json', '')
         fields_text = request.form.get('fields', '')
-        if table_name:
-            if create_base_table(table_name, description):
+        if table_name and title_field:
+            if create_base_table(table_name, description, title_field):
                 field_defs = []
                 if fields_json:
                     try:
@@ -157,6 +158,8 @@ def table_step():
                                 field_defs.append({'name': name, 'type': ftype})
 
                 for f in field_defs:
+                    if f.get('name') == title_field:
+                        continue
                     name = f.get('name')
                     ftype = f.get('type')
                     if not name or not ftype:

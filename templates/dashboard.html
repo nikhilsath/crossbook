@@ -57,14 +57,7 @@
               <tr><th class="px-2 py-1 text-left">ID</th><th class="px-2 py-1 text-left">Value</th></tr>
               {% elif widget.parsed.type == 'filtered-records' %}
               {% set tbl = widget.parsed.table %}
-              {% set fields = field_schema[tbl].keys() | list %}
-              {% if tbl in fields %}
-                {% set label_field = tbl %}
-              {% elif fields|length > 1 %}
-                {% set label_field = fields[1] %}
-              {% else %}
-                {% set label_field = fields[0] %}
-              {% endif %}
+              {% set label_field = get_title_field(tbl) or tbl %}
               <tr><th class="px-2 py-1 text-left">ID</th><th class="px-2 py-1 text-left">{{ label_field }}</th></tr>
               {% else %}
               <tr><th class="px-2 py-1 text-left">Table</th><th class="px-2 py-1 text-left">Count</th></tr>
@@ -82,14 +75,7 @@
               {% endfor %}
             {% elif widget.parsed.type == 'filtered-records' %}
               {% set tbl = widget.parsed.table %}
-              {% set fields = field_schema[tbl].keys() | list %}
-              {% if tbl in fields %}
-                {% set label_field = tbl %}
-              {% elif fields|length > 1 %}
-                {% set label_field = fields[1] %}
-              {% else %}
-                {% set label_field = fields[0] %}
-              {% endif %}
+              {% set label_field = get_title_field(tbl) or tbl %}
               {% for row in widget.parsed.data if widget.parsed %}
                 <tr><td class="px-2 py-1"><a href="/{{ tbl }}/{{ row.id }}" class="text-blue-600 underline">{{ row.id }}</a></td><td class="px-2 py-1">{{ row[label_field] }}</td></tr>
               {% endfor %}
