@@ -155,6 +155,12 @@ input[type=number] {
   background-repeat: repeat, repeat;
 }
 
+/* Keep record tables within the viewport width */
+.list-view-page .records-table-wrapper {
+  max-width: 100vw;
+  overflow-x: auto;
+}
+
 /* Outline the title when it is being edited */
 #record-title[contenteditable="true"] {
   outline: 1px dashed #2563eb;
