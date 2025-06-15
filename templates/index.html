@@ -3,8 +3,8 @@
 {% block title %}Home{% endblock %}
 
 {% block nav_buttons %}
-<a href="/import" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">Import</a>
-<a href="/admin" class="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600">Admin</a>
+<a href="/import" class="btn-primary px-3 py-1 rounded">Import</a>
+<a href="/admin" class="btn-secondary px-3 py-1 rounded">Admin</a>
 {% endblock %}
 
 {% block content %}
@@ -43,7 +43,7 @@
         <textarea id="tableDescription" class="w-full border rounded p-2"></textarea>
       </div>
       <div class="flex justify-end">
-        <button type="submit" class="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600">Add</button>
+        <button type="submit" class="btn-primary px-4 py-2 rounded">Add</button>
       </div>
     </form>
   </div>

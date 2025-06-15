@@ -1,3 +1,19 @@
+:root {
+  --font-sans: 'Inter', 'IBM Plex Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Menlo', monospace;
+  --color-primary: #2563eb;
+  --color-secondary: #64748b;
+  --color-danger: #dc2626;
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
 .validation-results span {
     cursor: pointer;
 }
@@ -58,3 +74,41 @@
   flex: 1 1 auto;
 }
 
+/* Button styles */
+.btn-primary,
+.btn-secondary,
+.btn-danger {
+  color: #fff;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+  display: inline-block;
+}
+
+.btn-primary { background-color: var(--color-primary); }
+.btn-secondary { background-color: var(--color-secondary); }
+.btn-danger { background-color: var(--color-danger); }
+
+.btn-primary:hover,
+.btn-secondary:hover,
+.btn-danger:hover {
+  filter: brightness(90%);
+}
+
+/* Card component */
+.card {
+  background-color: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Modal container */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+}

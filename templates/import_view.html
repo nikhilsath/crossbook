@@ -20,7 +20,7 @@
       <form method="POST" action="/import" enctype="multipart/form-data" class="flex items-center space-x-2">
         <input type="hidden" name="table" value="{{ selected_table }}">
         <input type="file" name="file" accept=".csv" class="border rounded px-3 py-2">
-        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Upload</button>
+        <button type="submit" class="btn-primary px-4 py-2 rounded">Upload</button>
       </form>
       {% endif %}
       {% if num_records is defined %}
@@ -29,7 +29,7 @@
       </div>
       {% endif %}
       <!-- Import Records button, initially disabled -->
-    <button id="import-btn" type="button" disabled class="ml-auto bg-green-500 text-white px-4 py-2 rounded opacity-50 cursor-not-allowed">
+    <button id="import-btn" type="button" disabled class="ml-auto btn-primary px-4 py-2 rounded opacity-50 cursor-not-allowed">
       Import Records
     </button>
     </div>
