@@ -13,8 +13,9 @@
     {% set segments = request.path.strip('/').split('/') %}
     {% set current_table = segments[0] %}
     {% set current_id = segments[1] if segments|length > 1 else None %}
-  <nav class="bg-gray-800 dark:bg-gray-900 text-gray-100 p-4 flex justify-between items-center">
-    <div class="flex space-x-4">
+  <nav class="bg-gray-800 dark:bg-gray-900 text-gray-100 p-4 flex items-center justify-between">
+    <button id="nav-toggle" class="text-gray-100 mr-4 md:hidden">☰</button>
+    <div id="nav-links" class="flex space-x-4 flex-nowrap overflow-x-auto whitespace-nowrap hidden md:flex">
       <a href="/" class="px-2 {{ 'text-white border-b-2 border-white' if not current_table else 'text-gray-300 hover:text-white' }} font-semibold">Home</a>
       {% for nav in nav_cards if nav.table_name != 'dashboard' %}
         <a href="/{{ nav.table_name }}" class="px-2 {{ 'text-white border-b-2 border-white' if current_table == nav.table_name else 'text-gray-300 hover:text-white' }}">{{ nav.display_name }}</a>
@@ -22,7 +23,7 @@
     </div>
 
 
-    <div class="ml-auto flex space-x-2">
+    <div class="ml-auto flex space-x-2 hidden md:flex" id="nav-actions">
       {% if current_table in field_schema %}
         <a href="/{{ current_table }}/new" class="btn-primary px-3 py-1 rounded">+ Add</a>
         {% if current_id %}
@@ -35,8 +36,14 @@
     </div>
   </nav>
 
-  <div class="p-6">
+  <div class="p-4">
     {% block content %}{% endblock %}
   </div>
+  <script>
+    document.getElementById('nav-toggle')?.addEventListener('click', () => {
+      document.getElementById('nav-links')?.classList.toggle('hidden');
+      document.getElementById('nav-actions')?.classList.toggle('hidden');
+    });
+  </script>
 </body>
 </html>
