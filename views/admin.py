@@ -31,7 +31,7 @@ from utils.validation import validation_sorter
 from db.schema import get_field_schema
 from db.database import get_connection, check_db_status, init_db_path
 from db.bootstrap import initialize_database
-from imports.tasks import huey, process_import, init_import_table
+from imports.tasks import process_import, init_import_table
 from utils.field_registry import FIELD_TYPES
 
 admin_bp = Blueprint('admin', __name__)

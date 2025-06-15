@@ -1,4 +1,4 @@
-from flask import Flask, render_template, current_app, redirect, url_for, session, request
+from flask import Flask, render_template, current_app, redirect, url_for, request
 import logging
 import sqlite3
 import os
@@ -18,7 +18,7 @@ from db.schema import (
 )
 from db.config import get_config_rows
 from utils.field_registry import FIELD_TYPES
-import utils.validation  # ensure register_type() runs at startup
+import utils.validation  # ensure register_type() runs at startup  # noqa: F401
 
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = os.environ.get('SECRET_KEY', 'crossbook-secret')
