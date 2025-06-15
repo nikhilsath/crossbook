@@ -16,10 +16,9 @@
     {% set current_table = segments[0] %}
     {% set current_id = segments[1] if segments|length > 1 else None %}
 
-  <div id="sidebarBackdrop" class="modal hidden md:hidden"></div>
   <div class="flex min-h-screen">
     <button id="sidebarCollapse" class="fixed top-2 left-2 z-50 p-2 text-lg bg-gray-800 text-gray-100 rounded" aria-label="Toggle sidebar">&laquo;</button>
-    <aside id="sidebar" class="fixed md:static top-0 left-0 z-40 w-64 h-screen pt-4 bg-gray-800 text-gray-100 transform -translate-x-full md:translate-x-0 transition-transform flex flex-col flex-shrink-0">
+    <aside id="sidebar" class="fixed md:static top-0 left-0 z-40 w-64 h-screen pt-4 bg-gray-800 text-gray-100 hidden md:block flex flex-col flex-shrink-0">
       <nav class="flex-1 overflow-y-auto px-3 space-y-2">
         <a href="/" class="block px-2 py-1 rounded hover:bg-gray-700 {{ 'bg-gray-700' if not current_table else '' }}">Home</a>
         {% for nav in nav_cards if nav.table_name != 'dashboard' %}
@@ -54,20 +53,13 @@
   <script src="https://cdn.jsdelivr.net/npm/flowbite@1.6.5/dist/flowbite.min.js"></script>
   <script>
     const sidebar = document.getElementById('sidebar');
-    const backdrop = document.getElementById('sidebarBackdrop');
     const collapseBtn = document.getElementById('sidebarCollapse');
-    collapseBtn.innerHTML = sidebar.classList.contains('-translate-x-full') ? '&raquo;' : '&laquo;';
+    collapseBtn.innerHTML = sidebar.classList.contains('hidden') ? '&raquo;' : '&laquo;';
     function toggleSidebar() {
-      sidebar.classList.toggle('-translate-x-full');
-      backdrop.classList.toggle('hidden');
-      collapseBtn.innerHTML = sidebar.classList.contains('-translate-x-full') ? '&raquo;' : '&laquo;';
+      sidebar.classList.toggle('hidden');
+      collapseBtn.innerHTML = sidebar.classList.contains('hidden') ? '&raquo;' : '&laquo;';
     }
     collapseBtn.addEventListener('click', toggleSidebar);
-    document.getElementById('sidebarBackdrop').addEventListener('click', function() {
-      sidebar.classList.add('-translate-x-full');
-      this.classList.add('hidden');
-      collapseBtn.innerHTML = '&raquo;';
-    });
   </script>
 </body>
 </html>
