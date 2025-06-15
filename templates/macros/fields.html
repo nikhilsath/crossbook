@@ -196,14 +196,16 @@
 {% endmacro %}
 
 {% macro render_editable_field(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema, field_macro_map=None) %}
+  {% set edit_param = request.args.get('edit') %}
   {% set styling = field_schema[table][field].styling or {} %}
   <div class="mt-2 h-full{{ ' font-bold' if styling.bold }}{{ ' italic' if styling.italic }}{{ ' underline' if styling.underline }}"
        {% if styling.color %}style="color: {{ styling.color }}"{% endif %}
        data-styling='{{ styling | tojson }}'>
     {% set macro_name = field_macro_map.get(field_type) if field_macro_map else None %}
+    {% do current_app.logger.debug('[render] field=%s type=%s edit_param=%s', field, field_type, edit_param) %}
     {% if macro_name and (self|attr(macro_name)) %}
-      {% if request.args.get('edit') == field %}
-        {{ current_app.logger.debug('[DEBUG: ' ~ field ~ ' \u2192 ' ~ field_type ~ ']') }}
+      {% if edit_param == field %}
+        {% do current_app.logger.debug('[DEBUG: ' ~ field ~ ' \u2192 ' ~ field_type ~ ']') %}
       {% endif %}
       {{ (self|attr(macro_name))(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) }}
     {% else %}
