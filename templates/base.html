@@ -16,22 +16,22 @@
     {% set current_table = segments[0] %}
     {% set current_id = segments[1] if segments|length > 1 else None %}
 
-  <div class="flex min-h-screen">
+  <div id="layout-container" class="flex min-h-screen">
     <button id="sidebarCollapse" class="fixed top-2 left-2 z-50 p-2 text-lg bg-gray-800 text-gray-100 rounded" aria-label="Toggle sidebar">&laquo;</button>
     <aside id="sidebar" class="fixed md:static top-0 left-0 z-40 w-64 h-screen pt-4 bg-gray-800 text-gray-100 hidden md:block flex flex-col flex-shrink-0">
-      <nav class="flex-1 overflow-y-auto px-3 space-y-2">
-        <a href="/" class="block px-2 py-1 rounded hover:bg-gray-700 {{ 'bg-gray-700' if not current_table else '' }}">Home</a>
+      <nav id="sidebar-nav" class="flex-1 overflow-y-auto px-3 space-y-2">
+        <a id="nav-link-home" href="/" class="block px-2 py-1 rounded hover:bg-gray-700 {{ 'bg-gray-700' if not current_table else '' }}">Home</a>
         {% for nav in nav_cards if nav.table_name != 'dashboard' %}
-          <a href="/{{ nav.table_name }}" class="block px-2 py-1 rounded hover:bg-gray-700 {{ 'bg-gray-700' if current_table == nav.table_name else '' }}">{{ nav.display_name }}</a>
+          <a id="nav-link-{{ nav.table_name }}" href="/{{ nav.table_name }}" class="block px-2 py-1 rounded hover:bg-gray-700 {{ 'bg-gray-700' if current_table == nav.table_name else '' }}">{{ nav.display_name }}</a>
         {% endfor %}
       </nav>
-      <div class="p-3 grid grid-cols-2 gap-2">
+      <div id="nav-buttons" class="p-3 grid grid-cols-2 gap-2">
         {% block nav_buttons %}{% endblock %}
       </div>
     </aside>
 
-    <div class="flex-1 flex flex-col">
-      <header class="bg-gray-800 text-gray-100 p-4 flex items-center">
+    <div id="content-wrapper" class="flex-1 flex flex-col">
+      <header id="page-header" class="bg-gray-800 text-gray-100 p-4 flex items-center">
         <div class="ml-auto flex space-x-2">
           {% if current_table in field_schema %}
             <a href="/{{ current_table }}/new" class="btn-primary px-3 py-1 rounded">+ Add</a>
@@ -44,7 +44,7 @@
         </div>
       </header>
 
-      <main class="p-4 card mt-2">
+      <main id="page-main" class="p-4 card mt-2">
         {% block content %}{% endblock %}
       </main>
     </div>

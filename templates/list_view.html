@@ -7,11 +7,11 @@
 <button id="bulk_edit" onclick="openBulkEditModal()" class="btn-primary px-3 py-1 rounded opacity-50" disabled>Bulk Edit</button>
 {% endblock %}
 {% block content %}
-<div class="w-full bg-white p-6 rounded shadow-md">
+<div id="list-view-container" class="w-full bg-white p-6 rounded shadow-md">
   <h1 class="text-2xl font-bold mb-4">{{ table|capitalize }}s</h1>
 
   <!-- Search form -->
-  <form method="get" class="mb-4 flex items-center justify-between">
+  <form id="list-search-form" method="get" class="mb-4 flex items-center justify-between">
     {# Left side: Search input + button #}
     <div class="flex items-center space-x-2">
       <input
