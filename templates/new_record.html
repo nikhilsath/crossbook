@@ -4,7 +4,7 @@
 {% block content %}
 <h1 class="text-2xl font-bold mb-6">Create New {{ table|capitalize }}</h1>
 
-<form method="post" class="space-y-4">
+<form id="new-record-form" method="post" class="space-y-4">
   {% for field, ftype in fields.items() %}
     {% if field != "id" and ftype != "hidden" %}
       <div>
