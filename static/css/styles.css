@@ -47,5 +47,14 @@
 /* Add a subtle outline around dashboard widgets */
 .dashboard-widget {
   outline: 1px solid #e5e7eb; /* tailwind gray-200 */
+  height: 100%;
+  overflow: hidden;            /* keep inner content clipped */
+  display: flex;               /* allow inner scroll area to fill */
+  flex-direction: column;
+}
+
+/* allow scroll area to use remaining height */
+.dashboard-widget > .overflow-auto {
+  flex: 1 1 auto;
 }
 
