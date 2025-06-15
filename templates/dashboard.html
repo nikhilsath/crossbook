@@ -119,8 +119,24 @@
 
 <script>const FIELD_SCHEMA = {{ field_schema | tojson }};</script>
 <script>window.WIDGET_LAYOUT = {{ widget_layout | tojson }};</script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('#dashboard-grid .draggable-field').forEach(el => {
+      let data = el.dataset.styling;
+      try {
+        el._styling = data ? JSON.parse(data) : {};
+      } catch (e) {
+        el._styling = {};
+      }
+      if (window.applyFieldStyling) {
+        window.applyFieldStyling(el, el._styling);
+      }
+    });
+  });
+</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{{ url_for('static', filename='js/flowbite-charts.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/field_styling.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/dashboard_modal.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/dashboard_grid.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/dashboard_charts.js') }}"></script>
