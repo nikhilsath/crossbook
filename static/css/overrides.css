@@ -111,6 +111,14 @@ input[type=number] {
   padding: 0.5rem !important;   /* Tailwind p-2 */
   box-sizing: border-box;       /* so h-full includes padding */
   height: 100%;                 /* keep content within grid cell */
+  overflow: hidden;             /* prevent inner overflow from expanding */
+  display: flex;                /* let inner area stretch */
+  flex-direction: column;
+}
+
+/* allow scroll area to fill widget height */
+#dashboard-grid .dashboard-widget > .overflow-auto {
+  flex: 1 1 auto;
 }
 #dashboard-grid .resize-handle {
   position: absolute;
