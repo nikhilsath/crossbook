@@ -201,7 +201,8 @@
   <div class="mt-2 h-full{{ ' font-bold' if styling.bold }}{{ ' italic' if styling.italic }}{{ ' underline' if styling.underline }}"
        {% if styling.color %}style="color: {{ styling.color }}"{% endif %}
        data-styling='{{ styling | tojson }}'>
-    {{ current_app.logger.debug('[render] field=%s type=%s edit_param=%s', field, field_type, edit_param) }}
+    {% do current_app.logger.debug('[render] field=%s type=%s edit_param=%s', field, field_type, edit_param) %}
+    <label class="block text-sm font-medium capitalize">{{ field }}</label>
     {% if field_type == 'text' %}
       {{ render_text(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) }}
     {% elif field_type == 'number' %}
