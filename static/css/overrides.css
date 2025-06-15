@@ -155,6 +155,11 @@ input[type=number] {
   background-repeat: repeat, repeat;
 }
 
+/* Outline the title when it is being edited */
+#record-title[contenteditable="true"] {
+  outline: 1px dashed #2563eb;
+}
+
 /* handles hidden by default */
  #layout-grid .resize-handle {
    position: absolute;
