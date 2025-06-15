@@ -57,7 +57,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Navigation Bar:** A consistent top navigation (`base.html`) links to Home and all base table sections.
 * **Bulk Edit Modal:** Select rows in a list view and update a single field across all of them at once.
 * **Supported Field Types:** text, number, date, select, multi-select, foreign-key, boolean, textarea, and url, each rendered with the appropriate input control.
-* **Field Type Registry:** New types can register their SQL storage, validation function, default layout size, and rendering macro.
+* **Field Type Registry:** New types can register their SQL storage and validation logic. Rendering macros for the built-in field types are now hardcoded in `macros/fields.html` instead of being looked up dynamically.
 * **Filter Macros:** Reusable Jinja macros for boolean, select, text, and multi-select filters (`templates/macros/filter_controls.html`).
 * **Text Filter Operators:** `contains`, `equals`, `starts_with`, `ends_with`, `not_contains`, and `regex` operators are available when filtering text fields. Regex matching requires database support and falls back to a normal `LIKE` search if unavailable.
 * **Field Schema Editing:** New endpoints allow adding or removing columns at runtime (`/<table>/<id>/add-field`, `/<table>/<id>/remove-field`) and counting non-null values (`/<table>/count-nonnull`).
@@ -437,7 +437,7 @@ Overall, `detail_view.html` works in tandem with `macros/fields.html` and the JS
 
 **Key Macro:**
 
-- **`render_editable_field(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table)`** – This macro, when called in the context of a record detail page, will output the appropriate HTML for that field. It uses the parameters to form the correct form action URLs and determine how to display the value.
+- **`render_editable_field(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table)`** – This macro, when called in the context of a record detail page, outputs the appropriate HTML for that field. Rendering is now handled by a fixed `if`/`elif` block for each built‑in field type instead of looking up a macro name at runtime.
 
 **Behavior:**
 
@@ -459,7 +459,7 @@ Overall, `detail_view.html` works in tandem with `macros/fields.html` and the JS
   - For all other fields (text, number, etc.): it simply displays the value in a span.
   - When a field is edited via the `?edit=<field>` query parameter, the macro now logs `[DEBUG: field → field_type]` to the Flask logger. This provides helpful context without cluttering the rendered page.
 
-By using this macro in `detail_view.html`, the template stays cleaner and any changes to how fields are rendered (view or edit) can be made in one place. If new field types are introduced later, this macro can be extended to render them appropriately without touching the main template logic.
+By using this macro in `detail_view.html`, the template stays cleaner and any changes to how fields are rendered (view or edit) can be made in one place. If new field types are introduced later, you will need to add a new `elif` case to this macro to handle them.
 
 ## Styling
 
