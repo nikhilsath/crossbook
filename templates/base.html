@@ -18,6 +18,9 @@
 
   <div id="app-container" class="flex min-h-screen">
     <aside id="sidebar" class="fixed md:static top-0 left-0 z-40 w-64 h-screen pt-4 bg-gray-800 text-gray-100 hidden md:block flex flex-col flex-shrink-0">
+      <div class="flex justify-end pr-2">
+        <button id="sidebarCollapse" class="p-2 text-lg bg-gray-800 text-gray-100 rounded" aria-label="Toggle sidebar">&laquo;</button>
+      </div>
       <nav class="flex-1 overflow-y-auto px-3 space-y-2">
         <a href="/" class="block px-2 py-1 rounded hover:bg-gray-700 {{ 'bg-gray-700' if not current_table else '' }}">Home</a>
         {% for nav in nav_cards if nav.table_name != 'dashboard' %}
@@ -40,7 +43,6 @@
               </form>
             {% endif %}
           {% endif %}
-          <button id="sidebarCollapse" class="p-2 text-lg bg-gray-800 text-gray-100 rounded" aria-label="Toggle sidebar">&laquo;</button>
         </div>
       </header>
 
