@@ -107,6 +107,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 │   │   ├── edit_fields.js           # Client-side field schema editing
 │   │   ├── editor.js                # Initialize Quill editors
 │   │   ├── field_ajax.js            # Inline updates via fetch
+│   │   ├── click_to_edit.js        # Click a field to toggle edit mode
 │   │   ├── filter_visibility.js     # Show/hide filter controls
 │   │   ├── layout_editor.js         # Drag/drop & layout persistence
 │   │   ├── dashboard_grid.js       # Drag and resize dashboard widgets
@@ -201,6 +202,7 @@ Large files are not streamed—they are fully loaded into memory during parsing,
   * `edit_fields.js` for client-side schema and field editing
   * `editor.js` initializes Quill editors for textarea fields (see the [Quill documentation](https://quilljs.com/docs/quickstart/) for editor usage)
   * `field_ajax.js` for inline field updates without page reloads (imported by `detail_view.html`)
+  * `click_to_edit.js` toggles a field into edit mode when clicked
   * `filter_visibility.js` for showing/hiding filter controls
   * `layout_editor.js` for drag-and-drop and grid persistence
   * `relations.js` for AJAX-based add/remove relationships
