@@ -3,7 +3,7 @@
   <td class="px-2 py-2" data-static onclick="event.stopPropagation()">
     <input type="checkbox" class="row-select" value="{{ record.id }}">
   </td>
-  {% for field in fields if not field.startswith('_') %}
+  {% for field in fields if not field.startswith('_') and field != 'edit_log' %}
     <td class="px-4 py-2 whitespace-nowrap" data-field="{{ field }}">
       {% if field_schema[table][field].type == "textarea" %}
         {{ record[field]|striptags|truncate(100) }}
