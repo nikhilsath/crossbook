@@ -75,7 +75,7 @@ def validate_textarea_column(values):
         # Invalid if over CSV field limit
         if len(v) > max_size:
             invalid += 1
-            details["invalid"].append({"row": idx, "reason": "length exceeds 1000 characters"})
+            details["invalid"].append({"row": idx, "reason": f"length exceeds {max_size} characters"})
         else:
             valid += 1
             details["valid"].append(idx)
