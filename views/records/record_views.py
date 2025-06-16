@@ -4,12 +4,10 @@ from flask import Blueprint, render_template, abort, request, redirect, url_for,
 
 from db.records import (
     get_record_by_id,
-    update_field_value,
     create_record,
     delete_record,
     count_nonnull as db_count_nonnull,
     field_distribution,
-    append_edit_log,
     get_edit_history,
     get_edit_entry,
     revert_edit,
@@ -28,6 +26,7 @@ from utils.field_registry import get_field_type, get_type_size_map
 
 records_bp = Blueprint('records', __name__)
 from utils.records_helpers import require_base_table
+from utils.record_ops import update_record_field, bulk_update_records
 
 logger = logging.getLogger(__name__)
 
@@ -174,43 +173,18 @@ def update_field(table, record_id):
     field = request.form.get('field')
     if not field:
         abort(400, 'Field missing')
-    fmeta = get_field_schema().get(table, {}).get(field)
-    if not fmeta:
-        abort(400, 'Unknown field')
-    ftype = fmeta['type']
-    if ftype in ('multi_select', 'foreign_key'):
-        vals = request.form.getlist('new_value[]')
-        new_value = ', '.join(vals)
-    else:
-        raw = request.form.get('new_value_override') or request.form.get('new_value', '')
-        if ftype == 'boolean':
-            new_value = '1' if raw.lower() in ('1','on','true') else '0'
-        elif ftype == 'number':
-            try:
-                parsed = float(raw)
-                new_value = str(parsed)
-            except ValueError:
-                new_value = '0'
-        else:
-            new_value = raw
-        if ftype == 'textarea':
-            from utils.html_sanitizer import sanitize_html
-            new_value = sanitize_html(new_value)
-    logger.debug('update_field: table=%s id=%s field=%s value=%r', table, record_id, field, new_value)
-    prev_record = get_record_by_id(table, record_id)
-    prev_value = prev_record.get(field) if prev_record else None
-    success = update_field_value(table, record_id, field, new_value)
-    if not success:
+    raw_value = (
+        request.form.getlist('new_value[]')
+        if request.form.getlist('new_value[]')
+        else request.form.get('new_value_override') or request.form.get('new_value', '')
+    )
+    try:
+        new_value = update_record_field(table, record_id, field, raw_value)
+    except ValueError as e:
+        abort(400, str(e))
+    except RuntimeError:
         abort(500, 'Database update failed')
-    logger.info('Field updated for %s id=%s: %s -> %r', table, record_id, field, new_value)
-    if prev_record is not None and str(prev_value) != str(new_value):
-        append_edit_log(
-            table,
-            record_id,
-            field,
-            str(prev_value),
-            str(new_value),
-        )
+    logger.debug('update_field: table=%s id=%s field=%s value=%r', table, record_id, field, new_value)
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return jsonify({"success": True, "new_value": new_value})
@@ -229,33 +203,10 @@ def bulk_update(table):
     value = data.get('value')
     if not isinstance(ids, list) or not field:
         return jsonify({'error': 'Missing ids or field'}), 400
-    schema = get_field_schema().get(table, {})
-    fmeta = schema.get(field)
-    if fmeta is None:
-        return jsonify({'error': 'Unknown field'}), 400
-    ftype = fmeta['type']
-    if ftype == 'boolean':
-        value = '1' if str(value).lower() in ('1', 'true', 'on') else '0'
-    elif ftype == 'number':
-        try:
-            parsed = float(value)
-            value = str(parsed)
-        except (TypeError, ValueError):
-            value = '0'
-    elif ftype in ('multi_select', 'foreign_key'):
-        if isinstance(value, list):
-            value = ', '.join([str(v) for v in value])
-        elif value is None:
-            value = ''
-    elif ftype == 'textarea':
-        from utils.html_sanitizer import sanitize_html
-        value = sanitize_html(value or '')
-
-    updated = 0
-    for rid in ids:
-        if update_field_value(table, rid, field, value):
-            append_edit_log(table, rid, field, None, str(value))
-            updated += 1
+    try:
+        updated = bulk_update_records(table, ids, field, value)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
     return jsonify({'success': True, 'updated': updated})
 
 
