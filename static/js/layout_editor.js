@@ -84,6 +84,7 @@ function handleSaveLayout() {
   const saveLayoutBtn       = document.getElementById('save-layout');
   const resetLayoutBtn      = document.getElementById('reset-layout');
   const headerToggleWrap    = document.getElementById('special-visibility-wrapper');
+  const relationToggleWrap  = document.getElementById('relation-visibility-wrapper');
   toggleEditLayoutBtn.classList.remove('hidden');
   layoutGrid.classList.remove('editing');
   document.getElementById('field-style-menu')?.classList.add('hidden');
@@ -91,6 +92,7 @@ function handleSaveLayout() {
     document.querySelectorAll('.resize-handle')
 .forEach(h => h.classList.add('hidden'));
   if (headerToggleWrap) headerToggleWrap.classList.add('hidden');
+  if (relationToggleWrap) relationToggleWrap.classList.add('hidden');
   const table = layoutGrid.dataset.table;
   const layoutEntries = Object.entries(layoutCache)
     .filter(([field]) => document.querySelector(`.draggable-field[data-field=\"${field}\"]`))
@@ -123,12 +125,14 @@ function editModeButtons() {
   const saveLayoutBtn       = document.getElementById('save-layout');
   const layoutGrid          = document.getElementById('layout-grid');
   const headerToggleWrap    = document.getElementById('special-visibility-wrapper');
+  const relationToggleWrap  = document.getElementById('relation-visibility-wrapper');
   layoutGrid.classList.add('editing');
   resetLayoutBtn.classList.remove('hidden');
   addFieldBtn.classList.add('hidden');
   toggleEditLayoutBtn.classList.add('hidden');
   saveLayoutBtn.classList.remove('hidden');
   if (headerToggleWrap) headerToggleWrap.classList.remove('hidden');
+  if (relationToggleWrap) relationToggleWrap.classList.remove('hidden');
 }
 
 function enableVanillaDrag() {
