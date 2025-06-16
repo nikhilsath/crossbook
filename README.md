@@ -125,11 +125,13 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 │       └── validation.py            # Import form validation helpers
 ├── templates/                       # Jinja2 view templates
 │   ├── base.html
-│   ├── admin.html                   # Admin landing page
-│   ├── admin_automation.html        # Placeholder automation page
-│   ├── admin_users.html             # Placeholder user management
+│   ├── admin/                       # Admin interface templates
+│   │   ├── admin.html
+│   │   ├── admin_automation.html
+│   │   ├── admin_users.html
+│   │   ├── database_admin.html
+│   │   └── config_admin.html
 │   ├── bulk_edit_modal.html         # Modal for bulk edits
-│   ├── config_admin.html            # Configuration editor
 │   ├── dashboard.html               # (WIP) summary page
 │   ├── edit_fields_modal.html       # Modal partial for field editing
 │   ├── import_view.html             # CSV import workflow
