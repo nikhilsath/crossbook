@@ -10,6 +10,13 @@ body {
   font-family: var(--font-sans);
 }
 
+a {
+  color: var(--color-primary);
+}
+a:hover {
+  text-decoration: underline;
+}
+
 .mono {
   font-family: var(--font-mono);
 }
