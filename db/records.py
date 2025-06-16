@@ -358,6 +358,9 @@ def revert_edit(entry: dict) -> bool:
     new_val = entry["new_value"]
 
     try:
+        if not field:
+            logger.warning("revert_edit: no field_name provided")
+            return False
         if field.startswith("relation_"):
             from db.relationships import add_relationship, remove_relationship
 
