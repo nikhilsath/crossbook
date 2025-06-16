@@ -57,8 +57,7 @@
   {% if request.args.get('edit') == field %}
     <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="relative w-full multiselect" data-multiselect-dropdown onsubmit="event.preventDefault();">
       <input type="hidden" name="field" value="{{ field }}">
-      {% set selected_options = (value or '').split(',') %}
-      {% set selected_options = selected_options | map('trim') | reject('equalto', '') | list %}
+      {% set selected_options = (value or '').split(', ') %}
 
       <div class="flex flex-wrap gap-1 mb-2">
         {% for tag in selected_options if tag %}
@@ -92,8 +91,7 @@
       </div>
     </form>
   {% else %}
-    {% set selected_options = (value or '').split(',') %}
-    {% set selected_options = selected_options | map('trim') | reject('equalto', '') | list %}
+    {% set selected_options = (value or '').split(', ') %}
     <div class="flex flex-wrap gap-1" data-field="{{ field }}">
       {% for tag in selected_options if tag %}
         <span class="inline-flex items-center bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">{{ tag }}</span>
@@ -129,8 +127,7 @@
   {% if request.args.get('edit') == field %}
     <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="relative w-full" data-multiselect-dropdown onsubmit="event.preventDefault();">
       <input type="hidden" name="field" value="{{ field }}">
-      {% set selected_options = (value or '').split(',') %}
-      {% set selected_options = selected_options | map('trim') | reject('equalto', '') | list %}
+      {% set selected_options = (value or '').split(', ') %}
 
       <div class="flex flex-wrap gap-1 mb-2">
         {% for tag in selected_options if tag %}
@@ -164,8 +161,7 @@
       </div>
     </form>
   {% else %}
-    {% set selected_options = (value or '').split(',') %}
-    {% set selected_options = selected_options | map('trim') | reject('equalto', '') | list %}
+    {% set selected_options = (value or '').split(', ') %}
     <div class="flex flex-wrap gap-1" data-field="{{ field }}">
       {% for tag in selected_options if tag %}
         <span class="inline-flex items-center bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">{{ tag }}</span>
