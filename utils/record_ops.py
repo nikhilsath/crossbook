@@ -4,8 +4,8 @@ from typing import Any, Iterable
 from db.records import (
     get_record_by_id,
     update_field_value,
-    append_edit_log,
 )
+from db.edit_history import append_edit_log
 from db.schema import get_field_schema
 
 logger = logging.getLogger(__name__)
