@@ -141,6 +141,11 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 │   │   ├── edit_fields_modal.html   # Modal partial for field editing
 │   │   ├── add_table_modal.html     # Home page table creation
 │   │   └── validation_modal.html    # Import validation overlay
+│   ├── wizard/
+│   │   ├── wizard_database.html
+│   │   ├── wizard_settings.html
+│   │   ├── wizard_table.html
+│   │   └── wizard_import.html
 │   └── macros/
 │       ├── fields.html              # Field rendering macros
 │       └── filter_controls.html     # Filter UI macros
