@@ -59,15 +59,15 @@ def dashboard():
 
 @admin_bp.route('/admin')
 def admin_page():
-    return render_template('admin.html')
+    return render_template('admin/admin.html')
 
 @admin_bp.route('/admin/users')
 def admin_users():
-    return render_template('admin_users.html')
+    return render_template('admin/admin_users.html')
 
 @admin_bp.route('/admin/automation')
 def admin_automation():
-    return render_template('admin_automation.html')
+    return render_template('admin/admin_automation.html')
 
 @admin_bp.route('/admin.html')
 def admin_html_redirect():
@@ -83,7 +83,7 @@ def database_page():
             db_path = item['value']
             db_status = check_db_status(db_path)
             break
-    return render_template('database_admin.html', db_path=db_path, db_status=db_status)
+    return render_template('admin/database_admin.html', db_path=db_path, db_status=db_status)
 
 @admin_bp.route('/admin/config')
 def config_page():
@@ -98,7 +98,7 @@ def config_page():
         if item['key'] == 'db_path':
             continue
         sections.setdefault(item['section'], []).append(item)
-    return render_template('config_admin.html', sections=sections)
+    return render_template('admin/config_admin.html', sections=sections)
 
 @admin_bp.route('/admin/config/<path:key>', methods=['POST'])
 def update_config_route(key):
