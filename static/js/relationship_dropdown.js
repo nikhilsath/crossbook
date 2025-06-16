@@ -3,25 +3,37 @@ export function toggleAddRelation(tableA, idA, tableB) {
   if (!container) return;
   container.classList.toggle('hidden');
   const select = container.querySelector('select');
-  if (!container.dataset.loaded) {
-    fetch(`/api/${tableB}/list`)
-      .then(r => r.json())
-      .then(options => {
-        if (tableB !== 'content') {
-          options.sort((a, b) => a.label.localeCompare(b.label));
-        }
-        select.innerHTML = '';
-        options.forEach(opt => {
-          const o = document.createElement('option');
-          o.value = opt.id;
-          o.textContent = tableB === 'content' ? `#${opt.id} – ${opt.label}` : opt.label;
-          select.appendChild(o);
-        });
-        container.dataset.loaded = '1';
-      });
-  }
+  const search = container.querySelector('input');
   select.dataset.tableA = tableA;
   select.dataset.idA = idA;
+  if (!container.dataset.loaded) {
+    fetchRelationOptions(tableB, '', select);
+    container.dataset.loaded = '1';
+  }
+  search.focus();
+}
+
+function fetchRelationOptions(table, term, select) {
+  fetch(`/api/${table}/list?search=${encodeURIComponent(term)}&limit=20`)
+    .then(r => r.json())
+    .then(options => {
+      if (table !== 'content') {
+        options.sort((a, b) => a.label.localeCompare(b.label));
+      }
+      select.innerHTML = '';
+      options.forEach(opt => {
+        const o = document.createElement('option');
+        o.value = opt.id;
+        o.textContent = table === 'content' ? `#${opt.id} – ${opt.label}` : opt.label;
+        select.appendChild(o);
+      });
+    });
+}
+
+export function searchRelation(tableB, input) {
+  const select = document.getElementById(`rel-options-${tableB}`);
+  if (!select) return;
+  fetchRelationOptions(tableB, input.value, select);
 }
 
 export function submitRelation(tableB) {
@@ -60,3 +72,4 @@ export function removeRelation(tableA, idA, tableB, idB) {
 window.toggleAddRelation = toggleAddRelation;
 window.submitRelation = submitRelation;
 window.removeRelation = removeRelation;
+window.searchRelation = searchRelation;

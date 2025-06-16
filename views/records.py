@@ -149,11 +149,19 @@ def list_view(table):
 
 @records_bp.route('/api/<table>/list')
 def api_list(table):
-    """Return basic id/label info for records in the table."""
+    """Return basic id/label info for records in the table.
+
+    Optional query parameters:
+    - ``search``: substring match on the label field.
+    - ``limit``: maximum number of rows to return.
+    """
     try:
         validate_table(table)
     except ValueError:
         abort(404)
+
+    search = request.args.get("search")
+    limit = request.args.get("limit", type=int)
 
     with get_connection() as conn:
         cur = conn.cursor()
@@ -170,7 +178,16 @@ def api_list(table):
             label_field = cols[1]
         else:
             label_field = cols[0]
-        cur.execute(f"SELECT id, {label_field} FROM {table}")
+
+        sql = f"SELECT id, {label_field} FROM {table}"
+        params = []
+        if search is not None:
+            sql += f" WHERE {label_field} LIKE ?"
+            params.append(f"%{search}%")
+        if limit is not None:
+            sql += " LIMIT ?"
+            params.append(limit)
+        cur.execute(sql, params)
         rows = cur.fetchall()
 
     return jsonify([{'id': r[0], 'label': r[1]} for r in rows])
