@@ -23,6 +23,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
     - [list_view.html](#listviewhtml)
     - [detail_view.html](#detailviewhtml)
     - [macros/fields.html](#macrosfieldshtml)
+  - [Logging & Monitoring](#logging--monitoring)
   - [Import Workflow](#import-workflow)
 
 ## Project Summary
@@ -229,15 +230,28 @@ Large files are not streamed—they are fully loaded into memory during parsing,
 
 * **Templating & Macros:** Jinja2 templates in `templates/` include the core pages (`base.html`, `index.html`, `list_view.html`, `detail_view.html`, `new_record.html`, `dashboard.html`) plus admin and import views. Partial templates like `modals/edit_fields_modal.html` and `modals/bulk_edit_modal.html` are used for modals. Reusable macros live in `templates/macros/fields.html` and `filter_controls.html`.
 
-* **Logging & Monitoring:** Logging is configured via `logging_setup.py` and values stored in the database. Both Flask and root handlers are cleared, then a rotating or timed file handler is attached. Only error-level messages appear in the console. Werkzeug request logs are disabled. Logs capture errors and user actions.
+* **Logging & Monitoring:** Logging is configured via `logging_setup.py` and values stored in the database. Both Flask and root handlers are cleared, then a rotating or timed file handler is attached. Only error-level messages appear in the console. Werkzeug request logs are disabled. Logs capture errors and user actions. See the section below for configuration details.
 * **Utility Helpers:** Helper modules in `utils/` include field type registration, HTML sanitization and the CSV import validator.
 
 * **Data Directory:** Runtime files under `data/`: `crossbook.db` (primary database) and `huey.db` (task queue store). The `db_path` entry in the `config` table can point the application at a different database file.
 
+### Logging & Monitoring
 
+Crossbook reads logging settings from the `config` table. Key options include:
 
+- `log_level` – log verbosity (`DEBUG`, `INFO`, `WARNING`, `ERROR`).
+- `handler_type` – `rotating`, `timed` or `stream`.
+- `filename` – file path when using a file-based handler.
+- `max_file_size` – rotate size for the rotating handler.
+- `backup_count` – number of log files to keep.
+- `when_interval` – rotation unit for the timed handler.
+- `interval_count` – how often to rotate with the timed handler.
+- `log_format` – format string for log messages.
 
-
+Visit `/admin/config` and open the **logging** section to adjust these values.
+Changes are applied immediately by reloading the logger. Log files default to
+`logs/crossbook.log`; create the `logs/` directory if it does not exist. Switch
+`handler_type` to move between rotating, timed and stream handlers.
 
 ### **Main Application – `main.py`**
 
