@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
               cur.outerHTML = data.filters_html;
               bindDebounceToFilters();
               bindOperatorListeners();
+              bindSelectFilters();
               bindNumberFilters();
               bindDateFilters();
               bindMultiSelectPopovers();
@@ -189,15 +190,19 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       });
     }
-    // Bind change handlers for non-operator selects (i.e. our select filters)
-    document.querySelectorAll("#filter-container select:not(.operator-select)")
-    .forEach(sel =>
-        sel.addEventListener("change", e => {
-        const params = new URLSearchParams(window.location.search);
-        params.set(sel.name, sel.value);
-        updateState(params);
-        })
-    );
+
+    // Bind change handlers for single select filters
+    function bindSelectFilters() {
+      document
+        .querySelectorAll("#filter-container select:not(.operator-select):not(.multi-select-mode)")
+        .forEach(sel => {
+          sel.addEventListener("change", () => {
+            const params = new URLSearchParams(window.location.search);
+            params.set(sel.name, sel.value);
+            updateState(params);
+          });
+        });
+    }
 
   
     // Toggle dropdown visibility
@@ -224,6 +229,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initial binding for inputs and operators
     bindDebounceToFilters();
     bindOperatorListeners();
+    bindSelectFilters();
     bindNumberFilters();
     bindDateFilters();
 
