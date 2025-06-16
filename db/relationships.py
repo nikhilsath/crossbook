@@ -1,99 +1,82 @@
 import logging
 
 logger = logging.getLogger(__name__)
+
 from db.database import get_connection
 from db.validation import validate_table
 from db.records import touch_last_edited
+from db.schema import get_title_field
+
+
+def _get_label(cursor, table, record_id):
+    """Return label for a record from the given table."""
+    cursor.execute(f"PRAGMA table_info({table})")
+    cols = [r[1] for r in cursor.fetchall()]
+    if not cols:
+        return None
+    title_field = get_title_field(table)
+    if title_field:
+        label_field = title_field
+    elif table in cols:
+        label_field = table
+    elif len(cols) > 1:
+        label_field = cols[1]
+    else:
+        label_field = cols[0]
+    cursor.execute(f"SELECT id, {label_field} FROM {table} WHERE id = ?", (record_id,))
+    row = cursor.fetchone()
+    return row if row else None
 
 
 def get_related_records(source_table, record_id):
-    # Ensure the source table is valid
+    """Return dict of related records grouped by table."""
     validate_table(source_table)
     related = {}
     with get_connection() as conn:
-        cursor = conn.cursor()
-        # Fetch all table names
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
-        all_tables = [row[0] for row in cursor.fetchall()]
-        for join_table in all_tables:
-            parts = join_table.split("_")
-            if len(parts) != 2:
-                continue
-            table_a, table_b = parts
-            # Validate each side of the join
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT table_a, id_a, table_b, id_b
+              FROM relationships
+             WHERE (table_a = ? AND id_a = ?)
+                OR (table_b = ? AND id_b = ?)
+            """,
+            (source_table, record_id, source_table, record_id),
+        )
+        links = cur.fetchall()
+        for table_a, id_a, table_b, id_b in links:
+            if table_a == source_table and id_a == record_id:
+                target_table, target_id = table_b, id_b
+            else:
+                target_table, target_id = table_a, id_a
             try:
-                validate_table(table_a)
-                validate_table(table_b)
+                validate_table(target_table)
             except ValueError:
                 continue
-
-            # Check if this join involves our source table
-            if source_table not in (table_a, table_b):
+            row = _get_label(cur, target_table, target_id)
+            if not row:
                 continue
-
-            # Determine target table and join columns
-            if source_table == table_a:
-                target_table = table_b
-                source_field = f"{table_a}_id"
-                target_field = f"{table_b}_id"
-            else:
-                target_table = table_a
-                source_field = f"{table_b}_id"
-                target_field = f"{table_a}_id"
-
-            try:
-                sql = (
-                    f"SELECT t.id, t.{target_table} "
-                    f"FROM {join_table} AS jt "
-                    f"JOIN {target_table} AS t "
-                    f"  ON jt.{target_field} = t.id "
-                    f"WHERE jt.{source_field} = ?"
-                )
-                cursor.execute(sql, (record_id,))
-                rows = cursor.fetchall()
-
-                related[target_table] = {
-                    "label": target_table.capitalize() + "s",
-                    "items": [{"id": r[0], "name": r[1]} for r in rows]
-                }
-            except Exception as e:
-                logger.warning(f"[RELATED QUERY ERROR on {join_table}] {e}")
-                continue
-
+            item = {"id": row[0], "name": row[1]}
+            group = related.setdefault(
+                target_table,
+                {"label": target_table.capitalize() + "s", "items": []},
+            )
+            group["items"].append(item)
     return related
 
 
 def add_relationship(table_a, id_a, table_b, id_b):
-    # Validate entity tables
     validate_table(table_a)
     validate_table(table_b)
-
-    # Construct join table and column names
-    sorted_tables = sorted([table_a, table_b])
-    join_table = f"{sorted_tables[0]}_{sorted_tables[1]}"
-    first_column = f"{sorted_tables[0]}_id"
-    second_column = f"{sorted_tables[1]}_id"
-
+    ordered = sorted([(table_a, id_a), (table_b, id_b)], key=lambda t: t[0])
+    a_tbl, a_id = ordered[0]
+    b_tbl, b_id = ordered[1]
     with get_connection() as conn:
-        cursor = conn.cursor()
+        cur = conn.cursor()
         try:
-            # Ensure the join table exists
-            cursor.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
-                (join_table,)
-            )
-            if not cursor.fetchone():
-                logger.warning(
-                    f"[RELATIONSHIP ADD ERROR] join table {join_table} not found"
-                )
-                return False
-
-            # Order IDs to match sorted table order
-            vals = (id_a, id_b) if table_a == sorted_tables[0] else (id_b, id_a)
-
-            cursor.execute(
-                f"INSERT OR IGNORE INTO {join_table} ({first_column}, {second_column}) VALUES (?, ?)",
-                vals,
+            cur.execute(
+                "INSERT OR IGNORE INTO relationships (table_a, id_a, table_b, id_b) VALUES (?, ?, ?, ?)",
+                (a_tbl, a_id, b_tbl, b_id),
             )
             conn.commit()
             success = True
@@ -107,36 +90,17 @@ def add_relationship(table_a, id_a, table_b, id_b):
 
 
 def remove_relationship(table_a, id_a, table_b, id_b):
-    # Validate entity tables
     validate_table(table_a)
     validate_table(table_b)
-
-    # Construct join table and column names
-    sorted_tables = sorted([table_a, table_b])
-    join_table = f"{sorted_tables[0]}_{sorted_tables[1]}"
-    first_column = f"{sorted_tables[0]}_id"
-    second_column = f"{sorted_tables[1]}_id"
-
+    ordered = sorted([(table_a, id_a), (table_b, id_b)], key=lambda t: t[0])
+    a_tbl, a_id = ordered[0]
+    b_tbl, b_id = ordered[1]
     with get_connection() as conn:
-        cursor = conn.cursor()
+        cur = conn.cursor()
         try:
-            # Ensure the join table exists
-            cursor.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
-                (join_table,),
-            )
-            if not cursor.fetchone():
-                logger.warning(
-                    f"[RELATIONSHIP REMOVE ERROR] join table {join_table} not found"
-                )
-                return False
-
-            # Order IDs to match sorted table order
-            vals = (id_a, id_b) if table_a == sorted_tables[0] else (id_b, id_a)
-
-            cursor.execute(
-                f"DELETE FROM {join_table} WHERE {first_column} = ? AND {second_column} = ?",
-                vals,
+            cur.execute(
+                "DELETE FROM relationships WHERE table_a = ? AND id_a = ? AND table_b = ? AND id_b = ?",
+                (a_tbl, a_id, b_tbl, b_id),
             )
             conn.commit()
             success = True
