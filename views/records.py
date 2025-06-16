@@ -458,24 +458,8 @@ def manage_relationship():
     id_b = data.get('id_b')
     if action == 'add':
         success = add_relationship(table_a, id_a, table_b, id_b)
-        if success:
-            append_edit_log(
-                table_a,
-                id_a,
-                f'relation_{table_b}',
-                None,
-                str(id_b),
-            )
     elif action == 'remove':
         success = remove_relationship(table_a, id_a, table_b, id_b)
-        if success:
-            append_edit_log(
-                table_a,
-                id_a,
-                f'relation_{table_b}',
-                str(id_b),
-                None,
-            )
     else:
         abort(400, 'Invalid action')
     if not success:
