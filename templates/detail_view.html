@@ -171,15 +171,16 @@
           </svg>
         </button>
         <div id="relation-visibility-popover" class="absolute right-0 z-20 hidden mt-2 bg-white border rounded shadow-lg p-2 space-y-2 w-64">
+          <div class="font-semibold text-sm border-b pb-1 mb-1">Relations Visibility</div>
           {% for sec, grp, vis in related %}
             <div class="space-y-1">
               <label class="flex items-center space-x-2">
                 <input type="checkbox" class="relation-visible" value="{{ sec }}">
-                <span class="text-sm">{{ grp.label }}</span>
+                <span class="text-sm">Toggle Show: {{ grp.label }}</span>
               </label>
               <label class="flex items-center space-x-2 ml-6 text-xs">
                 <input type="checkbox" class="relation-force" data-section="{{ sec }}">
-                <span>even if full?</span>
+                <span>Hide even with relations</span>
               </label>
             </div>
           {% endfor %}
