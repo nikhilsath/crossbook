@@ -53,10 +53,16 @@
         Edit Fields
       </button>
       <div id="special-visibility-wrapper" class="relative inline-block text-left hidden">
-        <button id="toggle-header-fields" type="button" class="px-2 py-1 bg-gray-200 rounded ml-2">
-          Header Fields
+        <button id="toggle-header-fields" type="button" class="inline-flex items-center px-2 py-1 bg-gray-200 rounded ml-2 space-x-1">
+          <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10 3a7 7 0 100 14 7 7 0 000-14zM2 10a8 8 0 1115.99.255L18 10h-2l-.002.255A8 8 0 012 10z" />
+          </svg>
+          <span class="truncate max-w-[6rem] sm:max-w-none text-sm">Header Fields</span>
+          <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
         </button>
-        <div id="header-field-dropdown" class="z-10 hidden mt-2 bg-white border rounded shadow p-2 space-y-1 w-48">
+        <div id="header-field-popover" class="absolute right-0 z-20 hidden mt-2 bg-white border rounded shadow-lg p-2 space-y-1 w-48">
           <label class="flex items-center space-x-2">
             <input type="checkbox" class="header-field-toggle" value="title" checked>
             <span class="text-sm">Title</span>

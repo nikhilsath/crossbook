@@ -2,9 +2,8 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   const toggleBtn = document.getElementById('toggle-header-fields');
-  const dropdown = document.getElementById('header-field-dropdown');
-  const wrapper = document.getElementById('special-visibility-wrapper');
-  if (!toggleBtn || !dropdown) return;
+  const popover   = document.getElementById('header-field-popover');
+  if (!toggleBtn || !popover) return;
 
   const elements = {
     title: document.getElementById('record-title'),
@@ -22,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateVisibility() {
-    dropdown.querySelectorAll('.header-field-toggle').forEach(cb => {
+    popover.querySelectorAll('.header-field-toggle').forEach(cb => {
       const el = elements[cb.value];
       if (el) el.classList.toggle('hidden', !cb.checked);
     });
@@ -31,13 +30,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   toggleBtn.addEventListener('click', e => {
     e.stopPropagation();
-    dropdown.classList.toggle('hidden');
+    popover.classList.toggle('hidden');
   });
 
-  document.addEventListener('click', () => dropdown.classList.add('hidden'));
-  dropdown.addEventListener('click', e => e.stopPropagation());
+  document.addEventListener('click', () => popover.classList.add('hidden'));
+  popover.addEventListener('click', e => e.stopPropagation());
 
-  dropdown.querySelectorAll('.header-field-toggle').forEach(cb => {
+  popover.querySelectorAll('.header-field-toggle').forEach(cb => {
     cb.addEventListener('change', updateVisibility);
   });
 
