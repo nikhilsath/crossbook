@@ -133,12 +133,17 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 │   │   └── config_admin.html
 │   ├── bulk_edit_modal.html         # Modal for bulk edits
 │   ├── dashboard.html               # (WIP) summary page
-│   ├── edit_fields_modal.html       # Modal partial for field editing
 │   ├── import_view.html             # CSV import workflow
 │   ├── index.html
 │   ├── list_view.html
 │   ├── new_record.html
 │   ├── detail_view.html
+│   ├── modals/
+│   │   ├── bulk_edit_modal.html     # Modal for bulk edits
+│   │   ├── dashboard_modal.html     # Dashboard widgets
+│   │   ├── edit_fields_modal.html   # Modal partial for field editing
+│   │   ├── add_table_modal.html     # Home page table creation
+│   │   └── validation_modal.html    # Import validation overlay
 │   ├── wizard/
 │   │   ├── wizard_database.html
 │   │   ├── wizard_settings.html
@@ -222,7 +227,7 @@ Large files are not streamed—they are fully loaded into memory during parsing,
 
 * **Static Assets & Styling:** Tailwind is loaded via CDN in `templates/base.html`. Global rules live in `static/css/styles.css`, while `static/css/overrides.css` contains Tailwind tweaks used by the layout editors. Update these files to change colors, spacing or other visual details.
 
-* **Templating & Macros:** Jinja2 templates in `templates/` include the core pages (`base.html`, `index.html`, `list_view.html`, `detail_view.html`, `new_record.html`, `dashboard.html`) plus admin and import views. Partial templates like `edit_fields_modal.html` and `bulk_edit_modal.html` are used for modals. Reusable macros live in `templates/macros/fields.html` and `filter_controls.html`.
+* **Templating & Macros:** Jinja2 templates in `templates/` include the core pages (`base.html`, `index.html`, `list_view.html`, `detail_view.html`, `new_record.html`, `dashboard.html`) plus admin and import views. Partial templates like `modals/edit_fields_modal.html` and `modals/bulk_edit_modal.html` are used for modals. Reusable macros live in `templates/macros/fields.html` and `filter_controls.html`.
 
 * **Logging & Monitoring:** Logging is configured via `logging_setup.py` and values stored in the database. Both Flask and root handlers are cleared, then a rotating or timed file handler is attached. Only error-level messages appear in the console. Werkzeug request logs are disabled. Logs capture errors and user actions.
 * **Utility Helpers:** Helper modules in `utils/` include field type registration, HTML sanitization and the CSV import validator.
