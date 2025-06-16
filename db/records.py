@@ -212,7 +212,18 @@ def get_record_by_id(table, record_id):
         cursor.execute(f"SELECT * FROM {table} WHERE id = ?", (record_id,))
         row = cursor.fetchone()
         if row:
-            return dict(zip(fields, row))
+            record = dict(zip(fields, row))
+
+            # Sanitize any textarea fields on retrieval to guard against
+            # potentially unsafe HTML that may have been stored before
+            # sanitization was implemented.
+            schema = get_field_schema().get(table, {})
+            from utils.html_sanitizer import sanitize_html
+            for field_name, meta in schema.items():
+                if meta.get("type") == "textarea" and field_name in record:
+                    record[field_name] = sanitize_html(record[field_name] or "")
+
+            return record
     return None
 
 
