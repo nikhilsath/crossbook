@@ -70,6 +70,12 @@ input[type=number] {
   box-sizing: border-box !important;
 }
 
+/* Don't stretch checkbox or radio inputs */
+#layout-grid .draggable-field input[type="checkbox"],
+#layout-grid .draggable-field input[type="radio"] {
+  width: auto !important;
+}
+
 /* Stretch textareas to the full height of the card */
 #layout-grid .draggable-field textarea {
   height: 100% !important;
@@ -101,6 +107,10 @@ input[type=number] {
 #dashboard-grid .draggable-field textarea {
   width: 100% !important;
   box-sizing: border-box !important;
+}
+#dashboard-grid .draggable-field input[type="checkbox"],
+#dashboard-grid .draggable-field input[type="radio"] {
+  width: auto !important;
 }
 #dashboard-grid .draggable-field textarea {
   height: 100% !important;
