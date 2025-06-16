@@ -27,27 +27,7 @@
 </div>
 
 <!-- Add Table Modal -->
-<div id="addTableModal" class="modal-container hidden"
-     onclick="if(event.target.id === 'addTableModal') closeAddTableModal()">
-  <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full relative">
-    <button type="button" onclick="closeAddTableModal()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-xl">&times;</button>
-    <h3 class="text-lg font-bold mb-4">Add new base table</h3>
-    <div id="tableError" class="text-red-600 hidden"></div>
-    <form onsubmit="submitNewTable(event)" class="space-y-4">
-      <div>
-        <label for="tableName" class="block mb-1">Table Name</label>
-        <input id="tableName" type="text" class="w-full border rounded p-2" required />
-      </div>
-      <div>
-        <label for="tableDescription" class="block mb-1">Description</label>
-        <textarea id="tableDescription" class="w-full border rounded p-2"></textarea>
-      </div>
-      <div class="flex justify-end">
-        <button type="submit" class="btn-primary px-4 py-2 rounded">Add</button>
-      </div>
-    </form>
-  </div>
-</div>
+{% include "modals/add_table_modal.html" %}
 
 <script type="module" src="{{ url_for('static', filename='js/add_table.js') }}"></script>
 {% endblock %}
