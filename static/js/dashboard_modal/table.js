@@ -2,7 +2,7 @@
  * Table widget preview helpers for the dashboard modal.
  */
 
-import { populateFieldDropdown } from './value_widgets.js';
+import { populateFieldDropdown } from './value.js';
 
 export let tableType = 'base-count';
 export let selectCountField = null;
@@ -322,5 +322,50 @@ export function updateTablePreview() {
         tablePreviewBodyEl.innerHTML = '<tr><td colspan="2" class="px-2 py-1">Error</td></tr>';
         tablePreviewEl.classList.remove('hidden');
       });
+  }
+}
+
+export async function createTableWidget() {
+  if (!tableData.length) return false;
+  if (tableType === 'select-count' && !selectCountField) return false;
+  if (tableType === 'top-numeric' && !topNumericField) return false;
+  const title = (tableTitleInputEl && tableTitleInputEl.value.trim()) || 'Table Widget';
+  const payloadContent = { type: tableType, data: tableData };
+  if (tableType === 'select-count' && selectCountField) {
+    const [tbl, fld] = selectCountField.split(':');
+    payloadContent.table = tbl;
+    payloadContent.field = fld;
+  } else if (tableType === 'top-numeric' && topNumericField) {
+    const [tbl, fld] = topNumericField.split(':');
+    payloadContent.table = tbl;
+    payloadContent.field = fld;
+    payloadContent.direction = topDirection;
+    payloadContent.limit = tableData.length;
+  } else if (tableType === 'filtered-records' && filteredTable) {
+    payloadContent.table = filteredTable;
+    payloadContent.search = filteredSearch || '';
+    payloadContent.order_by = filteredSort || '';
+    payloadContent.limit = filteredLimit || tableData.length;
+  }
+  const payload = {
+    title,
+    content: JSON.stringify(payloadContent),
+    widget_type: 'table',
+    col_start: 1,
+    col_span: 10,
+    row_start: 1,
+    row_span: 8
+  };
+  try {
+    const res = await fetch('/dashboard/widget', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    return data.success;
+  } catch (err) {
+    console.error('Failed to create widget');
+    return false;
   }
 }
