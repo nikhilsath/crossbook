@@ -10,6 +10,7 @@ from flask import (
 from werkzeug.utils import secure_filename
 import os
 import json
+import logging
 import db.database as db_database
 from db.bootstrap import initialize_database, ensure_default_configs
 from db.config import update_config, get_config_rows
@@ -20,6 +21,8 @@ from db.records import create_record
 from views.admin import reload_app_state
 
 wizard_bp = Blueprint('wizard', __name__)
+
+logger = logging.getLogger(__name__)
 
 
 def _next_step():
@@ -149,7 +152,7 @@ def table_step():
                     try:
                         field_defs = json.loads(fields_json)
                     except Exception:
-                        current_app.logger.exception('Failed to parse fields_json')
+                        logger.exception('Failed to parse fields_json')
                 else:
                     for line in fields_text.splitlines():
                         if ':' in line:
@@ -174,7 +177,7 @@ def table_step():
                             f.get('foreign_key'),
                         )
                     except Exception:
-                        current_app.logger.exception('Failed to add field %s', name)
+                        logger.exception('Failed to add field %s', name)
                 reload_app_state()
                 progress['table'] = True
                 session['wizard_progress'] = progress
@@ -202,7 +205,7 @@ def import_step():
                 try:
                     create_record(table, row)
                 except Exception:
-                    current_app.logger.exception('Failed to import row')
+                    logger.exception('Failed to import row')
         progress['import'] = True
         session['wizard_progress'] = progress
         session['wizard_complete'] = True

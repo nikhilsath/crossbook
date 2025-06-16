@@ -10,6 +10,7 @@ from flask import (
 )
 import json
 import os
+import logging
 from werkzeug.utils import secure_filename
 from logging_setup import configure_logging
 from db.config import get_config_rows, update_config
@@ -36,6 +37,8 @@ from imports.tasks import process_import, init_import_table
 from utils.field_registry import FIELD_TYPES
 
 admin_bp = Blueprint('admin', __name__)
+
+logger = logging.getLogger(__name__)
 
 
 def reload_app_state() -> None:
@@ -301,7 +304,7 @@ def add_table():
     try:
         success = create_base_table(table_name, description, table_name)
     except Exception as exc:
-        current_app.logger.exception('Failed to create table %s: %s', table_name, exc)
+        logger.exception('Failed to create table %s: %s', table_name, exc)
         return jsonify({'error': str(exc)}), 400
     if not success:
         return jsonify({'error': 'Failed to create table'}), 400

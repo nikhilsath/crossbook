@@ -1,6 +1,7 @@
 import json
 import csv
 import io
+import logging
 from flask import Blueprint, render_template, abort, request, redirect, url_for, jsonify, current_app, Response
 from db.database import get_connection
 from db.validation import validate_table
@@ -32,6 +33,8 @@ from db.config import get_relationship_visibility, update_relationship_visibilit
 from utils.field_registry import get_field_type, get_type_size_map
 
 records_bp = Blueprint('records', __name__)
+
+logger = logging.getLogger(__name__)
 
 
 def _parse_list_params(table):
@@ -281,7 +284,7 @@ def detail_view(table, record_id):
     field_schema = get_field_schema()
     raw_layout = field_schema.get(table, {})
     field_schema_layout = {field: meta.get('layout', {}) for field, meta in raw_layout.items()}
-    current_app.logger.debug("[DETAIL] Using layout: %s", field_schema_layout)
+    logger.debug("[DETAIL] Using layout: %s", field_schema_layout)
     history = get_edit_history(table, record_id)
     defaults = get_layout_defaults() or {}
     width_overrides = defaults.get('width', {})
@@ -319,10 +322,10 @@ def add_field_route(table, record_id):
         validate_table(table)
 
         field_name = request.form['field_name']
-        current_app.logger.debug(
+        logger.debug(
             'add_field_route start: table=%r, record_id=%r, form=%r', table, record_id, dict(request.form)
         )
-        current_app.logger.info('table=%s record_id=%s form=%s', table, record_id, dict(request.form))
+        logger.info('table=%s record_id=%s form=%s', table, record_id, dict(request.form))
         field_type = request.form['field_type']
         if field_type == 'title':
             return 'Cannot add additional title field', 400
@@ -332,7 +335,7 @@ def add_field_route(table, record_id):
         field_options = [opt.strip() for opt in field_options_raw.split(',') if opt.strip()] if field_options_raw else []
         styling = json.loads(styling_raw) if styling_raw else None
         add_column_to_table(table, field_name, field_type)
-        current_app.logger.info('Returned from add_column_to_table for field %s', field_name)
+        logger.info('Returned from add_column_to_table for field %s', field_name)
         add_field_to_schema(
             table=table,
             field_name=field_name,
@@ -341,13 +344,13 @@ def add_field_route(table, record_id):
             foreign_key=foreign_key,
             styling=styling,
         )
-        current_app.logger.info('Added column to %s: field=%r type=%r', table, field_name, field_type)
+        logger.info('Added column to %s: field=%r type=%r', table, field_name, field_type)
         return redirect(url_for('records.detail_view', table=table, record_id=record_id))
     except ValueError as e:
-        current_app.logger.warning('add_field_route validation failed: %s', e)
+        logger.warning('add_field_route validation failed: %s', e)
         return str(e), 400
     except Exception as e:
-        current_app.logger.exception('add_field_route error: %s', e)
+        logger.exception('add_field_route error: %s', e)
         return 'Server error', 500
 
 @records_bp.route('/<table>/count-nonnull')
@@ -415,13 +418,13 @@ def update_field(table, record_id):
         if ftype == 'textarea':
             from utils.html_sanitizer import sanitize_html
             new_value = sanitize_html(new_value)
-    current_app.logger.debug('update_field: table=%s id=%s field=%s value=%r', table, record_id, field, new_value)
+    logger.debug('update_field: table=%s id=%s field=%s value=%r', table, record_id, field, new_value)
     prev_record = get_record_by_id(table, record_id)
     prev_value = prev_record.get(field) if prev_record else None
     success = update_field_value(table, record_id, field, new_value)
     if not success:
         abort(500, 'Database update failed')
-    current_app.logger.info('Field updated for %s id=%s: %s -> %r', table, record_id, field, new_value)
+    logger.info('Field updated for %s id=%s: %s -> %r', table, record_id, field, new_value)
     if prev_record is not None and str(prev_value) != str(new_value):
         append_edit_log(
             table,
@@ -481,7 +484,7 @@ def bulk_update(table):
 @records_bp.route('/relationship', methods=['POST'])
 def manage_relationship():
     data = request.get_json()
-    current_app.logger.debug('manage_relationship request: %s', data)
+    logger.debug('manage_relationship request: %s', data)
     action = data.get('action')
     table_a = data.get('table_a')
     id_a = data.get('id_a')
@@ -494,10 +497,10 @@ def manage_relationship():
     else:
         abort(400, 'Invalid action')
     if not success:
-        current_app.logger.error('manage_relationship failed action=%s %s:%s -> %s:%s', action, table_a, id_a, table_b, id_b)
+        logger.error('manage_relationship failed action=%s %s:%s -> %s:%s', action, table_a, id_a, table_b, id_b)
         abort(500, 'Failed to modify relationship')
     else:
-        current_app.logger.info('manage_relationship %s %s:%s %s:%s', action, table_a, id_a, table_b, id_b)
+        logger.info('manage_relationship %s %s:%s %s:%s', action, table_a, id_a, table_b, id_b)
     return {'success': True}
 
 @records_bp.route('/<table>/new', methods=['GET', 'POST'])
@@ -545,8 +548,8 @@ def update_layout(table):
         updated = db_update_layout(table, layout_items)
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
-    current_app.logger.info('[layout] update_layout %s updated=%s', table, updated)
-    current_app.logger.debug('[layout] payload %s', layout_items)
+    logger.info('[layout] update_layout %s updated=%s', table, updated)
+    logger.debug('[layout] payload %s', layout_items)
     return jsonify({'success': True, 'updated': updated})
 
 
@@ -566,8 +569,8 @@ def update_style(table):
         success = db_update_field_styling(table, field, styling)
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
-    current_app.logger.info('[style] update_style %s.%s success=%s', table, field, bool(success))
-    current_app.logger.debug('[style] payload %s', styling)
+    logger.info('[style] update_style %s.%s success=%s', table, field, bool(success))
+    logger.debug('[style] payload %s', styling)
     return jsonify({'success': bool(success)})
 
 
