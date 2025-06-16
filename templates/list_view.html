@@ -7,38 +7,42 @@
 <button id="bulk_edit" onclick="openBulkEditModal()" class="btn-primary px-3 py-1 rounded opacity-50" disabled>Bulk Edit</button>
 <button id="export_csv" class="btn-primary px-3 py-1 rounded opacity-50 ml-2" disabled>Export CSV</button>
 {% endblock %}
+{% block header_search %}
+<form id="search-form" method="get" class="flex items-center space-x-2">
+  <input
+    type="text"
+    name="search"
+    placeholder="Search..."
+    value="{{ request.args.get('search','') }}"
+    class="border rounded px-2 py-1 w-64"
+  />
+  <button type="submit" class="btn-primary px-3 py-1 rounded">
+    Search
+  </button>
+  {% for key, values in request.args.lists() %}
+    {% if key not in ['search', 'page'] %}
+      {% for val in values %}
+        <input type="hidden" name="{{ key }}" value="{{ val }}" />
+      {% endfor %}
+    {% endif %}
+  {% endfor %}
+</form>
+{% endblock %}
 {% block content %}
 <div id="list-view-container" class="w-full bg-white p-6 rounded shadow-md">
   <h1 class="text-2xl font-bold mb-4">{{ table|capitalize }}s</h1>
 
-  <!-- Search form -->
-  <form id="search-form" method="get" class="mb-4 flex items-center justify-between">
-    {# Left side: Search input + button #}
-    <div class="flex items-center space-x-2">
-      <input
-        type="text"
-        name="search"
-        placeholder="Search..."
-        value="{{ request.args.get('search','') }}"
-        class="border rounded px-2 py-1 w-64"
-      />
-      <button type="submit" class="btn-primary px-3 py-1 rounded ">
-        Search
-      </button>
-    </div>
-  
-    {# Right side: Active filters + Reset #}
-    <div class="flex items-center space-x-4">
-      {% include '_filter_chips.html' %}
-      <button
-        type="button"
-        id="reset-filters"
-        class="text-sm text-red-600 underline"
-      >
-        Reset Filters
-      </button>
-    </div>
-  </form>
+  <!-- Filters bar -->
+  <div class="mb-4 flex items-center space-x-4">
+    {% include '_filter_chips.html' %}
+    <button
+      type="button"
+      id="reset-filters"
+      class="text-sm text-red-600 underline"
+    >
+      Reset Filters
+    </button>
+  </div>
   <!-- Visibility control -->
   <div class="relative inline-block text-left mb-4" id="column-visibility-wrapper">
     <button id="toggle-columns" type="button" data-dropdown-toggle="column-dropdown" class="px-2 py-1 bg-gray-200 rounded">

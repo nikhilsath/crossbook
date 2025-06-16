@@ -43,6 +43,9 @@
         <div class="flex items-center space-x-2">
           {% block nav_buttons %}{% endblock %}
         </div>
+        <div class="flex-1 flex justify-center">
+          {% block header_search %}{% endblock %}
+        </div>
         <div class="flex items-center space-x-2">
           {% if current_table in field_schema %}
             <a href="/{{ current_table }}/new" class="btn-primary px-3 py-1 rounded">+ Add</a>
