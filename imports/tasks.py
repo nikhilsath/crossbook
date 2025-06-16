@@ -1,8 +1,11 @@
 import os
 import json
+import logging
 from huey import SqliteHuey
 from db.database import get_connection
 from db.records import create_record
+
+logger = logging.getLogger(__name__)
 
 # Huey queue for background imports
 huey = SqliteHuey(
@@ -40,18 +43,36 @@ def _update_import_status(job_id, **kwargs):
 
 def _run_import(job_id, table, rows):
     """Helper to perform the actual row import."""
+    logger.info("Import job %s started for table %s", job_id, table)
     _update_import_status(job_id, status="in_progress", total_rows=len(rows))
     errors: list[dict] = []
-    for idx, row in enumerate(rows, start=1):
-        try:
-            if create_record(table, row) is None:
-                raise Exception("Failed to create")
-        except Exception as exc:  # noqa: BLE001
-            errors.append({"row": idx, "message": str(exc)})
-        if idx % 10 == 0 or idx == len(rows):
-            _update_import_status(job_id, imported_rows=idx, errors=json.dumps(errors))
-    _update_import_status(job_id, status="complete")
-    return {"job_id": job_id, "imported": len(rows) - len(errors), "errors": errors}
+    try:
+        for idx, row in enumerate(rows, start=1):
+            try:
+                if create_record(table, row) is None:
+                    raise Exception("Failed to create")
+            except Exception as exc:  # noqa: BLE001
+                errors.append({"row": idx, "message": str(exc)})
+            if idx % 10 == 0 or idx == len(rows):
+                logger.info(
+                    "Job %s table %s processed %s/%s rows", job_id, table, idx, len(rows)
+                )
+                _update_import_status(
+                    job_id, imported_rows=idx, errors=json.dumps(errors)
+                )
+        _update_import_status(job_id, status="complete")
+        logger.info(
+            "Import job %s for table %s complete: %s rows imported, %s errors",
+            job_id,
+            table,
+            len(rows) - len(errors),
+            len(errors),
+        )
+        return {"job_id": job_id, "imported": len(rows) - len(errors), "errors": errors}
+    except Exception:
+        logger.exception("Import job %s for table %s failed", job_id, table)
+        _update_import_status(job_id, status="failed")
+        raise
 
 
 @huey.task()
