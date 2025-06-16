@@ -23,6 +23,7 @@ export function closeBulkEditModal() {
 
 let tableName;
 let bulkBtn;
+let exportBtn;
 
 function updateSelectedCount() {
   const count = document.querySelectorAll('.row-select:checked').length;
@@ -37,6 +38,10 @@ function updateBulkButtonState() {
   if (bulkBtn) {
     bulkBtn.disabled = !any;
     bulkBtn.classList.toggle('opacity-50', !any);
+  }
+  if (exportBtn) {
+    exportBtn.disabled = !any;
+    exportBtn.classList.toggle('opacity-50', !any);
   }
   updateSelectedCount();
 }
@@ -70,9 +75,18 @@ function buildInput() {
   container.innerHTML = html;
 }
 
+function exportSelected() {
+  const ids = Array.from(document.querySelectorAll('.row-select:checked')).map(cb => cb.value);
+  if (ids.length === 0) return;
+  const params = new URLSearchParams();
+  params.set('ids', ids.join(','));
+  window.location = `/${tableName}/export?` + params.toString();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   tableName = document.getElementById('records-table').dataset.table;
   bulkBtn = document.getElementById('bulk_edit');
+  exportBtn = document.getElementById('export_csv');
   buildInput();
   document.getElementById('bulk-field').addEventListener('change', buildInput);
 
@@ -90,6 +104,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   updateBulkButtonState();
+
+  if (exportBtn) {
+    exportBtn.addEventListener('click', exportSelected);
+  }
 
   document.getElementById('bulk-edit-form').addEventListener('submit', e => {
     e.preventDefault();
@@ -130,3 +148,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.openBulkEditModal = openBulkEditModal;
 window.closeBulkEditModal = closeBulkEditModal;
+window.exportSelected = exportSelected;

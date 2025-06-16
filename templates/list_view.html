@@ -5,6 +5,7 @@
 {% block body_class %}list-view-page{% endblock %}
 {% block nav_buttons %}
 <button id="bulk_edit" onclick="openBulkEditModal()" class="btn-primary px-3 py-1 rounded opacity-50" disabled>Bulk Edit</button>
+<button id="export_csv" class="btn-primary px-3 py-1 rounded opacity-50 ml-2" disabled>Export CSV</button>
 {% endblock %}
 {% block content %}
 <div id="list-view-container" class="w-full bg-white p-6 rounded shadow-md">
@@ -36,12 +37,6 @@
       >
         Reset Filters
       </button>
-      <a
-        href="{{ url_for('records.export_csv', table=table) }}{{ '?' if base_qs else '' }}{{ base_qs }}"
-        class="btn-primary text-sm px-2 py-1 rounded"
-      >
-        Export CSV
-      </a>
     </div>
   </form>
   <!-- Visibility control -->
