@@ -130,6 +130,7 @@ def _build_list_context(table):
         'per_page': per_page,
         'base_qs': base_qs,
         'base_qs_no_sort': base_qs_no_sort,
+        'has_filters': bool(filters),
     }
 
 @records_bp.route('/<table>')

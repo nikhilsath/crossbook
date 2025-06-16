@@ -3,10 +3,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const toggleBtn = document.getElementById("toggle-filters");
   const dropdown = document.getElementById("filter-dropdown");
   const clearBtn = document.getElementById("reset-filters");
+  const filterContainerId = "filter-container";
   const tableName = document.getElementById("records-table").dataset.table;
   const tbody = document.getElementById("records-body");
   const pagerWrap = document.getElementById("pagination-wrapper");
   const loading = document.getElementById("loading-indicator");
+
+    function updateResetFiltersVisibility() {
+      const container = document.getElementById(filterContainerId);
+      if (!container) return;
+      const hasFilters = container.querySelectorAll(".filter-chip").length > 0;
+      if (hasFilters) {
+        clearBtn.classList.remove("hidden");
+      } else {
+        clearBtn.classList.add("hidden");
+      }
+    }
 
     function fetchRecords(params) {
       loading.classList.remove("hidden");
@@ -31,6 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
               bindSelectMulti();
             }
           }
+          updateResetFiltersVisibility();
         })
         .catch(err => console.error("fetchRecords", err))
         .finally(() => loading.classList.add("hidden"));
@@ -292,4 +305,5 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     bindSelectMulti();
+    updateResetFiltersVisibility();
   });

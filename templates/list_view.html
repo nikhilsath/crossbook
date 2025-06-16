@@ -38,7 +38,7 @@
     <button
       type="button"
       id="reset-filters"
-      class="text-sm text-red-600 underline"
+      class="text-sm text-red-600 underline{% if not has_filters %} hidden{% endif %}"
     >
       Reset Filters
     </button>
