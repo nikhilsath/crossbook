@@ -59,10 +59,27 @@ def get_layout_defaults() -> dict:
 
     if not row:
         return {}
+
+
+def get_relationship_visibility() -> dict:
+    """Return per-table relationship visibility settings."""
+    with get_connection() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT value FROM config WHERE key = 'relationship_visibility'")
+        row = cur.fetchone()
+    if not row:
+        return {}
     try:
         return json.loads(row[0])
     except Exception:
         return {}
+
+
+def update_relationship_visibility(table: str, visibility: dict) -> None:
+    """Update visibility settings for a specific base table."""
+    current = get_relationship_visibility()
+    current[table] = visibility
+    update_config("relationship_visibility", json.dumps(current))
 
 
 def update_config(key: str, value: str) -> int:
