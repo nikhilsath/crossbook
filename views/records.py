@@ -376,7 +376,7 @@ def update_field(table, record_id):
         elif ftype == 'number':
             try:
                 parsed = float(raw)
-                new_value = str(parsed)
+                new_value = str(int(parsed)) if parsed.is_integer() else str(parsed)
             except ValueError:
                 new_value = '0'
         else:
@@ -428,7 +428,7 @@ def bulk_update(table):
     elif ftype == 'number':
         try:
             parsed = float(value)
-            value = str(parsed)
+            value = str(int(parsed)) if parsed.is_integer() else str(parsed)
         except (TypeError, ValueError):
             value = '0'
     elif ftype in ('multi_select', 'foreign_key'):
