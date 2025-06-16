@@ -87,7 +87,7 @@ def database_step():
         session['wizard_progress'] = progress
         return redirect(url_for('wizard.settings_step'))
     status = db_database.check_db_status(db_database.DB_PATH)
-    return render_template('wizard_database.html', db_path=db_database.DB_PATH, db_status=status)
+    return render_template('wizard/wizard_database.html', db_path=db_database.DB_PATH, db_status=status)
 
 
 @wizard_bp.route('/wizard/settings', methods=['GET', 'POST'])
@@ -118,7 +118,7 @@ def settings_step():
                     errors[key] = True
         if errors:
             return render_template(
-                'wizard_settings.html',
+                'wizard/wizard_settings.html',
                 config=config,
                 defaults=rows,
                 errors=errors,
@@ -130,7 +130,7 @@ def settings_step():
         progress['settings'] = True
         session['wizard_progress'] = progress
         return redirect(url_for('wizard.table_step'))
-    return render_template('wizard_settings.html', config=config, defaults=rows, errors={})
+    return render_template('wizard/wizard_settings.html', config=config, defaults=rows, errors={})
 
 
 @wizard_bp.route('/wizard/table', methods=['GET', 'POST'])
@@ -179,7 +179,7 @@ def table_step():
                 progress['table'] = True
                 session['wizard_progress'] = progress
                 return redirect(url_for('wizard.import_step'))
-    return render_template('wizard_table.html')
+    return render_template('wizard/wizard_table.html')
 
 
 @wizard_bp.route('/wizard/import', methods=['GET', 'POST'])
@@ -208,4 +208,4 @@ def import_step():
         session['wizard_complete'] = True
         session.pop('wizard_progress', None)
         return redirect(url_for('home'))
-    return render_template('wizard_import.html', base_tables=base_tables)
+    return render_template('wizard/wizard_import.html', base_tables=base_tables)
