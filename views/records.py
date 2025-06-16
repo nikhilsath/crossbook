@@ -383,6 +383,12 @@ def update_field(table, record_id):
             str(prev_value),
             str(new_value),
         )
+
+    # For AJAX requests return JSON so the front-end can update without a
+    # redirect. The JS helpers send the "X-Requested-With" header.
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify({"success": True, "new_value": new_value})
+
     return redirect(url_for('records.detail_view', table=table, record_id=record_id))
 
 
