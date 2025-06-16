@@ -11,8 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelectorAll("thead th").forEach((th) => {
       if (th.dataset.static !== undefined) return;
-      const span = th.querySelector("span");
-      const field = span ? span.textContent.trim() : th.textContent.trim();
+      const field = th.dataset.field;
       th.style.display = visible.has(field) ? "" : "none";
     });
 
