@@ -72,7 +72,7 @@ def wizard_redirect():
 
 
 from views.admin import admin_bp
-from views.records import records_bp
+from views.records.record_views import records_bp
 from views.wizard import wizard_bp
 app.register_blueprint(admin_bp)
 app.register_blueprint(records_bp)
