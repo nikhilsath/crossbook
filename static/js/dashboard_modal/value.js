@@ -369,3 +369,50 @@ export function initOperationSelect() {
     updateMathFieldUI();
   });
 }
+
+export async function createValueWidget() {
+  if (selectedOperation === 'math') {
+    if (!mathField1 || !mathOperation || (mathOperation !== 'average' && !mathField2)) return false;
+  } else if (!['sum', 'count'].includes(selectedOperation) || !selectedColumn) {
+    return false;
+  }
+
+  let defaultTitle;
+  let payloadContent;
+
+  if (selectedOperation === 'math') {
+    const labels = [mathField1, mathOperation !== 'average' ? mathField2 : null]
+      .filter(Boolean)
+      .map(v => v.split(':')[1]);
+    defaultTitle = `${mathOperation.charAt(0).toUpperCase() + mathOperation.slice(1)} of ${labels.join(', ')}`;
+    payloadContent = { operation: 'math', math_operation: mathOperation, field1: mathField1, field2: mathField2, agg1, agg2 };
+  } else {
+    const [table, field] = selectedColumn.split(':');
+    defaultTitle = `${selectedOperation === 'sum' ? 'Sum' : 'Count'} of ${field}`;
+    payloadContent = { operation: selectedOperation, table, field };
+  }
+
+  const title = (titleInputEl && titleInputEl.value.trim()) || defaultTitle;
+  const payload = {
+    title,
+    content: JSON.stringify(payloadContent),
+    widget_type: 'value',
+    col_start: 1,
+    col_span: 4,
+    row_start: 1,
+    row_span: 3
+  };
+
+  try {
+    const res = await fetch('/dashboard/widget', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    return data.success;
+  } catch (err) {
+    console.error('Failed to create widget');
+    return false;
+  }
+}
