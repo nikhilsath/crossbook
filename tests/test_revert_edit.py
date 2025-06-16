@@ -1,7 +1,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from db.records import revert_edit
+from db.edit_history import revert_edit
 
 
 def test_revert_edit_returns_false_for_none_field():
