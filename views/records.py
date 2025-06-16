@@ -28,6 +28,7 @@ from db.schema import (
 )
 from db.dashboard import sum_field as db_sum_field
 from db.config import get_layout_defaults
+from db.config import get_relationship_visibility, update_relationship_visibility
 from utils.field_registry import get_field_type, get_type_size_map
 
 records_bp = Blueprint('records', __name__)
@@ -266,6 +267,7 @@ def detail_view(table, record_id):
         abort(404)
     existing_related = get_related_records(table, record_id)
     base_tables = current_app.config['BASE_TABLES']
+    visibility_all = get_relationship_visibility().get(table, {})
     related = []
     for tbl in base_tables:
         if tbl == table:
@@ -274,7 +276,8 @@ def detail_view(table, record_id):
             tbl,
             {"label": tbl.capitalize() + "s", "items": []},
         )
-        related.append((tbl, group))
+        vis = visibility_all.get(tbl, {})
+        related.append((tbl, group, vis))
     field_schema = get_field_schema()
     raw_layout = field_schema.get(table, {})
     field_schema_layout = {field: meta.get('layout', {}) for field, meta in raw_layout.items()}
@@ -305,7 +308,8 @@ def detail_view(table, record_id):
         related=related,
         edit_history=history,
         field_schema_layout=field_schema_layout,
-        field_layout_defaults=field_layout_defaults
+        field_layout_defaults=field_layout_defaults,
+        relationship_visibility=visibility_all
     )
 
 @records_bp.route('/<table>/<int:record_id>/add-field', methods=['POST'])
@@ -565,3 +569,18 @@ def update_style(table):
     current_app.logger.info('[style] update_style %s.%s success=%s', table, field, bool(success))
     current_app.logger.debug('[style] payload %s', styling)
     return jsonify({'success': bool(success)})
+
+
+@records_bp.route('/<table>/relationships', methods=['POST'])
+def update_relationships(table):
+    """Update relationship visibility configuration for a table."""
+    data = request.get_json(silent=True) or {}
+    visibility = data.get('visibility')
+    if not isinstance(visibility, dict):
+        return jsonify({'error': 'Invalid JSON'}), 400
+    try:
+        update_relationship_visibility(table, visibility)
+    except Exception as e:
+        current_app.logger.warning('[relationships] update failed: %s', e)
+        return jsonify({'error': 'update failed'}), 500
+    return jsonify({'success': True})

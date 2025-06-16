@@ -30,6 +30,7 @@ DEFAULT_CONFIGS = [
     ),
     ("filename", "logs/crossbook.log", "general", "string"),
     ("heading", "", "home", "string"),
+    ("relationship_visibility", "{}", "general", "json"),
 ]
 
 LAYOUT_DEFAULTS = {
