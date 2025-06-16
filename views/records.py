@@ -247,7 +247,17 @@ def detail_view(table, record_id):
     record = get_record_by_id(table, record_id)
     if not record:
         abort(404)
-    related = get_related_records(table, record_id)
+    existing_related = get_related_records(table, record_id)
+    base_tables = current_app.config['BASE_TABLES']
+    related = []
+    for tbl in base_tables:
+        if tbl == table:
+            continue
+        group = existing_related.get(
+            tbl,
+            {"label": tbl.capitalize() + "s", "items": []},
+        )
+        related.append((tbl, group))
     field_schema = get_field_schema()
     raw_layout = field_schema.get(table, {})
     field_schema_layout = {field: meta.get('layout', {}) for field, meta in raw_layout.items()}
