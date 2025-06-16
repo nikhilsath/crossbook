@@ -366,14 +366,19 @@ def revert_edit(entry: dict) -> bool:
 
             rel_table = field[len("relation_") :]
             if old_val is None and new_val is not None:
-                add_relationship(table, record_id, rel_table, int(new_val))
+                add_relationship(
+                    table, record_id, rel_table, int(new_val), actor="undo"
+                )
             elif new_val is None and old_val is not None:
-                remove_relationship(table, record_id, rel_table, int(old_val))
+                remove_relationship(
+                    table, record_id, rel_table, int(old_val), actor="undo"
+                )
             else:
                 return False
         else:
             update_field_value(table, record_id, field, old_val)
-        append_edit_log(table, record_id, field, new_val, old_val, actor="undo")
+        if not field.startswith("relation_"):
+            append_edit_log(table, record_id, field, new_val, old_val, actor="undo")
     except Exception:
         logger.exception("Failed to revert edit")
         return False

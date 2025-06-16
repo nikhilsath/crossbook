@@ -65,7 +65,7 @@ def get_related_records(source_table, record_id):
     return related
 
 
-def add_relationship(table_a, id_a, table_b, id_b):
+def add_relationship(table_a, id_a, table_b, id_b, *, actor: str | None = None):
     validate_table(table_a)
     validate_table(table_b)
     ordered = sorted([(table_a, id_a), (table_b, id_b)], key=lambda t: t[0])
@@ -86,10 +86,27 @@ def add_relationship(table_a, id_a, table_b, id_b):
         if success:
             touch_last_edited(table_a, id_a)
             touch_last_edited(table_b, id_b)
+            from db.records import append_edit_log
+            append_edit_log(
+                table_a,
+                id_a,
+                f"relation_{table_b}",
+                None,
+                str(id_b),
+                actor=actor,
+            )
+            append_edit_log(
+                table_b,
+                id_b,
+                f"relation_{table_a}",
+                None,
+                str(id_a),
+                actor=actor,
+            )
         return success
 
 
-def remove_relationship(table_a, id_a, table_b, id_b):
+def remove_relationship(table_a, id_a, table_b, id_b, *, actor: str | None = None):
     validate_table(table_a)
     validate_table(table_b)
     ordered = sorted([(table_a, id_a), (table_b, id_b)], key=lambda t: t[0])
@@ -110,4 +127,21 @@ def remove_relationship(table_a, id_a, table_b, id_b):
         if success:
             touch_last_edited(table_a, id_a)
             touch_last_edited(table_b, id_b)
+            from db.records import append_edit_log
+            append_edit_log(
+                table_a,
+                id_a,
+                f"relation_{table_b}",
+                str(id_b),
+                None,
+                actor=actor,
+            )
+            append_edit_log(
+                table_b,
+                id_b,
+                f"relation_{table_a}",
+                str(id_a),
+                None,
+                actor=actor,
+            )
         return success
