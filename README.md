@@ -1,7 +1,7 @@
 
 # Crossbook
 
-Crossbook is a structured, browser-based knowledge interface for managing content and its related metadata. It provides an easy way to organize and cross-reference entities (for example: books or chapters of content, and related characters, locations, factions, etc.) along with their interrelationships. The application features a clean design and uses a normalized SQLite database (with join tables) to map many-to-many relationships between entities.
+Crossbook is a structured, browser-based knowledge interface for managing content and its related metadata. It provides an easy way to organize and cross-reference entities (for example: books or chapters of content, and related characters, locations, factions, etc.) along with their interrelationships. The application features a clean design and uses a normalized SQLite database with a unified `relationships` table to map many-to-many connections between entities.
 
 ## Table of Contents
 - [Project Summary](#project-summary)
@@ -51,7 +51,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **List View with Search:** Each entity list page allows filtering records by text-based fields with a search box (`list_view.html`).
 * **Column Visibility:** Columns can be shown or hidden on the fly using the **Columns** dropdown (`column_visibility.js`).
 * **Detail View & Inline Edit:** Displays all fields on the detail page with inline editing via text inputs, date pickers, checkboxes, or textareas. Numeric field changes now save via AJAX and append to the edit log without reloading the page.
-* **Relationship Management:** Displays related records and allows adding/removing relationships through a modal interface (+ to add, ✖ to remove), using AJAX to update join tables dynamically.
+* **Relationship Management:** Displays related records and allows adding/removing relationships through a modal interface (+ to add, ✖ to remove), using AJAX to update the relationships table dynamically.
 * **Rich Text Support:** Textareas are enhanced with [Quill](https://quilljs.com/) for WYSIWYG editing.
 * **Edit History:** Tracks each record’s modifications in an `edit_log`, viewable via an expandable history section. Individual entries now include an **Undo** link to revert that change.
 * **Navigation Bar:** A consistent top navigation (`base.html`) links to Home and all base table sections.
@@ -90,7 +90,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 │   ├── database.py                  # Connection and session management
 │   ├── schema.py                    # Schema introspection and migrations
 │   ├── records.py                   # CRUD operations
-│   ├── relationships.py             # Many-to-many join helpers
+│   ├── relationships.py             # Relationship helpers
 │   ├── validation.py                # Field and data validation logic
 │   └── edit_fields.py               # Field schema editing utilities
 ├── imports/                         # CSV helpers and background tasks
@@ -190,7 +190,7 @@ Large files are not streamed—they are fully loaded into memory during parsing,
 
 * **Configuration & Environment:** Dependencies listed in `requirements.txt`. The SQLite database path defaults to `data/crossbook.db` and is stored in the `db_path` row of the `config` table.
 
-* **Database Layer:** Uses Python’s built-in `sqlite3` in `db/database.py` for connection management. Schema introspection and migrations occur in `db/schema.py`. CRUD operations reside in `db/records.py`; many-to-many join logic in `db/relationships.py`. Validation rules live in `db/validation.py`, and field schema editing utilities in `db/edit_fields.py`.
+* **Database Layer:** Uses Python’s built-in `sqlite3` in `db/database.py` for connection management. Schema introspection and migrations occur in `db/schema.py`. CRUD operations reside in `db/records.py`; many-to-many relationship logic in `db/relationships.py`. Validation rules live in `db/validation.py`, and field schema editing utilities in `db/edit_fields.py`.
 
 * **Background Tasks:** Huey is initialized in `imports/tasks.py` and provides the `process_import` task used by the import workflow. Start a worker with `huey_consumer.py imports.tasks.huey`.
 
@@ -260,13 +260,13 @@ The following functions encapsulate the application logic:
 | `get_field_options(table, field)`             | Retrieves a list of options for a given `select` field from the `field_schema` table. Returns a list parsed from the `field_options` column (assumed to be valid JSON), or an empty list if none is present or if parsing fails. Used at render time only inside templates that need it. |
 | `get_all_records(table, search=None)`         | Retrieves up to 1000 records from the specified table. If a `search` string is provided, it filters the results to those where any text-like field contains the search substring (case-insensitive). Only fields of type *text, textarea, select,* or *multi select* are searched. Returns a list of records as dictionaries (each dict maps field names to values). Logs the SQL query and catches any errors (returning an empty list on error). |
 | `get_record_by_id(table, record_id)`          | Fetches a single record by its ID from the specified table. Returns a dictionary of field names to values for that record, or `None` if not found. This uses `sqlite3.Row`-like logic by first retrieving the table’s column names (via `PRAGMA table_info`) and then zipping with the fetched row tuple. |
-| `get_related_records(source_table, record_id)` | Gathers related records for a given record (by looking at join tables). It scans the database’s table names for any join table involving `source_table`. For each join table found (e.g., `character_location` or `location_character`), it figures out the *other* table and then selects the related records from that table. Returns a dictionary where each key is a related table name and each value is an object with a human-readable label and a list of related items (each item has an `id` and a `name`). Only the first field of the related table (assumed to be the name/title field, often the same name as the table) is used as the display name. Any errors in querying a particular join table are caught and simply skipped (so a broken or missing join table will not crash the whole function). |
+| `get_related_records(source_table, record_id)` | Gathers related records for a given record using the `relationships` table. It selects rows where `source_table` appears in either column and assembles the matching records from the target table. The result is a dictionary keyed by related table name with a label and list of items (each item includes an `id` and `name`). Only the first field of the related table (often the title field) is used for display. Missing or invalid tables are silently skipped. |
 | `home()`                                      | **Route:** GET `/` – Renders the **home page** (`index.html`). This page is a simple overview with links to each section of the site. |
 | `list_view(table)`                            | **Route:** GET `/<table>` – Renders the **list view page** for a given entity type. If the `<table>` parameter is not one of the `BASE_TABLES`, it returns 404. Otherwise, it uses `get_field_schema()` to determine which fields to display (all except those marked hidden or internal), gets an optional `search` query param from the request to filter results, and calls `get_all_records`. It then renders `list_view.html`, passing in the table name, the list of fields, the list of record dicts, and the `request` object (for access to query params in the template). |
 | `inject_field_schema()`                       | **Context Processor:** Injects the current field schema and the `get_field_options` helper function into all template contexts. This makes `field_schema[...]` (including layout and styling info) and `get_field_options(table, field)` available to macros and templates. Templates use `get_field_options` to dynamically render dropdowns for fields of type `select` using options defined in the `field_schema` table. |
 | `detail_view(table, record_id)`               | **Route:** GET `/<table>/<int:record_id>` – Renders the **detail view page** for a single record. If the table is not in `BASE_TABLES`, or the record with that ID doesn’t exist, it aborts with 404. Otherwise, it fetches the record via `get_record_by_id` and all related records via `get_related_records`. It then renders `detail_view.html`, providing the table name, the record dict, and the related records dict to the template. |
 | `update_field(table, record_id)`              | **Route:** POST `/<table>/<int:record_id>/update` – Handles inline edits from the detail page. This is called when a user submits a field edit form. It first ensures the table is valid and the record exists. It then reads `field` (the field name to update) and the new value from the form data (`new_value` or `new_value_override`). Certain fields are protected: attempting to edit the primary `id` or the `edit_log` directly will result in a 403 Forbidden. For other fields, it determines the expected data type from the field schema and **coerces** the input accordingly: booleans are converted to "1" or "0", numbers to int (default 0 if parse fails), and all other types are treated as strings. It then executes an `UPDATE ... SET field = ?` query to save the new value. If the value changed, it appends a timestamped entry describing the change to the record’s `edit_log` field (this is done by concatenating text). After updating, it commits the transaction and redirects the user back to the detail view page for that record. |
-| `manage_relationship()`                       | **Route:** POST `/relationship` – AJAX endpoint for adding or removing a relationship (join table entry) between two records. It expects a JSON payload with `table_a`, `id_a`, `table_b`, `id_b`, and an `action` ("add" or "remove"). The two table names are sorted alphabetically to determine the join table name (e.g., `character` + `thing` -> join table **character_thing**). Depending on the action, it either inserts a new row (with the two IDs) into the join table or deletes the matching row. It uses `INSERT OR IGNORE` for adds (to avoid duplicates) and a straightforward DELETE for removal. On success, returns JSON `{"success": True}` (HTTP 200). If the join table doesn’t exist or another database error occurs, it returns an error message JSON with status 500. If required fields are missing or an invalid action is given, it returns a 400 error. *(Note: This function uses a direct sqlite3 connection separate from `get_connection()` for convenience and does not explicitly reuse the app’s global connection helper.)* |
+| `manage_relationship()`                       | **Route:** POST `/relationship` – AJAX endpoint for adding or removing a relationship between two records. It expects a JSON payload with `table_a`, `id_a`, `table_b`, `id_b`, and an `action` ("add" or "remove"). Depending on the action, it inserts or deletes a row in the `relationships` table using `INSERT OR IGNORE` for adds. On success, the endpoint returns JSON `{"success": True}`. Missing fields or invalid actions yield a 400 error and database errors return status 500. *(This function uses its own sqlite3 connection for simplicity.)* |
 | `dashboard()` | **Route:** GET `/dashboard` – Displays the dashboard page with draggable widgets.
 | `api_list(table)` | **Route:** GET `/api/<table>/list` – Returns JSON with `id` and `label` values for dropdowns. |
 
@@ -280,7 +280,7 @@ The following functions encapsulate the application logic:
 | `update_layout(table)` | **Route:** POST `/<table>/layout` – Saves grid coordinates for fields on the detail page. |
 | `dashboard_create_widget()` | **Route:** POST `/dashboard/widget` – Creates a new dashboard widget. |
 | `dashboard_update_layout()` | **Route:** POST `/dashboard/layout` – Saves the positions of dashboard widgets. |
-| `add_table()` | **Route:** POST `/add-table` – Adds a new base table and join tables. |
+| `add_table()` | **Route:** POST `/add-table` – Adds a new base table. |
 All routes and functions above are actively used by the application (there is no dead code in `main.py`). When run directly, the app simply calls `update_foreign_field_options()` and then starts with `app.run(debug=True)`.
 
 ### **Front-End Scripts – `static/js/`
@@ -384,7 +384,7 @@ The Flask Jinja2 templates define the structure of the HTML pages. The templates
 
 **Layout Overview:** The page is divided into two main sections side by side:
 - **Left side** – the main details of the record (all fields and the edit log).
-- **Right side** – the related records (links to other entities connected via join tables) and the Add Relationship modal trigger.
+- **Right side** – the related records (links to other entities connected via the relationships table) and the Add Relationship modal trigger.
 
 Key features of the detail view:
 
