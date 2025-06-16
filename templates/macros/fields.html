@@ -23,11 +23,11 @@
   {% if request.args.get('edit') == field %}
     <form method="POST"
           action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}"
-          class="w-full mb-2"
+          class="w-full mb-2 h-full"
           data-autosave>
         <input type="hidden" name="field" value="{{ field }}">
         <input type="hidden" name="new_value" value="{{ value|e }}">
-        <div class="quill-editor" data-quill>{{ value|safe }}</div>
+        <div class="quill-editor h-full" data-quill>{{ value|safe }}</div>
         <span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>
     </form>
   {% else %}
