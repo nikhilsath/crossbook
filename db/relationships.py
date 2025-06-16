@@ -86,7 +86,7 @@ def add_relationship(table_a, id_a, table_b, id_b, *, actor: str | None = None):
         if success:
             touch_last_edited(table_a, id_a)
             touch_last_edited(table_b, id_b)
-            from db.records import append_edit_log
+            from db.edit_history import append_edit_log
             append_edit_log(
                 table_a,
                 id_a,
@@ -127,7 +127,7 @@ def remove_relationship(table_a, id_a, table_b, id_b, *, actor: str | None = Non
         if success:
             touch_last_edited(table_a, id_a)
             touch_last_edited(table_b, id_b)
-            from db.records import append_edit_log
+            from db.edit_history import append_edit_log
             append_edit_log(
                 table_a,
                 id_a,

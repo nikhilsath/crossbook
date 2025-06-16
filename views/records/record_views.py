@@ -9,11 +9,8 @@ from db.records import (
     delete_record,
     count_nonnull as db_count_nonnull,
     field_distribution,
-    append_edit_log,
-    get_edit_history,
-    get_edit_entry,
-    revert_edit,
 )
+from db.edit_history import append_edit_log, get_edit_history, get_edit_entry, revert_edit
 from db.relationships import get_related_records, add_relationship, remove_relationship
 from db.edit_fields import add_column_to_table, add_field_to_schema, drop_column_from_table, remove_field_from_schema
 from db.schema import (
