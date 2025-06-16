@@ -158,6 +158,12 @@
         <li>
           <div class="flex items-center justify-between">
             <strong>{{ group.label }}:</strong>
+            <button
+              onclick="openAddRelationModal('{{ table }}', {{ record.id }}, '{{ section }}')"
+              class="text-green-600 text-xl font-bold"
+            >
+              +
+            </button>
           </div>
           {% if group['items'] %}
             {% for item in group['items'] %}
@@ -165,6 +171,12 @@
                 <a href="/{{ section }}/{{ item.id }}" class="underline">
                   {% if section == 'content' %}{{ item.id }}{% else %}{{ item.name }}{% endif %}
                 </a>
+                <button
+                  onclick="removeRelation('{{ table }}', {{ record.id }}, '{{ section }}', {{ item.id }})"
+                  class="text-red-500 text-sm"
+                >
+                  ✖
+                </button>
               </div>
             {% endfor %}
           {% else %}
@@ -174,7 +186,28 @@
       {% endfor %}
     </ul>
   </div>
+</div>
 
+<!-- Relation Modal -->
+<div id="relationModal"
+     class="modal-container hidden"
+     onclick="if(event.target.id === 'relationModal') closeModal()">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full relative">
+    <button type="button" onclick="closeModal()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-xl">&times;</button>
+    <h3 class="text-lg font-bold mb-4">Add Relation</h3>
+    <select id="relationOptions" class="block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200 mb-4">
+      <option>Loading...</option>
+    </select>
+    <div class="flex justify-end">
+      <button
+        onclick="submitRelation()"
+        class="btn-primary px-4 py-2 rounded"
+      >
+        Add
+      </button>
+    </div>
+  </div>
+</div>
 
 <script>const layoutCache = {{ field_schema_layout | tojson }};</script>
 <script>window.FIELD_LAYOUT_DEFAULTS = {{ field_layout_defaults | tojson }};</script>
@@ -204,6 +237,17 @@
 <script src="{{ url_for('static', filename='js/header_field_visibility.js') }}"></script>
 
 <script type="module">
+  import {
+    openAddRelationModal,
+    closeModal,
+    submitRelation,
+    removeRelation
+  } from "/static/js/relations.js";
+
+  window.openAddRelationModal = openAddRelationModal;
+  window.closeModal = closeModal;
+  window.submitRelation = submitRelation;
+  window.removeRelation = removeRelation;
   window.openLayoutModal = function () {
     document.getElementById("layoutModal").classList.remove("hidden");
   };
