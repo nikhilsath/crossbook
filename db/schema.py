@@ -76,6 +76,8 @@ def update_foreign_field_options():
         )
         rows = cur.fetchall()
 
+        MAX_OPTIONS = 1000
+
         for table_name, field_name, field_type, foreign_table in rows:
             if not foreign_table:
                 continue
@@ -102,7 +104,17 @@ def update_foreign_field_options():
                     label_field = cols[1] if len(cols) > 1 else cols[0]
                 if label_field not in cols:
                     continue
-                cur.execute(f"SELECT id, {label_field} FROM {foreign_table}")
+                cur.execute(f"SELECT COUNT(*) FROM {foreign_table}")
+                total = cur.fetchone()[0]
+                if total > MAX_OPTIONS:
+                    logger.info(
+                        "Skipping %s.%s → %s: %d rows exceeds limit", 
+                        table_name, field_name, foreign_table, total
+                    )
+                    continue
+                cur.execute(
+                    f"SELECT id, {label_field} FROM {foreign_table} LIMIT {MAX_OPTIONS}"
+                )
                 options = [r[1] for r in cur.fetchall()]
             except Exception as e:
                 logger.warning(

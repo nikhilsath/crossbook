@@ -189,6 +189,7 @@
             <span class="text-gray-400">None</span>
           {% endif %}
           <div id="add-rel-{{ section }}" class="mt-2 hidden">
+            <input type="text" placeholder="Search..." class="border px-2 py-1 text-sm rounded w-full mb-1" oninput="searchRelation('{{ section }}', this)">
             <select id="rel-options-{{ section }}" class="border px-2 py-1 text-sm rounded w-full mb-1"></select>
             <button onclick="submitRelation('{{ section }}')" class="btn-primary px-2 py-1 text-sm rounded">Add</button>
           </div>
