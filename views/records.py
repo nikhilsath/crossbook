@@ -375,9 +375,10 @@ def update_field(table, record_id):
             new_value = '1' if raw.lower() in ('1','on','true') else '0'
         elif ftype == 'number':
             try:
-                new_value = int(raw)
+                parsed = float(raw)
+                new_value = str(parsed)
             except ValueError:
-                new_value = 0
+                new_value = '0'
         else:
             new_value = raw
         if ftype == 'textarea':
@@ -426,9 +427,10 @@ def bulk_update(table):
         value = '1' if str(value).lower() in ('1', 'true', 'on') else '0'
     elif ftype == 'number':
         try:
-            value = int(value)
+            parsed = float(value)
+            value = str(parsed)
         except (TypeError, ValueError):
-            value = 0
+            value = '0'
     elif ftype in ('multi_select', 'foreign_key'):
         if isinstance(value, list):
             value = ', '.join([str(v) for v in value])
