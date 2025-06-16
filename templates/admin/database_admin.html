@@ -11,8 +11,9 @@
       <input type="file" name="file" accept=".db" class="text-sm border border-gray-300 rounded" />
       <button type="submit" class="btn-danger px-3 py-1 rounded">Change Database</button>
     </form>
-    <button id="create-db-btn" type="button" class="btn-primary px-3 py-1 rounded">Create New DB</button>
+    <button id="create-db-btn" type="button" class="btn-primary px-3 py-1 rounded" onclick="openCreateDbModal()">Create New DB</button>
   </div>
 </div>
+{% include "modals/create_db_modal.html" %}
 <script type="module" src="{{ url_for('static', filename='js/database_admin.js') }}"></script>
 {% endblock %}
