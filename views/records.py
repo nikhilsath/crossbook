@@ -192,15 +192,29 @@ def export_csv(table):
     """Stream CSV of records using current filters and search."""
     params = _parse_list_params(table)
     fields = [f for f in params['fields'] if not f.startswith('_')]
-    records = get_all_records(
-        table,
-        search=params['search'],
-        filters=params['filters'],
-        ops=params['ops'],
-        modes=params['modes'],
-        sort_field=params['sort_field'],
-        direction=params['direction'],
-    )
+    ids_param = request.args.getlist('ids') or request.args.get('ids', '')
+    if isinstance(ids_param, str):
+        ids = [i for i in ids_param.split(',') if i]
+    else:
+        ids = ids_param
+    ids = [int(i) for i in ids if str(i).isdigit()]
+    if ids:
+        records = get_all_records(
+            table,
+            filters={'id': ids},
+            ops={'id': 'equals'},
+            modes={'id': 'any'},
+        )
+    else:
+        records = get_all_records(
+            table,
+            search=params['search'],
+            filters=params['filters'],
+            ops=params['ops'],
+            modes=params['modes'],
+            sort_field=params['sort_field'],
+            direction=params['direction'],
+        )
 
     def generate():
         buf = io.StringIO()
