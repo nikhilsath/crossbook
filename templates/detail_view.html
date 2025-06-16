@@ -23,14 +23,14 @@
             data-record-id="{{ record.id }}"
             data-field="{{ title_field }}"
             {% endif %}>{{ display_value }}</span>
-      <span class="text-gray-500 text-base">(ID {{ record.id }})</span>
+      <span id="record-id" class="text-gray-500 text-base">(ID {{ record.id }})</span>
       {% set date_added = record.get('date_added') or record.get('date_created') %}
       {% set last_updated = record.get('last_updated') or record.get('last_edited') %}
       {% if date_added or last_updated %}
         <span class="text-gray-500 text-sm font-mono ml-2">
-          {% if date_added %}Added {{ date_added }}{% endif %}
-          {% if date_added and last_updated %} | {% endif %}
-          {% if last_updated %}Updated {{ last_updated }}{% endif %}
+          {% if date_added %}<span id="record-date-added">Added {{ date_added }}</span>{% endif %}
+          {% if date_added and last_updated %}<span id="record-date-separator"> | </span>{% endif %}
+          {% if last_updated %}<span id="record-last-edited">Updated {{ last_updated }}</span>{% endif %}
         </span>
       {% endif %}
     </h1>
@@ -52,6 +52,29 @@
       >
         Edit Fields
       </button>
+      <div id="special-visibility-wrapper" class="relative inline-block text-left hidden">
+        <button id="toggle-header-fields" type="button" class="px-2 py-1 bg-gray-200 rounded ml-2">
+          Header Fields
+        </button>
+        <div id="header-field-dropdown" class="z-10 hidden mt-2 bg-white border rounded shadow p-2 space-y-1 w-48">
+          <label class="flex items-center space-x-2">
+            <input type="checkbox" class="header-field-toggle" value="title" checked>
+            <span class="text-sm">Title</span>
+          </label>
+          <label class="flex items-center space-x-2">
+            <input type="checkbox" class="header-field-toggle" value="id" checked>
+            <span class="text-sm">ID</span>
+          </label>
+          <label class="flex items-center space-x-2">
+            <input type="checkbox" class="header-field-toggle" value="date_added" checked>
+            <span class="text-sm">Date Added</span>
+          </label>
+          <label class="flex items-center space-x-2">
+            <input type="checkbox" class="header-field-toggle" value="last_edited" checked>
+            <span class="text-sm">Last Edited</span>
+          </label>
+        </div>
+      </div>
     </div>
 
     <!-- Layout container with computed initial height -->
@@ -211,6 +234,7 @@
   </script>
 <script src="{{ url_for('static', filename='js/layout_editor.js') }}"></script>
 <script src="{{ url_for('static', filename='js/field_styling.js') }}"></script>
+<script src="{{ url_for('static', filename='js/header_field_visibility.js') }}"></script>
 
 <script type="module">
   import {
