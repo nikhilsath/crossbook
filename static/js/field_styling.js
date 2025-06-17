@@ -89,9 +89,15 @@ document.addEventListener('DOMContentLoaded', () => {
     menu.dispatchEvent(new Event('change'));
   });
   const presetColors = ['#000000', '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
-  presetsDiv.innerHTML = presetColors.map(c =>
-    `<button type="button" data-color="${c}" class="w-4 h-4 rounded border" style="background-color:${c}"></button>`
-  ).join('');
+  presetsDiv.innerHTML = '';
+  presetColors.forEach(c => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.dataset.color = c;
+    btn.className = 'color-btn';
+    btn.style.setProperty('--btn-color', c);
+    presetsDiv.appendChild(btn);
+  });
   presetsDiv.addEventListener('click', e => {
     if (e.target.dataset.color) {
       selectedColor = e.target.dataset.color;
