@@ -90,11 +90,11 @@ function updateSelectedTagsDOM(formEl) {
   checkboxes.forEach(cb => {
     if (cb.checked) {
       const span = document.createElement('span');
-      span.className = 'inline-flex items-center bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full';
+      span.className = 'inline-flex items-center bg-teal-100 text-teal-700 text-xs px-2 py-1 rounded-full';
       span.textContent = cb.value;
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'ml-1 text-blue-500 hover:text-red-500';
+      btn.className = 'ml-1 text-teal-600 hover:text-red-500';
       btn.textContent = '×';
       btn.onclick = () => {
         cb.checked = false;

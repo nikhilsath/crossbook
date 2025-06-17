@@ -2,12 +2,8 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   const FLOWBITE_COLORS = [
-    '#2563eb', // blue-600
-    '#db2777', // pink-600
-    '#059669', // emerald-600
-    '#f59e0b', // amber-500
-    '#8b5cf6', // violet-500
-    '#ef4444'  // red-500
+    '#0D9488', // teal
+    '#7C3AED'  // purple
   ];
 
   const chartWidgets = document.querySelectorAll('[data-type="chart"]');
@@ -74,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const values = Object.values(data);
         new Chart(canvas, {
           type: 'line',
-          data: { labels, datasets: [{ data: values, borderColor: FLOWBITE_COLORS[0], backgroundColor: 'rgba(37,99,235,0.2)', fill: false }] },
+          data: { labels, datasets: [{ data: values, borderColor: FLOWBITE_COLORS[0], backgroundColor: 'rgba(13,148,136,0.2)', fill: false }] },
           options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
         });
       } catch (err) {
@@ -105,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
         datasets: [{
           label: aggregation === 'count' ? 'Count' : 'Sum',
           data: values,
-          backgroundColor: ['#3b82f6', '#d946ef']
+          backgroundColor: [FLOWBITE_COLORS[0], FLOWBITE_COLORS[1]]
         }]
       },
       options: {

@@ -1,8 +1,8 @@
 :root {
   --font-sans: 'Inter', 'IBM Plex Sans', sans-serif;
   --font-mono: 'JetBrains Mono', 'Menlo', monospace;
-  --color-primary: #2563eb;
-  --color-secondary: #64748b;
+  --color-primary: #0D9488; /* teal-600 */
+  --color-secondary: #7C3AED; /* accent purple */
   --color-danger: #dc2626;
 }
 
@@ -127,7 +127,8 @@ a:hover {
   border-radius: 0.25rem;
 }
 .nav-link:hover {
-  background-color: #374151; /* gray-700 */
+  background-color: #7C3AED; /* accent */
+  color: #fff;
 }
 
 .card-link {

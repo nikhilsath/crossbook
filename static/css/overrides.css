@@ -242,4 +242,27 @@ input[type=number] {
   z-index: 100;
 }
 
+/* Utility button and component styles */
+.btn-primary {
+  background-color: #0D9488;
+  color: #fff;
+}
+.btn-secondary {
+  background-color: #7C3AED;
+  color: #fff;
+}
+.btn-danger {
+  background-color: #dc2626;
+  color: #fff;
+}
+.card {
+  background-color: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.modal-container {
+  background-color: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+}
+
 
