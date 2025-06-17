@@ -84,7 +84,7 @@ def _copy_config_metadata(cur: sqlite3.Cursor, dest_path: str) -> None:
 
 
 def ensure_relationships_table(path: str) -> None:
-    """Create the relationships table and new columns if needed."""
+    """Ensure the relationships table exists."""
     with sqlite3.connect(path) as conn:
         cur = conn.cursor()
         cur.execute(
@@ -114,14 +114,6 @@ def ensure_relationships_table(path: str) -> None:
             conn.commit()
             return
 
-        # Ensure the two_way column exists for older databases
-        cur.execute("PRAGMA table_info(relationships)")
-        cols = [r[1] for r in cur.fetchall()]
-        if "two_way" not in cols:
-            cur.execute(
-                "ALTER TABLE relationships ADD COLUMN two_way INTEGER NOT NULL DEFAULT 1"
-            )
-            conn.commit()
 
 
 def _create_core_tables(cur: sqlite3.Cursor) -> None:
