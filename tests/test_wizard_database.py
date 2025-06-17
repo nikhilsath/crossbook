@@ -41,3 +41,22 @@ def test_settings_step_after_db_creation():
     from views.admin import reload_app_state
     with app.app_context():
         reload_app_state()
+
+
+def test_filename_prefix_added_on_settings_post():
+    with client.session_transaction() as sess:
+        sess['wizard_progress'] = {'database': True}
+
+    data = {
+        'log_level': 'INFO',
+        'handler_type': 'stream',
+        'log_format': '[%(levelname)s] %(message)s',
+        'filename': 'custom.log',
+    }
+
+    resp = client.post('/wizard/settings', data=data, follow_redirects=True)
+    assert resp.status_code == 200
+
+    rows = get_config_rows('logging')
+    cfg = {row['key']: row['value'] for row in rows}
+    assert cfg['filename'] == 'logs/custom.log'

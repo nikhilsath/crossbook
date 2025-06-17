@@ -102,7 +102,15 @@ def settings_step():
             row['options'] = json.loads(row.get('options') or '[]')
         except Exception:
             row['options'] = []
+        if row['key'] == 'heading':
+            row['labels'] = 'Main Heading'
     config = {row['key']: row['value'] for row in rows}
+    config_display = config.copy()
+    if 'filename' in config_display:
+        import os
+        config_display['filename'] = os.path.basename(config_display['filename'])
+    logging_defaults = [r for r in rows if r['section'] == 'logging']
+    other_defaults = [r for r in rows if r['section'] != 'logging']
     if request.method == 'POST':
         handler_type = request.form.get('handler_type', config.get('handler_type'))
         errors = {}
@@ -122,18 +130,28 @@ def settings_step():
         if errors:
             return render_template(
                 'wizard/wizard_settings.html',
-                config=config,
-                defaults=rows,
+                config=config_display,
+                logging_defaults=logging_defaults,
+                other_defaults=other_defaults,
                 errors=errors,
             )
         for row in rows:
             val = request.form.get(row['key'])
             if val is not None:
+                if row['key'] == 'filename':
+                    import os
+                    val = os.path.join('logs', os.path.basename(val))
                 update_config(row['key'], val)
         progress['settings'] = True
         session['wizard_progress'] = progress
         return redirect(url_for('wizard.table_step'))
-    return render_template('wizard/wizard_settings.html', config=config, defaults=rows, errors={})
+    return render_template(
+        'wizard/wizard_settings.html',
+        config=config_display,
+        logging_defaults=logging_defaults,
+        other_defaults=other_defaults,
+        errors={},
+    )
 
 
 @wizard_bp.route('/wizard/table', methods=['GET', 'POST'])
