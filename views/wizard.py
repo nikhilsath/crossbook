@@ -96,7 +96,15 @@ def database_step():
 @wizard_bp.route('/wizard/settings', methods=['GET', 'POST'])
 def settings_step():
     progress = session.setdefault('wizard_progress', {})
-    rows = [r for r in get_config_rows() if r.get('wizard')]
+    rows = []
+    for r in get_config_rows():
+        if r.get('wizard'):
+            rows.append(r)
+            continue
+        if r.get('required'):
+            val = r.get('value')
+            if val is None or val == "":
+                rows.append(r)
     for row in rows:
         try:
             row['options'] = json.loads(row.get('options') or '[]')
