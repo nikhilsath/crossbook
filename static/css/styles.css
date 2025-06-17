@@ -1,13 +1,18 @@
 :root {
   --font-sans: 'Inter', 'IBM Plex Sans', sans-serif;
   --font-mono: 'JetBrains Mono', 'Menlo', monospace;
-  --color-primary: #0D9488; /* teal-600 */
-  --color-secondary: #7C3AED; /* accent purple */
+  --color-primary: #0D9488; /* teal */
+  --color-secondary: #7C3AED; /* purple */
   --color-danger: #dc2626;
+  --bg-dark: #111827;
+  --bg-card: #1f2937;
+  --text-light: #f3f4f6;
 }
 
 body {
   font-family: var(--font-sans);
+  background-color: var(--bg-dark);
+  color: var(--text-light);
 }
 
 a {
@@ -103,9 +108,10 @@ a:hover {
 
 /* Card component */
 .card {
-  background-color: #fff;
+  background-color: var(--bg-card);
   border-radius: 0.5rem;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  color: var(--text-light);
 }
 
 /* Modal container */
@@ -127,20 +133,35 @@ a:hover {
   border-radius: 0.25rem;
 }
 .nav-link:hover {
-  background-color: #7C3AED; /* accent */
+  background-color: var(--color-secondary);
   color: #fff;
 }
 
+.bg-primary { background-color: var(--color-primary); }
+.bg-secondary { background-color: var(--color-secondary); }
+.bg-dark { background-color: var(--bg-dark); }
+.bg-card { background-color: var(--bg-card); }
+.text-light { color: var(--text-light); }
+
+.table-row-odd { background-color: #1f2937; }
+.table-row-even { background-color: #273043; }
+.table-row-hover:hover { background-color: #374151; }
+
+.dark-table tbody tr:nth-child(odd) { background-color: #1f2937; }
+.dark-table tbody tr:nth-child(even) { background-color: #273043; }
+.dark-table tbody tr:hover { background-color: #374151; }
+
 .card-link {
   display: block;
-  background-color: #fff;
+  background-color: var(--bg-card);
+  color: var(--text-light);
   border-radius: 0.75rem; /* rounded-xl */
   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
   padding: 1.5rem; /* p-6 */
   transition: background-color 0.2s;
 }
 .card-link:hover {
-  background-color: #f9fafb; /* gray-50 */
+  background-color: #374151;
 }
 
 .modal-container {
