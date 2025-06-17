@@ -4,8 +4,16 @@ function applyStyling(el, styling) {
   el.classList.toggle('font-bold', !!styling.bold);
   el.classList.toggle('italic', !!styling.italic);
   el.classList.toggle('underline', !!styling.underline);
-  el.style.color = styling.color || '';
-  el.style.fontSize = styling.size ? `${styling.size}px` : '';
+  if (styling.color) {
+    el.style.setProperty('--field-color', styling.color);
+  } else {
+    el.style.removeProperty('--field-color');
+  }
+  if (styling.size) {
+    el.style.setProperty('--field-size', `${styling.size}px`);
+  } else {
+    el.style.removeProperty('--field-size');
+  }
   const label = el.querySelector('div.text-sm.font-bold.capitalize.mb-1');
   if (label) label.classList.remove('hidden');
 }
