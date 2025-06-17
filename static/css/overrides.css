@@ -101,7 +101,7 @@ input[type=number] {
 #dashboard-grid.editing .draggable-field {
   border: 1px blue dashed !important;
   box-shadow: 0 0 0 2px rgba(0,0,0,0.1) !important;
-  background-color: #fafafa !important;
+  /* No background overlay while editing dashboard layout */
 }
 #dashboard-grid .draggable-field input,
 #dashboard-grid .draggable-field select,
