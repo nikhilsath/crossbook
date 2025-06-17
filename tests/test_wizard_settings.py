@@ -33,3 +33,22 @@ def test_boolean_and_date_inputs_render_correctly():
         with sqlite3.connect(DB_PATH) as conn:
             conn.execute("DELETE FROM config WHERE key IN ('bool_setting', 'date_setting')")
             conn.commit()
+
+
+def test_required_fields_without_value_are_shown():
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute(
+            "INSERT OR REPLACE INTO config (key, value, section, type, required, wizard) VALUES ('req_setting', '', 'general', 'string', 1, 0)"
+        )
+        conn.commit()
+    try:
+        with client.session_transaction() as sess:
+            sess['wizard_progress'] = {'database': True}
+        resp = client.get('/wizard/settings')
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert '<input type="text" name="req_setting"' in html
+    finally:
+        with sqlite3.connect(DB_PATH) as conn:
+            conn.execute("DELETE FROM config WHERE key='req_setting'")
+            conn.commit()
