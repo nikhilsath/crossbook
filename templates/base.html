@@ -39,7 +39,7 @@
 
     <div id="content-wrapper" class="flex-1 flex flex-col md:ml-56">
       <header id="page-header" class="bg-dark text-white p-4 flex items-center justify-between fixed top-0 left-0 w-full z-40 shadow-md md:pl-56">
-        <div class="flex items-center space-x-2">
+        <div class="flex items-center space-x-2 ml-2">
           {% block nav_buttons %}{% endblock %}
         </div>
         <div class="flex-1 flex justify-center">
@@ -54,6 +54,7 @@
               </form>
             {% endif %}
           {% endif %}
+          {% block header_actions %}{% endblock %}
         </div>
       </header>
 
