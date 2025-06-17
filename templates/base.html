@@ -17,7 +17,7 @@
     {% set current_id = segments[1] if segments|length > 1 else None %}
 
   <div id="app-container" class="flex min-h-screen">
-    <aside id="sidebar" class="fixed top-0 left-0 z-40 w-56 h-screen pt-4 bg-primary text-white hidden md:block flex flex-col flex-shrink-0">
+    <aside id="sidebar" class="fixed top-0 left-0 z-40 w-56 h-screen pt-4 bg-primary-dark text-white hidden md:block flex flex-col flex-shrink-0">
       <div class="flex items-center justify-between px-2">
         <a href="/" class="p-2 text-gray-100 flex items-center space-x-1" aria-label="Home">
           <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -35,10 +35,10 @@
       </nav>
       <!-- Sidebar action buttons removed -->
       </aside>
-    <div id="sidebar-handle" class="hidden fixed top-0 left-0 h-screen w-3 bg-primary text-white flex items-center justify-center cursor-pointer">&raquo;</div>
+    <div id="sidebar-handle" class="hidden fixed top-0 left-0 h-screen w-3 bg-primary-dark text-white flex items-center justify-center cursor-pointer">&raquo;</div>
 
     <div id="content-wrapper" class="flex-1 flex flex-col md:ml-56">
-      <header id="page-header" class="bg-primary text-white p-4 flex items-center justify-between fixed top-0 left-0 w-full z-40 shadow-md md:pl-56">
+      <header id="page-header" class="bg-primary-dark text-white p-4 flex items-center justify-between fixed top-0 left-0 w-full z-40 shadow-md md:pl-56">
         <div class="flex items-center space-x-2">
           {% block nav_buttons %}{% endblock %}
         </div>

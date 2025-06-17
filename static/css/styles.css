@@ -1,9 +1,11 @@
 :root {
   --font-sans: 'Inter', 'IBM Plex Sans', sans-serif;
   --font-mono: 'JetBrains Mono', 'Menlo', monospace;
+  --color-primary-dark: #5B21B6; /* darker purple */
   --color-primary: #7C3AED; /* purple */
+  --color-primary-light: #E9D5FF; /* light purple */
+  --color-primary-lightest: #F5F3FF;
   --color-secondary: #0D9488; /* teal */
-  --color-primary-light: #E9D5FF;
   --color-secondary-light: #99F6E4;
   --color-danger: #dc2626;
   --bg-dark: #111827;
@@ -141,10 +143,11 @@ a:hover {
 
 .text-primary { color: var(--color-primary); }
 .text-secondary { color: var(--color-secondary); }
+.bg-primary-lightest { background-color: var(--color-primary-lightest); }
 .bg-primary-light { background-color: var(--color-primary-light); }
 .bg-secondary-light { background-color: var(--color-secondary-light); }
-
 .bg-primary { background-color: var(--color-primary); }
+.bg-primary-dark { background-color: var(--color-primary-dark); }
 .bg-secondary { background-color: var(--color-secondary); }
 .bg-dark { background-color: var(--bg-dark); }
 .bg-card { background-color: var(--bg-card); }
@@ -194,3 +197,6 @@ a:hover {
 .bg-teal-100 { background-color: var(--color-primary-light); }
 .border-teal-600, .border-purple-600 { border-color: var(--color-primary); }
 .border-teal-200 { border-color: var(--color-primary-light); }
+.border-primary { border-color: var(--color-primary); }
+.border-primary-dark { border-color: var(--color-primary-dark); }
+.border-primary-light { border-color: var(--color-primary-light); }
