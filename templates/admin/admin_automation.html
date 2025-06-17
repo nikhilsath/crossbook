@@ -1,11 +1,72 @@
 {% extends "base.html" %}
 {% block title %}Automation{% endblock %}
-{% block scripts %}
-<script type="module" src="{{ url_for('static', filename='js/automation.js') }}"></script>
-{% endblock %}
 {% block content %}
 <h1 class="text-3xl font-bold mb-4">Automation Rules</h1>
-<table id="rules-table" class="min-w-full text-sm"></table>
-<button id="new-rule" class="btn">New Rule</button>
-<div id="rule-form" class="hidden"></div>
+<table id="rules-table" class="min-w-full text-sm divide-y mb-4"></table>
+<button id="new-rule" class="btn-primary px-3 py-1 rounded">New Rule</button>
+
+<div id="ruleModal" class="modal-container hidden" onclick="if(event.target.id === 'ruleModal') closeRuleModal()">
+  <div class="bg-white text-black p-6 rounded-lg shadow-lg w-96 max-w-full relative">
+    <button type="button" onclick="closeRuleModal()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-xl">&times;</button>
+    <h3 id="ruleModalTitle" class="text-lg font-bold mb-4">New Rule</h3>
+    <form id="rule-form" class="space-y-4">
+      <input type="hidden" id="rule-id">
+      <div>
+        <label for="rule-name" class="block mb-1">Name</label>
+        <input id="rule-name" type="text" class="w-full border rounded p-2">
+      </div>
+      <div>
+        <label for="rule-table" class="block mb-1">Table</label>
+        <input id="rule-table" type="text" class="w-full border rounded p-2">
+      </div>
+      <div>
+        <label for="rule-cond-field" class="block mb-1">Condition Field</label>
+        <input id="rule-cond-field" type="text" class="w-full border rounded p-2">
+      </div>
+      <div>
+        <label for="rule-cond-op" class="block mb-1">Condition Operator</label>
+        <select id="rule-cond-op" class="w-full border rounded p-2">
+          <option value="equals">equals</option>
+          <option value="contains">contains</option>
+        </select>
+      </div>
+      <div>
+        <label for="rule-cond-value" class="block mb-1">Condition Value</label>
+        <input id="rule-cond-value" type="text" class="w-full border rounded p-2">
+      </div>
+      <div>
+        <label for="rule-action-field" class="block mb-1">Action Field</label>
+        <input id="rule-action-field" type="text" class="w-full border rounded p-2">
+      </div>
+      <div>
+        <label for="rule-action-value" class="block mb-1">Action Value</label>
+        <input id="rule-action-value" type="text" class="w-full border rounded p-2">
+      </div>
+      <div>
+        <label for="rule-schedule" class="block mb-1">Schedule</label>
+        <select id="rule-schedule" class="w-full border rounded p-2">
+          <option value="none">none</option>
+          <option value="daily">daily</option>
+          <option value="always">always</option>
+        </select>
+      </div>
+      <div class="flex items-center">
+        <input id="rule-run-on-import" type="checkbox" class="mr-2">
+        <label for="rule-run-on-import">Run on Import</label>
+      </div>
+      <div class="flex justify-end">
+        <button type="submit" class="btn-primary px-4 py-2 rounded">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="logsModal" class="modal-container hidden" onclick="if(event.target.id === 'logsModal') closeLogsModal()">
+  <div class="bg-white text-black p-6 rounded-lg shadow-lg w-fit max-w-full relative">
+    <button type="button" onclick="closeLogsModal()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-xl">&times;</button>
+    <h3 class="text-lg font-bold mb-4">Recent Logs</h3>
+    <table id="logs-table" class="min-w-full text-sm divide-y mb-4"></table>
+  </div>
+</div>
+<script type="module" src="{{ url_for('static', filename='js/automation.js') }}"></script>
 {% endblock %}
