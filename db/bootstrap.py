@@ -215,6 +215,25 @@ def _create_core_tables(cur: sqlite3.Cursor) -> None:
         "CREATE INDEX IF NOT EXISTS idx_relationships_b ON relationships (table_b, id_b)"
     )
 
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS automation_rules (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            table_name TEXT NOT NULL,
+            condition_field TEXT NOT NULL,
+            condition_operator TEXT NOT NULL,
+            condition_value TEXT NOT NULL,
+            action_field TEXT NOT NULL,
+            action_value TEXT NOT NULL,
+            run_on_import BOOLEAN DEFAULT 0,
+            schedule TEXT CHECK(schedule IN ('none', 'daily', 'always')) DEFAULT 'none',
+            last_run TIMESTAMP,
+            run_count INTEGER DEFAULT 0
+        )
+        """
+    )
+
 
 def ensure_default_configs(path: str) -> None:
     """Insert DEFAULT_CONFIGS into the config table if it is empty."""
