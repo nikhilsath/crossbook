@@ -100,18 +100,34 @@ def drop_column_from_table(table, field_name):
     with get_connection() as conn:
         cur = conn.cursor()
 
-        # 1) Get column names, excluding the one to remove
+        # 1) Get column definitions and names excluding the one to remove
         cur.execute(f"PRAGMA table_info('{table}')")
-        all_cols = [row[1] for row in cur.fetchall()]
-        remaining = [c for c in all_cols if c != field_name]
-        if len(remaining) == len(all_cols):
+        info = cur.fetchall()
+        remaining = [row for row in info if row[1] != field_name]
+        if len(remaining) == len(info):
             return
 
-        cols_csv = ", ".join(f'"{c}"' for c in remaining)
+        col_defs = []
+        col_names = []
+        for cid, name, col_type, notnull, dflt, pk in remaining:
+            col_names.append(f'"{name}"')
+            col_def = f'"{name}" {col_type}' if col_type else f'"{name}"'
+            if pk:
+                col_def += " PRIMARY KEY"
+            if notnull:
+                col_def += " NOT NULL"
+            if dflt is not None:
+                col_def += f" DEFAULT {dflt}"
+            col_defs.append(col_def)
+
+        cols_csv = ", ".join(col_names)
         temp_table = f"{table}_temp"
 
-        # 2) Create temp table copying data
-        cur.execute(f'CREATE TABLE "{temp_table}" AS SELECT {cols_csv} FROM "{table}"')
+        # 2) Create temp table and copy data while preserving column definitions
+        cur.execute(f'CREATE TABLE "{temp_table}" ({", ".join(col_defs)})')
+        cur.execute(
+            f'INSERT INTO "{temp_table}" ({cols_csv}) SELECT {cols_csv} FROM "{table}"'
+        )
         # 3) Drop original
         cur.execute(f'DROP TABLE "{table}"')
         # 4) Rename temp to original
