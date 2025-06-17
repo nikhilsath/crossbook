@@ -61,6 +61,9 @@ def _run_import(job_id, table, rows):
                     job_id, imported_rows=idx, errors=json.dumps(errors)
                 )
         _update_import_status(job_id, status="complete")
+        # trigger automation rules that run on import
+        from automation import engine as automation_engine
+        automation_engine.run_import_rules(table)
         logger.info(
             "Import job %s for table %s complete: %s rows imported, %s errors",
             job_id,
