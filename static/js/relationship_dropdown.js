@@ -42,6 +42,8 @@ export function submitRelation(tableB) {
   const tableA = select.dataset.tableA;
   const idA = parseInt(select.dataset.idA, 10);
   const idB = parseInt(select.value, 10);
+  const dir = document.querySelector(`input[name="rel-dir-${tableB}"]:checked`);
+  const twoWay = dir ? dir.value === 'two' : true;
   fetch('/relationship', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -50,7 +52,8 @@ export function submitRelation(tableB) {
       id_a: idA,
       table_b: tableB,
       id_b: idB,
-      action: 'add'
+      action: 'add',
+      two_way: twoWay
     })
   }).then(() => location.reload());
 }

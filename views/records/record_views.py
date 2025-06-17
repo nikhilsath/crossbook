@@ -222,8 +222,9 @@ def manage_relationship():
     id_a = data.get('id_a')
     table_b = data.get('table_b')
     id_b = data.get('id_b')
+    two_way = data.get('two_way', True)
     if action == 'add':
-        success = add_relationship(table_a, id_a, table_b, id_b)
+        success = add_relationship(table_a, id_a, table_b, id_b, two_way=bool(two_way))
     elif action == 'remove':
         success = remove_relationship(table_a, id_a, table_b, id_b)
     else:
