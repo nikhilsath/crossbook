@@ -242,6 +242,14 @@ input[type=number] {
   z-index: 100;
 }
 
+/* Standard grid layout used in detail and dashboard pages */
+.layout-grid {
+  display: grid;
+  grid-template-columns: repeat(20, 1fr);
+  grid-auto-rows: 1em;
+  position: relative;
+}
+
 /* Utility button and component styles */
 .btn-primary {
   background-color: var(--color-primary);

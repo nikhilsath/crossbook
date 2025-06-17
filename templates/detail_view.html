@@ -85,13 +85,9 @@
 
     <!-- Layout container with computed initial height -->
     <div id="layout-grid"
-         class="relative w-full grid"
+         class="layout-grid relative w-full"
          data-table="{{ table }}"
-         data-record-id="{{ record.id }}"
-         style="
-           grid-template-columns: repeat(20, 1fr);
-           grid-auto-rows: 1em;
-         ">
+         data-record-id="{{ record.id }}">
 
       {% for field, value in record.items() %}
         {% if field_schema[table][field].type not in ['hidden', 'title'] and field not in ['date_added', 'date_created', 'last_updated', 'last_edited'] %}
