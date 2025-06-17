@@ -145,6 +145,7 @@ function enableVanillaDrag() {
     fieldEl = e.target.closest('.draggable-field');
     field = fieldEl?.dataset.field;
     if (!fieldEl || !field) return;
+    console.debug('[layout] drag start', field);
     fieldEl._prevRect = { ...layoutCache[field] };
     const rect = fieldEl.getBoundingClientRect();
     fieldEl.style.width  = `${rect.width}px`;
@@ -207,6 +208,7 @@ function enableVanillaDrag() {
     if (hasOverlap) {
       // snap back
       revertPosition(fieldEl);
+      console.debug('[layout] drag revert', field);
       return;
     }
 
@@ -227,6 +229,7 @@ function enableVanillaDrag() {
     if (window.initAutosizeText) {
       window.initAutosizeText();
     }
+    console.debug('[layout] drag end', field, layoutCache[field]);
   }
 }
 
@@ -248,6 +251,7 @@ function enableVanillaResize() {
                    .find(c => e.target.classList.contains(c));
     fieldEl = e.target.closest('.draggable-field');
     field   = fieldEl.dataset.field;
+    console.debug('[layout] resize start', field, handleType);
     startX  = e.clientX;
     startY  = e.clientY;
     startRect = { ...layoutCache[field] };
@@ -318,12 +322,14 @@ function enableVanillaResize() {
     );
     if (hasOverlap) {
       revertPosition(fieldEl);
+      console.debug('[layout] resize revert', field);
     } else {
       layoutCache[field] = newRect;
     }
     if (window.initAutosizeText) {
       window.initAutosizeText();
     }
+    console.debug('[layout] resize end', field, layoutCache[field]);
   }
 }
 

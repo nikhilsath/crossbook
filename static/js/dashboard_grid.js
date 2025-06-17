@@ -85,6 +85,7 @@ function enableDashboardDrag() {
     widgetEl = e.target.closest('.draggable-field');
     widgetId = widgetEl?.dataset.widget;
     if (!widgetEl || !widgetId) return;
+    console.debug('[dashboard] drag start', widgetId);
     widgetEl._prevRect = { ...widgetLayout[widgetId] };
     const rect = widgetEl.getBoundingClientRect();
     widgetEl.style.width  = `${rect.width}px`;
@@ -120,6 +121,7 @@ function enableDashboardDrag() {
     isDragging = false;
     if (!grid.classList.contains('editing')) {
       revertPosition(widgetEl);
+      console.debug('[dashboard] drag revert', widgetId);
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       return;
@@ -143,6 +145,7 @@ function enableDashboardDrag() {
     );
     if (hasOverlap) {
       revertPosition(widgetEl);
+      console.debug('[dashboard] drag revert', widgetId);
     } else {
       widgetEl.style.left = '';
       widgetEl.style.top = '';
@@ -154,6 +157,7 @@ function enableDashboardDrag() {
     }
     document.removeEventListener('mousemove', onMove);
     document.removeEventListener('mouseup', onUp);
+    console.debug('[dashboard] drag end', widgetId, widgetLayout[widgetId]);
   }
 }
 
@@ -171,6 +175,7 @@ function enableDashboardResize() {
                    .find(c => e.target.classList.contains(c));
     widgetEl = e.target.closest('.draggable-field');
     widgetId = widgetEl.dataset.widget;
+    console.debug('[dashboard] resize start', widgetId, handleType);
     startX = e.clientX;
     startY = e.clientY;
     startRect = { ...widgetLayout[widgetId] };
@@ -222,6 +227,7 @@ function enableDashboardResize() {
     isResizing = false;
     if (!grid.classList.contains('editing')) {
       revertPosition(widgetEl);
+      console.debug('[dashboard] resize revert', widgetId);
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       return;
@@ -242,9 +248,11 @@ function enableDashboardResize() {
     );
     if (hasOverlap) {
       revertPosition(widgetEl);
+      console.debug('[dashboard] resize revert', widgetId);
     } else {
       widgetLayout[widgetId] = newRect;
     }
+    console.debug('[dashboard] resize end', widgetId, widgetLayout[widgetId]);
   }
 }
 
