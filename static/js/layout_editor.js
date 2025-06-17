@@ -202,13 +202,17 @@ function enableVanillaDrag() {
     };
 
     // ▶️ Detect and highlight overlaps
-    const hasOverlap = Object.entries(layoutCache).some(([otherKey, rect]) =>
-      otherKey !== field && intersects(layoutCache[field], rect)
-    );
-    if (hasOverlap) {
+    let overlapWith = null;
+    for (const [otherKey, rect] of Object.entries(layoutCache)) {
+      if (otherKey !== field && intersects(layoutCache[field], rect)) {
+        overlapWith = otherKey;
+        break;
+      }
+    }
+    if (overlapWith) {
       // snap back
       revertPosition(fieldEl);
-      console.debug('[layout] drag revert', field);
+      console.warn(`[layout] drag revert due to overlap with ${overlapWith}`);
       return;
     }
 
@@ -317,12 +321,16 @@ function enableVanillaResize() {
     };
 
     // collision check
-    const hasOverlap = Object.entries(layoutCache).some(([key, rect]) =>
-      key !== field && intersects(newRect, rect)
-    );
-    if (hasOverlap) {
+    let overlapWith = null;
+    for (const [key, rect] of Object.entries(layoutCache)) {
+      if (key !== field && intersects(newRect, rect)) {
+        overlapWith = key;
+        break;
+      }
+    }
+    if (overlapWith) {
       revertPosition(fieldEl);
-      console.debug('[layout] resize revert', field);
+      console.warn(`[layout] resize revert due to overlap with ${overlapWith}`);
     } else {
       layoutCache[field] = newRect;
     }
