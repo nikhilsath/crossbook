@@ -4,15 +4,15 @@
   <div class="bg-white text-black p-6 rounded-lg shadow-lg w-fit min-w-[24rem] max-w-full relative">
     <button onclick="closeDashboardModal()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-xl">&times;</button>
     <div class="mb-4 border-b border-gray-200">
-      <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="dashboardTab" data-tabs-toggle="#dashboardTabContent" role="tablist">
+      <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="dashboardTab" role="tablist">
         <li class="mr-2" role="presentation">
-          <button id="tab-value" data-tabs-target="#pane-value" type="button" role="tab" aria-controls="pane-value" aria-selected="true" class="inline-block p-2 rounded-t-lg border-b-2 text-teal-600 border-teal-600">Value</button>
+          <button id="tab-value" type="button" role="tab" aria-controls="pane-value" aria-selected="true" class="inline-block p-2 rounded-t-lg border-b-2 text-teal-600 border-teal-600">Value</button>
         </li>
         <li class="mr-2" role="presentation">
-          <button id="tab-table" data-tabs-target="#pane-table" type="button" role="tab" aria-controls="pane-table" aria-selected="false" class="inline-block p-2 rounded-t-lg border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300">Table</button>
+          <button id="tab-table" type="button" role="tab" aria-controls="pane-table" aria-selected="false" class="inline-block p-2 rounded-t-lg border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300">Table</button>
         </li>
         <li role="presentation">
-          <button id="tab-chart" data-tabs-target="#pane-chart" type="button" role="tab" aria-controls="pane-chart" aria-selected="false" class="inline-block p-2 rounded-t-lg border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300">Chart</button>
+          <button id="tab-chart" type="button" role="tab" aria-controls="pane-chart" aria-selected="false" class="inline-block p-2 rounded-t-lg border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300">Chart</button>
         </li>
       </ul>
     </div>
