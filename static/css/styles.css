@@ -1,8 +1,10 @@
 :root {
   --font-sans: 'Inter', 'IBM Plex Sans', sans-serif;
   --font-mono: 'JetBrains Mono', 'Menlo', monospace;
-  --color-primary: #0D9488; /* teal */
-  --color-secondary: #7C3AED; /* purple */
+  --color-primary: #7C3AED; /* purple */
+  --color-secondary: #0D9488; /* teal */
+  --color-primary-light: #E9D5FF;
+  --color-secondary-light: #99F6E4;
   --color-danger: #dc2626;
   --bg-dark: #111827;
   --bg-card: #1f2937;
@@ -137,6 +139,11 @@ a:hover {
   color: #fff;
 }
 
+.text-primary { color: var(--color-primary); }
+.text-secondary { color: var(--color-secondary); }
+.bg-primary-light { background-color: var(--color-primary-light); }
+.bg-secondary-light { background-color: var(--color-secondary-light); }
+
 .bg-primary { background-color: var(--color-primary); }
 .bg-secondary { background-color: var(--color-secondary); }
 .bg-dark { background-color: var(--bg-dark); }
@@ -174,3 +181,16 @@ a:hover {
   backdrop-filter: blur(4px); /* blur-sm */
   z-index: 50;
 }
+
+.draggable-field {
+  color: var(--field-color, inherit);
+  font-size: var(--field-size, inherit);
+}
+
+/* Override Tailwind accent classes to use CSS variables */
+.text-teal-600, .text-purple-600 { color: var(--color-primary); }
+.text-teal-700, .text-teal-800 { color: var(--color-primary); }
+.bg-teal-600, .bg-purple-500 { background-color: var(--color-primary); }
+.bg-teal-100 { background-color: var(--color-primary-light); }
+.border-teal-600, .border-purple-600 { border-color: var(--color-primary); }
+.border-teal-200 { border-color: var(--color-primary-light); }
