@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   grid.addEventListener('click', async (e) => {
     if (grid.classList.contains('editing')) return;
-    const fieldEl = e.target.closest('.draggable-field');
+    const fieldEl = e.target.closest('.draggable-field[data-field]');
     if (!fieldEl) return;
     if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A'].includes(e.target.tagName)) {
       return;
