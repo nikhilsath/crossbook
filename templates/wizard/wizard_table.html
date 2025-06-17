@@ -27,7 +27,7 @@
 
 <!-- Add Field Modal -->
 <div id="addFieldModal" class="modal-container hidden" onclick="if(event.target.id === 'addFieldModal') hideAddFieldModal()">
-  <div class="bg-white text-black p-6 rounded-lg shadow-lg w-96 max-w-full relative">
+  <div class="bg-card text-light p-6 rounded-lg shadow-lg w-96 max-w-full relative">
     <button type="button" onclick="hideAddFieldModal()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-xl">&times;</button>
     <form id="field-form" class="space-y-4">
       <div>
@@ -36,7 +36,7 @@
       </div>
       <div>
         <label class="block mb-2 text-sm font-medium">Field Type</label>
-        <select id="field_type" name="field_type" class="block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200" required>
+        <select id="field_type" name="field_type" class="form-control block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200" required>
           <option disabled selected>Select type</option>
         </select>
       </div>
@@ -46,7 +46,7 @@
       </div>
       <div id="fk-select-container" class="hidden">
         <label class="block mb-2 text-sm font-medium">Select linked field</label>
-        <select name="foreign_key_target" class="block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200">
+        <select name="foreign_key_target" class="form-control block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200">
           <option value="" disabled selected>Select field</option>
           {% for source_table, fields in field_schema.items() %}
             {% for field, meta in fields.items() %}
