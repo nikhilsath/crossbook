@@ -10,6 +10,7 @@ DEFAULT_CONFIGS = [
         "general",
         "select",
         ["DEBUG", "INFO", "WARNING", "ERROR"],
+        1,
     ),
     (
         "handler_type",
@@ -17,20 +18,22 @@ DEFAULT_CONFIGS = [
         "general",
         "select",
         ["rotating", "timed", "stream"],
+        0,
     ),
-    ("max_file_size", 5242880, "general", "integer"),
-    ("backup_count", 3, "general", "integer"),
-    ("when_interval", "midnight", "general", "string"),
-    ("interval_count", 1, "general", "integer"),
+    ("max_file_size", 5242880, "general", "integer", 0),
+    ("backup_count", 3, "general", "integer", 0),
+    ("when_interval", "midnight", "general", "string", 0),
+    ("interval_count", 1, "general", "integer", 0),
     (
         "log_format",
         "[%(asctime)s] %(levelname)s in %(module)s: %(message)s",
         "general",
         "string",
+        0,
     ),
-    ("filename", "logs/crossbook.log", "general", "string"),
-    ("heading", "", "home", "string"),
-    ("relationship_visibility", "{}", "general", "json"),
+    ("filename", "logs/crossbook.log", "general", "string", 0),
+    ("heading", "", "home", "string", 1),
+    ("relationship_visibility", "{}", "general", "json", 0),
 ]
 
 LAYOUT_DEFAULTS = {
@@ -67,19 +70,19 @@ def _copy_config_metadata(cur: sqlite3.Cursor, dest_path: str) -> None:
     with sqlite3.connect(src_path) as src_conn:
         src_cur = src_conn.cursor()
         src_cur.execute(
-            "SELECT key, section, type, description, required, options FROM config"
+            "SELECT key, section, type, description, required, options, wizard FROM config"
         )
-        for key, section, type_, desc, req, opts in src_cur.fetchall():
+        for key, section, type_, desc, req, opts, wiz in src_cur.fetchall():
             cur.execute("SELECT 1 FROM config WHERE key = ?", (key,))
             if cur.fetchone():
                 cur.execute(
-                    "UPDATE config SET section=?, type=?, description=?, required=?, options=? WHERE key=?",
-                    (section, type_, desc, req, opts, key),
+                    "UPDATE config SET section=?, type=?, description=?, required=?, options=?, wizard=? WHERE key=?",
+                    (section, type_, desc, req, opts, wiz, key),
                 )
             else:
                 cur.execute(
-                    "INSERT INTO config (key, value, section, type, description, required, options) VALUES (?, '', ?, ?, ?, ?, ?)",
-                    (key, section, type_, desc, req, opts),
+                    "INSERT INTO config (key, value, section, type, description, required, options, wizard) VALUES (?, '', ?, ?, ?, ?, ?, ?)",
+                    (key, section, type_, desc, req, opts, wiz),
                 )
 
 
@@ -128,7 +131,8 @@ def _create_core_tables(cur: sqlite3.Cursor) -> None:
             date_updated TEXT,
             required BOOLEAN DEFAULT 0,
             labels TEXT DEFAULT '',
-            options TEXT DEFAULT ''
+            options TEXT DEFAULT '',
+            wizard BOOLEAN DEFAULT 0
         )
         """
     )
@@ -220,11 +224,17 @@ def ensure_default_configs(path: str) -> None:
         count = cur.fetchone()[0]
         if count == 0:
             for cfg in DEFAULT_CONFIGS:
-                if len(cfg) == 5:
-                    key, value, section, type_, options = cfg
+                if len(cfg) == 6:
+                    key, value, section, type_, options, wizard = cfg
                     cur.execute(
-                        "INSERT INTO config (key, value, section, type, options) VALUES (?, ?, ?, ?, ?)",
-                        (key, str(value), section, type_, json.dumps(options)),
+                        "INSERT INTO config (key, value, section, type, options, wizard) VALUES (?, ?, ?, ?, ?, ?)",
+                        (key, str(value), section, type_, json.dumps(options), wizard),
+                    )
+                elif len(cfg) == 5:
+                    key, value, section, type_, wizard = cfg
+                    cur.execute(
+                        "INSERT INTO config (key, value, section, type, wizard) VALUES (?, ?, ?, ?, ?)",
+                        (key, str(value), section, type_, wizard),
                     )
                 else:
                     key, value, section, type_ = cfg

@@ -4,9 +4,12 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from main import app
 import db.database as db_database
 from db.config import get_config_rows
+import sqlite3
 
 app.testing = True
 client = app.test_client()
+
+DB_PATH = 'data/crossbook.db'
 
 
 def test_settings_step_after_db_creation():
@@ -53,6 +56,10 @@ def test_filename_prefix_added_on_settings_post():
         'log_format': '[%(levelname)s] %(message)s',
         'filename': 'custom.log',
     }
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute("UPDATE config SET wizard=1 WHERE key='filename'")
+        conn.commit()
 
     resp = client.post('/wizard/settings', data=data, follow_redirects=True)
     assert resp.status_code == 200

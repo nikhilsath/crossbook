@@ -93,6 +93,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 │   ├── records.py                   # CRUD operations
 │   ├── relationships.py             # Relationship helpers
 │   ├── validation.py                # Field and data validation logic
+│   ├── bootstrap.py                 # Creates core tables; update when system tables change
 │   └── edit_fields.py               # Field schema editing utilities
 ├── imports/                         # CSV helpers and background tasks
 │   ├── import_csv.py                # parse_csv reads uploaded files into memory
@@ -170,6 +171,9 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
     ├── crossbook.db                # Main application SQLite database
     └── huey.db                     # Task queue persistence database
 ```
+
+**Note:** Whenever a system (non-content) table is modified, update
+`db/bootstrap.py` so new databases include the latest schema.
 
 ## Import Workflow
 
