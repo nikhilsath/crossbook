@@ -22,6 +22,8 @@ function enterEditMode() {
     .forEach(h => h.classList.remove('hidden'));
   const saveBtn = document.getElementById('dashboard_save');
   if (saveBtn) saveBtn.classList.remove('hidden');
+  const editBtn = document.getElementById('dashboard_edit');
+  if (editBtn) editBtn.classList.add('hidden');
 }
 
 function exitEditMode() {
@@ -34,6 +36,8 @@ function exitEditMode() {
     .forEach(h => h.classList.add('hidden'));
   const saveBtn = document.getElementById('dashboard_save');
   if (saveBtn) saveBtn.classList.add('hidden');
+  const editBtn = document.getElementById('dashboard_edit');
+  if (editBtn) editBtn.classList.remove('hidden');
 }
 
 function intersects(a, b) {
