@@ -76,6 +76,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **List API:** `/api/<table>/list` provides ID and label data for dropdowns. It
   accepts optional `search` and `limit` query parameters to filter results.
 * **CSV Import Workflow:** Upload a CSV on `/import`, map fields, then start a background job via `/import-start` and poll `/import-status` for progress.
+* **Automation Rules:** Create rules that update records when conditions match. Rules may run on import or on a schedule.
 
 ## Project Structure
 
@@ -196,9 +197,17 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
      "errorCount": 0,
      "errors": []
    }
-   ```
+  ```
 
 Large files are not streamed—they are fully loaded into memory during parsing, so extremely big uploads may exhaust memory.
+
+## Automation Rules
+
+Automation rules live under `/admin/automation`. Use the interface to create conditions and actions that automatically update records. Rules can run whenever matching rows are imported, daily at midnight, or continuously every few minutes. Start the Huey worker to process scheduled rules:
+
+```bash
+huey_consumer.py imports.tasks.huey
+```
 
 ## Application Architecture and Code Overview
 
@@ -208,7 +217,7 @@ Large files are not streamed—they are fully loaded into memory during parsing,
 
 * **Database Layer:** Uses Python’s built-in `sqlite3` in `db/database.py` for connection management. Schema introspection and migrations occur in `db/schema.py`. CRUD operations reside in `db/records.py`; many-to-many relationship logic in `db/relationships.py`. Validation rules live in `db/validation.py`, and field schema editing utilities in `db/edit_fields.py`.
 
-* **Background Tasks:** Huey is initialized in `imports/tasks.py` and provides the `process_import` task used by the import workflow. Start a worker with `huey_consumer.py imports.tasks.huey`.
+* **Background Tasks:** Huey is initialized in `imports/tasks.py` and provides the `process_import` task used by the import workflow. Start a worker with `huey_consumer.py imports.tasks.huey`. Automation rules scheduled as `daily` or `always` are executed by the same worker.
 
 * **Frontend Interaction:** Dynamic behaviors powered by JavaScript modules in `static/js/`:
 

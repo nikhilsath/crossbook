@@ -1,8 +1,36 @@
 {% extends "base.html" %}
-
 {% block title %}Automation{% endblock %}
-
 {% block content %}
-<h1 class="text-3xl font-bold mb-4">Automation</h1>
-<p class="text-gray-600">This page is under construction.</p>
+<h1 class="text-3xl font-bold mb-4">Automation Rules</h1>
+<table id="automation-table" class="table-auto w-full mb-4 border">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Table</th>
+      <th>Condition</th>
+      <th>Action</th>
+      <th>Schedule</th>
+      <th>Runs</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+<button id="new-rule-btn" class="bg-blue-500 text-white px-2 py-1">New Rule</button>
+<div id="rule-modal" class="hidden fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center">
+  <form id="rule-form" class="bg-white p-4 space-y-2">
+    <input type="hidden" name="id" />
+    <label>Name <input name="name" class="border"/></label>
+    <label>Table <input name="table_name" class="border"/></label>
+    <label>Condition Field <input name="condition_field" class="border"/></label>
+    <label>Operator <input name="condition_operator" class="border"/></label>
+    <label>Value <input name="condition_value" class="border"/></label>
+    <label>Action Field <input name="action_field" class="border"/></label>
+    <label>Action Value <input name="action_value" class="border"/></label>
+    <label>Run on Import <input type="checkbox" name="run_on_import" value="1"/></label>
+    <label>Schedule <select name="schedule" class="border"><option value="none">none</option><option value="daily">daily</option><option value="always">always</option></select></label>
+    <button type="submit" class="bg-green-600 text-white px-2 py-1">Save</button>
+  </form>
+</div>
+<script src="/static/js/automation.js"></script>
 {% endblock %}

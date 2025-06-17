@@ -68,6 +68,14 @@ def _run_import(job_id, table, rows):
             len(rows) - len(errors),
             len(errors),
         )
+
+        from db.automation import get_rules
+        from automation.engine import run_rule
+
+        for rule in get_rules(table_name=table):
+            if rule.get("run_on_import"):
+                run_rule(rule["id"])  # type: ignore[arg-type]
+
         return {"job_id": job_id, "imported": len(rows) - len(errors), "errors": errors}
     except Exception:
         logger.exception("Import job %s for table %s failed", job_id, table)

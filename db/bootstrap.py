@@ -196,6 +196,25 @@ def _create_core_tables(cur: sqlite3.Cursor) -> None:
         """
     )
 
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS automation_rules (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            table_name TEXT NOT NULL,
+            condition_field TEXT NOT NULL,
+            condition_operator TEXT NOT NULL,
+            condition_value TEXT,
+            action_field TEXT NOT NULL,
+            action_value TEXT,
+            run_on_import BOOLEAN NOT NULL DEFAULT 0,
+            schedule TEXT NOT NULL DEFAULT 'none',
+            last_run TEXT,
+            run_count INTEGER NOT NULL DEFAULT 0
+        )
+        """
+    )
+
     # Generic relationships table for many-to-many links
     cur.execute(
         """
