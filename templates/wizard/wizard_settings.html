@@ -1,9 +1,37 @@
 {% extends "base.html" %}
-{% block title %}Setup - Logging Settings{% endblock %}
+{% block title %}Setup - Configure Settings{% endblock %}
 {% block content %}
-<h1 class="text-2xl font-bold mb-4">Step 2: Configure Logging Settings</h1>
+<h1 class="text-2xl font-bold mb-4">Step 2: Configure Settings</h1>
 <form method="post" class="space-y-4">
-  {% for item in defaults %}
+  <h2 class="text-xl font-semibold">General Settings</h2>
+  {% for item in other_defaults %}
+  {% set key = item.key %}
+  {% set typ = item.type %}
+  {% set default = item.value %}
+  <div class="setting-field" data-field="{{ key }}">
+    <label class="block mb-1" for="{{ key }}">
+      {{ item.labels or key.replace('_', ' ')|capitalize }}
+      {% if item.required %}<span class="text-red-600">*</span>{% endif %}
+    </label>
+    {% if item.options %}
+      <select name="{{ key }}" id="{{ key }}" class="border rounded px-2 py-1">
+        {% for opt in item.options %}
+        <option value="{{ opt }}" {% if (config.get(key) or default) == opt %}selected{% endif %}>{{ opt }}</option>
+        {% endfor %}
+      </select>
+    {% elif typ in ('integer', 'number') %}
+      <input type="number" name="{{ key }}" id="{{ key }}" value="{{ config.get(key, default) }}" class="border rounded px-2 py-1 w-full" {% if item.required %}required{% endif %}>
+    {% else %}
+      <input type="text" name="{{ key }}" id="{{ key }}" value="{{ config.get(key, default) }}" class="border rounded px-2 py-1 w-full" {% if item.required %}required{% endif %}>
+    {% endif %}
+    {% if errors and errors.get(key) %}
+      <p class="text-red-600 text-sm">This field is required.</p>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  <h2 class="text-xl font-semibold mt-6">Logging Settings</h2>
+  {% for item in logging_defaults %}
   {% set key = item.key %}
   {% set typ = item.type %}
   {% set default = item.value %}
