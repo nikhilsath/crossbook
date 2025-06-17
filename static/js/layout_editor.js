@@ -14,6 +14,7 @@ if (window.FIELD_LAYOUT_DEFAULTS) {
 function initLayout() {
   const layoutGrid = document.getElementById('layout-grid');
   CONTAINER_WIDTH = layoutGrid.clientWidth;
+  console.debug('[layout] initLayout', { width: CONTAINER_WIDTH });
 }
 
 function bindEventHandlers() {
@@ -21,20 +22,24 @@ function bindEventHandlers() {
   const resetLayoutBtn = document.getElementById('reset-layout');
   saveLayoutBtn.addEventListener('click', handleSaveLayout);
   resetLayoutBtn.addEventListener('click', resetLayout);
+  console.debug('[layout] bindEventHandlers');
 }
 
 function onLoadJS(){
+  console.debug('[layout] onLoadJS');
   initLayout();
   bindEventHandlers();
 }
 
 function intersects(a, b) {
-  return (
+  const result = (
     a.colStart <  b.colStart + b.colSpan  &&
     b.colStart <  a.colStart + a.colSpan  &&
     a.rowStart   <  b.rowStart   + b.rowSpan &&
     b.rowStart   <  a.rowStart   + a.rowSpan
   );
+  console.debug('[layout] intersects', a, b, result);
+  return result;
 }
 
 function revertPosition(el) {
@@ -43,6 +48,7 @@ function revertPosition(el) {
     // Intentionally silent if no previous rect
     return;
   }
+  console.debug('[layout] revertPosition', el.dataset.field, prev);
   const startCol = prev.colStart;
   const spanCol  = prev.colSpan;
   const startRow = prev.rowStart;
@@ -58,6 +64,7 @@ function revertPosition(el) {
 }
 
 function resetLayout() {
+  console.debug('[layout] resetLayout');
   let curRow = 1;
   Object.entries(layoutCache).forEach(([field, rect]) => {
     const el = document.querySelector(`.draggable-field[data-field=\"${field}\"]`);
@@ -78,6 +85,7 @@ function resetLayout() {
 }
 
 function handleSaveLayout() {
+  console.debug('[layout] handleSaveLayout');
   const layoutGrid          = document.getElementById('layout-grid');
   const toggleEditLayoutBtn = document.getElementById('toggle-edit-layout');
   const addFieldBtn         = document.getElementById('add-field');
@@ -119,6 +127,7 @@ function handleSaveLayout() {
 }
 
 function editModeButtons() {
+  console.debug('[layout] editModeButtons');
   const toggleEditLayoutBtn = document.getElementById('toggle-edit-layout');
   const resetLayoutBtn      = document.getElementById('reset-layout');
   const addFieldBtn         = document.getElementById('add-field');
@@ -136,6 +145,7 @@ function editModeButtons() {
 }
 
 function enableVanillaDrag() {
+  console.debug('[layout] enableVanillaDrag');
   const layoutGrid = document.getElementById('layout-grid');
   let isDragging = false;
   let startX, startY, startRect, field, fieldEl;
@@ -181,6 +191,7 @@ function enableVanillaDrag() {
     const newTop  = startRect.top  + dy;
     fieldEl.style.left = `${newLeft}px`;
     fieldEl.style.top  = `${newTop}px`;
+    console.debug('[layout] drag move', { field, dx, dy, newLeft, newTop });
   }
 
   function onMouseUp(e) {
@@ -194,6 +205,17 @@ function enableVanillaDrag() {
     const gridCellWidth = containerWidth / gridCols;
     const newColStart = Math.floor((startRect.left + dx) / gridCellWidth); // integer from 0 to 19
     const newRowStart = Math.round((startRect.top + dy) / rowEm);
+    console.debug('[layout] drop calc', {
+      field,
+      dx,
+      dy,
+      containerWidth,
+      rowEm,
+      gridCols,
+      gridCellWidth,
+      newColStart,
+      newRowStart,
+    });
     layoutCache[field] = {
       colStart: newColStart + 1,
       colSpan:  startRect.colSpan,
@@ -202,13 +224,17 @@ function enableVanillaDrag() {
     };
 
     // ▶️ Detect and highlight overlaps
-    const hasOverlap = Object.entries(layoutCache).some(([otherKey, rect]) =>
-      otherKey !== field && intersects(layoutCache[field], rect)
-    );
-    if (hasOverlap) {
+    let overlapWith = null;
+    for (const [otherKey, rect] of Object.entries(layoutCache)) {
+      if (otherKey !== field && intersects(layoutCache[field], rect)) {
+        overlapWith = otherKey;
+        break;
+      }
+    }
+    if (overlapWith) {
       // snap back
       revertPosition(fieldEl);
-      console.debug('[layout] drag revert', field);
+      console.debug('[layout] drag revert due to overlap with', overlapWith);
       return;
     }
 
@@ -234,6 +260,7 @@ function enableVanillaDrag() {
 }
 
 function enableVanillaResize() {
+  console.debug('[layout] enableVanillaResize');
   const layoutGrid = document.getElementById('layout-grid');
   const handles = document.querySelectorAll('.resize-handle');
   let isResizing = false;
@@ -271,6 +298,14 @@ function enableVanillaResize() {
     const deltaCols = Math.round(dx / gridCellWidth);
     const rowEm = parseFloat(getComputedStyle(document.documentElement).fontSize);
     const deltaRows = Math.round(dy / rowEm);
+
+    console.debug('[layout] resize move', {
+      field,
+      dx,
+      dy,
+      deltaCols,
+      deltaRows,
+    });
 
     let { colStart, colSpan, rowStart, rowSpan } = startRect;
     let newColStart = colStart, newRowStart = rowStart;
@@ -315,14 +350,19 @@ function enableVanillaResize() {
       rowStart: parseInt(partsRow[0]),
       rowSpan:  parseInt(partsRow[3]),
     };
+    console.debug('[layout] resize drop calc', { field, newRect });
 
     // collision check
-    const hasOverlap = Object.entries(layoutCache).some(([key, rect]) =>
-      key !== field && intersects(newRect, rect)
-    );
-    if (hasOverlap) {
+    let overlapWith = null;
+    for (const [key, rect] of Object.entries(layoutCache)) {
+      if (key !== field && intersects(newRect, rect)) {
+        overlapWith = key;
+        break;
+      }
+    }
+    if (overlapWith) {
       revertPosition(fieldEl);
-      console.debug('[layout] resize revert', field);
+      console.debug('[layout] resize revert due to overlap with', overlapWith);
     } else {
       layoutCache[field] = newRect;
     }
@@ -335,7 +375,8 @@ function enableVanillaResize() {
 
 // Main Listener, triggers on page load
 document.addEventListener('DOMContentLoaded', function() {
-  // All onload functions 
+  // All onload functions
+  console.debug('[layout] DOMContentLoaded');
   onLoadJS();
   const toggleEditLayoutBtn = document.getElementById('toggle-edit-layout');
   const layoutGrid          = document.getElementById('layout-grid');
