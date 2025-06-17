@@ -200,3 +200,12 @@ a:hover {
 .border-primary { border-color: var(--color-primary); }
 .border-primary-dark { border-color: var(--color-primary-dark); }
 .border-primary-light { border-color: var(--color-primary-light); }
+
+/* Reusable form control styling */
+.form-control {
+  background-color: var(--bg-card);
+  color: var(--text-light);
+  border: 1px solid var(--color-primary-light);
+  padding: 0.25rem 0.5rem; /* py-1 px-2 */
+  border-radius: 0.25rem;  /* rounded */
+}
