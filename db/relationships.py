@@ -36,7 +36,7 @@ def get_related_records(source_table, record_id):
         cur = conn.cursor()
         cur.execute(
             """
-            SELECT table_a, id_a, table_b, id_b
+            SELECT table_a, id_a, table_b, id_b, two_way
               FROM relationships
              WHERE (table_a = ? AND id_a = ?)
                 OR (table_b = ? AND id_b = ?)
@@ -44,7 +44,7 @@ def get_related_records(source_table, record_id):
             (source_table, record_id, source_table, record_id),
         )
         links = cur.fetchall()
-        for table_a, id_a, table_b, id_b in links:
+        for table_a, id_a, table_b, id_b, two_way in links:
             if table_a == source_table and id_a == record_id:
                 target_table, target_id = table_b, id_b
             else:
@@ -56,7 +56,7 @@ def get_related_records(source_table, record_id):
             row = _get_label(cur, target_table, target_id)
             if not row:
                 continue
-            item = {"id": row[0], "name": row[1]}
+            item = {"id": row[0], "name": row[1], "two_way": bool(two_way)}
             group = related.setdefault(
                 target_table,
                 {"label": target_table.capitalize() + "s", "items": []},
@@ -65,7 +65,15 @@ def get_related_records(source_table, record_id):
     return related
 
 
-def add_relationship(table_a, id_a, table_b, id_b, *, actor: str | None = None):
+def add_relationship(
+    table_a,
+    id_a,
+    table_b,
+    id_b,
+    *,
+    actor: str | None = None,
+    two_way: bool = True,
+):
     validate_table(table_a)
     validate_table(table_b)
     ordered = sorted([(table_a, id_a), (table_b, id_b)], key=lambda t: t[0])
@@ -75,8 +83,10 @@ def add_relationship(table_a, id_a, table_b, id_b, *, actor: str | None = None):
         cur = conn.cursor()
         try:
             cur.execute(
-                "INSERT OR IGNORE INTO relationships (table_a, id_a, table_b, id_b) VALUES (?, ?, ?, ?)",
-                (a_tbl, a_id, b_tbl, b_id),
+                "INSERT INTO relationships (table_a, id_a, table_b, id_b, two_way)"
+                " VALUES (?, ?, ?, ?, ?)"
+                " ON CONFLICT(table_a,id_a,table_b,id_b) DO UPDATE SET two_way=excluded.two_way",
+                (a_tbl, a_id, b_tbl, b_id, 1 if two_way else 0),
             )
             conn.commit()
             success = True

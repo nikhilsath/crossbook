@@ -39,6 +39,12 @@ def init_db_path(path: str | None = None) -> None:
     except Exception:
         pass
 
+    try:
+        from db.bootstrap import ensure_relationships_table
+        ensure_relationships_table(DB_PATH)
+    except Exception:
+        pass
+
 
 @contextmanager
 def get_connection():

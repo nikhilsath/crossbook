@@ -84,32 +84,44 @@ def _copy_config_metadata(cur: sqlite3.Cursor, dest_path: str) -> None:
 
 
 def ensure_relationships_table(path: str) -> None:
-    """Create the relationships table if it doesn't exist."""
+    """Create the relationships table and new columns if needed."""
     with sqlite3.connect(path) as conn:
         cur = conn.cursor()
         cur.execute(
             "SELECT name FROM sqlite_master WHERE type='table' AND name='relationships'"
         )
-        if cur.fetchone():
-            return
-        cur.execute(
-            """
-            CREATE TABLE relationships (
-                table_a TEXT NOT NULL,
-                id_a INTEGER NOT NULL,
-                table_b TEXT NOT NULL,
-                id_b INTEGER NOT NULL,
-                UNIQUE (table_a, id_a, table_b, id_b)
+        exists = cur.fetchone() is not None
+
+        if not exists:
+            cur.execute(
+                """
+                CREATE TABLE relationships (
+                    table_a TEXT NOT NULL,
+                    id_a INTEGER NOT NULL,
+                    table_b TEXT NOT NULL,
+                    id_b INTEGER NOT NULL,
+                    two_way INTEGER NOT NULL DEFAULT 1,
+                    UNIQUE (table_a, id_a, table_b, id_b)
+                )
+                """
             )
-            """
-        )
-        cur.execute(
-            "CREATE INDEX idx_relationships_a ON relationships (table_a, id_a)"
-        )
-        cur.execute(
-            "CREATE INDEX idx_relationships_b ON relationships (table_b, id_b)"
-        )
-        conn.commit()
+            cur.execute(
+                "CREATE INDEX idx_relationships_a ON relationships (table_a, id_a)"
+            )
+            cur.execute(
+                "CREATE INDEX idx_relationships_b ON relationships (table_b, id_b)"
+            )
+            conn.commit()
+            return
+
+        # Ensure the two_way column exists for older databases
+        cur.execute("PRAGMA table_info(relationships)")
+        cols = [r[1] for r in cur.fetchall()]
+        if "two_way" not in cols:
+            cur.execute(
+                "ALTER TABLE relationships ADD COLUMN two_way INTEGER NOT NULL DEFAULT 1"
+            )
+            conn.commit()
 
 
 def _create_core_tables(cur: sqlite3.Cursor) -> None:
