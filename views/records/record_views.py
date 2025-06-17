@@ -10,7 +10,6 @@ from db.records import (
     field_distribution,
 )
 from db.edit_history import (
-    append_edit_log,
     get_edit_history,
     get_edit_entry,
     revert_edit,
