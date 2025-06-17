@@ -25,6 +25,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
     - [macros/fields.html](#macrosfieldshtml)
   - [Logging & Monitoring](#logging--monitoring)
   - [Import Workflow](#import-workflow)
+  - [Automation Rules](#automation-rules)
 
 ## Project Summary
 
@@ -200,6 +201,16 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 
 Large files are not streamed—they are fully loaded into memory during parsing, so extremely big uploads may exhaust memory.
 
+## Automation Rules
+
+Create automation rules under **Admin → Automation**. Rules can run daily or whenever a matching table is imported. Start the Huey worker with:
+
+```bash
+huey_consumer.py imports.tasks.huey
+```
+
+The worker also processes scheduled automation tasks defined in `automation/engine.py`.
+
 ## Application Architecture and Code Overview
 
 * **Routing & Views:** Defined in `main.py` using Flask decorators; routes handle list, detail, new record, and error pages. A context processor (`@app.context_processor`) injects the `field_schema`—the in-memory representation of all table fields, types, options, and layout—into all templates and front-end scripts for dynamic form generation and validation. Error handlers (e.g., `@app.errorhandler(404)`) and `abort()` calls manage invalid requests.
@@ -209,6 +220,7 @@ Large files are not streamed—they are fully loaded into memory during parsing,
 * **Database Layer:** Uses Python’s built-in `sqlite3` in `db/database.py` for connection management. Schema introspection and migrations occur in `db/schema.py`. CRUD operations reside in `db/records.py`; many-to-many relationship logic in `db/relationships.py`. Validation rules live in `db/validation.py`, and field schema editing utilities in `db/edit_fields.py`.
 
 * **Background Tasks:** Huey is initialized in `imports/tasks.py` and provides the `process_import` task used by the import workflow. Start a worker with `huey_consumer.py imports.tasks.huey`.
+* **Automation Rules:** Daily or import-triggered rules live in `automation/engine.py`. Start the same Huey worker to execute scheduled rules.
 
 * **Frontend Interaction:** Dynamic behaviors powered by JavaScript modules in `static/js/`:
 

@@ -39,6 +39,7 @@ def admin_html_redirect():
 from . import dashboard  # noqa: F401  # register routes
 from . import config  # noqa: F401  # register routes
 from . import imports  # noqa: F401  # register routes
+from . import automation  # noqa: F401  # register routes
 
 __all__ = [
     'admin_bp',
