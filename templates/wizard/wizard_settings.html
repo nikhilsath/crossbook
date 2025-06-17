@@ -14,20 +14,20 @@
       {% if item.required %}<span class="text-red-600">*</span>{% endif %}
     </label>
     {% if item.options %}
-      <select name="{{ key }}" id="{{ key }}" class="border rounded px-2 py-1">
+      <select name="{{ key }}" id="{{ key }}" class="form-control">
         {% for opt in item.options %}
         <option value="{{ opt }}" {% if (config.get(key) or default) == opt %}selected{% endif %}>{{ opt }}</option>
         {% endfor %}
       </select>
     {% elif typ in ('integer', 'number') %}
-      <input type="number" name="{{ key }}" id="{{ key }}" value="{{ config.get(key, default) }}" class="border rounded px-2 py-1 w-full" {% if item.required %}required{% endif %}>
+      <input type="number" name="{{ key }}" id="{{ key }}" value="{{ config.get(key, default) }}" class="form-control w-full" {% if item.required %}required{% endif %}>
     {% elif typ == 'boolean' %}
       <input type="checkbox" name="{{ key }}" id="{{ key }}" value="1" {% if config.get(key, default) in ('1', 1, True, 'true') %}checked{% endif %}>
       <input type="hidden" name="{{ key }}" value="0">
     {% elif typ == 'date' %}
-      <input type="date" name="{{ key }}" id="{{ key }}" value="{{ config.get(key, default) }}" class="border rounded px-2 py-1 w-full" {% if item.required %}required{% endif %}>
+      <input type="date" name="{{ key }}" id="{{ key }}" value="{{ config.get(key, default) }}" class="form-control w-full" {% if item.required %}required{% endif %}>
     {% else %}
-      <input type="text" name="{{ key }}" id="{{ key }}" value="{{ config.get(key, default) }}" class="border rounded px-2 py-1 w-full" {% if item.required %}required{% endif %}>
+      <input type="text" name="{{ key }}" id="{{ key }}" value="{{ config.get(key, default) }}" class="form-control w-full" {% if item.required %}required{% endif %}>
     {% endif %}
     {% if errors and errors.get(key) %}
       <p class="text-red-600 text-sm">This field is required.</p>
@@ -46,20 +46,20 @@
       {% if item.required %}<span class="text-red-600">*</span>{% endif %}
     </label>
     {% if item.options %}
-      <select name="{{ key }}" id="{{ key }}" class="border rounded px-2 py-1">
+      <select name="{{ key }}" id="{{ key }}" class="form-control">
         {% for opt in item.options %}
         <option value="{{ opt }}" {% if (config.get(key) or default) == opt %}selected{% endif %}>{{ opt }}</option>
         {% endfor %}
       </select>
     {% elif typ in ('integer', 'number') %}
-      <input type="number" name="{{ key }}" id="{{ key }}" value="{{ config.get(key, default) }}" class="border rounded px-2 py-1 w-full" {% if item.required %}required{% endif %}>
+      <input type="number" name="{{ key }}" id="{{ key }}" value="{{ config.get(key, default) }}" class="form-control w-full" {% if item.required %}required{% endif %}>
     {% elif typ == 'boolean' %}
       <input type="checkbox" name="{{ key }}" id="{{ key }}" value="1" {% if config.get(key, default) in ('1', 1, True, 'true') %}checked{% endif %}>
       <input type="hidden" name="{{ key }}" value="0">
     {% elif typ == 'date' %}
-      <input type="date" name="{{ key }}" id="{{ key }}" value="{{ config.get(key, default) }}" class="border rounded px-2 py-1 w-full" {% if item.required %}required{% endif %}>
+      <input type="date" name="{{ key }}" id="{{ key }}" value="{{ config.get(key, default) }}" class="form-control w-full" {% if item.required %}required{% endif %}>
     {% else %}
-      <input type="text" name="{{ key }}" id="{{ key }}" value="{{ config.get(key, default) }}" class="border rounded px-2 py-1 w-full" {% if item.required %}required{% endif %}>
+      <input type="text" name="{{ key }}" id="{{ key }}" value="{{ config.get(key, default) }}" class="form-control w-full" {% if item.required %}required{% endif %}>
     {% endif %}
     {% if errors and errors.get(key) %}
       <p class="text-red-600 text-sm">This field is required.</p>
