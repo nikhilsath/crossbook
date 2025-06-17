@@ -209,6 +209,16 @@ def update_layout(table: str, layout_items: list[dict]) -> int:
             except (TypeError, ValueError):
                 continue
 
+            logger.debug(
+                "[update_layout] %s.%s -> col=%s span=%s row=%s span=%s",
+                table,
+                field,
+                col_start,
+                col_span,
+                row_start,
+                row_span,
+            )
+
             # Perform the SQL UPDATE
             cur.execute(
                 """

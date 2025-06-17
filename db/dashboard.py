@@ -98,6 +98,15 @@ def update_widget_layout(layout_items: list[dict]) -> int:
                 row_span = float(item.get("rowSpan", 0))
             except (TypeError, ValueError):
                 continue
+
+            logger.debug(
+                "[update_widget_layout] id=%s col=%s span=%s row=%s span=%s",
+                widget_id,
+                col_start,
+                col_span,
+                row_start,
+                row_span,
+            )
             cur.execute(
                 """
                 UPDATE dashboard_widget
