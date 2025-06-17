@@ -1,13 +1,5 @@
-import os
-import sys
 import sqlite3
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from db.edit_history import revert_edit
-from db.database import init_db_path
-
-init_db_path('data/crossbook.db')
-DB_PATH = 'data/crossbook.db'
 
 
 def test_revert_edit_returns_false_for_none_field():
@@ -21,8 +13,8 @@ def test_revert_edit_returns_false_for_none_field():
     assert revert_edit(entry) is False
 
 
-def test_revert_edit_restores_value_and_logs_entry():
-    with sqlite3.connect(DB_PATH) as conn:
+def test_revert_edit_restores_value_and_logs_entry(db_path):
+    with sqlite3.connect(db_path) as conn:
         original = conn.execute(
             'SELECT character FROM character WHERE id = 1'
         ).fetchone()[0]
@@ -44,7 +36,7 @@ def test_revert_edit_restores_value_and_logs_entry():
     }
     assert revert_edit(entry)
 
-    with sqlite3.connect(DB_PATH) as conn:
+    with sqlite3.connect(db_path) as conn:
         value = conn.execute(
             'SELECT character FROM character WHERE id = 1'
         ).fetchone()[0]
@@ -60,8 +52,8 @@ def test_revert_edit_restores_value_and_logs_entry():
         conn.commit()
 
 
-def test_revert_edit_adds_and_removes_relationships():
-    with sqlite3.connect(DB_PATH) as conn:
+def test_revert_edit_adds_and_removes_relationships(db_path):
+    with sqlite3.connect(db_path) as conn:
         # ensure no existing relationship
         conn.execute(
             "DELETE FROM relationships WHERE table_a='character' AND id_a=1 AND table_b='location' AND id_b=1"
@@ -80,7 +72,7 @@ def test_revert_edit_adds_and_removes_relationships():
     }
     assert revert_edit(add_entry)
 
-    with sqlite3.connect(DB_PATH) as conn:
+    with sqlite3.connect(db_path) as conn:
         count = conn.execute(
             "SELECT COUNT(*) FROM relationships WHERE table_a='character' AND id_a=1 AND table_b='location' AND id_b=1"
         ).fetchone()[0]
@@ -96,7 +88,7 @@ def test_revert_edit_adds_and_removes_relationships():
     }
     assert revert_edit(remove_entry)
 
-    with sqlite3.connect(DB_PATH) as conn:
+    with sqlite3.connect(db_path) as conn:
         count = conn.execute(
             "SELECT COUNT(*) FROM relationships WHERE table_a='character' AND id_a=1 AND table_b='location' AND id_b=1"
         ).fetchone()[0]

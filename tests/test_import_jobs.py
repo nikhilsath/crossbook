@@ -1,14 +1,7 @@
-import os
-import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from main import app
 from imports import tasks as import_tasks
 
-app.testing = True
-client = app.test_client()
 
-
-def test_import_start_and_status():
+def test_import_start_and_status(client):
     import_tasks.huey.immediate = True
     payload = {
         'table': 'character',

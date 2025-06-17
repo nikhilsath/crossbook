@@ -1,15 +1,9 @@
 import os
-import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from main import app
 import db.database as db_database
 from db.config import get_config_rows
 
-app.testing = True
-client = app.test_client()
 
-
-def test_settings_step_after_db_creation():
+def test_settings_step_after_db_creation(client):
     new_name = 'test_created.db'
     # ensure file removed if exists from prior runs
     try:
@@ -39,11 +33,11 @@ def test_settings_step_after_db_creation():
     init_db_path('data/crossbook.db')
     update_config('db_path', 'data/crossbook.db')
     from views.admin import reload_app_state
-    with app.app_context():
+    with client.application.app_context():
         reload_app_state()
 
 
-def test_filename_prefix_added_on_settings_post():
+def test_filename_prefix_added_on_settings_post(client):
     with client.session_transaction() as sess:
         sess['wizard_progress'] = {'database': True}
 

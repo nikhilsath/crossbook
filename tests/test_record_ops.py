@@ -1,8 +1,4 @@
-import os
-import sys
 from unittest.mock import patch, call
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from utils.record_ops import _normalize_value, update_record_field, bulk_update_records
 

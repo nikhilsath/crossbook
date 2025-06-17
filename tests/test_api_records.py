@@ -1,22 +1,9 @@
-import os
-import sys
 import sqlite3
 from urllib.parse import parse_qs
 
-# Ensure the app module can be imported
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from main import app
-from db.database import init_db_path
 
-init_db_path('data/crossbook.db')
-
-app.testing = True
-client = app.test_client()
-
-DB_PATH = 'data/crossbook.db'
-
-def expected_count(tags, mode='any'):
-    with sqlite3.connect(DB_PATH) as conn:
+def expected_count(db_path, tags, mode='any'):
+    with sqlite3.connect(db_path) as conn:
         if mode == 'all':
             clause = ' AND '.join(['tags LIKE ?'] * len(tags))
         else:
@@ -25,28 +12,30 @@ def expected_count(tags, mode='any'):
         cur = conn.execute(f'SELECT COUNT(*) FROM content WHERE {clause}', params)
         return cur.fetchone()[0]
 
-def test_multi_select_any_mode():
+
+
+def test_multi_select_any_mode(client, db_path):
     tags = ['Durza', 'Shade']
     resp = client.get('/api/content/records', query_string=[('tags', t) for t in tags])
     assert resp.status_code == 200
     data = resp.get_json()
     assert set(parse_qs(data['base_qs'])['tags']) == set(tags)
-    assert data['total_count'] == expected_count(tags, 'any')
+    assert data['total_count'] == expected_count(db_path, tags, 'any')
     assert len(data['records']) == data['total_count']
 
-def test_multi_select_all_mode():
+def test_multi_select_all_mode(client, db_path):
     tags = ['Durza', 'Shade']
     resp = client.get('/api/content/records', query_string=[('tags', t) for t in tags] + [('tags_mode', 'all')])
     assert resp.status_code == 200
     data = resp.get_json()
     assert set(parse_qs(data['base_qs'])['tags']) == set(tags)
-    assert data['total_count'] == expected_count(tags, 'all')
+    assert data['total_count'] == expected_count(db_path, tags, 'all')
     assert len(data['records']) == data['total_count']
 
 
-def test_bulk_update_route():
+def test_bulk_update_route(client, db_path):
     ids = []
-    with sqlite3.connect(DB_PATH) as conn:
+    with sqlite3.connect(db_path) as conn:
         cur = conn.execute('SELECT id, character FROM character LIMIT 2')
         rows = cur.fetchall()
         ids = [r[0] for r in rows]
@@ -57,21 +46,21 @@ def test_bulk_update_route():
     data = resp.get_json()
     assert data['success'] and data['updated'] == len(ids)
 
-    with sqlite3.connect(DB_PATH) as conn:
+    with sqlite3.connect(db_path) as conn:
         cur = conn.execute('SELECT character FROM character WHERE id IN (?, ?)', ids)
         values = [r[0] for r in cur.fetchall()]
     assert set(values) == {'TestName'}
 
     # revert changes
-    with sqlite3.connect(DB_PATH) as conn:
+    with sqlite3.connect(db_path) as conn:
         for i, val in zip(ids, originals):
             conn.execute('UPDATE character SET character = ? WHERE id = ?', (val, i))
         conn.commit()
 
 
-def test_bulk_update_multiselect():
+def test_bulk_update_multiselect(client, db_path):
     ids = []
-    with sqlite3.connect(DB_PATH) as conn:
+    with sqlite3.connect(db_path) as conn:
         cur = conn.execute('SELECT id, tags FROM content LIMIT 2')
         rows = cur.fetchall()
         ids = [r[0] for r in rows]
@@ -83,19 +72,19 @@ def test_bulk_update_multiselect():
     data = resp.get_json()
     assert data['success'] and data['updated'] == len(ids)
 
-    with sqlite3.connect(DB_PATH) as conn:
+    with sqlite3.connect(db_path) as conn:
         cur = conn.execute('SELECT tags FROM content WHERE id IN (?, ?)', ids)
         values = [r[0] for r in cur.fetchall()]
     assert set(values) == {', '.join(new_tags)}
 
-    with sqlite3.connect(DB_PATH) as conn:
+    with sqlite3.connect(db_path) as conn:
         for i, val in zip(ids, originals):
             conn.execute('UPDATE content SET tags = ? WHERE id = ?', (val, i))
         conn.commit()
 
 
-def test_url_field_add_update_and_bulk():
-    with sqlite3.connect(DB_PATH) as conn:
+def test_url_field_add_update_and_bulk(client, db_path):
+    with sqlite3.connect(db_path) as conn:
         cur = conn.execute('SELECT id FROM character LIMIT 2')
         rows = cur.fetchall()
         record_ids = [r[0] for r in rows]
@@ -104,7 +93,7 @@ def test_url_field_add_update_and_bulk():
     resp = client.post(f'/character/{record_id}/add-field', data={'field_name': 'website', 'field_type': 'url'})
     assert resp.status_code in (302, 200)
 
-    with sqlite3.connect(DB_PATH) as conn:
+    with sqlite3.connect(db_path) as conn:
         cols = [r[1] for r in conn.execute('PRAGMA table_info(character)').fetchall()]
         assert 'website' in cols
 
@@ -121,7 +110,7 @@ def test_url_field_add_update_and_bulk():
     data = resp.get_json()
     assert data['success'] and data['updated'] == len(record_ids)
 
-    with sqlite3.connect(DB_PATH) as conn:
+    with sqlite3.connect(db_path) as conn:
         vals = [r[0] for r in conn.execute('SELECT website FROM character WHERE id IN (?, ?)', record_ids).fetchall()]
     assert set(vals) == {'https://bulk.com'}
 

@@ -1,16 +1,8 @@
-import os
-import sys
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from db.database import init_db_path
 from db.query_filters import _build_filters
 from db.schema import get_field_schema
 
-init_db_path('data/crossbook.db')
 
-
-def test_build_filters_search_clause():
+def test_build_filters_search_clause(db_path):
     fields = [
         f
         for f, meta in get_field_schema()['character'].items()
@@ -25,13 +17,13 @@ def test_build_filters_search_clause():
     assert params == ['%foo%'] * len(fields)
 
 
-def test_build_filters_multiple_values_any_mode():
+def test_build_filters_multiple_values_any_mode(db_path):
     clauses, params = _build_filters('content', filters={'tags': ['magic', 'quest']})
     assert clauses == ['(tags LIKE ? OR tags LIKE ?)']
     assert params == ['%magic%', '%quest%']
 
 
-def test_build_filters_multiple_values_all_equals():
+def test_build_filters_multiple_values_all_equals(db_path):
     clauses, params = _build_filters(
         'content',
         filters={'linenumber': [1, 2]},
@@ -42,7 +34,7 @@ def test_build_filters_multiple_values_all_equals():
     assert params == [1, 2]
 
 
-def test_build_filters_regex_operator():
+def test_build_filters_regex_operator(db_path):
     clauses, params = _build_filters(
         'content',
         filters={'chapter': '^Intro'},
@@ -52,7 +44,7 @@ def test_build_filters_regex_operator():
     assert params == ['^Intro']
 
 
-def test_apply_date_ranges():
+def test_apply_date_ranges(db_path):
     clauses, params = _build_filters(
         'content',
         filters={'date_created_start': '2023-01-01', 'date_created_end': '2023-01-31'},

@@ -1,7 +1,4 @@
-import os
-import sys
 import csv
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from utils.validation import (
     validate_text_column,
