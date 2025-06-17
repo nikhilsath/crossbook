@@ -21,6 +21,11 @@
       </select>
     {% elif typ in ('integer', 'number') %}
       <input type="number" name="{{ key }}" id="{{ key }}" value="{{ config.get(key, default) }}" class="border rounded px-2 py-1 w-full" {% if item.required %}required{% endif %}>
+    {% elif typ == 'boolean' %}
+      <input type="checkbox" name="{{ key }}" id="{{ key }}" value="1" {% if config.get(key, default) in ('1', 1, True, 'true') %}checked{% endif %}>
+      <input type="hidden" name="{{ key }}" value="0">
+    {% elif typ == 'date' %}
+      <input type="date" name="{{ key }}" id="{{ key }}" value="{{ config.get(key, default) }}" class="border rounded px-2 py-1 w-full" {% if item.required %}required{% endif %}>
     {% else %}
       <input type="text" name="{{ key }}" id="{{ key }}" value="{{ config.get(key, default) }}" class="border rounded px-2 py-1 w-full" {% if item.required %}required{% endif %}>
     {% endif %}
@@ -48,6 +53,11 @@
       </select>
     {% elif typ in ('integer', 'number') %}
       <input type="number" name="{{ key }}" id="{{ key }}" value="{{ config.get(key, default) }}" class="border rounded px-2 py-1 w-full" {% if item.required %}required{% endif %}>
+    {% elif typ == 'boolean' %}
+      <input type="checkbox" name="{{ key }}" id="{{ key }}" value="1" {% if config.get(key, default) in ('1', 1, True, 'true') %}checked{% endif %}>
+      <input type="hidden" name="{{ key }}" value="0">
+    {% elif typ == 'date' %}
+      <input type="date" name="{{ key }}" id="{{ key }}" value="{{ config.get(key, default) }}" class="border rounded px-2 py-1 w-full" {% if item.required %}required{% endif %}>
     {% else %}
       <input type="text" name="{{ key }}" id="{{ key }}" value="{{ config.get(key, default) }}" class="border rounded px-2 py-1 w-full" {% if item.required %}required{% endif %}>
     {% endif %}
