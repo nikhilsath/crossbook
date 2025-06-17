@@ -31,7 +31,7 @@ input[type=number] {
 #layout-grid.editing .draggable-field {
   border: 1px blue dashed !important;
   box-shadow: 0 0 0 2px rgba(0,0,0,0.1) !important;
-  background-color: #fafafa !important;
+  background-color: transparent !important;
 }
 
 
