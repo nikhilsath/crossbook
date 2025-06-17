@@ -14,6 +14,7 @@ if (window.FIELD_LAYOUT_DEFAULTS) {
 function initLayout() {
   const layoutGrid = document.getElementById('layout-grid');
   CONTAINER_WIDTH = layoutGrid.clientWidth;
+  console.debug('[layout] initLayout width', CONTAINER_WIDTH);
 }
 
 function bindEventHandlers() {
@@ -21,9 +22,11 @@ function bindEventHandlers() {
   const resetLayoutBtn = document.getElementById('reset-layout');
   saveLayoutBtn.addEventListener('click', handleSaveLayout);
   resetLayoutBtn.addEventListener('click', resetLayout);
+  console.debug('[layout] bindEventHandlers');
 }
 
 function onLoadJS(){
+  console.debug('[layout] onLoadJS');
   initLayout();
   bindEventHandlers();
 }
@@ -55,9 +58,11 @@ function revertPosition(el) {
   el.style.height   = '';
   el.style.position = '';
   layoutCache[el.dataset.field] = { ...prev };
+  console.debug('[layout] revert', el.dataset.field, prev);
 }
 
 function resetLayout() {
+  console.debug('[layout] resetLayout');
   let curRow = 1;
   Object.entries(layoutCache).forEach(([field, rect]) => {
     const el = document.querySelector(`.draggable-field[data-field=\"${field}\"]`);
@@ -75,6 +80,7 @@ function resetLayout() {
   if (window.initAutosizeText) {
     window.initAutosizeText();
   }
+  console.debug('[layout] resetLayout done', layoutCache);
 }
 
 function handleSaveLayout() {
@@ -98,6 +104,7 @@ function handleSaveLayout() {
     .filter(([field]) => document.querySelector(`.draggable-field[data-field=\"${field}\"]`))
     .map(([field, rect]) => ({ field, colStart: rect.colStart, colSpan: rect.colSpan, rowStart: rect.rowStart, rowSpan: rect.rowSpan }));
   const payload = { layout: layoutEntries };
+  console.debug('[layout] handleSaveLayout payload', payload);
   fetch(`/${table}/layout`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -114,11 +121,13 @@ function handleSaveLayout() {
       if (window.initAutosizeText) {
         window.initAutosizeText();
       }
+      console.debug('[layout] save response', data);
     })
     .catch(() => {});
 }
 
 function editModeButtons() {
+  console.debug('[layout] editModeButtons');
   const toggleEditLayoutBtn = document.getElementById('toggle-edit-layout');
   const resetLayoutBtn      = document.getElementById('reset-layout');
   const addFieldBtn         = document.getElementById('add-field');
@@ -136,6 +145,7 @@ function editModeButtons() {
 }
 
 function enableVanillaDrag() {
+  console.debug('[layout] enableVanillaDrag');
   const layoutGrid = document.getElementById('layout-grid');
   let isDragging = false;
   let startX, startY, startRect, field, fieldEl;
@@ -181,6 +191,7 @@ function enableVanillaDrag() {
     const newTop  = startRect.top  + dy;
     fieldEl.style.left = `${newLeft}px`;
     fieldEl.style.top  = `${newTop}px`;
+    console.debug('[layout] drag move', field, { left: newLeft, top: newTop });
   }
 
   function onMouseUp(e) {
@@ -194,12 +205,14 @@ function enableVanillaDrag() {
     const gridCellWidth = containerWidth / gridCols;
     const newColStart = Math.floor((startRect.left + dx) / gridCellWidth); // integer from 0 to 19
     const newRowStart = Math.round((startRect.top + dy) / rowEm);
-    layoutCache[field] = {
+    const newRect = {
       colStart: newColStart + 1,
       colSpan:  startRect.colSpan,
       rowStart: newRowStart + 1,
       rowSpan:  startRect.rowSpan
     };
+    console.debug('[layout] drop', field, newRect);
+    layoutCache[field] = newRect;
 
     // ▶️ Detect and highlight overlaps
     let overlapWith = null;
@@ -238,6 +251,7 @@ function enableVanillaDrag() {
 }
 
 function enableVanillaResize() {
+  console.debug('[layout] enableVanillaResize');
   const layoutGrid = document.getElementById('layout-grid');
   const handles = document.querySelectorAll('.resize-handle');
   let isResizing = false;
@@ -301,7 +315,13 @@ function enableVanillaResize() {
     // apply live preview
     fieldEl.style.gridColumn = `${newColStart} / span ${newColSpan}`;
     fieldEl.style.gridRow    = `${newRowStart} / span ${newRowSpan}`;
-    
+    console.debug('[layout] resize move', field, {
+      colStart: newColStart,
+      colSpan: newColSpan,
+      rowStart: newRowStart,
+      rowSpan: newRowSpan,
+    });
+
   }
 
   function onMouseUp() {
@@ -319,6 +339,7 @@ function enableVanillaResize() {
       rowStart: parseInt(partsRow[0]),
       rowSpan:  parseInt(partsRow[3]),
     };
+    console.debug('[layout] resize drop', field, newRect);
 
     // collision check
     let overlapWith = null;
