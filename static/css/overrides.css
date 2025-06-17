@@ -244,11 +244,11 @@ input[type=number] {
 
 /* Utility button and component styles */
 .btn-primary {
-  background-color: #0D9488;
+  background-color: var(--color-primary);
   color: #fff;
 }
 .btn-secondary {
-  background-color: #7C3AED;
+  background-color: var(--color-secondary);
   color: #fff;
 }
 .btn-danger {
@@ -256,9 +256,10 @@ input[type=number] {
   color: #fff;
 }
 .card {
-  background-color: #fff;
+  background-color: var(--bg-card);
   border-radius: 0.5rem;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  color: var(--text-light);
 }
 .modal-container {
   background-color: rgba(0,0,0,0.5);

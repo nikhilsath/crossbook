@@ -7,13 +7,13 @@
 
 <div class="mx-auto w-11/12 max-w-screen-2xl space-y-6">
   {% for section, items in sections.items() %}
-  <details class="bg-white rounded shadow" {% if loop.first %}open{% endif %}>
-    <summary class="cursor-pointer px-4 py-2 bg-gray-100 rounded-t font-semibold text-lg">
+  <details class="card" {% if loop.first %}open{% endif %}>
+  <summary class="cursor-pointer px-4 py-2 bg-card rounded-t font-semibold text-lg text-light">
       {{ section|capitalize }}
     </summary>
     <div class="p-4 overflow-x-auto">
-      <table class="min-w-full text-sm text-left text-gray-700 divide-y divide-gray-200">
-        <thead class="text-xs uppercase bg-gray-50">
+      <table class="min-w-full text-sm text-left text-light divide-y">
+        <thead class="text-xs uppercase bg-card">
           <tr>
             <th class="w-56 px-2 py-1">Key</th>
             <th class="px-2 py-1">Value</th>
@@ -38,7 +38,7 @@
                 {% elif item.type in ('integer', 'number') %}
                   <input type="number" name="value" value="{{ item.value }}" class="border border-gray-300 rounded px-2 py-1 text-sm flex-grow focus:ring-teal-600 focus:border-teal-600">
                 {% elif item.type == 'boolean' %}
-                  <input type="checkbox" name="value" value="1" {% if item.value in ('1', 1, True, 'true') %}checked{% endif %} class="h-4 w-4 text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-600">
+                  <input type="checkbox" name="value" value="1" {% if item.value in ('1', 1, True, 'true') %}checked{% endif %} class="h-4 w-4 text-teal-600 bg-dark border-gray-300 rounded focus:ring-teal-600">
                   <input type="hidden" name="value" value="0">
                 {% elif item.type == 'date' %}
                   <input type="date" name="value" value="{{ item.value }}" class="border border-gray-300 rounded px-2 py-1 text-sm flex-grow focus:ring-teal-600 focus:border-teal-600">
