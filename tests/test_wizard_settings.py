@@ -15,10 +15,10 @@ DB_PATH = 'data/crossbook.db'
 def test_boolean_and_date_inputs_render_correctly():
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute(
-            "INSERT OR REPLACE INTO config (key, value, section, type) VALUES ('bool_setting', '1', 'general', 'boolean')"
+            "INSERT OR REPLACE INTO config (key, value, section, type, wizard) VALUES ('bool_setting', '1', 'general', 'boolean', 1)"
         )
         conn.execute(
-            "INSERT OR REPLACE INTO config (key, value, section, type) VALUES ('date_setting', '2025-01-01', 'general', 'date')"
+            "INSERT OR REPLACE INTO config (key, value, section, type, wizard) VALUES ('date_setting', '2025-01-01', 'general', 'date', 1)"
         )
         conn.commit()
     try:

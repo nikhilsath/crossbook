@@ -8,7 +8,7 @@ def get_config_rows(sections: str | list[str] | None = None):
 
     query = (
         "SELECT key, value, section, type, description, "
-        "date_updated, required, labels, options FROM config"
+        "date_updated, required, labels, options, wizard FROM config"
     )
     params: list[str] = []
     if sections:
@@ -33,6 +33,7 @@ def get_config_rows(sections: str | list[str] | None = None):
         "required",
         "labels",
         "options",
+        "wizard",
     ]
     result = []
     for row in rows:
