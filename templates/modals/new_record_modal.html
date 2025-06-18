@@ -1,0 +1,30 @@
+<div id="newRecordModal" class="modal-container hidden" onclick="if(event.target.id === 'newRecordModal') closeNewRecordModal()">
+  <div class="modal-box">
+    <button type="button" onclick="closeNewRecordModal()" class="modal-close">&times;</button>
+    <h3 class="text-lg font-bold mb-4">Create New {{ table|capitalize }}</h3>
+    <form id="new-record-form" method="post" class="form-layout">
+      {% for field, ftype in fields.items() %}
+        {% if field != "id" and ftype != "hidden" %}
+          <div>
+            <label class="form-label">{{ field }}</label>
+            {% if ftype == "textarea" %}
+              <input type="hidden" name="{{ field }}">
+              <div class="quill-editor" data-quill></div>
+            {% elif ftype == "boolean" %}
+              <input type="checkbox" name="{{ field }}" value="1">
+            {% elif ftype == "number" %}
+              <input type="number" name="{{ field }}" class="form-input">
+            {% elif ftype == "date" %}
+              <input type="date" name="{{ field }}" class="form-input">
+            {% else %}
+              <input type="text" name="{{ field }}" class="form-input">
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+      <div class="flex justify-end">
+        <button type="submit" class="btn-primary">Create</button>
+      </div>
+    </form>
+  </div>
+</div>

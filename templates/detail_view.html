@@ -273,5 +273,9 @@
 <script type="module" src="{{ url_for('static', filename='js/relationship_dropdown.js') }}"></script>
 
 {% include "modals/edit_fields_modal.html" %}
+{% with fields=field_schema[table] %}
+{% include "modals/new_record_modal.html" %}
+{% endwith %}
+<script type="module" src="{{ url_for('static', filename='js/new_record_modal.js') }}"></script>
 
 {% endblock %}
