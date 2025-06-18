@@ -228,6 +228,7 @@ a:hover {
   border-radius: 0.5rem; /* rounded */
   box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* shadow-lg */
   padding: 0.5rem; /* p-2 */
+  z-index: 200; /* ensure popovers sit above other elements */
   max-width: 85vw;
   max-height: 85vh;
   overflow: auto;
