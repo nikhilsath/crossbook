@@ -44,9 +44,9 @@
                   <input type="date" name="value" value="{{ item.value }}" class="border border-gray-300 rounded px-2 py-1 text-sm flex-grow focus:ring-teal-600 focus:border-teal-600">
                 {% elif item.type == 'json' and item.key == 'layout_defaults' %}
                   <div class="space-y-2 w-full" data-layout-defaults>
-                    <div>
+                    <div class="layout-default-group">
                       <h4 class="font-semibold text-sm">Width</h4>
-                      <div class="grid grid-cols-1 gap-2 mt-1">
+                      <div class="grid grid-cols-1 gap-2 mt-1 form-group">
                         {% for fname, val in item.parsed.width.items() %}
                           <label class="text-xs flex items-center space-x-1">
                             <span class="w-20 text-right">{{ fname }}</span>
@@ -55,9 +55,9 @@
                         {% endfor %}
                       </div>
                     </div>
-                    <div>
+                    <div class="layout-default-group">
                       <h4 class="font-semibold text-sm">Height</h4>
-                      <div class="grid grid-cols-1 gap-2 mt-1">
+                      <div class="grid grid-cols-1 gap-2 mt-1 form-group">
                         {% for fname, val in item.parsed.height.items() %}
                           <label class="text-xs flex items-center space-x-1">
                             <span class="w-20 text-right">{{ fname }}</span>
