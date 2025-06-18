@@ -1,6 +1,4 @@
 import logging
-import sqlite3
-import time
 from db.database import get_connection
 
 logger = logging.getLogger(__name__)
@@ -84,22 +82,13 @@ def get_rules(table_name: str | None = None) -> list[dict]:
 
 
 def increment_run_count(rule_id: int) -> None:
-    """Increment the run counter for a rule, retrying if the database is locked."""
-    for _ in range(5):
-        try:
-            with get_connection() as conn:
-                conn.execute(
-                    "UPDATE automation_rules SET run_count = COALESCE(run_count,0)+1, "
-                    "last_run = datetime('now') WHERE id = ?",
-                    (rule_id,),
-                )
-                conn.commit()
-            return
-        except sqlite3.OperationalError as exc:
-            if 'locked' in str(exc).lower():
-                time.sleep(0.1)
-                continue
-            raise
+    with get_connection() as conn:
+        conn.execute(
+            "UPDATE automation_rules SET run_count = COALESCE(run_count,0)+1, "
+            "last_run = datetime('now') WHERE id = ?",
+            (rule_id,),
+        )
+        conn.commit()
 
 
 def reset_run_count(rule_id: int) -> None:

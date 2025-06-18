@@ -195,14 +195,6 @@ def create_record(table, form_data):
 
             cursor.execute(sql, params)
             record_id = cursor.lastrowid
-            # Some tables define an `id` column without autoincrement. If the
-            # insert omitted an id value, populate it with the rowid so future
-            # queries can reference the record.
-            if "id" in cols and "id" not in field_names:
-                cursor.execute(
-                    f"UPDATE {table} SET id = ? WHERE rowid = ?",
-                    (record_id, record_id),
-                )
             conn.commit()
             return record_id
         except Exception as e:
