@@ -38,7 +38,7 @@
       </div>
       <div class="form-group">
         <label class="block mb-2 text-sm font-medium">Field Type</label>
-        <select id="field_type" name="field_type" class="form-control block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200" required>
+        <select id="field_type" name="field_type" class="form-control form-select" required>
           <option disabled selected>Select type</option>
         </select>
       </div>
@@ -48,7 +48,7 @@
       </div>
       <div id="fk-select-container" class="form-group hidden">
         <label class="block mb-2 text-sm font-medium">Select linked field</label>
-        <select name="foreign_key_target" class="form-control block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200">
+        <select name="foreign_key_target" class="form-control form-select">
           <option value="" disabled selected>Select field</option>
           {% for source_table, fields in field_schema.items() %}
             {% for field, meta in fields.items() %}

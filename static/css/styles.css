@@ -293,6 +293,27 @@ a:hover {
   color: var(--text-light);
 }
 
+/* Select element styling mirroring Tailwind utility classes */
+.form-select {
+  display: block;
+  width: 100%;
+  padding-top: 0.625rem;  /* py-2.5 */
+  padding-bottom: 0.625rem;
+  padding-left: 0;        /* px-0 */
+  padding-right: 0;
+  font-size: 0.875rem;    /* text-sm */
+  color: #6b7280;         /* text-gray-500 */
+  background-color: transparent;
+  border: 0;
+  border-bottom: 2px solid #e5e7eb; /* border-b-2 border-gray-200 */
+  appearance: none;
+}
+.form-select:focus {
+  outline: none;          /* focus:outline-none */
+  box-shadow: none;       /* focus:ring-0 */
+  border-color: #e5e7eb;  /* focus:border-gray-200 */
+}
+
 .modal-box {
   background-color: var(--bg-card);
   color: var(--text-light);
