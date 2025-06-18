@@ -232,3 +232,54 @@ a:hover {
   max-height: 85vh;
   overflow: auto;
 }
+/* Form heading */
+.form-heading {
+  font-size: 1.5rem; /* text-2xl */
+  font-weight: 700;
+  margin-bottom: 1.5rem; /* mb-6 */
+}
+
+/* Vertical form layout */
+.form-layout > * + * {
+  margin-top: 1rem; /* space-y-4 */
+}
+
+.form-label {
+  display: block;
+  font-size: 0.875rem; /* text-sm */
+  font-weight: 500; /* font-medium */
+  text-transform: capitalize;
+  margin-bottom: 0.25rem; /* mb-1 */
+}
+
+.form-input {
+  width: 100%;
+  border: 1px solid var(--color-primary-light);
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem; /* py-1 px-2 */
+  font-size: 0.875rem; /* text-sm */
+}
+
+.modal-box {
+  background-color: #fff;
+  color: #000;
+  padding: 1.5rem; /* p-6 */
+  border-radius: 0.5rem; /* rounded-lg */
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* shadow-lg */
+  width: 24rem; /* w-96 */
+  max-width: 100%;
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 0.5rem; /* top-2 */
+  right: 0.5rem; /* right-2 */
+  font-size: 1.25rem; /* text-xl */
+  color: #4b5563; /* text-gray-600 */
+  cursor: pointer;
+}
+
+.modal-close:hover {
+  color: #1f2937; /* text-gray-800 */
+}
