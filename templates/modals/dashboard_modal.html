@@ -33,7 +33,7 @@
 
         <div id="mathField1" class="flex items-start gap-2 mb-2 hidden">
           <div class="relative flex-grow">
-            <button id="mathSelect1Toggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-black text-left flex items-center justify-between">
+            <button id="mathSelect1Toggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-card text-light text-left flex items-center justify-between">
               <span class="selected-label">Select Field</span> <span class="arrow text-xl">▾</span>
             </button>
             <div id="mathSelect1Options" class="absolute z-10 mt-1 w-full popover-dark hidden max-h-64 overflow-y-auto space-y-1"></div>
@@ -63,7 +63,7 @@
 
         <div id="mathField2" class="flex items-start gap-2 mb-2 hidden">
           <div class="relative flex-grow">
-            <button id="mathSelect2Toggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-black text-left flex items-center justify-between">
+            <button id="mathSelect2Toggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-card text-light text-left flex items-center justify-between">
               <span class="selected-label">Select Field</span> <span class="arrow text-xl">▾</span>
             </button>
             <div id="mathSelect2Options" class="absolute z-10 mt-1 w-full popover-dark hidden max-h-64 overflow-y-auto space-y-1"></div>
@@ -80,7 +80,7 @@
           </div>
         </div>
 
-        <button id="columnSelectDashboardToggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-black text-left focus:outline-none focus:ring-2 focus:ring-teal-600 hidden flex items-center justify-between"><span class="selected-label">Select Field</span> <span class="arrow text-xl">▾</span></button>
+        <button id="columnSelectDashboardToggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-card text-light text-left focus:outline-none focus:ring-2 focus:ring-teal-600 hidden flex items-center justify-between"><span class="selected-label">Select Field</span> <span class="arrow text-xl">▾</span></button>
         <div id="columnSelectDashboardOptions" class="absolute z-10 mt-1 w-full popover-dark hidden max-h-64 overflow-y-auto space-y-1"></div>
         <div id="resultRow" class="mt-4 flex items-center justify-center gap-2 hidden">
           <input id="valueTitleInput" type="text" class="px-3 py-2 border rounded flex-grow" />
@@ -119,7 +119,7 @@
         </div>
         <div id="selectCountFieldContainer" class="mb-4 hidden">
           <div class="relative">
-            <button id="selectCountFieldToggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-black text-left flex items-center justify-between">
+            <button id="selectCountFieldToggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-card text-light text-left flex items-center justify-between">
               <span class="selected-label">Select Field</span> <span class="arrow text-xl">▾</span>
             </button>
             <div id="selectCountFieldOptions" class="absolute z-10 mt-1 w-full popover-dark hidden max-h-64 overflow-y-auto space-y-1"></div>
@@ -127,7 +127,7 @@
         </div>
         <div id="topNumericFieldContainer" class="mb-4 hidden">
           <div class="relative">
-            <button id="topNumericFieldToggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-black text-left flex items-center justify-between">
+            <button id="topNumericFieldToggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-card text-light text-left flex items-center justify-between">
               <span class="selected-label">Select Field</span> <span class="arrow text-xl">▾</span>
             </button>
             <div id="topNumericFieldOptions" class="absolute z-10 mt-1 w-full popover-dark hidden max-h-64 overflow-y-auto space-y-1"></div>
@@ -145,14 +145,14 @@
         </div>
         <div id="filteredRecordsContainer" class="mb-4 hidden">
           <div class="relative mb-2">
-            <button id="filteredTableToggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-black text-left flex items-center justify-between">
+            <button id="filteredTableToggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-card text-light text-left flex items-center justify-between">
               <span class="selected-label">Select Table</span> <span class="arrow text-xl">▾</span>
             </button>
             <div id="filteredTableOptions" class="absolute z-10 mt-1 w-full popover-dark hidden max-h-64 overflow-y-auto space-y-1"></div>
           </div>
           <input id="filteredSearchInput" type="text" placeholder="Search" class="w-full px-3 py-2 border rounded mb-2" />
           <div class="relative mb-2">
-            <button id="filteredSortToggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-black text-left flex items-center justify-between">
+            <button id="filteredSortToggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-card text-light text-left flex items-center justify-between">
               <span class="selected-label">Sort Field</span> <span class="arrow text-xl">▾</span>
             </button>
             <div id="filteredSortOptions" class="absolute z-10 mt-1 w-full popover-dark hidden max-h-64 overflow-y-auto space-y-1"></div>
@@ -175,7 +175,7 @@
       <form id="chartWidgetForm" class="relative w-full" onsubmit="event.preventDefault();">
         <div class="mb-4">
           <label for="chartTypeSelect" class="block text-sm font-medium mb-1">Chart Type</label>
-          <select id="chartTypeSelect" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-black">
+          <select id="chartTypeSelect" class="w-full px-3 py-2 border rounded shadow-sm bg-card text-light">
             <option value="" selected disabled>Select Chart Type</option>
             <option value="bar">Bar</option>
             <option value="line">Line</option>
@@ -185,7 +185,7 @@
         <div id="chartXFieldContainer" class="mb-4 hidden">
           <label id="chartXFieldLabel" class="block text-sm font-medium mb-1">X Field</label>
           <div class="relative">
-            <button id="chartXFieldToggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-black text-left flex items-center justify-between">
+            <button id="chartXFieldToggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-card text-light text-left flex items-center justify-between">
               <span class="selected-label">Select Field</span> <span class="arrow text-xl">▾</span>
             </button>
             <div id="chartXFieldOptions" class="absolute z-10 mt-1 w-full popover-dark hidden max-h-64 overflow-y-auto space-y-1"></div>
@@ -204,7 +204,7 @@
         <div id="chartYFieldContainer" class="mb-4 hidden">
           <label class="block text-sm font-medium mb-1">Y Field</label>
           <div class="relative">
-            <button id="chartYFieldToggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-black text-left flex items-center justify-between">
+            <button id="chartYFieldToggle" type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-card text-light text-left flex items-center justify-between">
               <span class="selected-label">Select Field</span> <span class="arrow text-xl">▾</span>
             </button>
             <div id="chartYFieldOptions" class="absolute z-10 mt-1 w-full popover-dark hidden max-h-64 overflow-y-auto space-y-1"></div>

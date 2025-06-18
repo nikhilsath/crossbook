@@ -41,7 +41,7 @@
         <h2 class="text-xl font-semibold mb-2">Available Fields for {{ file_name|default('Imported File') }}</h2>
         <div class="grid grid-cols-1 gap-2 text-sm text-gray-700" id="imported-fields-container">
             {% for header in parsed_headers %}
-            <div class="border px-3 py-2 rounded bg-gray-50" id="match-container-{{ header }}">
+            <div class="border px-3 py-2 rounded bg-card text-light" id="match-container-{{ header }}">
               <div class="flex justify-between items-center">
                 <strong>{{ header }}</strong>
                 <div id="select-wrapper-{{ header }}" class="ml-auto">
@@ -64,7 +64,7 @@
       <h2 class="text-xl font-semibold mb-2">Available Fields for '{{ selected_table }}'</h2>
       <div class="grid grid-cols-1 gap-2 text-sm text-gray-700" id="available-fields-list">
         {% for field, data in field_status.items() %}
-        <div class="border px-3 py-2 rounded bg-gray-50">
+        <div class="border px-3 py-2 rounded bg-card text-light">
             <strong>{{ field }}</strong> — {{ data.type }} — matched: {{ data.matched }}
         </div>
         {% endfor %}

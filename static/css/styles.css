@@ -261,8 +261,8 @@ a:hover {
 }
 
 .modal-box {
-  background-color: #fff;
-  color: #000;
+  background-color: var(--bg-card);
+  color: var(--text-light);
   padding: 1.5rem; /* p-6 */
   border-radius: 0.5rem; /* rounded-lg */
   box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* shadow-lg */
@@ -276,10 +276,10 @@ a:hover {
   top: 0.5rem; /* top-2 */
   right: 0.5rem; /* right-2 */
   font-size: 1.25rem; /* text-xl */
-  color: #4b5563; /* text-gray-600 */
+  color: var(--text-light);
   cursor: pointer;
 }
 
 .modal-close:hover {
-  color: #1f2937; /* text-gray-800 */
+  color: var(--color-primary-light);
 }
