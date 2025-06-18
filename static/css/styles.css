@@ -258,6 +258,8 @@ a:hover {
   border-radius: 0.25rem;
   padding: 0.25rem 0.5rem; /* py-1 px-2 */
   font-size: 0.875rem; /* text-sm */
+  background-color: var(--bg-card);
+  color: var(--text-light);
 }
 
 .modal-box {
