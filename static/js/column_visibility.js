@@ -23,6 +23,21 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   };
+
+  // Toggle dropdown visibility
+  const toggleBtn = document.getElementById("toggle-columns");
+  const dropdown  = document.getElementById("column-dropdown");
+
+  if (toggleBtn && dropdown) {
+    toggleBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle("hidden");
+    });
+
+    document.addEventListener("click", () => dropdown.classList.add("hidden"));
+
+    dropdown.addEventListener("click", (e) => e.stopPropagation());
+  }
   // Attach listeners
   checkboxes().forEach(cb =>
     cb.addEventListener("change", () => {
