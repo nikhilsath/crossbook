@@ -217,6 +217,8 @@ function enableVanillaDrag() {
     // ▶️ Detect and highlight overlaps
     let overlapWith = null;
     for (const [otherKey, rect] of Object.entries(layoutCache)) {
+      const otherEl = document.querySelector(`.draggable-field[data-field="${otherKey}"]`);
+      if (!otherEl) continue;
       if (otherKey !== field && intersects(layoutCache[field], rect)) {
         overlapWith = otherKey;
         break;
@@ -344,6 +346,8 @@ function enableVanillaResize() {
     // collision check
     let overlapWith = null;
     for (const [key, rect] of Object.entries(layoutCache)) {
+      const otherEl = document.querySelector(`.draggable-field[data-field="${key}"]`);
+      if (!otherEl) continue;
       if (key !== field && intersects(newRect, rect)) {
         overlapWith = key;
         break;
