@@ -11,8 +11,8 @@
 {% endblock %}
 
 {% block content %}
-<h1 class="index-heading">{{ heading }}</h1>
-<div id="card-grid" class="card-grid">
+<h1 class="text-4xl font-bold text-center mb-10">{{ heading }}</h1>
+<div id="card-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
   <a href="/dashboard" class="card-link">
     <h2 class="text-2xl font-bold mb-2">Dashboard</h2>
     <p class="text-light">View overall summary and stats</p>
@@ -24,8 +24,8 @@
     <p class="text-light">{{ card.description }}</p>
   </a>
   {% endfor %}
-  <a href="#" onclick="openAddTableModal()" class="card-link icon-card">
-    <span class="icon-plus">+</span>
+  <a href="#" onclick="openAddTableModal()" class="card-link flex items-center justify-center">
+    <span class="text-teal-600 text-5xl font-bold">+</span>
   </a>
 </div>
 
