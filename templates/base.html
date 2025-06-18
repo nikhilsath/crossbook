@@ -47,7 +47,7 @@
         </div>
         <div class="flex items-center space-x-2">
           {% if current_table in field_schema %}
-            <a href="/{{ current_table }}/new" class="btn-primary px-3 py-1 rounded">+ Add</a>
+            <button type="button" onclick="openNewRecordModal()" class="btn-primary px-3 py-1 rounded">+ Add</button>
             {% if current_id %}
               <form method="post" action="/{{ current_table }}/{{ current_id }}/delete" onsubmit="return confirm('Are you sure?')">
                 <button type="submit" class="btn-danger px-3 py-1 rounded">Delete</button>
