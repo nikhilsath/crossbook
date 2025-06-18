@@ -3,15 +3,15 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block nav_buttons %}
-<button id="dashboard_add" onclick="openDashboardModal()" class="btn-primary px-3 py-1 rounded">+ Add</button>
-<button id="dashboard_edit" class="btn-secondary px-3 py-1 rounded">Edit Layout</button>
-<button id="dashboard_save" class="btn-primary px-3 py-1 rounded hidden">Save Layout</button>
+<button id="dashboard_add" onclick="openDashboardModal()" class="btn-primary">+ Add</button>
+<button id="dashboard_edit" class="btn-secondary">Edit Layout</button>
+<button id="dashboard_save" class="btn-primary hidden">Save Layout</button>
 {% endblock %}
 
 {% block content %}
 <div class="flex items-center mb-4">
   <h1 class="text-3xl font-bold mr-4">Dashboard</h1>
-  <button id="dashboard_update" class="btn-primary px-3 py-1 rounded">Update</button>
+  <button id="dashboard_update" class="btn-primary">Update</button>
 </div>
 {% if not widgets %}
 <p class="text-gray-600">No widgets visible with current permissions please create new</p>

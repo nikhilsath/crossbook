@@ -151,6 +151,26 @@ a:hover {
   color: #fff;
 }
 
+/* Sidebar navigation link */
+.sidebar-link {
+  padding: 0.5rem; /* p-2 */
+  color: #f3f4f6; /* text-gray-100 */
+  display: flex;
+  align-items: center;
+}
+.sidebar-link > * + * {
+  margin-left: 0.25rem; /* space-x-1 */
+}
+
+/* Sidebar collapse toggle */
+.sidebar-toggle {
+  padding: 0.5rem; /* p-2 */
+  font-size: 1.125rem; /* text-lg */
+  background-color: var(--color-primary);
+  color: #fff;
+  border-radius: 0.25rem;
+}
+
 .text-primary { color: var(--color-primary); }
 .text-secondary { color: var(--color-secondary); }
 .bg-primary-lightest { background-color: var(--color-primary-lightest); }
