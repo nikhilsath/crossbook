@@ -3,29 +3,29 @@
 {% block title %}Home{% endblock %}
 
 {% block nav_buttons %}
-<a href="/import" class="btn-primary">Import</a>
+<a href="/import" id="import-button" class="btn-primary">Import</a>
 {% endblock %}
 
 {% block header_actions %}
-<a href="/admin" class="btn-secondary">Admin</a>
+<a href="/admin" id="admin-button" class="btn-secondary">Admin</a>
 {% endblock %}
 
 {% block content %}
-<h1 class="text-4xl font-bold text-center mb-10">{{ heading }}</h1>
+<h1 id="page-heading" class="text-4xl font-bold text-center mb-10">{{ heading }}</h1>
 <div id="card-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-  <a href="/dashboard" class="card-link">
-    <h2 class="text-2xl font-bold mb-2">Dashboard</h2>
-    <p class="text-light">View overall summary and stats</p>
+  <a href="/dashboard" id="card-dashboard" class="card-link">
+    <h2 id="title-dashboard" class="text-2xl font-bold mb-2">Dashboard</h2>
+    <p id="desc-dashboard" class="text-light">View overall summary and stats</p>
   </a>
   {% for card in cards %}
   <a href="/{{ card.table_name }}"
-     class="card-link">
-    <h2 class="text-2xl font-bold mb-2">{{ card.display_name }}</h2>
-    <p class="text-light">{{ card.description }}</p>
+     id="card-{{ card.table_name }}" class="card-link">
+    <h2 id="title-{{ card.table_name }}" class="text-2xl font-bold mb-2">{{ card.display_name }}</h2>
+    <p id="desc-{{ card.table_name }}" class="text-light">{{ card.description }}</p>
   </a>
   {% endfor %}
-  <a href="#" onclick="openAddTableModal()" class="card-link flex items-center justify-center">
-    <span class="text-teal-600 text-5xl font-bold">+</span>
+  <a href="#" id="card-add-table" onclick="openAddTableModal()" class="card-link flex items-center justify-center">
+    <span id="add-table-icon" class="text-teal-600 text-5xl font-bold">+</span>
   </a>
 </div>
 
