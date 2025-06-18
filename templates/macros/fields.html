@@ -60,7 +60,7 @@
       {% set selected_options = (value or '').split(',') %}
       {% set selected_options = selected_options | map('trim') | reject('equalto', '') | list %}
 
-      <div class="flex flex-wrap gap-1 mb-2">
+      <div class="flex flex-wrap gap-1 mb-2 tag-container">
         {% for tag in selected_options if tag %}
           <span class="inline-flex items-center bg-teal-100 text-teal-700 text-xs px-2 py-1 rounded-full">
             {{ tag }}
@@ -94,7 +94,7 @@
   {% else %}
     {% set selected_options = (value or '').split(',') %}
     {% set selected_options = selected_options | map('trim') | reject('equalto', '') | list %}
-    <div class="flex flex-wrap gap-1" data-field="{{ field }}">
+    <div class="flex flex-wrap gap-1 tag-container" data-field="{{ field }}">
       {% for tag in selected_options if tag %}
         <span class="inline-flex items-center bg-teal-100 text-teal-700 text-xs px-2 py-1 rounded-full">{{ tag }}</span>
       {% endfor %}
@@ -132,7 +132,7 @@
       {% set selected_options = (value or '').split(',') %}
       {% set selected_options = selected_options | map('trim') | reject('equalto', '') | list %}
 
-      <div class="flex flex-wrap gap-1 mb-2">
+      <div class="flex flex-wrap gap-1 mb-2 tag-container">
         {% for tag in selected_options if tag %}
           <span class="inline-flex items-center bg-teal-100 text-teal-700 text-xs px-2 py-1 rounded-full">
             {{ tag }}
@@ -166,7 +166,7 @@
   {% else %}
     {% set selected_options = (value or '').split(',') %}
     {% set selected_options = selected_options | map('trim') | reject('equalto', '') | list %}
-    <div class="flex flex-wrap gap-1" data-field="{{ field }}">
+    <div class="flex flex-wrap gap-1 tag-container" data-field="{{ field }}">
       {% for tag in selected_options if tag %}
         <span class="inline-flex items-center bg-teal-100 text-teal-700 text-xs px-2 py-1 rounded-full">{{ tag }}</span>
       {% endfor %}

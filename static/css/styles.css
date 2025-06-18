@@ -240,6 +240,15 @@ a:hover {
   border-radius: 0.25rem;  /* rounded */
 }
 
+/* Selected tags container */
+.tag-container {
+  background-color: var(--bg-card);
+  color: var(--text-light);
+  border: 1px solid var(--color-primary-light);
+  border-radius: 0.5rem; /* rounded */
+  padding: 0.5rem; /* p-2 */
+}
+
 /* Reusable dark mode popover */
 .popover-dark {
   position: absolute;

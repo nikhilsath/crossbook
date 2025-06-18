@@ -3,7 +3,7 @@
     <input type="hidden" name="field" value="{{ field }}">
     {% set selected_options = (value or '').split(', ') %}
 
-    <div class="flex flex-wrap gap-1 mb-2">
+    <div class="flex flex-wrap gap-1 mb-2 tag-container">
       {% for tag in selected_options if tag %}
         <span class="inline-flex items-center bg-teal-100 text-teal-700 text-xs px-2 py-1 rounded-full">
           {{ tag }}
@@ -12,11 +12,11 @@
       {% endfor %}
     </div>
 
-    <button type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-white text-left focus:outline-none focus:ring-2 focus:ring-teal-600" onclick="this.nextElementSibling.classList.toggle('hidden')">
+    <button type="button" class="w-full px-3 py-2 border rounded shadow-sm bg-card text-light text-left focus:outline-none focus:ring-2 focus:ring-teal-600" onclick="this.nextElementSibling.classList.toggle('hidden')">
       Choose Tags
     </button>
 
-    <div class="absolute z-10 mt-1 w-full bg-white border rounded shadow hidden max-h-64 overflow-y-auto p-2 space-y-1" data-options>
+    <div class="absolute z-10 mt-1 w-full popover-dark hidden max-h-64 overflow-y-auto space-y-1" data-options>
       <input type="text" placeholder="Search..." class="w-full px-2 py-1 border rounded text-sm mb-2" oninput="const v=this.value.toLowerCase();[...this.parentElement.querySelectorAll('label')].forEach(l => l.classList.toggle('hidden', !l.textContent.toLowerCase().includes(v)))">
       {% for option in get_field_options(table, field) %}
         <label class="flex items-center space-x-2">
