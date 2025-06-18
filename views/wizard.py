@@ -162,12 +162,22 @@ def settings_step():
 def table_step():
     progress = session.setdefault('wizard_progress', {})
     if request.method == 'POST':
-        table_name = (request.form.get('table_name') or '').strip()
-        title_field = (request.form.get('title_field') or '').strip()
-        description = (request.form.get('description') or '').strip()
-        fields_json = request.form.get('fields_json', '')
-        fields_text = request.form.get('fields', '')
-        if table_name and title_field:
+        table_names = [t.strip() for t in request.form.getlist('table_name')]
+        title_fields = [t.strip() for t in request.form.getlist('title_field')]
+        descriptions = [d.strip() for d in request.form.getlist('description')]
+        fields_json_list = request.form.getlist('fields_json')
+        any_created = False
+
+        for idx, table_name in enumerate(table_names):
+            if not table_name:
+                continue
+            title_field = title_fields[idx] if idx < len(title_fields) else ''
+            description = descriptions[idx] if idx < len(descriptions) else ''
+            fields_json = fields_json_list[idx] if idx < len(fields_json_list) else ''
+
+            if not title_field:
+                continue
+
             if create_base_table(table_name, description, title_field):
                 field_defs = []
                 if fields_json:
@@ -175,12 +185,6 @@ def table_step():
                         field_defs = json.loads(fields_json)
                     except Exception:
                         logger.exception('Failed to parse fields_json')
-                else:
-                    for line in fields_text.splitlines():
-                        if ':' in line:
-                            name, ftype = [p.strip() for p in line.split(':', 1)]
-                            if name:
-                                field_defs.append({'name': name, 'type': ftype})
 
                 for f in field_defs:
                     if f.get('name') == title_field:
@@ -200,10 +204,13 @@ def table_step():
                         )
                     except Exception:
                         logger.exception('Failed to add field %s', name)
-                reload_app_state()
-                progress['table'] = True
-                session['wizard_progress'] = progress
-                return redirect(url_for('wizard.import_step'))
+                any_created = True
+
+        if any_created:
+            reload_app_state()
+            progress['table'] = True
+            session['wizard_progress'] = progress
+            return redirect(url_for('wizard.import_step'))
     return render_template('wizard/wizard_table.html')
 
 
