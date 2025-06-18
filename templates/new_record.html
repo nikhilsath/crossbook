@@ -2,30 +2,30 @@
 {% block title %}New {{ table|capitalize }}{% endblock %}
 
 {% block content %}
-<h1 class="text-2xl font-bold mb-6">Create New {{ table|capitalize }}</h1>
+<h1 class="form-heading">Create New {{ table|capitalize }}</h1>
 
-<form id="new-record-form" method="post" class="space-y-4">
+<form id="new-record-form" method="post" class="form-layout">
   {% for field, ftype in fields.items() %}
     {% if field != "id" and ftype != "hidden" %}
       <div>
-        <label class="block text-sm font-medium capitalize mb-1">{{ field }}</label>
+        <label class="form-label">{{ field }}</label>
         {% if ftype == "textarea" %}
           <input type="hidden" name="{{ field }}">
           <div class="quill-editor" data-quill></div>
         {% elif ftype == "boolean" %}
           <input type="checkbox" name="{{ field }}" value="1">
         {% elif ftype == "number" %}
-          <input type="number" name="{{ field }}" class="w-full border rounded px-2 py-1 text-sm">
+          <input type="number" name="{{ field }}" class="form-input">
         {% elif ftype == "date" %}
-          <input type="date" name="{{ field }}" class="w-full border rounded px-2 py-1 text-sm">
+          <input type="date" name="{{ field }}" class="form-input">
         {% else %}
-          <input type="text" name="{{ field }}" class="w-full border rounded px-2 py-1 text-sm">
+          <input type="text" name="{{ field }}" class="form-input">
         {% endif %}
       </div>
     {% endif %}
   {% endfor %}
 
-  <button type="submit" class="btn-primary px-4 py-2 rounded">Create</button>
+  <button type="submit" class="btn-primary">Create</button>
 </form>
 <script type="module" src="{{ url_for('static', filename='js/editor.js') }}"></script>
 {% endblock %}
