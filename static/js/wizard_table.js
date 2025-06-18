@@ -68,6 +68,7 @@ function updateFieldList() {
     list.appendChild(li);
   });
   document.getElementById('fields_json').value = JSON.stringify(fields);
+  updateTitleFieldOptions();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -112,3 +113,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.showAddFieldModal = showAddFieldModal;
 window.hideAddFieldModal = hideAddFieldModal;
+
+function updateTitleFieldOptions() {
+  const select = document.getElementById('title_field_select');
+  if (!select) return;
+  const prev = select.value;
+  select.innerHTML = '<option value="" disabled>Select title field</option>';
+  fields.forEach(f => {
+    const opt = document.createElement('option');
+    opt.value = f.name;
+    opt.textContent = f.name;
+    select.appendChild(opt);
+  });
+  if (fields.length === 1) {
+    select.value = fields[0].name;
+  } else if (fields.some(f => f.name === prev)) {
+    select.value = prev;
+  }
+  select.disabled = fields.length === 0;
+}
