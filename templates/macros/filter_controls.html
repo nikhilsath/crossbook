@@ -1,7 +1,7 @@
 {# templates/macros/filter_controls.html #}
 
 {%- macro text_filter(field, value, operator) -%}
-  <div class="filter-chip flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1 border border-gray-300">
+  <div class="filter-chip flex items-center space-x-2 bg-card text-light rounded-full px-3 py-1 border border-primary-light">
     <select
       name="{{ field }}_op"
       class="operator-select appearance-none text-xs rounded-full border-0 bg-transparent text-center text-teal-600 cursor-pointer w-auto"
@@ -26,7 +26,7 @@
 {%- endmacro -%}
 
 {%- macro select_filter(field, value, options) -%}
-  <div class="filter-chip flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1 border border-gray-300">
+  <div class="filter-chip flex items-center space-x-2 bg-card text-light rounded-full px-3 py-1 border border-primary-light">
     <select
       name="{{ field }}"
       class="bg-transparent text-sm rounded px-1 py-0.5"
@@ -44,7 +44,7 @@
 
 {%- macro multi_select_popover(field, selected, options, mode) -%}
     {% set actual = selected | reject('equalto', '') | list %}
-<div class="relative filter-chip flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1 border border-gray-300">
+<div class="relative filter-chip flex items-center space-x-2 bg-card text-light rounded-full px-3 py-1 border border-primary-light">
   <button
     type="button"
     class="multi-select-chip bg-transparent text-sm focus:outline-none"
@@ -81,7 +81,7 @@
 
 {%- macro select_multi_filter(field, selected, options) -%}
   {% set actual = selected | reject('equalto', '') | list %}
-  <div class="filter-chip select-multi-filter flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1 border border-gray-300" data-field="{{ field }}">
+  <div class="filter-chip select-multi-filter flex items-center space-x-2 bg-card text-light rounded-full px-3 py-1 border border-primary-light" data-field="{{ field }}">
     <span class="text-xs border border-gray-400 rounded px-1 mr-1">{{ field | replace('_',' ') | capitalize }}</span>
     <div class="flex flex-col max-h-32 overflow-y-auto">
       {% for opt in options %}
@@ -96,7 +96,7 @@
 {%- endmacro -%}
 
 {% macro boolean_filter(field, value) %}
-  <div class="filter-chip flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1 border border-gray-300">
+  <div class="filter-chip flex items-center space-x-2 bg-card text-light rounded-full px-3 py-1 border border-primary-light">
     <select
       name="{{ field }}"
       class="bg-transparent text-sm rounded px-1 py-0.5"
@@ -111,7 +111,7 @@
 {% endmacro %}
 
 {%- macro number_filter(field, min_val, max_val) -%}
-  <div class="filter-chip flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1 border border-gray-400">
+  <div class="filter-chip flex items-center space-x-2 bg-card text-light rounded-full px-3 py-1 border border-primary-light">
     <span class="text-xs border border-gray-400 rounded px-1 mr-1">
       {{ field | replace('_',' ') | capitalize }}
     </span>
@@ -134,7 +134,7 @@
 {%- endmacro -%}
 
 {%- macro date_filter(field, start_val, end_val) -%}
-  <div class="filter-chip flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1 border border-gray-400">
+  <div class="filter-chip flex items-center space-x-2 bg-card text-light rounded-full px-3 py-1 border border-primary-light">
     <span class="text-xs border border-gray-400 rounded px-1 mr-1">
       {{ field | replace('_',' ') | capitalize }}
     </span>

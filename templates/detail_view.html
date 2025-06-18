@@ -106,7 +106,7 @@
           {% if styling.color %}{% set _ = style_parts.append('--field-color:' ~ styling.color) %}{% endif %}
           {% if styling.size %}{% set _ = style_parts.append('--field-size:' ~ styling.size ~ 'px') %}{% endif %}
           <div id="draggable-field-{{ field }}"
-               class="draggable-field border p-2 rounded shadow bg-gray-50{{ ' font-bold' if styling.bold }}{{ ' italic' if styling.italic }}{{ ' underline' if styling.underline }}"
+               class="draggable-field border p-2 rounded shadow bg-card text-light{{ ' font-bold' if styling.bold }}{{ ' italic' if styling.italic }}{{ ' underline' if styling.underline }}"
                data-field="{{ field }}"
                data-type="{{ field_schema[table][field].type }}"
                data-styling='{{ styling | tojson }}'

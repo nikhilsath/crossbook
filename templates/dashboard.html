@@ -33,7 +33,7 @@
       'rowStart': row_start,
       'rowSpan': row_span
     } }) %}
-    <div id="widget-{{ widget.id }}" class="dashboard-widget draggable-field min-h-0 border p-2 rounded shadow bg-gray-50"
+    <div id="widget-{{ widget.id }}" class="dashboard-widget draggable-field min-h-0 border p-2 rounded shadow bg-card"
          data-widget="{{ widget.id }}"
          data-type="{{ widget.widget_type }}"
          {% if widget.widget_type in ['chart', 'value'] %}data-config='{{ widget.content }}'{% endif %}
