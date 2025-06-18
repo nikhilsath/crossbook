@@ -11,26 +11,26 @@
   {# Dashboard views load chart libraries explicitly #}
   <title>{% block title %}Crossbook{% endblock %}</title>
 </head>
-<body class="bg-dark text-light {% block body_class %}{% endblock %}">
+<body id="page-body" class="bg-dark text-light {% block body_class %}{% endblock %}">
     {% set segments = request.path.strip('/').split('/') %}
     {% set current_table = segments[0] %}
     {% set current_id = segments[1] if segments|length > 1 else None %}
 
   <div id="app-container" class="flex min-h-screen">
     <aside id="sidebar" class="fixed top-0 left-0 z-40 w-56 h-screen pt-4 bg-dark text-white hidden md:block flex flex-col flex-shrink-0">
-      <div class="flex items-center justify-between px-2">
+      <div id="sidebar-header" class="flex items-center justify-between px-2">
         <a href="/" class="sidebar-link" id="home-sidebar-link" aria-label="Home">
-          <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <svg id="home-icon" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 0 1 1.414 0l7 7A1 1 0 0 1 17 11h-1v6a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-6H3a1 1 0 0 1-.707-1.707l7-7Z" clip-rule="evenodd" />
           </svg>
-          <span class="sidebar-label">Home</span>
+          <span id="home-label" class="sidebar-label">Home</span>
         </a>
         <button id="sidebarCollapse" class="sidebar-toggle" aria-label="Toggle sidebar">&laquo;</button>
       </div>
-      <nav class="flex-1 overflow-y-auto px-3 space-y-2">
+      <nav id="sidebar-nav" class="flex-1 overflow-y-auto px-3 space-y-2">
         {# Home link moved next to icon above #}
         {% for nav in nav_cards if nav.table_name != 'dashboard' %}
-          <a href="/{{ nav.table_name }}" class="nav-link {{ 'bg-primary-dark text-white' if current_table == nav.table_name else '' }}">{{ nav.display_name }}</a>
+          <a id="nav-{{ nav.table_name }}" href="/{{ nav.table_name }}" class="nav-link {{ 'bg-primary-dark text-white' if current_table == nav.table_name else '' }}">{{ nav.display_name }}</a>
         {% endfor %}
       </nav>
       <!-- Sidebar action buttons removed -->
@@ -39,18 +39,18 @@
 
     <div id="content-wrapper" class="flex-1 flex flex-col md:ml-56">
       <header id="page-header" class="bg-dark text-white p-4 flex items-center justify-between fixed top-0 left-0 w-full z-40 shadow-md md:pl-56">
-        <div class="flex items-center space-x-2 ml-2">
+        <div id="header-nav-buttons" class="flex items-center space-x-2 ml-2">
           {% block nav_buttons %}{% endblock %}
         </div>
-        <div class="flex-1 flex justify-center">
+        <div id="header-search" class="flex-1 flex justify-center">
           {% block header_search %}{% endblock %}
         </div>
-        <div class="flex items-center space-x-2">
+        <div id="header-actions" class="flex items-center space-x-2">
           {% if current_table in field_schema %}
-            <button type="button" onclick="openNewRecordModal()" class="btn-primary">+ Add</button>
+            <button id="add-record-button" type="button" onclick="openNewRecordModal()" class="btn-primary">+ Add</button>
             {% if current_id %}
-              <form method="post" action="/{{ current_table }}/{{ current_id }}/delete" onsubmit="return confirm('Are you sure?')">
-                <button type="submit" class="btn-danger">Delete</button>
+              <form id="delete-form" method="post" action="/{{ current_table }}/{{ current_id }}/delete" onsubmit="return confirm('Are you sure?')">
+                <button id="delete-button" type="submit" class="btn-danger">Delete</button>
               </form>
             {% endif %}
           {% endif %}
