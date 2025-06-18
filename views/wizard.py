@@ -106,10 +106,6 @@ def settings_step():
             if val is None or val == "":
                 rows.append(r)
     for row in rows:
-        try:
-            row['options'] = json.loads(row.get('options') or '[]')
-        except Exception:
-            row['options'] = []
         if row['key'] == 'heading':
             row['labels'] = 'Main Heading'
     config = {row['key']: row['value'] for row in rows}
