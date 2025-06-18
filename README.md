@@ -243,6 +243,7 @@ The worker also processes scheduled automation tasks defined in `automation/engi
 
 * **Static Assets & Styling:** Tailwind is loaded via CDN in `templates/base.html`. Global rules live in `static/css/styles.css`, while `static/css/overrides.css` contains Tailwind tweaks used by the layout editors. Update these files to change colors, spacing or other visual details. Any custom IDs or extra class names used in the templates are defined in these stylesheets so all styling remains centralized.
 * **`.popover-dark` utility:** Defined in `static/css/styles.css`, this dark themed dropdown container sets `z-index: 200` so popovers stay above the sidebar. It is used for column and filter dropdowns in `list_view.html`, the header and relation popovers in `detail_view.html`, and within `macros/filter_controls.html`, `macros/fields.html` and dashboard modals.
+* **`.tag-container` utility:** Provides dark mode styling for selected tag lists. Applied in multi-select and foreign key fields via `macros/fields.html` and the `tag_selector.js` macro.
 
 * **Templating & Macros:** Jinja2 templates in `templates/` include the core pages (`base.html`, `index.html`, `list_view.html`, `detail_view.html`, `new_record.html`, `dashboard.html`) plus admin and import views. Partial templates like `modals/edit_fields_modal.html` and `modals/bulk_edit_modal.html` are used for modals. Reusable macros live in `templates/macros/fields.html` and `filter_controls.html`.
 
