@@ -109,6 +109,9 @@
 
 {% include "modals/bulk_edit_modal.html" %}
 <script type="module" src="{{ url_for('static', filename='js/bulk_edit_modal.js') }}"></script>
+{% include "modals/new_record_modal.html" %}
+<script type="module" src="{{ url_for('static', filename='js/new_record_modal.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/editor.js') }}"></script>
 
 <!-- Include column visibility JS -->
 <script src="{{ url_for('static', filename='js/column_visibility.js') }}"></script>

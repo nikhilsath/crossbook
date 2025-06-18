@@ -246,7 +246,7 @@ def create_record_route(table):
             return redirect(f'/{table}/{record_id}')
         else:
             abort(500, 'Failed to create record')
-    return render_template('new_record.html', table=table, fields=fields)
+    return render_template('modals/new_record_modal.html', table=table, fields=fields)
 
 
 @records_bp.route('/<table>/<int:record_id>/delete', methods=['POST'])
