@@ -4,8 +4,8 @@
 {% import 'macros/filter_controls.html' as filters %}
 {% block body_class %}list-view-page{% endblock %}
 {% block nav_buttons %}
-<button id="bulk_edit" onclick="openBulkEditModal()" class="btn-primary px-3 py-1 rounded opacity-50" disabled>Bulk Edit</button>
-<button id="export_csv" class="btn-primary px-3 py-1 rounded opacity-50 ml-2" disabled>Export CSV</button>
+<button id="bulk_edit" onclick="openBulkEditModal()" class="btn-primary opacity-50" disabled>Bulk Edit</button>
+<button id="export_csv" class="btn-primary opacity-50 ml-2" disabled>Export CSV</button>
 {% endblock %}
 {% block header_search %}
 <form id="search-form" method="get" class="flex items-center space-x-2">
@@ -16,7 +16,7 @@
     value="{{ request.args.get('search','') }}"
     class="border rounded px-2 py-1 w-64 text-black"
   />
-  <button type="submit" class="btn-primary px-3 py-1 rounded">
+  <button type="submit" class="btn-primary">
     Search
   </button>
   {% for key, values in request.args.lists() %}
