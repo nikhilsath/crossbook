@@ -7,7 +7,7 @@
 
 <div id="ruleModal" class="modal-container hidden" onclick="if(event.target.id === 'ruleModal') closeRuleModal()">
   <div class="modal-box w-96 max-w-full relative">
-    <button type="button" onclick="closeRuleModal()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-xl">&times;</button>
+    <button type="button" onclick="closeRuleModal()" class="modal-close">&times;</button>
     <h3 id="ruleModalTitle" class="text-lg font-bold mb-4">New Rule</h3>
     <form id="rule-form" class="space-y-4">
       <input type="hidden" id="rule-id">
@@ -63,7 +63,7 @@
 
 <div id="logsModal" class="modal-container hidden" onclick="if(event.target.id === 'logsModal') closeLogsModal()">
   <div class="modal-box w-fit max-w-full relative">
-    <button type="button" onclick="closeLogsModal()" class="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-xl">&times;</button>
+    <button type="button" onclick="closeLogsModal()" class="modal-close">&times;</button>
     <h3 class="text-lg font-bold mb-4">Recent Logs</h3>
     <table id="logs-table" class="min-w-full text-sm divide-y mb-4"></table>
   </div>
