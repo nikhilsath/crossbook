@@ -40,7 +40,7 @@
     <form method="POST" action="{{ url_for(update_endpoint, table=table, record_id=record_id) }}" class="inline">
       <input type="hidden" name="field" value="{{ field }}">
       <select name="new_value"
-              class="block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200"
+              class="form-select"
               onchange="submitFieldAjax(this.form)">
         {% for option in field_schema[table][field].options %}
           <option value="{{ option }}" {% if option == value %}selected{% endif %}>{{ option }}</option>
