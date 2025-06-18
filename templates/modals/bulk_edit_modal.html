@@ -5,7 +5,7 @@
     <h3 class="text-lg font-bold">Bulk Edit {{ table }}</h3>
     <p id="bulk-edit-count" class="text-sm text-gray-600 mb-4"></p>
     <form id="bulk-edit-form" class="form-layout">
-      <div class="modal-form-group">
+      <div class="modal-form-group form-group">
         <label for="bulk-field" class="form-label">Field</label>
         <select id="bulk-field" class="form-input">
           {% for field, meta in field_schema[table].items() if not field.startswith('_') %}
@@ -13,9 +13,9 @@
           {% endfor %}
         </select>
       </div>
-      <div id="bulk-input-container" class="modal-form-group"></div>
-      <div id="bulk-edit-status" class="modal-form-group text-sm hidden"></div>
-      <div class="modal-form-group text-right">
+      <div id="bulk-input-container" class="modal-form-group form-group"></div>
+      <div id="bulk-edit-status" class="modal-form-group form-group text-sm hidden"></div>
+      <div class="modal-form-group form-group text-right">
         <button type="submit" class="btn-primary">Submit</button>
       </div>
     </form>
