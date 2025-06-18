@@ -2,13 +2,13 @@
   <div class="page-info">Page {{ page }} of {{ total_pages }}</div>
   <div class="space-x-1">
     {% if page > 1 %}
-      <a href="?{{ base_qs }}{{ '&' if base_qs else '' }}page={{ page - 1 }}" class="px-2 py-1 bg-gray-200 rounded">Prev</a>
+      <a href="?{{ base_qs }}{{ '&' if base_qs else '' }}page={{ page - 1 }}" class="px-2 py-1 bg-secondary-light rounded">Prev</a>
     {% endif %}
     {% for p in range(1, total_pages + 1) %}
       {% if p == page %}
         <span class="px-2 py-1 bg-teal-600 text-white rounded">{{ p }}</span>
       {% else %}
-        <a href="?{{ base_qs }}{{ '&' if base_qs else '' }}page={{ p }}" class="px-2 py-1 bg-gray-200 rounded">{{ p }}</a>
+        <a href="?{{ base_qs }}{{ '&' if base_qs else '' }}page={{ p }}" class="px-2 py-1 bg-secondary-light rounded">{{ p }}</a>
       {% endif %}
     {% endfor %}
     {% if page < total_pages %}
