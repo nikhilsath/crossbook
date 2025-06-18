@@ -48,7 +48,7 @@
     <button id="toggle-columns" type="button" class="px-2 py-1 bg-primary-light rounded">
       Columns
     </button>
-    <div id="column-dropdown" class="popover-dark absolute right-0 z-20 hidden mt-2 space-y-1 w-48">
+    <div id="column-dropdown" class="popover-dark absolute right-0 hidden mt-2 space-y-1 w-48">
       {% for field in fields if not field.startswith('_') and field != 'edit_log' %}
         <label class="flex items-center space-x-2">
           <input type="checkbox" class="column-toggle" value="{{ field }}" checked>
@@ -62,7 +62,7 @@
     <button type="button" id="toggle-filters" class="px-2 py-1 bg-primary-light rounded">
       Filters
     </button>
-    <div id="filter-dropdown" class="popover-dark absolute right-0 z-20 hidden mt-2 space-y-1 w-48">
+    <div id="filter-dropdown" class="popover-dark absolute right-0 hidden mt-2 space-y-1 w-48">
     </div>
   </div>
   
