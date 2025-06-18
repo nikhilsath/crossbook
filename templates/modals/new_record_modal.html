@@ -3,18 +3,18 @@
     <button type="button" onclick="closeNewRecordModal()" class="modal-close">&times;</button>
     <h3 class="text-lg font-bold mb-4">Create New {{ table|capitalize }}</h3>
     <form id="new-record-form" method="post" class="form-layout">
-      {% for field, ftype in fields.items() %}
-        {% if field != "id" and ftype != "hidden" %}
+      {% for field, meta in field_schema[table].items() %}
+        {% if field != "id" and meta.type != "hidden" %}
           <div>
             <label class="form-label">{{ field }}</label>
-            {% if ftype == "textarea" %}
+            {% if meta.type == "textarea" %}
               <input type="hidden" name="{{ field }}">
               <div class="quill-editor" data-quill></div>
-            {% elif ftype == "boolean" %}
+            {% elif meta.type == "boolean" %}
               <input type="checkbox" name="{{ field }}" value="1">
-            {% elif ftype == "number" %}
+            {% elif meta.type == "number" %}
               <input type="number" name="{{ field }}" class="form-input">
-            {% elif ftype == "date" %}
+            {% elif meta.type == "date" %}
               <input type="date" name="{{ field }}" class="form-input">
             {% else %}
               <input type="text" name="{{ field }}" class="form-input">
