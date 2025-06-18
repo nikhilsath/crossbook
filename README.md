@@ -241,7 +241,7 @@ The worker also processes scheduled automation tasks defined in `automation/engi
   * `config_admin.js` processes layout defaults forms
   * `undo_edit.js` allows reverting edits via AJAX
 
-* **Static Assets & Styling:** Tailwind is loaded via CDN in `templates/base.html`. Global rules live in `static/css/styles.css`, while `static/css/overrides.css` contains Tailwind tweaks used by the layout editors. Update these files to change colors, spacing or other visual details.
+* **Static Assets & Styling:** Tailwind is loaded via CDN in `templates/base.html`. Global rules live in `static/css/styles.css`, while `static/css/overrides.css` contains Tailwind tweaks used by the layout editors. Update these files to change colors, spacing or other visual details. Any custom IDs or extra class names used in the templates are defined in these stylesheets so all styling remains centralized.
 
 * **Templating & Macros:** Jinja2 templates in `templates/` include the core pages (`base.html`, `index.html`, `list_view.html`, `detail_view.html`, `new_record.html`, `dashboard.html`) plus admin and import views. Partial templates like `modals/edit_fields_modal.html` and `modals/bulk_edit_modal.html` are used for modals. Reusable macros live in `templates/macros/fields.html` and `filter_controls.html`.
 
@@ -466,13 +466,11 @@ By using this macro in `detail_view.html`, the template stays cleaner and any ch
 
 ## Styling
 
-The UI relies on Tailwind utility classes with a small set of custom overrides. If you want to modify the look and feel:
+The UI relies on Tailwind utility classes with a small set of custom overrides. Tailwind is loaded via CDN in `templates/base.html` and we primarily use inline Tailwind classes for layout. Any custom IDs or extra class names that appear in the templates are defined in the CSS files so they can be managed in one place.
 
-1. Edit `static/css/styles.css` for additional rules.
+1. Edit `static/css/styles.css` for additional rules or to define IDs referenced in templates.
 2. Adjust `static/css/overrides.css` to tweak layout editor styles or Tailwind utilities.
-3. Tailwind itself is loaded via CDN in `templates/base.html`, so you can reference any Tailwind class directly in the templates.
-
-Reload the browser after making changes to see your updates.
+3. Reload the browser after making changes to see your updates.
 
 ## License
 
