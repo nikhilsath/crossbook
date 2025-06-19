@@ -54,23 +54,23 @@ function buildInput() {
   const container = document.getElementById('bulk-input-container');
   let html = '';
   if (type === 'textarea') {
-    html = '<textarea id="bulk-value" class="w-full border px-2 py-1 rounded"></textarea>';
+    html = '<textarea id="bulk-value" class="form-input"></textarea>';
   } else if (type === 'number') {
-    html = '<input id="bulk-value" type="number" class="w-full border px-2 py-1 rounded">';
+    html = '<input id="bulk-value" type="number" class="form-input">';
   } else if (type === 'boolean') {
-    html = '<select id="bulk-value" class="w-full border px-2 py-1 rounded"><option value="1">True</option><option value="0">False</option></select>';
+    html = '<select id="bulk-value" class="form-select"><option value="1">True</option><option value="0">False</option></select>';
   } else if (type === 'select') {
-    html = '<select id="bulk-value" class="w-full border px-2 py-1 rounded">' +
+    html = '<select id="bulk-value" class="form-select">' +
       options.map(o => `<option value="${o}">${o}</option>`).join('') +
       '</select>';
   } else if (type === 'multi_select' || type === 'foreign_key') {
     html = '<div class="max-h-48 overflow-y-auto border p-2 space-y-1">' +
-      options.map(o => `<label class="flex items-center space-x-2"><input type="checkbox" value="${o}" class="bulk-multi-option"><span class="text-sm">${o}</span></label>`).join('') +
+      options.map(o => `<label class="flex items-center space-x-2"><input type="checkbox" value="${o}" class="bulk-multi-option form-input"><span class="text-sm">${o}</span></label>`).join('') +
       '</div>';
   } else if (type === 'url') {
-    html = '<input id="bulk-value" type="url" class="w-full border px-2 py-1 rounded">';
+    html = '<input id="bulk-value" type="url" class="form-input">';
   } else {
-    html = '<input id="bulk-value" type="text" class="w-full border px-2 py-1 rounded">';
+    html = '<input id="bulk-value" type="text" class="form-input">';
   }
   container.innerHTML = html;
 }
