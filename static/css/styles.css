@@ -219,6 +219,13 @@ a:hover {
   background-color: #374151;
 }
 
+/* Card titles used on the home and admin pages */
+.card-title {
+  font-size: 1.5rem; /* text-2xl */
+  font-weight: 700;  /* font-bold */
+  margin-bottom: 0.5rem; /* mb-2 */
+}
+
 .modal-container {
   position: fixed;
   inset: 0;
