@@ -85,8 +85,5 @@ def test_create_base_table_success_and_invalid_names():
             conn.execute(f'DROP TABLE IF EXISTS {name}')
             conn.execute('DELETE FROM config_base_tables WHERE table_name=?', (name,))
             conn.execute('DELETE FROM field_schema WHERE table_name=?', (name,))
-            for base in ['character', 'content', 'faction', 'location', 'thing', 'topic']:
-                a, b = sorted([name, base])
-                conn.execute(f'DROP TABLE IF EXISTS {a}_{b}')
             conn.commit()
 
