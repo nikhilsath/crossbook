@@ -66,7 +66,7 @@
           required>
           <option value="" disabled selected>Select field</option>
           {% for field, fmeta in field_schema[table].items() %}
-            {% if fmeta.type != "hidden" and field != "id" %}
+            {% if fmeta.type != "hidden" and field not in ['id', 'date_created', 'last_edited'] %}
               <option value="{{ field }}">{{ field }}</option>
             {% endif %}
           {% endfor %}
