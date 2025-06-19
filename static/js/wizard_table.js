@@ -1,11 +1,31 @@
 let tables = [];
 let currentTable = 0;
 let addFieldTrigger = null;
+let editingFieldIdx = null;
 
-function showAddFieldModal(idx) {
+function showAddFieldModal(idx, fidx = null) {
   currentTable = idx;
+  editingFieldIdx = fidx;
   addFieldTrigger = document.activeElement;
-  document.getElementById('addFieldModal').classList.remove('hidden');
+  const modal = document.getElementById('addFieldModal');
+  const form = document.getElementById('field-form');
+  if (fidx !== null && tables[idx][fidx]) {
+    const field = tables[idx][fidx];
+    form.field_name.value = field.name;
+    form.field_type.value = field.type;
+    if (form.field_options) {
+      form.field_options.value = (field.options || []).join(', ');
+    }
+    if (form.foreign_key_target) {
+      form.foreign_key_target.value = field.foreign_key || '';
+    }
+    form.field_type.dispatchEvent(new Event('change'));
+    const btn = form.querySelector('button[type="submit"]');
+    if (btn) btn.textContent = 'Save';
+  } else {
+    resetAddFieldForm();
+  }
+  modal.classList.remove('hidden');
   document.addEventListener('keydown', escHandler);
 }
 
@@ -16,6 +36,11 @@ function hideAddFieldModal() {
     addFieldTrigger.focus();
     addFieldTrigger = null;
   }
+  editingFieldIdx = null;
+  const form = document.getElementById('field-form');
+  const btn = form.querySelector('button[type="submit"]');
+  if (btn) btn.textContent = 'Add';
+  resetAddFieldForm();
 }
 
 const escHandler = (e) => {
@@ -44,10 +69,18 @@ function addField(e) {
     : [];
   const fk = form.foreign_key_target ? form.foreign_key_target.value : '';
 
-  tables[currentTable].push({ name, type, options, foreign_key: fk });
+  if (editingFieldIdx !== null) {
+    tables[currentTable][editingFieldIdx] = {
+      name,
+      type,
+      options,
+      foreign_key: fk,
+    };
+  } else {
+    tables[currentTable].push({ name, type, options, foreign_key: fk });
+  }
   updateFieldList(currentTable);
   hideAddFieldModal();
-  resetAddFieldForm();
 }
 
 function removeField(tidx, fidx) {
@@ -62,12 +95,24 @@ function updateFieldList(idx) {
     const li = document.createElement('li');
     li.className = 'flex justify-between items-center';
     li.innerHTML = `<span>${f.name} (${f.type})</span>`;
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.textContent = '×';
-    btn.className = 'text-red-600 ml-2';
-    btn.onclick = () => removeField(idx, i);
-    li.appendChild(btn);
+    const btnGroup = document.createElement('div');
+    btnGroup.className = 'space-x-2';
+
+    const editBtn = document.createElement('button');
+    editBtn.type = 'button';
+    editBtn.textContent = 'Edit';
+    editBtn.className = 'text-blue-600';
+    editBtn.onclick = () => showAddFieldModal(idx, i);
+    btnGroup.appendChild(editBtn);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.textContent = '×';
+    removeBtn.className = 'text-red-600';
+    removeBtn.onclick = () => removeField(idx, i);
+    btnGroup.appendChild(removeBtn);
+
+    li.appendChild(btnGroup);
     list.appendChild(li);
   });
   document.getElementById(`fields_json_${idx}`).value = JSON.stringify(
