@@ -271,6 +271,17 @@ a:hover {
   padding: 0.5rem; /* p-2 */
 }
 
+/* Pill style for individual tags */
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--color-primary-light); /* tailwind teal-100 */
+  color: var(--color-primary-dark);            /* tailwind teal-700 */
+  font-size: 0.75rem;                          /* text-xs */
+  padding: 0.25rem 0.5rem;                     /* px-2 py-1 */
+  border-radius: 9999px;                       /* rounded-full */
+}
+
 /* Filter chip used for all query filter controls */
 .filter-chip {
   display: flex;
