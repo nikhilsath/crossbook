@@ -66,8 +66,10 @@
     {% endif %}
   </div>
   {% endfor %}
-  <button type="submit" class="btn-primary px-4 py-2 rounded">Continue</button>
-  <a href="{{ url_for('wizard.database_step') }}" class="ml-4 text-primary underline">Back</a>
+  <div class="wizard-nav">
+    <a href="{{ url_for('wizard.database_step') }}" class="btn-secondary wizard-back px-4 py-2 rounded">Back</a>
+    <button type="submit" class="btn-primary wizard-continue px-4 py-2 rounded">Continue</button>
+  </div>
 </form>
 <script src="{{ url_for('static', filename='js/wizard_settings.js') }}"></script>
 {% endblock %}

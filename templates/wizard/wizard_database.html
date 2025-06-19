@@ -11,7 +11,10 @@
     <label class="block mb-1">Or create new database</label>
     <input type="text" name="create_name" class="form-control" placeholder="name.db">
   </div>
-  <button type="submit" class="btn-primary px-4 py-2 rounded">Continue</button>
+  <div class="wizard-nav">
+    <div></div>
+    <button type="submit" class="btn-primary wizard-continue px-4 py-2 rounded">Continue</button>
+  </div>
 </form>
 <p class="text-sm mt-4">Current path: {{ db_path }} ({{ db_status }})</p>
 {% endblock %}
