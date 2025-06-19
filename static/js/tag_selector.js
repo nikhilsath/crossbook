@@ -17,7 +17,7 @@
     </button>
 
     <div class="absolute z-10 mt-1 w-full popover-dark hidden max-h-64 overflow-y-auto space-y-1" data-options>
-      <input type="text" placeholder="Search..." class="w-full px-2 py-1 border rounded text-sm mb-2" oninput="const v=this.value.toLowerCase();[...this.parentElement.querySelectorAll('label')].forEach(l => l.classList.toggle('hidden', !l.textContent.toLowerCase().includes(v)))">
+      <input type="text" placeholder="Search..." class="form-input text-sm mb-2" oninput="const v=this.value.toLowerCase();[...this.parentElement.querySelectorAll('label')].forEach(l => l.classList.toggle('hidden', !l.textContent.toLowerCase().includes(v)))">
       {% for option in get_field_options(table, field) %}
         <label class="flex items-center space-x-2">
           <input
