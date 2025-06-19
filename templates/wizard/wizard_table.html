@@ -4,7 +4,11 @@
 <h1 class="text-2xl font-bold mb-4">Step 3: Create Base Table</h1>
 <form method="post" id="tables-form" class="space-y-4">
   <div id="tables-container"></div>
-  <button type="button" id="add-table-btn" onclick="addTableForm()" class="text-teal-600 text-4xl font-bold">+</button>
+  <div class="space-x-4">
+    <button type="button" id="add-table-btn" onclick="addTableForm()" class="text-teal-600 text-4xl font-bold">+</button>
+    <button type="button" id="import-table-btn" class="underline text-blue-600">Import Table Schema</button>
+    <input type="file" id="import-table-file" accept=".csv" class="hidden">
+  </div>
   <div class="wizard-nav">
     <a href="{{ url_for('wizard.settings_step') }}" class="btn-secondary wizard-back px-4 py-2 rounded">Back</a>
     <button type="submit" class="btn-primary wizard-continue px-4 py-2 rounded">Continue</button>

@@ -207,14 +207,53 @@ function addTableForm() {
     </div>`;
   container.appendChild(div);
   updateTitleFieldOptions(idx);
+  return idx;
+}
+
+window.showAddFieldModal = showAddFieldModal;
+window.hideAddFieldModal = hideAddFieldModal;
+window.addTableForm = addTableForm;
+
+function initImportSchema() {
+  const btn = document.getElementById('import-table-btn');
+  const input = document.getElementById('import-table-file');
+  if (!btn || !input) return;
+  btn.addEventListener('click', () => input.click());
+  input.addEventListener('change', handleImportFile);
+}
+
+function handleImportFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    const text = evt.target.result;
+    const lines = text.split(/\r?\n/).filter((l) => l.trim());
+    if (lines.length === 0) return;
+    const headers = lines[0]
+      .split(',')
+      .map((h) => h.replace(/^"|"$/g, '').trim())
+      .filter((h) => h);
+    const idx = addTableForm();
+    const wrapper = document.querySelector(`.table-form[data-index="${idx}"]`);
+    const nameInput = wrapper.querySelector('input[name="table_name"]');
+    if (nameInput) {
+      nameInput.value = file.name.replace(/\.csv$/i, '');
+    }
+    headers.forEach((h) => {
+      tables[idx].push({ name: h, type: 'text', options: [], foreign_key: '' });
+    });
+    updateFieldList(idx);
+    e.target.value = '';
+  };
+  reader.readAsText(file);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   initFieldTypeSelect();
   addTableForm();
   document.getElementById('field-form').addEventListener('submit', addField);
+  initImportSchema();
 });
 
-window.showAddFieldModal = showAddFieldModal;
-window.hideAddFieldModal = hideAddFieldModal;
-window.addTableForm = addTableForm;
+window.initImportSchema = initImportSchema;
