@@ -30,18 +30,18 @@
                       class="{% if item.type == 'json' %}flex flex-col items-start space-y-2 w-full{% else %}flex items-center space-x-2{% endif %}"
                       {% if item.type == 'json' %}data-json-key="{{ item.key }}"{% endif %}>
                 {% if item.type == 'select' or item.options %}
-                  <select name="value" class="border border-gray-300 rounded px-2 py-1 text-sm flex-grow focus:ring-teal-600 focus:border-teal-600">
+                  <select name="value" class="form-control flex-grow">
                     {% for opt in item.options %}
                       <option value="{{ opt }}" {% if item.value == opt %}selected{% endif %}>{{ opt }}</option>
                     {% endfor %}
                   </select>
                 {% elif item.type in ('integer', 'number') %}
-                  <input type="number" name="value" value="{{ item.value }}" class="border border-gray-300 rounded px-2 py-1 text-sm flex-grow focus:ring-teal-600 focus:border-teal-600">
+                  <input type="number" name="value" value="{{ item.value }}" class="form-control flex-grow">
                 {% elif item.type == 'boolean' %}
                   <input type="checkbox" name="value" value="1" {% if item.value in ('1', 1, True, 'true') %}checked{% endif %} class="h-4 w-4 text-teal-600 bg-dark border-gray-300 rounded focus:ring-teal-600">
                   <input type="hidden" name="value" value="0">
                 {% elif item.type == 'date' %}
-                  <input type="date" name="value" value="{{ item.value }}" class="border border-gray-300 rounded px-2 py-1 text-sm flex-grow focus:ring-teal-600 focus:border-teal-600">
+                  <input type="date" name="value" value="{{ item.value }}" class="form-control flex-grow">
                 {% elif item.type == 'json' and item.key == 'layout_defaults' %}
                   <div class="space-y-2 w-full" data-layout-defaults>
                     <div class="layout-default-group">
@@ -50,7 +50,7 @@
                         {% for fname, val in item.parsed.width.items() %}
                           <label class="text-xs flex items-center space-x-1">
                             <span class="w-20 text-right">{{ fname }}</span>
-                            <input type="number" step="1" name="width.{{ fname }}" value="{{ val }}" class="border border-gray-300 rounded px-1 py-0.5 text-xs flex-grow">
+                            <input type="number" step="1" name="width.{{ fname }}" value="{{ val }}" class="form-control px-1 py-0.5 text-xs flex-grow">
                           </label>
                         {% endfor %}
                       </div>
@@ -61,7 +61,7 @@
                         {% for fname, val in item.parsed.height.items() %}
                           <label class="text-xs flex items-center space-x-1">
                             <span class="w-20 text-right">{{ fname }}</span>
-                            <input type="number" step="1" name="height.{{ fname }}" value="{{ val }}" class="border border-gray-300 rounded px-1 py-0.5 text-xs flex-grow">
+                            <input type="number" step="1" name="height.{{ fname }}" value="{{ val }}" class="form-control px-1 py-0.5 text-xs flex-grow">
                           </label>
                         {% endfor %}
                       </div>
@@ -69,7 +69,7 @@
                     <input type="hidden" name="value" value="{{ item.value }}">
                   </div>
                 {% else %}
-                  <input type="text" name="value" value="{{ item.value }}" class="border border-gray-300 rounded px-2 py-1 text-sm flex-grow focus:ring-teal-600 focus:border-teal-600">
+                  <input type="text" name="value" value="{{ item.value }}" class="form-control flex-grow">
                 {% endif %}
                 <button type="submit" class="btn-primary">Save</button>
               </form>
