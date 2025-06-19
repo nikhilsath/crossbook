@@ -355,26 +355,8 @@ def create_base_table(table_name: str, description: str, title_field: str) -> bo
                 (table_name, table_name, description, next_order),
             )
 
-            # Build join tables against existing base tables (excluding the new one)
-            cur.execute(
-                "SELECT table_name FROM config_base_tables WHERE table_name != ?",
-                (table_name,),
-            )
-            existing = [r[0] for r in cur.fetchall()]
-            for other in existing:
-                a, b = sorted([table_name, other])
-                join_table = f"{a}_{b}"
-                first = f"{a}_id"
-                second = f"{b}_id"
-                cur.execute(
-                    f"""
-                    CREATE TABLE IF NOT EXISTS {join_table} (
-                        {first} INTEGER,
-                        {second} INTEGER,
-                        UNIQUE({first}, {second})
-                    )
-                    """
-                )
+            # No per-table join tables are needed. Relationships are stored
+            # centrally in the ``relationships`` table.
 
             conn.commit()
         except Exception as exc:
