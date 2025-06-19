@@ -2,7 +2,7 @@
   <div class="modal-box">
     <button type="button" onclick="closeNewRecordModal()" class="modal-close">&times;</button>
     <h3 class="text-lg font-bold mb-4">Create New {{ table|capitalize }}</h3>
-    <form id="new-record-form" method="post" class="form-layout">
+    <form id="new-record-form" method="post" action="{{ url_for('records.create_record_route', table=table) }}" class="form-layout">
       {% for field, meta in field_schema[table].items() %}
         {% if field != "id" and meta.type != "hidden" %}
           <div class="form-group">
