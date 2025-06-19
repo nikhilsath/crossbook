@@ -83,7 +83,7 @@
         <button id="columnSelectDashboardToggle" type="button" class="dropdown-btn hidden flex items-center justify-between"><span class="selected-label">Select Field</span> <span class="arrow text-xl">▾</span></button>
         <div id="columnSelectDashboardOptions" class="absolute mt-1 w-full popover-dark hidden max-h-64 overflow-y-auto space-y-1"></div>
         <div id="resultRow" class="mt-4 flex items-center justify-center gap-2 hidden">
-          <input id="valueTitleInput" type="text" class="px-3 py-2 border rounded flex-grow" />
+          <input id="valueTitleInput" type="text" class="form-input flex-grow" />
           <div id="valueResult" class="font-semibold"></div>
         </div>
         <button id="dashboardCreateBtn" type="submit" class="btn-primary px-4 py-2 rounded hidden mt-4 block ml-auto">Create</button>
@@ -150,14 +150,14 @@
             </button>
             <div id="filteredTableOptions" class="absolute mt-1 w-full popover-dark hidden max-h-64 overflow-y-auto space-y-1"></div>
           </div>
-          <input id="filteredSearchInput" type="text" placeholder="Search" class="w-full px-3 py-2 border rounded mb-2" />
+          <input id="filteredSearchInput" type="text" placeholder="Search" class="form-input w-full mb-2" />
           <div class="relative mb-2">
             <button id="filteredSortToggle" type="button" class="dropdown-btn flex items-center justify-between">
               <span class="selected-label">Sort Field</span> <span class="arrow text-xl">▾</span>
             </button>
             <div id="filteredSortOptions" class="absolute mt-1 w-full popover-dark hidden max-h-64 overflow-y-auto space-y-1"></div>
           </div>
-          <input id="filteredLimitInput" type="number" value="10" min="1" class="w-full px-3 py-2 border rounded" />
+          <input id="filteredLimitInput" type="number" value="10" min="1" class="form-input w-full" />
         </div>
         <div id="tablePreview" class="mb-4 max-h-64 overflow-y-auto border rounded hidden">
           <table class="min-w-full text-sm">
@@ -167,7 +167,7 @@
             <tbody id="tablePreviewBody"></tbody>
           </table>
         </div>
-        <input id="tableTitleInput" type="text" placeholder="Widget Title" class="px-3 py-2 border rounded w-full mb-4 hidden" />
+        <input id="tableTitleInput" type="text" placeholder="Widget Title" class="form-input w-full mb-4 hidden" />
         <button id="tableCreateBtn" type="submit" class="btn-primary px-4 py-2 rounded block ml-auto hidden">Create</button>
       </form>
     </div>
@@ -224,7 +224,7 @@
             <div class="p-1 border border-l-0 rounded-r text-center peer-checked:bg-teal-600 peer-checked:text-white">Count</div>
           </label>
         </div>
-        <input id="chartTitleInput" type="text" placeholder="Widget Title" class="px-3 py-2 border rounded w-full mb-4 hidden" />
+        <input id="chartTitleInput" type="text" placeholder="Widget Title" class="form-input w-full mb-4 hidden" />
         <button id="chartCreateBtn" type="submit" class="btn-primary px-4 py-2 rounded block ml-auto hidden">Create</button>
       </form>
     </div>
