@@ -23,14 +23,14 @@
       <form method="POST" id="add-field-form" action="/{{ table }}/{{ record.id }}/add-field">
         <input type="hidden" name="record_id" value="{{ record.id }}">
         <label class="block mb-2 text-sm font-medium">Field Name</label>
-        <input name="field_name" type="text" class="w-full border px-3 py-2 rounded mb-4" required>
+        <input name="field_name" type="text" class="form-input mb-4" required>
         <label class="block mb-2 text-sm font-medium">Field Type</label>
         <select id="field_type" name="field_type" class="form-select">
           <option disabled selected>Select type</option>
         </select>
         <div id="field-options-container" class="hidden mb-4">
           <label class="block mb-2 text-sm font-medium">Options (comma-separated)</label>
-          <textarea name="field_options" rows="3" class="w-full border px-3 py-2 rounded"></textarea>
+          <textarea name="field_options" rows="3" class="form-input"></textarea>
         </div>
         <div id="fk-select-container" class="hidden mb-4">
           <label class="block mb-2 text-sm font-medium">Select linked field</label>
