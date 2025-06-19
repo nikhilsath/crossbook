@@ -44,3 +44,46 @@ def test_config_db_create_redirects_to_wizard(client, monkeypatch):
     with client.session_transaction() as sess:
         assert sess['wizard_progress'] == {'database': True, 'skip_import': True}
         assert 'wizard_complete' not in sess
+
+
+def test_db_create_updates_path_and_allows_table_creation(client):
+    import os
+    import sqlite3
+    from main import app
+    from views.admin import reload_app_state
+    import db.database as db_database
+    from db.config import update_config
+
+    new_name = 'admin_created.db'
+    new_path = os.path.join('data', new_name)
+    try:
+        os.remove(new_path)
+    except FileNotFoundError:
+        pass
+
+    resp = client.post('/admin/config/db', data={'create_name': new_name})
+    assert resp.status_code == 302
+    assert os.path.abspath(new_path) == db_database.DB_PATH
+
+    table = 'admintest'
+    resp = client.post('/add-table', json={'table_name': table, 'description': 'x'})
+    assert resp.status_code == 200
+    assert resp.get_json()['success']
+
+    with sqlite3.connect(db_database.DB_PATH) as conn:
+        row = conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+            (table,),
+        ).fetchone()
+        assert row is not None
+
+    with sqlite3.connect('data/crossbook.db') as conn:
+        row = conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+            (table,),
+        ).fetchone()
+        assert row is None
+
+    update_config('db_path', 'data/crossbook.db')
+    with app.app_context():
+        reload_app_state()
