@@ -59,7 +59,6 @@ def test_run_count_reset():
     reset_run_count(rule_id)
     rules = [r for r in get_rules() if r['id'] == rule_id]
     assert rules[0]['run_count'] == 0
-from unittest.mock import patch
 
 
 def test_trigger_scheduled_rules_enqueues_only_eligible_tasks():
