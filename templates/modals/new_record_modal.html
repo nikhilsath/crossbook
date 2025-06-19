@@ -4,7 +4,7 @@
     <h3 class="text-lg font-bold mb-4">Create New {{ table|capitalize }}</h3>
     <form id="new-record-form" method="post" action="{{ url_for('records.create_record_route', table=table) }}" class="form-layout">
       {% for field, meta in field_schema[table].items() %}
-        {% if field != "id" and meta.type != "hidden" %}
+        {% if field not in ["id", "date_created", "last_edited"] and meta.type != "hidden" %}
           <div class="form-group">
             <label class="form-label">{{ field }}</label>
             {% if meta.type == "textarea" %}
