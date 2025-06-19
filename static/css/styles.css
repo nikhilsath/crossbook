@@ -386,3 +386,14 @@ a:hover {
 .modal-close:hover {
   color: var(--color-primary-light);
 }
+
+/* Pagination link styling */
+.pagination-link {
+  padding: 0.25rem 0.5rem; /* px-2 py-1 */
+  border-radius: 0.25rem;
+  background-color: var(--color-secondary-light);
+}
+.pagination-link.active {
+  background-color: var(--color-primary);
+  color: #fff;
+}
