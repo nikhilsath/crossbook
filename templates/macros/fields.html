@@ -13,7 +13,7 @@
   {% if request.args.get('edit') == field %}
     {{ inline_input(field, update_endpoint, table, record_id,
         '<input type="text" name="new_value" value="' ~ value ~
-        '" class="border px-1 py-0.5 text-sm rounded" onchange="submitFieldAjax(this.form)">\n<span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>' ) }}
+        '" class="input-sm" onchange="submitFieldAjax(this.form)">\n<span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>' ) }}
   {% else %}
     <span class="ml-1" data-field="{{ field }}">{{ value }}</span>
   {% endif %}
@@ -109,7 +109,7 @@
   {% if request.args.get('edit') == field %}
     {{ inline_input(field, update_endpoint, table, record_id,
         '<input type="number" name="new_value" value="' ~ value ~
-        '" class="appearance-none border px-1 py-0.5 text-sm rounded"  onchange="submitFieldAjax(this.form)"><span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>' ) }}
+        '" class="input-sm" onchange="submitFieldAjax(this.form)"><span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>' ) }}
   {% else %}
     <span class="ml-1" data-field="{{ field }}">{{ value }}</span>
   {% endif %}
@@ -119,7 +119,7 @@
   {% if request.args.get('edit') == field %}
     {{ inline_input(field, update_endpoint, table, record_id,
         '<input type="date" name="new_value" value="' ~ value ~
-        '" class="border px-1 py-0.5 text-sm rounded" onchange="submitFieldAjax(this.form)"><span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>' ) }}
+        '" class="input-sm" onchange="submitFieldAjax(this.form)"><span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>' ) }}
   {% else %}
     <span class="ml-1" data-field="{{ field }}">{{ value }}</span>
   {% endif %}
@@ -193,7 +193,7 @@
   {% if request.args.get('edit') == field %}
     {{ inline_input(field, update_endpoint, table, record_id,
           '<input type="url" name="new_value" value="' ~ value ~
-          '" class="border px-1 py-0.5 text-sm rounded" onchange="submitFieldAjax(this.form)">\n<span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>' ) }}
+          '" class="input-sm" onchange="submitFieldAjax(this.form)">\n<span class="ajax-status text-xs text-gray-500 ml-1 hidden"></span>' ) }}
   {% else %}
     <a href="{{ value }}" target="_blank" rel="noopener">{{ value }}</a>
   {% endif %}
