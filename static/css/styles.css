@@ -405,3 +405,17 @@ a:hover {
   background-color: var(--color-primary);
   color: #fff;
 }
+
+/* Wizard navigation layout */
+.wizard-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem; /* similar to Tailwind mt-4 */
+}
+
+/* Individual wizard buttons */
+.wizard-back,
+.wizard-continue {
+  display: inline-block;
+}
