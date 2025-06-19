@@ -208,8 +208,8 @@
             <span class="text-gray-400 relation-hint">None</span>
           {% endif %}
           <div id="add-rel-{{ section }}" class="mt-2 hidden">
-            <input type="text" placeholder="Search..." class="border px-2 py-1 text-sm rounded w-full mb-1" oninput="searchRelation('{{ section }}', this)">
-            <select id="rel-options-{{ section }}" class="border px-2 py-1 text-sm rounded w-full mb-1"></select>
+            <input type="text" placeholder="Search..." class="form-input mb-1" oninput="searchRelation('{{ section }}', this)">
+            <select id="rel-options-{{ section }}" class="form-select mb-1"></select>
             <div class="flex space-x-1 items-center mb-1 text-xs">
               <label class="flex items-center space-x-1">
                 <input type="radio" name="rel-dir-{{ section }}" value="one" class="rel-dir" checked>
