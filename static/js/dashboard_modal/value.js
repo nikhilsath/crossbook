@@ -244,7 +244,7 @@ export function populateFieldDropdown(dropdown, restrictNumeric, allowedTypes, c
   const search = document.createElement('input');
   search.type = 'text';
   search.placeholder = 'Search...';
-  search.className = 'w-full px-2 py-1 border rounded text-sm mb-2';
+  search.className = 'form-input w-full px-2 py-1 border rounded text-sm mb-2';
   search.addEventListener('input', function() {
     const v = this.value.toLowerCase();
     [...dropdown.querySelectorAll('label')].forEach(l => l.classList.toggle('hidden', !l.textContent.toLowerCase().includes(v)));
