@@ -76,7 +76,6 @@ def update_database_file():
         file.save(save_path)
         initialize_database(save_path)
         ensure_default_configs(save_path)
-        init_db_path(save_path)
         update_config('db_path', save_path)
         reload_app_state()
         if wants_json:
@@ -92,7 +91,6 @@ def update_database_file():
         open(save_path, 'a').close()
         initialize_database(save_path)
         ensure_default_configs(save_path)
-        init_db_path(save_path)
         update_config('db_path', save_path)
         reload_app_state()
         session['wizard_progress'] = {'database': True, 'skip_import': True}
