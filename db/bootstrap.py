@@ -115,8 +115,6 @@ def ensure_relationships_table(path: str) -> None:
                 "CREATE INDEX idx_relationships_b ON relationships (table_b, id_b)"
             )
             conn.commit()
-            return
-
 
 
 def _create_core_tables(cur: sqlite3.Cursor) -> None:
@@ -196,25 +194,6 @@ def _create_core_tables(cur: sqlite3.Cursor) -> None:
         """
     )
 
-    # Generic relationships table for many-to-many links
-    cur.execute(
-        """
-        CREATE TABLE IF NOT EXISTS relationships (
-            table_a TEXT NOT NULL,
-            id_a INTEGER NOT NULL,
-            table_b TEXT NOT NULL,
-            id_b INTEGER NOT NULL,
-            UNIQUE (table_a, id_a, table_b, id_b)
-        )
-        """
-    )
-    cur.execute(
-        "CREATE INDEX IF NOT EXISTS idx_relationships_a ON relationships (table_a, id_a)"
-    )
-    cur.execute(
-        "CREATE INDEX IF NOT EXISTS idx_relationships_b ON relationships (table_b, id_b)"
-    )
-
     cur.execute(
         """
         CREATE TABLE IF NOT EXISTS automation_rules (
@@ -266,6 +245,7 @@ def ensure_default_configs(path: str) -> None:
         _copy_config_metadata(cur, path)
         ensure_relationships_table(path)
 
+
 def initialize_database(path: str) -> None:
     """Create a new database with core tables."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -274,4 +254,3 @@ def initialize_database(path: str) -> None:
         _create_core_tables(cur)
         conn.commit()
     ensure_relationships_table(path)
-
