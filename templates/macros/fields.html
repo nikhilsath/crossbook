@@ -62,7 +62,7 @@
 
       <div class="flex flex-wrap gap-1 mb-2 tag-container">
         {% for tag in selected_options if tag %}
-          <span class="inline-flex items-center bg-teal-100 text-teal-700 text-xs px-2 py-1 rounded-full">
+          <span class="tag-pill">
             {{ tag }}
             <button type="button" class="ml-1 text-teal-600 hover:text-red-500" onclick="this.closest('form').querySelector('input[value=\'{{ tag }}\']').checked = false; submitMultiSelectAuto(this.closest('form'))">×</button>
           </span>
@@ -96,7 +96,7 @@
     {% set selected_options = selected_options | map('trim') | reject('equalto', '') | list %}
     <div class="flex flex-wrap gap-1 tag-container" data-field="{{ field }}">
       {% for tag in selected_options if tag %}
-        <span class="inline-flex items-center bg-teal-100 text-teal-700 text-xs px-2 py-1 rounded-full">{{ tag }}</span>
+        <span class="tag-pill">{{ tag }}</span>
       {% endfor %}
       {% if selected_options|reject('equalto', '')|list|length == 0 %}
         <span class="text-gray-500">None</span>
@@ -132,13 +132,13 @@
       {% set selected_options = (value or '').split(',') %}
       {% set selected_options = selected_options | map('trim') | reject('equalto', '') | list %}
 
-      <div class="flex flex-wrap gap-1 mb-2 tag-container">
-        {% for tag in selected_options if tag %}
-          <span class="inline-flex items-center bg-teal-100 text-teal-700 text-xs px-2 py-1 rounded-full">
-            {{ tag }}
-            <button type="button" class="ml-1 text-teal-600 hover:text-red-500" onclick="this.closest('form').querySelector('input[value=\'{{ tag }}\']').checked = false; submitMultiSelectAuto(this.closest('form'))">×</button>
-          </span>
-        {% endfor %}
+        <div class="flex flex-wrap gap-1 mb-2 tag-container">
+          {% for tag in selected_options if tag %}
+            <span class="tag-pill">
+              {{ tag }}
+              <button type="button" class="ml-1 text-teal-600 hover:text-red-500" onclick="this.closest('form').querySelector('input[value=\'{{ tag }}\']').checked = false; submitMultiSelectAuto(this.closest('form'))">×</button>
+            </span>
+          {% endfor %}
       </div>
 
       <button type="button" class="dropdown-btn" onclick="this.nextElementSibling.classList.toggle('hidden')">
@@ -168,7 +168,7 @@
     {% set selected_options = selected_options | map('trim') | reject('equalto', '') | list %}
     <div class="flex flex-wrap gap-1 tag-container" data-field="{{ field }}">
       {% for tag in selected_options if tag %}
-        <span class="inline-flex items-center bg-teal-100 text-teal-700 text-xs px-2 py-1 rounded-full">{{ tag }}</span>
+        <span class="tag-pill">{{ tag }}</span>
       {% endfor %}
       {% if selected_options|reject('equalto', '')|list|length == 0 %}
         <span class="text-gray-500">None</span>
