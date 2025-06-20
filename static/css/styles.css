@@ -419,3 +419,13 @@ a:hover {
 .wizard-continue {
   display: inline-block;
 }
+
+/* Fields list rows used in the table wizard */
+.wizard-field-row {
+  cursor: pointer;
+  padding: 0.25rem 0.5rem; /* py-1 px-2 */
+  border-radius: 0.25rem;
+}
+.wizard-field-row:hover {
+  background-color: #374151; /* dark gray hover */
+}

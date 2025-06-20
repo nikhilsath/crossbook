@@ -93,8 +93,9 @@ function updateFieldList(idx) {
   list.innerHTML = '';
   tables[idx].forEach((f, i) => {
     const li = document.createElement('li');
-    li.className = 'flex justify-between items-center';
+    li.className = 'flex justify-between items-center wizard-field-row';
     li.innerHTML = `<span>${f.name} (${f.type})</span>`;
+    li.onclick = () => showAddFieldModal(idx, i);
     const btnGroup = document.createElement('div');
     btnGroup.className = 'space-x-2';
 
@@ -102,14 +103,20 @@ function updateFieldList(idx) {
     editBtn.type = 'button';
     editBtn.textContent = 'Edit';
     editBtn.className = 'text-blue-600';
-    editBtn.onclick = () => showAddFieldModal(idx, i);
+    editBtn.onclick = (e) => {
+      e.stopPropagation();
+      showAddFieldModal(idx, i);
+    };
     btnGroup.appendChild(editBtn);
 
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
     removeBtn.textContent = '×';
     removeBtn.className = 'text-red-600';
-    removeBtn.onclick = () => removeField(idx, i);
+    removeBtn.onclick = (e) => {
+      e.stopPropagation();
+      removeField(idx, i);
+    };
     btnGroup.appendChild(removeBtn);
 
     li.appendChild(btnGroup);
