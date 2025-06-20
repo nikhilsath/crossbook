@@ -13,6 +13,7 @@ export function openDashboardModal() {
   dashboardTrigger = document.activeElement;
   document.getElementById('dashboardModal').classList.remove('hidden');
   document.addEventListener('keydown', escHandler);
+  setActiveTab('value');
 }
 
 export function closeDashboardModal() {
@@ -28,6 +29,20 @@ let activeTab = 'value';
 
 function setActiveTab(name) {
   activeTab = name;
+  ['value', 'table', 'chart'].forEach(n => {
+    const pane = document.getElementById(`pane-${n}`);
+    const tab = document.getElementById(`tab-${n}`);
+    if (pane) pane.classList.toggle('hidden', n !== name);
+    if (tab) {
+      const active = n === name;
+      tab.setAttribute('aria-selected', active ? 'true' : 'false');
+      tab.classList.toggle('text-teal-600', active);
+      tab.classList.toggle('border-teal-600', active);
+      tab.classList.toggle('border-transparent', !active);
+      tab.classList.toggle('hover:text-gray-600', !active);
+      tab.classList.toggle('hover:border-gray-300', !active);
+    }
+  });
   updateColumnOptions();
   if (activeTab === 'table') updateTablePreview();
   if (activeTab === 'chart') updateChartUI();
@@ -47,6 +62,7 @@ function initDashboardModal() {
   initValueWidgets();
   initTableWidgets();
   initChartWidgets();
+  setActiveTab(activeTab);
 
   const createBtnEl = document.getElementById('dashboardCreateBtn');
   if (createBtnEl) {
