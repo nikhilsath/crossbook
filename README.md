@@ -45,7 +45,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 ## Current Status
 
 * **Detail View Layout Editor:** drag-and-drop and resizing are fully functional and layouts save via the `/<table>/layout` endpoint.
-* **Setup Wizard:** `/wizard/` walks through choosing or creating a database, adjusting settings, adding an initial table, and optionally importing a CSV.
+* **Setup Wizard:** `/wizard/` walks through choosing or creating a database, adjusting settings, adding an initial table, and optionally importing a CSV. Step 3 can now import a CSV file to populate the table schema automatically.
 
 ## Implemented Features
 
@@ -53,6 +53,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Column Visibility:** Columns can be shown or hidden on the fly using the **Columns** dropdown (`column_visibility.js`).
 * **Detail View & Inline Edit:** Displays all fields on the detail page with inline editing via text inputs, date pickers, checkboxes, or textareas. Numeric field changes now save via AJAX and append to the edit log without reloading the page.
 * **Relationship Management:** Displays related records and allows adding/removing relationships through a modal interface (+ to add, ✖ to remove), using AJAX to update the relationships table dynamically.
+* **Central Relationships Table:** New base tables no longer create join tables; all links between records are stored in a single `relationships` table.
 * **Rich Text Support:** Textareas are enhanced with [Quill](https://quilljs.com/) for WYSIWYG editing.
 * **Edit History:** Tracks each record’s modifications in an `edit_log`, viewable via an expandable history section. Individual entries now include an **Undo** link to revert that change.
 * **Navigation Bar:** A consistent top navigation (`base.html`) links to Home and all base table sections.
@@ -62,6 +63,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Filter Macros:** Reusable Jinja macros for boolean, select, text, and multi-select filters (`templates/macros/filter_controls.html`).
 * **Text Filter Operators:** `contains`, `equals`, `starts_with`, `ends_with`, `not_contains`, and `regex` operators are available when filtering text fields. Regex matching requires database support and falls back to a normal `LIKE` search if unavailable.
 * **Field Schema Editing:** New endpoints allow adding or removing columns at runtime (`/<table>/<id>/add-field`, `/<table>/<id>/remove-field`) and counting non-null values (`/<table>/count-nonnull`).
+* **CSV Schema Import:** Step 3 of the setup wizard can read a CSV header row and create table fields automatically.
 * **Admin Dashboard & Configuration:** The `/admin` section includes a configuration editor and placeholder pages for user management and automation.
 * **Layout Defaults from DB:** Field width and height defaults are loaded from the `config` table instead of being hardcoded.
 * **Layout Editor Persistence:** detail page layouts save to the database via the `/<table>/layout` endpoint.
