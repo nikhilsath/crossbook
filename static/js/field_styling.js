@@ -14,6 +14,9 @@ function applyStyling(el, styling) {
   } else {
     el.style.removeProperty('--field-size');
   }
+  if (el.dataset.type === 'chart' && window.refreshChartWidget) {
+    try { window.refreshChartWidget(el); } catch (e) { console.error('chart refresh error', e); }
+  }
   const label = el.querySelector('div.text-sm.font-bold.capitalize.mb-1');
   if (label) label.classList.remove('hidden');
 }
@@ -49,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="bold"> <span>Bold</span></label>
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="italic"> <span>Italic</span></label>
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="underline"> <span>Underline</span></label>
+    <label class="flex items-center space-x-2 chart-only hidden"><input type="checkbox" data-opt="hide-legend"> <span>Hide Legend</span></label>
     <label class="flex items-center space-x-1">
       <span class="whitespace-nowrap mr-1">Size</span>
       <button type="button" data-size-act="dec" class="px-1 border rounded">-</button>
@@ -64,6 +68,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const presetsDiv = menu.querySelector('#color-presets');
   const sizeInput = menu.querySelector('[data-opt="size"]');
   const sizeDisplay = menu.querySelector('[data-opt="size-display"]');
+  const hideLegendLabel = menu.querySelector('.chart-only');
+  const hideLegendCb = menu.querySelector('[data-opt="hide-legend"]');
   const SIZE_MIN = 10;
   const SIZE_MAX = 48;
   const SIZE_STEP = 1;
@@ -117,6 +123,12 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     currentEl = fieldEl;
     const styling = fieldEl._styling || {};
+    if (fieldEl.dataset.type === 'chart') {
+      hideLegendLabel.classList.remove('hidden');
+      hideLegendCb.checked = !!styling.hideLegend;
+    } else {
+      hideLegendLabel.classList.add('hidden');
+    }
     menu.querySelector('[data-opt="bold"]').checked = !!styling.bold;
     menu.querySelector('[data-opt="italic"]').checked = !!styling.italic;
     menu.querySelector('[data-opt="underline"]').checked = !!styling.underline;
@@ -154,7 +166,8 @@ document.addEventListener('DOMContentLoaded', () => {
       italic: menu.querySelector('[data-opt="italic"]').checked,
       underline: menu.querySelector('[data-opt="underline"]').checked,
       color: selectedColor,
-      size: parseInt(sizeInput.value, 10) || null
+      size: parseInt(sizeInput.value, 10) || null,
+      hideLegend: hideLegendCb.checked
     });
     currentEl._styling = styling;
     applyStyling(currentEl, styling);

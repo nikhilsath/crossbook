@@ -75,6 +75,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Top/Bottom Numeric:** Table widget listing records with the highest or lowest values for a numeric field.
 * **Filtered Records Widget:** Table widget showing records from any table matching a search filter, with optional sort and limit.
 * **Dashboard Grid Editing:** Widgets can be dragged, resized, and saved using `/dashboard/layout`.
+* **Widget Styling:** Right-click a widget to adjust text styles. Chart widgets include a "Hide Legend" toggle.
 * **Numerical Summaries:** `/<table>/sum-field` returns the sum for numeric columns, used by dashboard charts.
 * **List API:** `/api/<table>/list` provides ID and label data for dropdowns. It
   accepts optional `search` and `limit` query parameters to filter results.
