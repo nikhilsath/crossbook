@@ -1,28 +1,15 @@
 import { initValueWidgets, createValueWidget, updateColumnOptions } from './dashboard_modal/value.js';
 import { initTableWidgets, createTableWidget, updateTablePreview } from './dashboard_modal/table.js';
 import { initChartWidgets, createChartWidget, updateChartUI } from './dashboard_modal/chart.js';
-
-let dashboardTrigger = null;
-const escHandler = (e) => {
-  if (e.key === 'Escape') {
-    closeDashboardModal();
-  }
-};
+import { openModal, closeModal } from './modal_helper.js';
 
 export function openDashboardModal() {
-  dashboardTrigger = document.activeElement;
-  document.getElementById('dashboardModal').classList.remove('hidden');
-  document.addEventListener('keydown', escHandler);
+  openModal('dashboardModal');
   setActiveTab('value');
 }
 
 export function closeDashboardModal() {
-  document.getElementById('dashboardModal').classList.add('hidden');
-  document.removeEventListener('keydown', escHandler);
-  if (dashboardTrigger) {
-    dashboardTrigger.focus();
-    dashboardTrigger = null;
-  }
+  closeModal('dashboardModal');
 }
 
 let activeTab = 'value';

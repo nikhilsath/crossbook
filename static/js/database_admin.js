@@ -1,3 +1,5 @@
+import { openModal, closeModal } from './modal_helper.js';
+
 function initDatabaseControls() {
   const uploadForm = document.getElementById('db-upload-form');
   if (uploadForm) {
@@ -53,26 +55,12 @@ function initDatabaseControls() {
 
 }
 
-let createDbTrigger = null;
-const escHandler = (e) => {
-  if (e.key === 'Escape') {
-    closeCreateDbModal();
-  }
-};
-
 export function openCreateDbModal() {
-  createDbTrigger = document.activeElement;
-  document.getElementById('createDbModal').classList.remove('hidden');
-  document.addEventListener('keydown', escHandler);
+  openModal('createDbModal');
 }
 
 export function closeCreateDbModal() {
-  document.getElementById('createDbModal').classList.add('hidden');
-  document.removeEventListener('keydown', escHandler);
-  if (createDbTrigger) {
-    createDbTrigger.focus();
-    createDbTrigger = null;
-  }
+  closeModal('createDbModal');
   const err = document.getElementById('create-db-error');
   if (err) {
     err.textContent = '';
