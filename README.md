@@ -79,6 +79,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Numerical Summaries:** `/<table>/sum-field` returns the sum for numeric columns, used by dashboard charts.
 * **List API:** `/api/<table>/list` provides ID and label data for dropdowns. It
   accepts optional `search` and `limit` query parameters to filter results.
+* **Base Tables API:** `/api/base-tables` returns the rows from `config_base_tables` for navigation metadata.
 * **CSV Import Workflow:** Upload a CSV on `/import`, map fields, then start a background job via `/import-start` and poll `/import-status` for progress.
 
 ## Project Structure
@@ -315,6 +316,7 @@ The following functions encapsulate the application logic:
 | `manage_relationship()`                       | **Route:** POST `/relationship` – AJAX endpoint for adding or removing a relationship between two records. It expects a JSON payload with `table_a`, `id_a`, `table_b`, `id_b`, and an `action` ("add" or "remove"). Depending on the action, it inserts or deletes a row in the `relationships` table using `INSERT OR IGNORE` for adds. On success, the endpoint returns JSON `{"success": True}`. Missing fields or invalid actions yield a 400 error and database errors return status 500. *(This function uses its own sqlite3 connection for simplicity.)* |
 | `dashboard()` | **Route:** GET `/dashboard` – Displays the dashboard page with draggable widgets.
 | `api_list(table)` | **Route:** GET `/api/<table>/list` – Returns JSON with `id` and `label` values for dropdowns. Supports optional `search` and `limit` query params. |
+| `api_base_tables()` | **Route:** GET `/api/base-tables` – Returns the contents of the `config_base_tables` table for navigation metadata. |
 
 | `add_field_route(table, record_id)` | **Route:** POST `/<table>/<int:record_id>/add-field` – Adds a new column to the table and updates the field schema. |
 | `remove_field_route(table, record_id)` | **Route:** POST `/<table>/<int:record_id>/remove-field` – Removes a column from the table and refreshes the schema. |
