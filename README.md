@@ -80,6 +80,10 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
   accepts optional `search` and `limit` query parameters to filter results.
 * **CSV Import Workflow:** Upload a CSV on `/import`, map fields, then start a background job via `/import-start` and poll `/import-status` for progress.
 
+### Dashboard Customization
+
+Chart widgets include a **Hide Legend** option in the styling menu. Right‑click a chart while editing the dashboard and toggle this checkbox to remove the legend. The preference is saved to the widget's styling JSON and respected when charts render.
+
 ## Project Structure
 
 ```text
