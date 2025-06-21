@@ -14,8 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ro.observe(widget);
   }
 
-  const chartWidgets = document.querySelectorAll('[data-type="chart"]');
-  chartWidgets.forEach(async widget => {
+  async function refreshChartWidget(widget) {
     const cfgText = widget.dataset.config;
     if (!cfgText) return;
     let cfg;
@@ -27,15 +26,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const { chart_type: type = 'bar', x_field, y_field, aggregation, field, orientation } = cfg;
+    const hideLegend = widget._styling && widget._styling.hideLegend;
     const canvas = widget.querySelector('canvas') || document.createElement('canvas');
     if (!canvas.parentElement) widget.appendChild(canvas);
+    if (widget._chart) {
+      try { widget._chart.destroy(); } catch (e) { console.error('chart destroy error', e); }
+    }
     let chartInstance = null;
 
     if (type === 'pie') {
       if (!x_field) return;
-      const [table, field] = x_field.split(':');
+      const [table, fieldName] = x_field.split(':');
       try {
-        const res = await fetch(`/${table}/field-distribution?field=${encodeURIComponent(field)}`);
+        const res = await fetch(`/${table}/field-distribution?field=${encodeURIComponent(fieldName)}`);
         const data = await res.json();
         const labels = Object.keys(data);
         const values = Object.values(data);
@@ -43,12 +46,13 @@ document.addEventListener('DOMContentLoaded', () => {
         chartInstance = new Chart(canvas, {
           type: 'pie',
           data: { labels, datasets: [{ data: values, backgroundColor: colors }] },
-          options: { responsive: true, maintainAspectRatio: false }
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: !hideLegend } } }
         });
         widget._chart = chartInstance;
       } catch (err) {
         console.error('[dashboard_charts] pie data fetch error', err);
       }
+      widget._chart = chartInstance;
       attachResize(widget, chartInstance);
       return;
     }
@@ -64,12 +68,13 @@ document.addEventListener('DOMContentLoaded', () => {
         chartInstance = new Chart(canvas, {
           type: 'bar',
           data: { labels, datasets: [{ data: values, backgroundColor: colors }] },
-          options: { responsive: true, maintainAspectRatio: false, indexAxis: orientation === 'y' ? 'y' : 'x', plugins: { legend: { display: false } } }
+          options: { responsive: true, maintainAspectRatio: false, indexAxis: orientation === 'y' ? 'y' : 'x', plugins: { legend: { display: !hideLegend } } }
         });
         widget._chart = chartInstance;
       } catch (err) {
         console.error('[dashboard_charts] bar data fetch error', err);
       }
+      widget._chart = chartInstance;
       attachResize(widget, chartInstance);
       return;
     }
@@ -84,12 +89,13 @@ document.addEventListener('DOMContentLoaded', () => {
         chartInstance = new Chart(canvas, {
           type: 'line',
           data: { labels, datasets: [{ data: values, borderColor: FLOWBITE_COLORS[0], backgroundColor: 'rgba(13,148,136,0.2)', fill: false }] },
-          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: !hideLegend } } }
         });
         widget._chart = chartInstance;
       } catch (err) {
         console.error('[dashboard_charts] line data fetch error', err);
       }
+      widget._chart = chartInstance;
       attachResize(widget, chartInstance);
       return;
     }
@@ -97,10 +103,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!x_field || !y_field || !aggregation) return;
 
     const fetchVal = spec => {
-      const [table, field] = spec.split(':');
+      const [table, fieldName] = spec.split(':');
       const endpoint = aggregation === 'sum' ? 'sum-field' : 'count-nonnull';
       const key = aggregation === 'sum' ? 'sum' : 'count';
-      return fetch(`/${table}/${endpoint}?field=${encodeURIComponent(field)}`)
+      return fetch(`/${table}/${endpoint}?field=${encodeURIComponent(fieldName)}`)
         .then(r => r.json())
         .then(d => d[key] || 0)
         .catch(() => 0);
@@ -122,10 +128,14 @@ document.addEventListener('DOMContentLoaded', () => {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } }
+        plugins: { legend: { display: !hideLegend } }
       }
     });
     widget._chart = chartInstance;
     attachResize(widget, chartInstance);
-  });
+  }
+
+  const chartWidgets = document.querySelectorAll('[data-type="chart"]');
+  chartWidgets.forEach(widget => refreshChartWidget(widget));
+  window.refreshChartWidget = refreshChartWidget;
 });
