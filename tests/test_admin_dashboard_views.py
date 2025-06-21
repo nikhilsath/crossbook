@@ -196,3 +196,22 @@ def test_dashboard_filtered_records_invalid_table(client):
     resp = client.get('/dashboard/filtered-records', query_string={'table': 'bad'})
     assert resp.status_code == 400
     assert resp.get_json() == []
+
+
+def test_dashboard_delete_widget(client):
+    data = {
+        'title': 'Delete Me',
+        'widget_type': 'value',
+        'content': '1',
+        'col_start': 1,
+        'col_span': 1,
+        'row_span': 1,
+    }
+    resp = client.post('/dashboard/widget', json=data)
+    assert resp.status_code == 200
+    wid = resp.get_json()['id']
+    del_resp = client.post(f'/dashboard/widget/{wid}/delete')
+    assert del_resp.status_code == 200
+    assert del_resp.get_json()['success']
+    widgets = get_dashboard_widgets()
+    assert all(w['id'] != wid for w in widgets)

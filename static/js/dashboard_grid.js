@@ -11,6 +11,9 @@ const defaultWidgetHeight = {
 };
 
 const widgetLayout = window.WIDGET_LAYOUT || {};
+window.removeDashboardWidget = function(id) {
+  delete widgetLayout[id];
+};
 
 function enterEditMode() {
   const grid = document.getElementById('dashboard-grid');
