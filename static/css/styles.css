@@ -85,6 +85,13 @@ a:hover {
   flex-direction: column;
 }
 
+/* Ensure Chart.js canvases fill their widget */
+.dashboard-widget canvas {
+  width: 100% !important;
+  flex: 1 1 auto;       /* fill remaining space without overflowing */
+  height: auto !important; /* let flexbox control vertical size */
+}
+
 /* allow scroll area to use remaining height */
 .dashboard-widget > .overflow-auto {
   flex: 1 1 auto;
