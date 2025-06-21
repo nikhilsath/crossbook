@@ -1,23 +1,11 @@
-let recordTrigger = null;
-const escHandler = (e) => {
-  if (e.key === 'Escape') {
-    closeNewRecordModal();
-  }
-};
+import { openModal, closeModal } from './modal_helper.js';
 
 export function openNewRecordModal() {
-  recordTrigger = document.activeElement;
-  document.getElementById('new_record_modal').classList.remove('hidden');
-  document.addEventListener('keydown', escHandler);
+  openModal('new_record_modal');
 }
 
 export function closeNewRecordModal() {
-  document.getElementById('new_record_modal').classList.add('hidden');
-  document.removeEventListener('keydown', escHandler);
-  if (recordTrigger) {
-    recordTrigger.focus();
-    recordTrigger = null;
-  }
+  closeModal('new_record_modal');
 }
 
 window.openNewRecordModal = openNewRecordModal;

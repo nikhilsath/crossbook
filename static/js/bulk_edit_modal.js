@@ -1,24 +1,12 @@
-let bulkTrigger = null;
-let escHandler = (e) => {
-  if (e.key === 'Escape') {
-    closeBulkEditModal();
-  }
-};
+import { openModal, closeModal } from './modal_helper.js';
 
 export function openBulkEditModal() {
   updateSelectedCount();
-  bulkTrigger = document.activeElement;
-  document.getElementById('bulkEditModal').classList.remove('hidden');
-  document.addEventListener('keydown', escHandler);
+  openModal('bulkEditModal');
 }
 
 export function closeBulkEditModal() {
-  document.getElementById('bulkEditModal').classList.add('hidden');
-  document.removeEventListener('keydown', escHandler);
-  if (bulkTrigger) {
-    bulkTrigger.focus();
-    bulkTrigger = null;
-  }
+  closeModal('bulkEditModal');
 }
 
 let tableName;

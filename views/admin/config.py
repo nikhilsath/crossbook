@@ -13,7 +13,7 @@ from flask import (
 from werkzeug.utils import secure_filename
 from logging_setup import configure_logging
 from db.config import get_config_rows, update_config
-from db.database import check_db_status
+from db.database import check_db_status, init_db_path
 from db.bootstrap import initialize_database, ensure_default_configs
 from db.schema import create_base_table
 from utils.field_registry import FIELD_TYPES
