@@ -440,3 +440,33 @@ a:hover {
 .wizard-field-row:hover {
   background-color: #374151; /* dark gray hover */
 }
+
+/* Dark mode overrides for Quill editor */
+.quill-editor .ql-editor,
+.ql-editor {
+  background-color: var(--bg-card);
+  color: var(--text-light);
+}
+.ql-toolbar.ql-snow {
+  background-color: var(--bg-card);
+  border-color: var(--color-primary-light);
+}
+.ql-snow .ql-stroke,
+.ql-snow .ql-stroke-miter {
+  stroke: var(--text-light);
+}
+.ql-snow .ql-fill {
+  fill: var(--text-light);
+}
+.ql-snow .ql-picker,
+.ql-snow .ql-picker-label,
+.ql-snow .ql-picker-item {
+  color: var(--text-light);
+}
+.ql-snow .ql-picker-options {
+  background-color: var(--bg-card);
+  border-color: var(--color-primary-light);
+}
+.ql-editor.ql-blank::before {
+  color: var(--color-primary-light);
+}
