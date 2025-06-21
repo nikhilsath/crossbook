@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
   `;
   document.body.appendChild(menu);
 
-  let selectedColor = '#000000';
+  let selectedColor = '#ffffff';
   const presetsDiv = menu.querySelector('#color-presets');
   const sizeInput = menu.querySelector('[data-opt="size"]');
   const sizeDisplay = menu.querySelector('[data-opt="size-display"]');
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateSizeDisplay(val);
     menu.dispatchEvent(new Event('change'));
   });
-  const presetColors = ['#000000', '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+  const presetColors = ['#ffffff', '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
   presetsDiv.innerHTML = '';
   presetColors.forEach(c => {
     const btn = document.createElement('button');
@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     menu.querySelector('[data-opt="underline"]').checked = !!styling.underline;
     sizeInput.value = styling.size || '';
     updateSizeDisplay(sizeInput.value);
-    selectedColor = styling.color || '#000000';
+    selectedColor = styling.color || '#ffffff';
     menu.style.left = `${e.pageX}px`;
     menu.style.top = `${e.pageY}px`;
     menu.classList.remove('hidden');
