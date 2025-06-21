@@ -1,4 +1,5 @@
-import os, sys, sqlite3, json
+import os
+import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from main import app
 from db.database import init_db_path
