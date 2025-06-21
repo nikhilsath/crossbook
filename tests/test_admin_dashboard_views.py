@@ -137,6 +137,20 @@ def test_dashboard_update_style_success(client):
     update_widget_styling(widget['id'], original)
 
 
+def test_dashboard_update_style_hide_legend(client):
+    widget = get_dashboard_widgets()[0]
+    original = json.loads(widget.get('styling') or '{}')
+    resp = client.post(
+        '/dashboard/style',
+        json={'widget_id': widget['id'], 'styling': {'hideLegend': True}},
+    )
+    assert resp.status_code == 200
+    assert resp.get_json()['success']
+    updated = next(w for w in get_dashboard_widgets() if w['id'] == widget['id'])
+    assert json.loads(updated['styling']) == {'hideLegend': True}
+    update_widget_styling(widget['id'], original)
+
+
 def test_dashboard_update_style_invalid_data(client):
     resp = client.post('/dashboard/style', json={'widget_id': None, 'styling': 'x'})
     assert resp.status_code == 400

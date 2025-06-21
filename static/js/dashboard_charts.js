@@ -18,6 +18,18 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    let styling = {};
+    if (widget._styling) {
+      styling = widget._styling;
+    } else if (widget.dataset.styling) {
+      try {
+        styling = JSON.parse(widget.dataset.styling);
+      } catch (e) {
+        styling = {};
+      }
+    }
+    const legendDisplay = !styling.hideLegend;
+
     const { chart_type: type = 'bar', x_field, y_field, aggregation, field, orientation } = cfg;
     const canvas = widget.querySelector('canvas') || document.createElement('canvas');
     if (!canvas.parentElement) widget.appendChild(canvas);
@@ -34,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
         new Chart(canvas, {
           type: 'pie',
           data: { labels, datasets: [{ data: values, backgroundColor: colors }] },
-          options: { responsive: true, maintainAspectRatio: false }
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: legendDisplay } } }
         });
       } catch (err) {
         console.error('[dashboard_charts] pie data fetch error', err);
@@ -53,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
         new Chart(canvas, {
           type: 'bar',
           data: { labels, datasets: [{ data: values, backgroundColor: colors }] },
-          options: { responsive: true, maintainAspectRatio: false, indexAxis: orientation === 'y' ? 'y' : 'x', plugins: { legend: { display: false } } }
+          options: { responsive: true, maintainAspectRatio: false, indexAxis: orientation === 'y' ? 'y' : 'x', plugins: { legend: { display: legendDisplay } } }
         });
       } catch (err) {
         console.error('[dashboard_charts] bar data fetch error', err);
@@ -71,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         new Chart(canvas, {
           type: 'line',
           data: { labels, datasets: [{ data: values, borderColor: FLOWBITE_COLORS[0], backgroundColor: 'rgba(13,148,136,0.2)', fill: false }] },
-          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: legendDisplay } } }
         });
       } catch (err) {
         console.error('[dashboard_charts] line data fetch error', err);
@@ -107,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } }
+        plugins: { legend: { display: legendDisplay } }
       }
     });
   });

@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="bold"> <span>Bold</span></label>
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="italic"> <span>Italic</span></label>
     <label class="flex items-center space-x-2"><input type="checkbox" data-opt="underline"> <span>Underline</span></label>
+    <label class="flex items-center space-x-2"><input type="checkbox" data-opt="hide-legend"> <span>Hide legend</span></label>
     <label class="flex items-center space-x-1">
       <span class="whitespace-nowrap mr-1">Size</span>
       <button type="button" data-size-act="dec" class="px-1 border rounded">-</button>
@@ -64,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const presetsDiv = menu.querySelector('#color-presets');
   const sizeInput = menu.querySelector('[data-opt="size"]');
   const sizeDisplay = menu.querySelector('[data-opt="size-display"]');
+  const hideLegendCheckbox = menu.querySelector('[data-opt="hide-legend"]');
   const SIZE_MIN = 10;
   const SIZE_MAX = 48;
   const SIZE_STEP = 1;
@@ -120,6 +122,14 @@ document.addEventListener('DOMContentLoaded', () => {
     menu.querySelector('[data-opt="bold"]').checked = !!styling.bold;
     menu.querySelector('[data-opt="italic"]').checked = !!styling.italic;
     menu.querySelector('[data-opt="underline"]').checked = !!styling.underline;
+    if (hideLegendCheckbox) {
+      hideLegendCheckbox.checked = !!styling.hideLegend;
+      if (isDashboard && fieldEl.dataset.type === 'chart') {
+        hideLegendCheckbox.parentElement.classList.remove('hidden');
+      } else {
+        hideLegendCheckbox.parentElement.classList.add('hidden');
+      }
+    }
     sizeInput.value = styling.size || '';
     updateSizeDisplay(sizeInput.value);
     selectedColor = styling.color || '#000000';
@@ -156,6 +166,9 @@ document.addEventListener('DOMContentLoaded', () => {
       color: selectedColor,
       size: parseInt(sizeInput.value, 10) || null
     });
+    if (isDashboard && hideLegendCheckbox) {
+      styling.hideLegend = hideLegendCheckbox.checked;
+    }
     currentEl._styling = styling;
     applyStyling(currentEl, styling);
 
