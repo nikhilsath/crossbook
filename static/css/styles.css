@@ -88,8 +88,8 @@ a:hover {
 /* Ensure Chart.js canvases fill their widget */
 .dashboard-widget canvas {
   width: 100% !important;
-  height: 100% !important;
-  flex: 1 1 auto;
+  height: 100% !important; /* keep canvas within widget bounds */
+  flex: 1 1 auto;          /* let flexbox handle remaining height */
 }
 
 /* allow scroll area to use remaining height */

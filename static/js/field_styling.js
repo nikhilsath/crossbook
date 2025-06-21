@@ -14,8 +14,10 @@ function applyStyling(el, styling) {
   } else {
     el.style.removeProperty('--field-size');
   }
+
   if (el.dataset.type === 'chart' && window.refreshChartWidget) {
     try { window.refreshChartWidget(el); } catch (e) { console.error('chart refresh error', e); }
+
   }
   const label = el.querySelector('div.text-sm.font-bold.capitalize.mb-1');
   if (label) label.classList.remove('hidden');

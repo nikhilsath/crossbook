@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
           data: { labels, datasets: [{ data: values, backgroundColor: colors }] },
           options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: !hideLegend } } }
         });
+        widget._chart = chartInstance;
       } catch (err) {
         console.error('[dashboard_charts] pie data fetch error', err);
       }
@@ -69,6 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
           data: { labels, datasets: [{ data: values, backgroundColor: colors }] },
           options: { responsive: true, maintainAspectRatio: false, indexAxis: orientation === 'y' ? 'y' : 'x', plugins: { legend: { display: !hideLegend } } }
         });
+        widget._chart = chartInstance;
       } catch (err) {
         console.error('[dashboard_charts] bar data fetch error', err);
       }
@@ -89,6 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
           data: { labels, datasets: [{ data: values, borderColor: FLOWBITE_COLORS[0], backgroundColor: 'rgba(13,148,136,0.2)', fill: false }] },
           options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: !hideLegend } } }
         });
+        widget._chart = chartInstance;
       } catch (err) {
         console.error('[dashboard_charts] line data fetch error', err);
       }
