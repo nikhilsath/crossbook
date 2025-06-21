@@ -1,3 +1,5 @@
+import { intersects, revertPosition } from './grid_utils.js';
+
 const defaultWidgetWidth = {
   value: 4,
   table: 10,
@@ -43,25 +45,6 @@ function exitEditMode() {
   if (editBtn) editBtn.classList.remove('hidden');
 }
 
-function intersects(a, b) {
-  return (
-    a.colStart <  b.colStart + b.colSpan  &&
-    b.colStart <  a.colStart + a.colSpan  &&
-    a.rowStart   <  b.rowStart   + b.rowSpan &&
-    b.rowStart   <  a.rowStart   + a.rowSpan
-  );
-}
-
-function revertPosition(el) {
-  const prev = el._prevRect;
-  if (!prev) return;
-  el.style.gridColumn = `${prev.colStart} / span ${prev.colSpan}`;
-  el.style.gridRow    = `${prev.rowStart} / span ${prev.rowSpan}`;
-  el.style.left = '';
-  el.style.top  = '';
-  el.style.position = '';
-  widgetLayout[el.dataset.widget] = { ...prev };
-}
 
 function saveDashboardLayout() {
   const layout = Object.entries(widgetLayout).map(([id, rect]) => ({
@@ -127,7 +110,7 @@ function enableDashboardDrag() {
     if (!isDragging) return;
     isDragging = false;
     if (!grid.classList.contains('editing')) {
-      revertPosition(widgetEl);
+      revertPosition(widgetEl, widgetLayout);
       console.debug('[dashboard] drag revert', widgetId);
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
@@ -151,7 +134,7 @@ function enableDashboardDrag() {
       other !== widgetId && intersects(widgetLayout[widgetId], rect)
     );
     if (hasOverlap) {
-      revertPosition(widgetEl);
+      revertPosition(widgetEl, widgetLayout);
       console.debug('[dashboard] drag revert', widgetId);
     } else {
       widgetEl.style.left = '';
@@ -233,7 +216,7 @@ function enableDashboardResize() {
     if (!isResizing) return;
     isResizing = false;
     if (!grid.classList.contains('editing')) {
-      revertPosition(widgetEl);
+      revertPosition(widgetEl, widgetLayout);
       console.debug('[dashboard] resize revert', widgetId);
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
@@ -254,7 +237,7 @@ function enableDashboardResize() {
       id !== widgetId && intersects(newRect, rect)
     );
     if (hasOverlap) {
-      revertPosition(widgetEl);
+      revertPosition(widgetEl, widgetLayout);
       console.debug('[dashboard] resize revert', widgetId);
     } else {
       widgetLayout[widgetId] = newRect;

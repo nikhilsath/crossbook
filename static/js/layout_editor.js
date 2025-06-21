@@ -1,3 +1,5 @@
+import { intersects, revertPosition } from './grid_utils.js';
+
 const PCT_SNAP = 5;                // snap to 5% steps
 let CONTAINER_WIDTH;
 
@@ -31,35 +33,6 @@ function onLoadJS(){
   bindEventHandlers();
 }
 
-function intersects(a, b) {
-  return (
-    a.colStart <  b.colStart + b.colSpan  &&
-    b.colStart <  a.colStart + a.colSpan  &&
-    a.rowStart   <  b.rowStart   + b.rowSpan &&
-    b.rowStart   <  a.rowStart   + a.rowSpan
-  );
-}
-
-function revertPosition(el) {
-  const prev = el._prevRect;
-  if (!prev) {
-    // Intentionally silent if no previous rect
-    return;
-  }
-  const startCol = prev.colStart;
-  const spanCol  = prev.colSpan;
-  const startRow = prev.rowStart;
-  const spanRow  = prev.rowSpan;
-  el.style.gridColumn = `${startCol} / span ${spanCol}`;
-  el.style.gridRow    = `${startRow} / span ${spanRow}`;
-  el.style.left     = '';
-  el.style.width    = '';
-  el.style.top      = '';
-  el.style.height   = '';
-  el.style.position = '';
-  layoutCache[el.dataset.field] = { ...prev };
-  console.debug('[layout] revert', el.dataset.field, prev);
-}
 
 function resetLayout() {
   console.debug('[layout] resetLayout');
@@ -226,7 +199,7 @@ function enableVanillaDrag() {
     }
     if (overlapWith) {
       // snap back
-      revertPosition(fieldEl);
+      revertPosition(fieldEl, layoutCache);
       console.warn(`[layout] drag revert due to overlap with ${overlapWith}`);
       return;
     }
@@ -354,7 +327,7 @@ function enableVanillaResize() {
       }
     }
     if (overlapWith) {
-      revertPosition(fieldEl);
+      revertPosition(fieldEl, layoutCache);
       console.warn(`[layout] resize revert due to overlap with ${overlapWith}`);
     } else {
       layoutCache[field] = newRect;
