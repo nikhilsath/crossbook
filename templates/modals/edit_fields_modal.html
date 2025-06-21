@@ -1,24 +1,24 @@
-<div id="layoutModal" class="modal-container hidden"
-     onclick="if(event.target.id === 'layoutModal') closeLayoutModal()">
+<div id="edit_fields_modal" class="modal-container hidden"
+     onclick="if(event.target.id === 'edit_fields_modal') closeLayoutModal()">
   <div class="modal-box w-96 max-w-full relative">
     <button type="button" onclick="closeLayoutModal()" class="modal-close">&times;</button>
     <div class="mb-4 border-b border-gray-200">
       <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="editFieldsTabs" role="tablist">
         <li class="mr-2" role="presentation">
-          <button id="tab-add" type="button" role="tab" aria-controls="pane-add" aria-selected="true" class="inline-block p-2 rounded-t-lg border-b-2 text-primary border-primary-dark">
+          <button id="tab-add" type="button" role="tab" aria-controls="add_field_pane" aria-selected="true" class="inline-block p-2 rounded-t-lg border-b-2 text-primary border-primary-dark">
             Add Field
           </button>
         </li>
         <li role="presentation">
-          <button id="tab-remove" type="button" role="tab" aria-controls="pane-remove" aria-selected="false" class="inline-block p-2 rounded-t-lg border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300">
+          <button id="tab-remove" type="button" role="tab" aria-controls="remove_field_pane" aria-selected="false" class="inline-block p-2 rounded-t-lg border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300">
             Remove Field
           </button>
         </li>
       </ul>
     </div>
-    <div id="editFieldsContent">
+    <div id="edit_fields_content">
     <!-- Add Field Pane -->
-    <div id="pane-add" role="tabpanel" aria-labelledby="tab-add">
+    <div id="add_field_pane" role="tabpanel" aria-labelledby="tab-add">
       <h3 class="text-lg font-bold mb-4">Add Field to {{table}}</h3>
       <form method="POST" id="add-field-form" action="/{{ table }}/{{ record.id }}/add-field">
         <input type="hidden" name="record_id" value="{{ record.id }}">
@@ -28,11 +28,11 @@
         <select id="field_type" name="field_type" class="form-select">
           <option disabled selected>Select type</option>
         </select>
-        <div id="field-options-container" class="hidden mb-4">
+        <div id="field_options_container" class="hidden mb-4">
           <label class="block mb-2 text-sm font-medium">Options (comma-separated)</label>
           <textarea name="field_options" rows="3" class="form-input"></textarea>
         </div>
-        <div id="fk-select-container" class="hidden mb-4">
+        <div id="fk_select_container" class="hidden mb-4">
           <label class="block mb-2 text-sm font-medium">Select linked field</label>
           <select name="foreign_key_target" class="form-select">
             <option value="" disabled selected>Select field</option>
@@ -54,7 +54,7 @@
     </div>
 
     <!-- Remove Field Pane -->
-    <div id="pane-remove" class="hidden">
+    <div id="remove_field_pane" class="hidden">
       <h3 class="text-lg font-bold mb-4">Remove Field from {{table}}</h3>
       <form id="remove-field-form" method="POST" action="/{{table}}/{{record.id}}/remove-field">
         <label for="field-to-remove" class="block text-sm font-medium">Select Field to Remove</label>
@@ -72,7 +72,7 @@
           {% endfor %}
         </select>
 
-        <div id="remove-info" class="mt-4 hidden">
+        <div id="remove_info_section" class="mt-4 hidden">
           <p id="remove-count" class="text-sm text-red-600"></p>
           <label class="inline-flex items-center mt-2">
             <input 

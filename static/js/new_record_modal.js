@@ -7,12 +7,12 @@ const escHandler = (e) => {
 
 export function openNewRecordModal() {
   recordTrigger = document.activeElement;
-  document.getElementById('newRecordModal').classList.remove('hidden');
+  document.getElementById('new_record_modal').classList.remove('hidden');
   document.addEventListener('keydown', escHandler);
 }
 
 export function closeNewRecordModal() {
-  document.getElementById('newRecordModal').classList.add('hidden');
+  document.getElementById('new_record_modal').classList.add('hidden');
   document.removeEventListener('keydown', escHandler);
   if (recordTrigger) {
     recordTrigger.focus();

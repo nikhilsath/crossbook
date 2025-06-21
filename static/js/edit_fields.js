@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     const fieldTypeSelect = document.getElementById("field_type");
-    const optionsContainer = document.getElementById("field-options-container");
-    const fkSelectContainer = document.getElementById("fk-select-container");
+    const optionsContainer = document.getElementById("field_options_container");
+    const fkSelectContainer = document.getElementById("fk_select_container");
 
     if (!fieldTypeSelect) return;
 
@@ -73,7 +73,7 @@ function toggleRemoveButton() {
 }
 
 function updateRemoveInfo(count) {
-  const removeInfoDiv = document.getElementById("remove-info");
+  const removeInfoDiv = document.getElementById("remove_info_section");
   const removeCountP = document.getElementById("remove-count");
   const checkboxLabel = document.getElementById("checkbox-label");
   const confirmCheckbox = document.getElementById("confirm-delete-checkbox");
