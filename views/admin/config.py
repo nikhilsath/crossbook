@@ -16,6 +16,7 @@ from db.config import get_config_rows, update_config
 from db.database import check_db_status, init_db_path
 from db.bootstrap import initialize_database, ensure_default_configs
 from db.schema import create_base_table
+from utils.field_registry import FIELD_TYPES
 from . import admin_bp, reload_app_state
 
 logger = logging.getLogger(__name__)
@@ -104,6 +105,12 @@ def update_database_file():
     if wants_json:
         return jsonify({'error': 'no_file'})
     return redirect(url_for('admin.database_page'))
+
+
+@admin_bp.route('/api/field-types')
+def api_field_types():
+    """Return list of available field types."""
+    return jsonify(list(FIELD_TYPES.keys()))
 
 
 @admin_bp.route('/add-table', methods=['POST'])
