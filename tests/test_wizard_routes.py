@@ -1,4 +1,3 @@
-import pytest
 
 
 def test_wizard_start_without_progress_redirects_home(client):
