@@ -6,10 +6,21 @@ document.addEventListener('DOMContentLoaded', () => {
     '#7C3AED'  // purple
   ];
 
-  function attachResize(widget, chart) {
+  function setCanvasSize(canvas, widget) {
+    if (!canvas || !widget) return;
+    canvas.width = widget.clientWidth;
+    canvas.height = widget.clientHeight - canvas.offsetTop;
+  }
+
+  function attachResize(widget, canvas, chart) {
     if (!chart) return;
     const ro = new ResizeObserver(() => {
-      try { chart.resize(); } catch (e) { console.error('chart resize error', e); }
+      try {
+        setCanvasSize(canvas, widget);
+        chart.resize();
+      } catch (e) {
+        console.error('chart resize error', e);
+      }
     });
     ro.observe(widget);
   }
@@ -29,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const { chart_type: type = 'bar', x_field, y_field, aggregation, field, orientation } = cfg;
     const canvas = widget.querySelector('canvas') || document.createElement('canvas');
     if (!canvas.parentElement) widget.appendChild(canvas);
+    setCanvasSize(canvas, widget);
     let chartInstance = null;
 
     if (type === 'pie') {
@@ -48,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (err) {
         console.error('[dashboard_charts] pie data fetch error', err);
       }
-      attachResize(widget, chartInstance);
+      attachResize(widget, canvas, chartInstance);
       return;
     }
 
@@ -68,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (err) {
         console.error('[dashboard_charts] bar data fetch error', err);
       }
-      attachResize(widget, chartInstance);
+      attachResize(widget, canvas, chartInstance);
       return;
     }
 
@@ -87,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (err) {
         console.error('[dashboard_charts] line data fetch error', err);
       }
-      attachResize(widget, chartInstance);
+      attachResize(widget, canvas, chartInstance);
       return;
     }
 
@@ -122,6 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
         plugins: { legend: { display: false } }
       }
     });
-    attachResize(widget, chartInstance);
+    attachResize(widget, canvas, chartInstance);
   });
 });
