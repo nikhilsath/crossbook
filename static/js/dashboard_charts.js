@@ -6,20 +6,12 @@ document.addEventListener('DOMContentLoaded', () => {
     '#7C3AED'  // purple
   ];
 
-
-  function setInitialCanvasSize(widget, canvas) {
-    const rect = widget.getBoundingClientRect();
-    const style = getComputedStyle(widget);
-    const paddingX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
-    const paddingY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
-    const title = widget.querySelector('.font-semibold');
-    const titleHeight = title ? title.offsetHeight : 0;
-    const width = rect.width - paddingX;
-    const height = rect.height - paddingY - titleHeight;
-    if (width > 0 && height > 0) {
-      canvas.width = width;
-      canvas.height = height;
-    }
+  function attachResize(widget, chart) {
+    if (!chart) return;
+    const ro = new ResizeObserver(() => {
+      try { chart.resize(); } catch (e) { console.error('chart resize error', e); }
+    });
+    ro.observe(widget);
   }
 
   async function refreshChartWidget(widget) {
@@ -37,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const hideLegend = widget._styling && widget._styling.hideLegend;
     const canvas = widget.querySelector('canvas') || document.createElement('canvas');
     if (!canvas.parentElement) widget.appendChild(canvas);
-    setInitialCanvasSize(widget, canvas);
     if (widget._chart) {
       try { widget._chart.destroy(); } catch (e) { console.error('chart destroy error', e); }
     }
@@ -62,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('[dashboard_charts] pie data fetch error', err);
       }
       widget._chart = chartInstance;
+      attachResize(widget, chartInstance);
       return;
     }
 
@@ -83,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('[dashboard_charts] bar data fetch error', err);
       }
       widget._chart = chartInstance;
+      attachResize(widget, chartInstance);
       return;
     }
 
@@ -103,6 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('[dashboard_charts] line data fetch error', err);
       }
       widget._chart = chartInstance;
+      attachResize(widget, chartInstance);
       return;
     }
 
@@ -138,6 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
     widget._chart = chartInstance;
+    attachResize(widget, chartInstance);
   }
 
   const chartWidgets = document.querySelectorAll('[data-type="chart"]');
