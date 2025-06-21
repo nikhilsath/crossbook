@@ -250,19 +250,7 @@ input[type=number] {
   position: relative;
 }
 
-/* Utility button and component styles */
-.btn-primary {
-  background-color: var(--color-primary);
-  color: #fff;
-}
-.btn-secondary {
-  background-color: var(--color-secondary);
-  color: #fff;
-}
-.btn-danger {
-  background-color: #dc2626;
-  color: #fff;
-}
+/* Utility component styles */
 .card {
   background-color: var(--bg-card);
   border-radius: 0.5rem;
