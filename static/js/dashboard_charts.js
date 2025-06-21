@@ -6,6 +6,13 @@ document.addEventListener('DOMContentLoaded', () => {
     '#7C3AED'  // purple
   ];
 
+  function attachResize(widget, chart) {
+    if (!chart) return;
+    const ro = new ResizeObserver(() => chart.resize());
+    ro.observe(widget);
+    chart.resize();
+  }
+
   const chartWidgets = document.querySelectorAll('[data-type="chart"]');
   chartWidgets.forEach(async widget => {
     const cfgText = widget.dataset.config;
@@ -21,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const { chart_type: type = 'bar', x_field, y_field, aggregation, field, orientation } = cfg;
     const canvas = widget.querySelector('canvas') || document.createElement('canvas');
     if (!canvas.parentElement) widget.appendChild(canvas);
+    let chartInstance = null;
 
     if (type === 'pie') {
       if (!x_field) return;
@@ -31,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const labels = Object.keys(data);
         const values = Object.values(data);
         const colors = labels.map((_, i) => `hsl(${(i * 40) % 360},70%,60%)`);
-        new Chart(canvas, {
+        chartInstance = new Chart(canvas, {
           type: 'pie',
           data: { labels, datasets: [{ data: values, backgroundColor: colors }] },
           options: { responsive: true, maintainAspectRatio: false }
@@ -39,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (err) {
         console.error('[dashboard_charts] pie data fetch error', err);
       }
+      attachResize(widget, chartInstance);
       return;
     }
 
@@ -50,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const labels = Object.keys(data);
         const values = Object.values(data);
         const colors = labels.map((_, i) => FLOWBITE_COLORS[i % FLOWBITE_COLORS.length]);
-        new Chart(canvas, {
+        chartInstance = new Chart(canvas, {
           type: 'bar',
           data: { labels, datasets: [{ data: values, backgroundColor: colors }] },
           options: { responsive: true, maintainAspectRatio: false, indexAxis: orientation === 'y' ? 'y' : 'x', plugins: { legend: { display: false } } }
@@ -58,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (err) {
         console.error('[dashboard_charts] bar data fetch error', err);
       }
+      attachResize(widget, chartInstance);
       return;
     }
 
@@ -68,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
         const labels = Object.keys(data);
         const values = Object.values(data);
-        new Chart(canvas, {
+        chartInstance = new Chart(canvas, {
           type: 'line',
           data: { labels, datasets: [{ data: values, borderColor: FLOWBITE_COLORS[0], backgroundColor: 'rgba(13,148,136,0.2)', fill: false }] },
           options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
@@ -76,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (err) {
         console.error('[dashboard_charts] line data fetch error', err);
       }
+      attachResize(widget, chartInstance);
       return;
     }
 
@@ -94,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const values = await Promise.all([fetchVal(x_field), fetchVal(y_field)]);
     const labels = [x_field.split(':')[1], y_field.split(':')[1]];
 
-    new Chart(canvas, {
+    chartInstance = new Chart(canvas, {
       type: type,
       data: {
         labels: labels,
@@ -110,5 +121,6 @@ document.addEventListener('DOMContentLoaded', () => {
         plugins: { legend: { display: false } }
       }
     });
+    attachResize(widget, chartInstance);
   });
 });
