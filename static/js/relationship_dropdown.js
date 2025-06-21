@@ -1,5 +1,5 @@
 export function toggleAddRelation(tableA, idA, tableB) {
-  const container = document.getElementById(`add-rel-${tableB}`);
+  const container = document.getElementById(`add_relation_form-${tableB}`);
   if (!container) return;
   container.classList.toggle('hidden');
   const select = container.querySelector('select');

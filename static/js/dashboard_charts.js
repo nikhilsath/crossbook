@@ -8,9 +8,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function attachResize(widget, chart) {
     if (!chart) return;
-    const ro = new ResizeObserver(() => chart.resize());
+    const ro = new ResizeObserver(() => {
+      try { chart.resize(); } catch (e) { console.error('chart resize error', e); }
+    });
     ro.observe(widget);
-    chart.resize();
   }
 
   const chartWidgets = document.querySelectorAll('[data-type="chart"]');
