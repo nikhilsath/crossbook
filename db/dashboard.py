@@ -150,6 +150,22 @@ def update_widget_styling(widget_id: int, styling: dict) -> bool:
             return False
 
 
+def delete_widget(widget_id: int) -> bool:
+    """Remove a dashboard widget by ID."""
+    with get_connection() as conn:
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                "DELETE FROM dashboard_widget WHERE id = ?",
+                (widget_id,),
+            )
+            conn.commit()
+            return cur.rowcount > 0
+        except Exception as exc:
+            logger.warning("[delete_widget] SQL error: %s", exc)
+            return False
+
+
 def get_base_table_counts() -> list[dict]:
     """Return record counts for each base table."""
     base_tables = current_app.config.get("BASE_TABLES", [])

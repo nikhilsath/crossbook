@@ -6,6 +6,7 @@ from db.dashboard import (
     create_widget,
     update_widget_layout,
     update_widget_styling,
+    delete_widget,
     get_base_table_counts,
     get_top_numeric_values,
     get_filtered_records,
@@ -104,6 +105,15 @@ def dashboard_update_style():
         return jsonify({'error': 'Invalid data'}), 400
     success = update_widget_styling(widget_id, styling)
     return jsonify({'success': bool(success)})
+
+
+@admin_bp.route('/dashboard/widget/<int:widget_id>/delete', methods=['POST'])
+def dashboard_delete_widget(widget_id):
+    """Delete a dashboard widget."""
+    success = delete_widget(widget_id)
+    if not success:
+        return jsonify({'error': 'Failed to delete widget'}), 500
+    return jsonify({'success': True})
 
 
 @admin_bp.route('/dashboard/base-count')

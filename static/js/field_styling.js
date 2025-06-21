@@ -63,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <input type="hidden" data-opt="size" value="">
     </label>
     <div id="color-presets" class="flex space-x-1 mt-1"></div>
+    ${isDashboard ? '<button type="button" id="widget-delete-btn" class="btn-danger w-full">Remove Widget</button>' : ''}
   `;
   document.body.appendChild(menu);
 
@@ -75,6 +76,25 @@ document.addEventListener('DOMContentLoaded', () => {
   const SIZE_MIN = 10;
   const SIZE_MAX = 48;
   const SIZE_STEP = 1;
+
+  const deleteBtn = menu.querySelector('#widget-delete-btn');
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', () => {
+      if (!currentEl) return;
+      const wid = currentEl.dataset.widget;
+      if (!wid) return;
+      fetch(`/dashboard/widget/${wid}/delete`, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            if (window.removeDashboardWidget) window.removeDashboardWidget(wid);
+            currentEl.remove();
+            menu.classList.add('hidden');
+          }
+        })
+        .catch(err => console.error('Dashboard widget delete failed', err));
+    });
+  }
 
   function updateSizeDisplay(val) {
     sizeDisplay.textContent = val || '';
