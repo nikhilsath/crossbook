@@ -53,6 +53,7 @@ from . import dashboard  # noqa: F401  # register routes
 from . import config  # noqa: F401  # register routes
 from . import imports  # noqa: F401  # register routes
 from . import automation  # noqa: F401  # register routes
+from . import fields  # noqa: F401  # register routes
 
 __all__ = [
     'admin_bp',
