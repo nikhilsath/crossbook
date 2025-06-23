@@ -199,31 +199,16 @@
   {% endif %}
 {% endmacro %}
 
-{% macro render_editable_field(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema, field_macro_map=None) %}
+{% macro render_editable_field(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema, field_macro_map=None, macros_obj=None) %}
   {% set edit_param = request.args.get('edit') %}
   {% set styling = field_schema[table][field].styling or {} %}
   <div class="mt-2 h-full{{ ' font-bold' if styling.bold }}{{ ' italic' if styling.italic }}{{ ' underline' if styling.underline }} draggable-field"
        data-styling='{{ styling | tojson }}'>
     {% do current_app.logger.debug('[render] field=%s type=%s edit_param=%s', field, field_type, edit_param) %}
     <label class="block text-sm font-medium capitalize">{{ field }}</label>
-    {% if field_type == 'text' %}
-      {{ render_text(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) }}
-    {% elif field_type == 'number' %}
-      {{ render_number(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) }}
-    {% elif field_type == 'date' %}
-      {{ render_date(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) }}
-    {% elif field_type == 'select' %}
-      {{ render_select(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) }}
-    {% elif field_type == 'multi_select' %}
-      {{ render_multi_select(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) }}
-    {% elif field_type == 'foreign_key' %}
-      {{ render_foreign_key(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) }}
-    {% elif field_type == 'boolean' %}
-      {{ render_boolean(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) }}
-    {% elif field_type == 'textarea' %}
-      {{ render_textarea(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) }}
-    {% elif field_type == 'url' %}
-      {{ render_url(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) }}
+    {% set macro_name = field_macro_map[field_type] if field_macro_map else None %}
+    {% if macro_name and macros_obj %}
+      {{ (macros_obj | attr(macro_name))(field, value, record_id, request, detail_endpoint, update_endpoint, id_param, field_type, table, field_schema) }}
     {% else %}
       <span class="ml-1" data-field="{{ field }}"><b>{{ field|capitalize }}:</b> {{ value }}</span>
     {% endif %}
