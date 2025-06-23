@@ -109,8 +109,25 @@ def update_database_file():
 
 @admin_bp.route('/api/field-types')
 def api_field_types():
-    """Return list of available field types."""
-    return jsonify({name: vars(ft) for name, ft in FIELD_TYPES.items()})
+    """Return list of available field types in a JSON serialisable form."""
+
+    def serialize_ft(ft):
+        return {
+            "sql_type": ft.sql_type,
+            "default_width": ft.default_width,
+            "default_height": ft.default_height,
+            "numeric": ft.numeric,
+            "allows_options": ft.allows_options,
+            "allows_foreign_key": ft.allows_foreign_key,
+            "searchable": ft.searchable,
+            "allows_multiple": ft.allows_multiple,
+            "is_textarea": ft.is_textarea,
+            "is_boolean": ft.is_boolean,
+            "is_url": ft.is_url,
+        }
+
+    data = {name: serialize_ft(ft) for name, ft in FIELD_TYPES.items()}
+    return jsonify(data)
 
 
 @admin_bp.route('/add-table', methods=['POST'])
