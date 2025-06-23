@@ -59,7 +59,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Navigation Bar:** A consistent top navigation (`base.html`) links to Home and all base table sections.
 * **Bulk Edit Modal:** Select rows in a list view and update a single field across all of them at once.
 * **Supported Field Types:** text, number, date, select, multi-select, foreign-key, boolean, textarea, and url, each rendered with the appropriate input control.
-* **Field Type Registry:** New types can register their SQL storage and validation logic. Rendering macros for the built-in field types are now hardcoded in `macros/fields.html` instead of being looked up dynamically.
+* **Field Type Registry:** All field types are defined programmatically via `utils.validation.register_type`. The registry stores each type's validator, default width/height, rendering macro and SQL storage format. Rendering macros for the built-in types are hardcoded in `macros/fields.html`.
 * **Filter Macros:** Reusable Jinja macros for boolean, select, text, and multi-select filters (`templates/macros/filter_controls.html`).
 * **Text Filter Operators:** `contains`, `equals`, `starts_with`, `ends_with`, `not_contains`, and `regex` operators are available when filtering text fields. Regex matching requires database support and falls back to a normal `LIKE` search if unavailable.
 * **Field Schema Editing:** New endpoints allow adding or removing columns at runtime (`/<table>/<id>/add-field`, `/<table>/<id>/remove-field`) and counting non-null values (`/<table>/count-nonnull`).
@@ -163,7 +163,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 │   ├── records.py                   # CRUD and list/detail endpoints
 │   └── wizard.py                    # Setup wizard workflow
 ├── utils/                           # Shared helper modules
-│   ├── field_registry.py            # Field type registry with layout sizes and macro names
+│   ├── field_registry.py            # Field type registry storing validators, default sizes, macro names, etc.
 │   ├── html_sanitizer.py            # Sanitize editor HTML
 │   └── validation.py                # CSV import validation functions
 ├── tests/                           # Automated tests
@@ -253,7 +253,7 @@ The worker also processes scheduled automation tasks defined in `automation/engi
 * **Templating & Macros:** Jinja2 templates in `templates/` include the core pages (`base.html`, `index.html`, `list_view.html`, `detail_view.html`, `new_record.html`, `dashboard.html`) plus admin and import views. Partial templates like `modals/edit_fields_modal.html` and `modals/bulk_edit_modal.html` are used for modals. Reusable macros live in `templates/macros/fields.html` and `filter_controls.html`.
 
 * **Logging & Monitoring:** Logging is configured via `logging_setup.py` and values stored in the database. Both Flask and root handlers are cleared, then a rotating or timed file handler is attached. Only error-level messages appear in the console. Werkzeug request logs are disabled. Logs capture errors and user actions. See the section below for configuration details.
-* **Utility Helpers:** Helper modules in `utils/` include field type registration, HTML sanitization and the CSV import validator. The registry centralizes layout defaults and the Jinja macro used for each field type.
+* **Utility Helpers:** Helper modules in `utils/` include field type registration, HTML sanitization and the CSV import validator. Built-in field types are registered in `utils.validation.register_type`, and the registry keeps the validator function, default size, macro name and other metadata for each type.
 
 * **Data Directory:** Runtime files under `data/`: `crossbook.db` (primary database) and `huey.db` (task queue store). The `db_path` entry in the `config` table can point the application at a different database file.
 
