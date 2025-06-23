@@ -1,6 +1,10 @@
+import { openModal, closeModal } from './modal_helper.js';
+
 export function initDashboardViews() {
   const select = document.getElementById('dashboardViewSelect');
   const addBtn = document.getElementById('addDashboardView');
+  const form = document.getElementById('dashboardViewForm');
+  const nameInput = document.getElementById('dashboardViewName');
 
   function updateVisibility() {
     const view = select ? select.value : 'Dashboard';
@@ -13,20 +17,40 @@ export function initDashboardViews() {
   if (select) {
     select.addEventListener('change', updateVisibility);
   }
-  if (addBtn && select) {
+  function addView(name) {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    select.appendChild(opt);
+    select.value = name;
+    updateVisibility();
+  }
+
+  if (addBtn && select && form && nameInput) {
     addBtn.addEventListener('click', () => {
-      const name = prompt('View name:');
-      if (!name) return;
-      const opt = document.createElement('option');
-      opt.value = name;
-      opt.textContent = name;
-      select.appendChild(opt);
-      select.value = name;
-      updateVisibility();
+      nameInput.value = '';
+      openModal('dashboardViewModal');
+    });
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const name = nameInput.value.trim();
+      if (!name) {
+        closeModal('dashboardViewModal');
+        return;
+      }
+      addView(name);
+      closeModal('dashboardViewModal');
     });
   }
   updateVisibility();
 }
+
+export function closeDashboardViewModal() {
+  closeModal('dashboardViewModal');
+}
+
+window.closeDashboardViewModal = closeDashboardViewModal;
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initDashboardViews);
