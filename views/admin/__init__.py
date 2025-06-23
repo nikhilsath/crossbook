@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, current_app
 import logging
 from db.schema import refresh_card_cache, update_foreign_field_options
 from db.config import get_config_rows
-from db.database import init_db_path
+from db.database import init_db_path, check_db_status, DB_PATH
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -23,6 +23,10 @@ def reload_app_state() -> None:
     current_app.config['BASE_TABLES'] = base_tables
     update_foreign_field_options()
     current_app.jinja_env.cache.clear()
+
+    # Update wizard state based on new database status
+    status = check_db_status(DB_PATH)
+    current_app.config['NEEDS_WIZARD'] = status != 'valid'
 
 
 @admin_bp.route('/admin')
