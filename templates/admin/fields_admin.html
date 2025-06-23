@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Fields{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-6">Fields</h1>
+<div class="mx-auto w-11/12 max-w-screen-2xl space-y-6">
+  {% for table, items in tables.items() %}
+  <details class="card" {% if loop.first %}open{% endif %}>
+    <summary class="cursor-pointer px-4 py-2 bg-card rounded-t font-semibold text-lg text-light">
+      {{ table }}
+    </summary>
+    <div class="p-4 overflow-x-auto">
+      <table class="min-w-full text-sm text-left text-light divide-y">
+        <thead class="text-xs uppercase bg-card">
+          <tr>
+            <th class="w-64 px-2 py-1">Field</th>
+            <th class="w-40 px-2 py-1">Type</th>
+            <th class="w-40 px-2 py-1 text-right">Not&nbsp;Null</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+        {% for item in items %}
+          <tr>
+            <td class="px-2 py-1 font-mono">{{ item.name }}</td>
+            <td class="px-2 py-1">{{ item.type }}</td>
+            <td class="px-2 py-1 text-right">{{ item.count }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </details>
+  {% endfor %}
+</div>
+{% endblock %}
