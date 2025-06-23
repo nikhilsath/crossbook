@@ -162,6 +162,7 @@ def settings_step():
 @wizard_bp.route('/wizard/table', methods=['GET', 'POST'])
 def table_step():
     progress = session.setdefault('wizard_progress', {})
+    error = None
     if request.method == 'POST':
         table_names = [to_identifier(t.strip(), 'tbl_') for t in request.form.getlist('table_name')]
         title_fields = [to_identifier(t.strip(), 'f_') for t in request.form.getlist('title_field')]
@@ -177,6 +178,7 @@ def table_step():
             fields_json = fields_json_list[idx] if idx < len(fields_json_list) else ''
 
             if not title_field:
+                error = 'Each table requires a title field.'
                 continue
 
             if create_base_table(table_name, description, title_field):
@@ -206,13 +208,18 @@ def table_step():
                     except Exception:
                         logger.exception('Failed to add field %s', name)
                 any_created = True
+            else:
+                error = f'Table "{table_name}" could not be created.'
 
         if any_created:
             reload_app_state()
             progress['table'] = True
             session['wizard_progress'] = progress
             return redirect(url_for('wizard.import_step'))
-    return render_template('wizard/wizard_table.html')
+        if not error:
+            error = 'No tables were created. Please check the table names and title fields.'
+
+    return render_template('wizard/wizard_table.html', error=error)
 
 
 @wizard_bp.route('/wizard/import', methods=['GET', 'POST'])
