@@ -11,6 +11,19 @@ export let mathField2 = null;
 export let agg1 = 'sum';
 export let agg2 = 'sum';
 
+let fieldTypes = null;
+
+async function loadFieldTypes() {
+  if (fieldTypes) return fieldTypes;
+  try {
+    const res = await fetch('/api/field-types');
+    fieldTypes = await res.json();
+  } catch {
+    fieldTypes = {};
+  }
+  return fieldTypes;
+}
+
 let columnToggleBtn, columnToggleLabel, columnDropdown;
 let mathSelect1Btn, mathSelect1Label, mathSelect1Options;
 let mathSelect2Btn, mathSelect2Label, mathSelect2Options;
@@ -18,7 +31,7 @@ let mathField1Container, mathField2Container;
 let aggToggle1El, aggToggle2El;
 let valueResultEl, titleInputEl, resultRowEl, createBtnEl, mathOpContainer;
 
-export function initValueWidgets() {
+export async function initValueWidgets() {
   columnToggleBtn = document.getElementById('columnSelectDashboardToggle');
   columnToggleLabel = columnToggleBtn ? columnToggleBtn.querySelector('.selected-label') : null;
   columnDropdown = document.getElementById('columnSelectDashboardOptions');
@@ -40,6 +53,8 @@ export function initValueWidgets() {
 
   initOperationSelect();
   initColumnSelect();
+
+  await loadFieldTypes();
 
   if (mathOpContainer) {
     mathOpContainer.addEventListener('change', () => {
@@ -87,11 +102,15 @@ export function initValueWidgets() {
 function isNumericField(val) {
   if (!val) return false;
   const [table, field] = val.split(':');
-  return (
+  const type = (
     FIELD_SCHEMA[table] &&
     FIELD_SCHEMA[table][field] &&
-    FIELD_SCHEMA[table][field].type === 'number'
-  );
+    FIELD_SCHEMA[table][field].type
+  ) || '';
+  if (fieldTypes && fieldTypes[type]) {
+    return !!fieldTypes[type].numeric;
+  }
+  return type === 'number';
 }
 
 function toggleDisabled(label, input, disabled) {
