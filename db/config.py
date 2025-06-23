@@ -52,14 +52,29 @@ def get_config_rows(sections: str | list[str] | None = None):
 
 
 def get_layout_defaults() -> dict:
-    """Return layout width/height defaults from the config table."""
+    """Return layout width/height defaults from the config table or registry."""
+    from utils.field_registry import get_type_size_map
+
     with get_connection() as conn:
         cur = conn.cursor()
         cur.execute("SELECT value FROM config WHERE key = 'layout_defaults'")
         row = cur.fetchone()
 
-    if not row:
-        return {}
+    data = {}
+    if row and row[0]:
+        try:
+            data = json.loads(row[0])
+        except Exception:
+            data = {}
+
+    if not data:
+        size_map = get_type_size_map()
+        data = {
+            "width": {k: v[0] for k, v in size_map.items()},
+            "height": {k: v[1] for k, v in size_map.items()},
+        }
+
+    return data
 
 
 def get_relationship_visibility() -> dict:

@@ -36,26 +36,16 @@ DEFAULT_CONFIGS = [
     ("relationship_visibility", "{}", "general", "json", 0),
 ]
 
-LAYOUT_DEFAULTS = {
-    "width": {
-        "textarea": 12,
-        "select": 5,
-        "text": 12,
-        "foreign_key": 5,
-        "boolean": 3,
-        "number": 4,
-        "multi_select": 6,
-    },
-    "height": {
-        "textarea": 18,
-        "select": 4,
-        "text": 4,
-        "foreign_key": 10,
-        "boolean": 7,
-        "number": 3,
-        "multi_select": 8,
-    },
-}
+
+def get_layout_defaults() -> dict:
+    """Return mapping of field type -> layout width/height defaults."""
+    from utils.field_registry import get_type_size_map
+
+    size_map = get_type_size_map()
+    return {
+        "width": {k: v[0] for k, v in size_map.items()},
+        "height": {k: v[1] for k, v in size_map.items()},
+    }
 
 
 def _copy_config_metadata(cur: sqlite3.Cursor, dest_path: str) -> None:
