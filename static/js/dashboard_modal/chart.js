@@ -1,5 +1,26 @@
 import { populateFieldDropdown } from './value.js';
 
+let fieldTypes = null;
+let nonTextTypes = [];
+
+async function loadFieldTypes() {
+  if (fieldTypes) return fieldTypes;
+  try {
+    const res = await fetch('/api/field-types');
+    fieldTypes = await res.json();
+  } catch {
+    fieldTypes = {};
+  }
+  return fieldTypes;
+}
+
+async function initFieldTypeCategories() {
+  await loadFieldTypes();
+  nonTextTypes = Object.keys(fieldTypes).filter(
+    t => !(fieldTypes[t] && fieldTypes[t].is_text_like)
+  );
+}
+
 let chartTypeEl,
     chartXToggleBtn, chartXLabel, chartXOptions,
     chartYToggleBtn, chartYLabel, chartYOptions,
@@ -11,14 +32,6 @@ export let chartXField = null;
 export let chartYField = null;
 let chartAgg = '';
 let chartOrient = 'x';
-
-function getNonTextTypes() {
-  const types = new Set();
-  Object.values(FIELD_SCHEMA).forEach(tbl => {
-    Object.values(tbl).forEach(meta => types.add(meta.type));
-  });
-  return Array.from(types).filter(t => t !== 'text' && t !== 'textarea' && t !== 'url');
-}
 
 export function updateChartUI() {
   if (!chartTypeEl || !chartXFieldContainer || !chartYFieldContainer || !chartAggContainer || !chartOrientContainer || !chartTitleInputEl || !chartCreateBtnEl) return;
@@ -46,14 +59,14 @@ export function updateChartUI() {
     });
   } else if (type === 'bar') {
     chartXFieldLabel.textContent = 'Field';
-    populateFieldDropdown(chartXOptions, false, getNonTextTypes(), val => {
+    populateFieldDropdown(chartXOptions, false, nonTextTypes, val => {
       chartXField = val;
       if (chartXLabel) {
         const [t,f] = val.split(':');
         chartXLabel.textContent = `${t}: ${f}`;
       }
       updateChartTitle();
-    }, ['text', 'textarea']);
+    });
     chartOrientContainer.classList.remove('hidden');
   } else if (type === 'line') {
     chartXFieldLabel.textContent = 'Field';
@@ -94,7 +107,7 @@ function updateChartTitle() {
   chartTitleInputEl.value = defaultTitle;
 }
 
-export function initChartWidgets() {
+export async function initChartWidgets() {
   chartTypeEl = document.getElementById('chartTypeSelect');
   chartXToggleBtn = document.getElementById('chartXFieldToggle');
   chartXLabel = chartXToggleBtn ? chartXToggleBtn.querySelector('.selected-label') : null;
@@ -153,6 +166,7 @@ export function initChartWidgets() {
       chartOrient = checked ? checked.value : 'x';
     });
   }
+  await initFieldTypeCategories();
   if (chartTypeEl) {
     chartTypeEl.addEventListener('change', updateChartUI);
   }
