@@ -4,12 +4,25 @@ function initDatabaseControls() {
   const uploadForm = document.getElementById('db-upload-form');
   if (uploadForm) {
     const fileInput = uploadForm.querySelector('input[type="file"]');
+    const changeBtn = document.getElementById('change-db-btn');
+    if (changeBtn) {
+      changeBtn.disabled = true;
+      changeBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
     if (fileInput) {
       fileInput.addEventListener('change', () => {
         if (fileInput.files && fileInput.files.length > 0) {
           console.log('File chosen:', fileInput.files[0].name);
+          if (changeBtn) {
+            changeBtn.disabled = false;
+            changeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+          }
         } else {
           console.log('File input cleared');
+          if (changeBtn) {
+            changeBtn.disabled = true;
+            changeBtn.classList.add('opacity-50', 'cursor-not-allowed');
+          }
         }
       });
     }
