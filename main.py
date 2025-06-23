@@ -89,6 +89,12 @@ def inject_field_schema():
     macro_map = {name: ft.macro for name, ft in FIELD_TYPES.items() if ft.macro}
     current_app.logger.debug("Field macro map keys: %s", list(macro_map.keys()))
 
+    filter_macro_map = {
+        name: ft.filter_macro
+        for name, ft in FIELD_TYPES.items()
+        if ft.filter_macro
+    }
+
     return {
         'field_schema': schema,
         'update_foreign_field_options': update_foreign_field_options,
@@ -96,6 +102,7 @@ def inject_field_schema():
         'nav_cards': current_app.config['CARD_INFO'],
         'base_tables': current_app.config['BASE_TABLES'],
         'field_macro_map': macro_map,
+        'filter_macro_map': filter_macro_map,
         'current_app': current_app,
     }
 
