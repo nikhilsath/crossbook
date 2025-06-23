@@ -213,6 +213,10 @@ a:hover {
 .bg-card { background-color: var(--bg-card); }
 .text-light { color: var(--text-light); }
 
+.toggle-knob {
+  background-color: var(--text-light);
+}
+
 .table-row-odd { background-color: #1f2937; }
 .table-row-even { background-color: #273043; }
 .table-row-hover:hover { background-color: #374151; }
