@@ -200,7 +200,8 @@ export async function createChartWidget() {
     col_start: 1,
     col_span: 10,
     row_start: 1,
-    row_span: 12
+    row_span: 12,
+    group: window.DASHBOARD_VIEW || 'Dashboard'
   };
   try {
     const res = await fetch('/dashboard/widget', {

@@ -174,7 +174,9 @@ def _create_core_tables(cur: sqlite3.Cursor) -> None:
             col_start INTEGER NOT NULL,
             col_span INTEGER NOT NULL,
             row_start INTEGER NOT NULL,
-            row_span INTEGER NOT NULL
+            row_span INTEGER NOT NULL,
+            styling TEXT,
+            "group" TEXT DEFAULT 'Dashboard'
         )
         """
     )
