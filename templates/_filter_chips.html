@@ -3,22 +3,47 @@
 <div id="filter-container" class="ml-4 flex flex-wrap gap-x-4 gap-y-2">
   {% for field in fields if request.args.get(field) is not none %}
     {% set meta = field_schema[table][field] %}
-    {% if meta.type == 'boolean' %}
-      {{ filters.boolean_filter(field, request.args.get(field,'')) }}
-    {% elif meta.type in ['multi_select','foreign_key'] %}
-      {{ filters.multi_select_popover(field, request.args.getlist(field), meta.options, request.args.get(field + '_mode', 'any')) }}
-    {% elif meta.type == 'select' %}
-      {% if use_checkbox_filters %}
-        {{ filters.select_multi_filter(field, request.args.getlist(field), meta.options) }}
-      {% else %}
-        {{ filters.select_filter(field, request.args.get(field,''), meta.options) }}
-      {% endif %}
-    {% elif meta.type == 'number' %}
-      {{ filters.number_filter(field, request.args.get(field + '_min',''), request.args.get(field + '_max','')) }}
-    {% elif meta.type == 'date' %}
-      {{ filters.date_filter(field, request.args.get(field + '_start',''), request.args.get(field + '_end','')) }}
-    {% else %}
-      {{ filters.text_filter(field, request.args.get(field,''), request.args.get(field + '_op','contains')) }}
+    {% set macro = filter_macro_map.get(meta.type, 'text_filter') %}
+    {% if macro == 'select_filter' and use_checkbox_filters %}
+      {% set macro = 'select_multi_filter' %}
     {% endif %}
+    {% set params_map = {
+      'boolean_filter': {
+        'field': field,
+        'value': request.args.get(field, '')
+      },
+      'multi_select_popover': {
+        'field': field,
+        'selected': request.args.getlist(field),
+        'options': meta.options,
+        'mode': request.args.get(field + '_mode', 'any')
+      },
+      'select_filter': {
+        'field': field,
+        'value': request.args.get(field, ''),
+        'options': meta.options
+      },
+      'select_multi_filter': {
+        'field': field,
+        'selected': request.args.getlist(field),
+        'options': meta.options
+      },
+      'number_filter': {
+        'field': field,
+        'min_val': request.args.get(field + '_min', ''),
+        'max_val': request.args.get(field + '_max', '')
+      },
+      'date_filter': {
+        'field': field,
+        'start_val': request.args.get(field + '_start', ''),
+        'end_val': request.args.get(field + '_end', '')
+      },
+      'text_filter': {
+        'field': field,
+        'value': request.args.get(field, ''),
+        'operator': request.args.get(field + '_op', 'contains')
+      }
+    } %}
+    {{ filters[macro](**params_map[macro]) }}
   {% endfor %}
 </div>
