@@ -104,6 +104,7 @@ def inject_field_schema():
         'field_macro_map': macro_map,
         'filter_macro_map': filter_macro_map,
         'current_app': current_app,
+        'FIELD_TYPES': FIELD_TYPES,
     }
 
 @app.route("/")
