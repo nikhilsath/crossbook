@@ -7,12 +7,17 @@ from db.records import (
 )
 from db.edit_history import append_edit_log
 from db.schema import get_field_schema
+from utils.field_registry import get_field_type
 
 logger = logging.getLogger(__name__)
 
 
 def _normalize_value(ftype: str, value: Any) -> str:
     """Convert raw input into a normalized string for storage."""
+    ft = get_field_type(ftype)
+    if ft and ft.normalizer:
+        return ft.normalizer(value)
+
     if ftype == "boolean":
         return "1" if str(value).lower() in {"1", "true", "on", "yes"} else "0"
     if ftype == "number":
