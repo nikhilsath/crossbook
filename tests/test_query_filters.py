@@ -6,6 +6,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from db.database import init_db_path
 from db.query_filters import _build_filters
 from db.schema import get_field_schema
+from utils.field_registry import FIELD_TYPES
 
 init_db_path('data/crossbook.db')
 
@@ -14,7 +15,7 @@ def test_build_filters_search_clause():
     fields = [
         f
         for f, meta in get_field_schema()['character'].items()
-        if meta['type'] in ('text', 'textarea', 'select', 'multi_select', 'url')
+        if meta['type'] in FIELD_TYPES and FIELD_TYPES[meta['type']].searchable
     ]
     clauses, params = _build_filters('character', search='foo')
     assert len(clauses) == 1
