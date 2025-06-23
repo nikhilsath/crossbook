@@ -7,6 +7,11 @@ class FieldType:
         default_width=6,
         default_height=4,
         macro=None,
+        filter_macro=None,
+        normalizer=None,
+        numeric=False,
+        allows_options=False,
+        allows_foreign_key=False,
         searchable=False,
     ):
         self.name = name
@@ -15,6 +20,11 @@ class FieldType:
         self.default_width = default_width
         self.default_height = default_height
         self.macro = macro
+        self.filter_macro = filter_macro
+        self.normalizer = normalizer
+        self.numeric = numeric
+        self.allows_options = allows_options
+        self.allows_foreign_key = allows_foreign_key
         self.searchable = searchable
 
 FIELD_TYPES = {}
@@ -26,6 +36,11 @@ def register_type(
     default_width=6,
     default_height=4,
     macro=None,
+    filter_macro=None,
+    normalizer=None,
+    numeric=False,
+    allows_options=False,
+    allows_foreign_key=False,
     searchable=False,
 ):
     FIELD_TYPES[name] = FieldType(
@@ -35,6 +50,11 @@ def register_type(
         default_width,
         default_height,
         macro,
+        filter_macro,
+        normalizer,
+        numeric,
+        allows_options,
+        allows_foreign_key,
         searchable,
     )
 
