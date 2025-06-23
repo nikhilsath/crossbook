@@ -3,6 +3,24 @@ import csv
 import logging
 from db.schema import get_field_schema
 from utils.field_registry import register_type, get_field_type
+from collections.abc import Iterable
+
+
+def normalize_boolean(value):
+    return "1" if str(value).lower() in {"1", "true", "on", "yes"} else "0"
+
+
+def normalize_number(value):
+    try:
+        return str(float(value))
+    except (TypeError, ValueError):
+        return "0"
+
+
+def normalize_multi(value):
+    if isinstance(value, Iterable) and not isinstance(value, (str, bytes)):
+        return ", ".join(str(v) for v in value)
+    return "" if value is None else str(value)
 
 logger = logging.getLogger(__name__)
 SCHEMA = get_field_schema()
@@ -184,11 +202,11 @@ def validate_multi_select_column(values: list[str], options: list[str]) -> dict:
 # Register built-in field types with the registry
 register_type('title', sql_type='TEXT', validator=lambda t, f, v: validate_text_column(v), default_width=12, default_height=4, macro='render_text')
 register_type('text', sql_type='TEXT', validator=lambda t, f, v: validate_text_column(v), default_width=12, default_height=4, macro='render_text')
-register_type('number', sql_type='REAL', validator=lambda t, f, v: validate_number_column(v), default_width=4, default_height=3, macro='render_number')
+register_type('number', sql_type='REAL', validator=lambda t, f, v: validate_number_column(v), default_width=4, default_height=3, macro='render_number', normalizer=normalize_number)
 register_type('date', sql_type='TEXT', validator=lambda t, f, v: validate_text_column(v), default_width=6, default_height=4, macro='render_date')
 register_type('select', sql_type='TEXT', validator=lambda t, f, v: validate_select_column(v, SCHEMA[t][f]['options']), default_width=5, default_height=4, macro='render_select')
-register_type('multi_select', sql_type='TEXT', validator=lambda t, f, v: validate_multi_select_column(v, SCHEMA[t][f]['options']), default_width=6, default_height=8, macro='render_multi_select')
-register_type('foreign_key', sql_type='TEXT', validator=lambda t, f, v: validate_select_column(v, SCHEMA[t][f]['options']), default_width=5, default_height=10, macro='render_foreign_key')
-register_type('boolean', sql_type='INTEGER', validator=lambda t, f, v: validate_boolean_column(v), default_width=3, default_height=7, macro='render_boolean')
+register_type('multi_select', sql_type='TEXT', validator=lambda t, f, v: validate_multi_select_column(v, SCHEMA[t][f]['options']), default_width=6, default_height=8, macro='render_multi_select', normalizer=normalize_multi)
+register_type('foreign_key', sql_type='TEXT', validator=lambda t, f, v: validate_select_column(v, SCHEMA[t][f]['options']), default_width=5, default_height=10, macro='render_foreign_key', normalizer=normalize_multi)
+register_type('boolean', sql_type='INTEGER', validator=lambda t, f, v: validate_boolean_column(v), default_width=3, default_height=7, macro='render_boolean', normalizer=normalize_boolean)
 register_type('textarea', sql_type='TEXT', validator=lambda t, f, v: validate_textarea_column(v), default_width=12, default_height=18, macro='render_textarea')
 register_type('url', sql_type='TEXT', validator=lambda t, f, v: validate_text_column(v), default_width=12, default_height=4, macro='render_url')

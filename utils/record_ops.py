@@ -1,10 +1,11 @@
 import logging
-from typing import Any, Iterable
+from typing import Any
 
 from db.records import (
     get_record_by_id,
     update_field_value,
 )
+from utils.field_registry import get_field_type
 from db.edit_history import append_edit_log
 from db.schema import get_field_schema
 
@@ -13,19 +14,8 @@ logger = logging.getLogger(__name__)
 
 def _normalize_value(ftype: str, value: Any) -> str:
     """Convert raw input into a normalized string for storage."""
-    if ftype == "boolean":
-        return "1" if str(value).lower() in {"1", "true", "on", "yes"} else "0"
-    if ftype == "number":
-        try:
-            return str(float(value))
-        except (TypeError, ValueError):
-            return "0"
-    if ftype in {"multi_select", "foreign_key"}:
-        if isinstance(value, Iterable) and not isinstance(value, (str, bytes)):
-            return ", ".join(str(v) for v in value)
-        return "" if value is None else str(value)
-    # Textarea sanitization happens in db layer
-    return "" if value is None else str(value)
+    ft = get_field_type(ftype)
+    return ft.normalizer(value) if ft and ft.normalizer else ("" if value is None else str(value))
 
 
 def update_record_field(table: str, record_id: int, field: str, value: Any) -> str:
