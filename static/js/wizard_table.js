@@ -88,6 +88,36 @@ function removeField(tidx, fidx) {
   updateFieldList(tidx);
 }
 
+function showTableSummaryModal() {
+  const modal = document.getElementById('tableSummaryModal');
+  const list = document.getElementById('table-summary-list');
+  list.innerHTML = '';
+  document.querySelectorAll('.table-form').forEach((div) => {
+    const idx = parseInt(div.dataset.index, 10);
+    const name = div.querySelector('input[name="table_name"]').value.trim();
+    if (!name) return;
+    const li = document.createElement('li');
+    li.innerHTML = `<strong>${name}</strong>: ${
+      (tables[idx] || [])
+        .map((f) => f.name)
+        .join(', ') || '(no fields)'
+    }`;
+    list.appendChild(li);
+  });
+  modal.classList.remove('hidden');
+  document.addEventListener('keydown', summaryEscHandler);
+}
+
+function hideTableSummaryModal() {
+  const modal = document.getElementById('tableSummaryModal');
+  modal.classList.add('hidden');
+  document.removeEventListener('keydown', summaryEscHandler);
+}
+
+const summaryEscHandler = (e) => {
+  if (e.key === 'Escape') hideTableSummaryModal();
+};
+
 function updateFieldList(idx) {
   const list = document.getElementById(`fields-list_${idx}`);
   list.innerHTML = '';
@@ -220,6 +250,8 @@ function addTableForm() {
 window.showAddFieldModal = showAddFieldModal;
 window.hideAddFieldModal = hideAddFieldModal;
 window.addTableForm = addTableForm;
+window.showTableSummaryModal = showTableSummaryModal;
+window.hideTableSummaryModal = hideTableSummaryModal;
 
 function initImportSchema() {
   const btn = document.getElementById('import-table-btn');
@@ -241,7 +273,18 @@ function handleImportFile(e) {
       .split(',')
       .map((h) => h.replace(/^"|"$/g, '').trim())
       .filter((h) => h);
-    const idx = addTableForm();
+    let idx;
+    if (
+      tables.length === 1 &&
+      tables[0].length === 0 &&
+      !document
+        .querySelector('.table-form[data-index="0"] input[name="table_name"]')
+        .value.trim()
+    ) {
+      idx = 0;
+    } else {
+      idx = addTableForm();
+    }
     const wrapper = document.querySelector(`.table-form[data-index="${idx}"]`);
     const nameInput = wrapper.querySelector('input[name="table_name"]');
     if (nameInput) {
@@ -261,6 +304,8 @@ document.addEventListener('DOMContentLoaded', () => {
   addTableForm();
   document.getElementById('field-form').addEventListener('submit', addField);
   initImportSchema();
+  const summaryBtn = document.getElementById('schema-summary-btn');
+  if (summaryBtn) summaryBtn.addEventListener('click', showTableSummaryModal);
 });
 
 window.initImportSchema = initImportSchema;

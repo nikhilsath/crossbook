@@ -10,6 +10,7 @@
   <div class="space-x-4">
     <button type="button" id="add-table-btn" onclick="addTableForm()" class="text-teal-600 text-4xl font-bold">+</button>
     <button type="button" id="import-table-btn" class="underline text-blue-600">Import Table Schema</button>
+    <button type="button" id="schema-summary-btn" class="underline text-blue-600">View Tables</button>
     <input type="file" id="import-table-file" accept=".csv" class="hidden">
   </div>
   <div class="wizard-nav">
@@ -54,6 +55,15 @@
         <button type="submit" class="btn-primary px-4 py-2 rounded">Add</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Table Summary Modal -->
+<div id="tableSummaryModal" class="modal-container hidden" onclick="if(event.target.id === 'tableSummaryModal') hideTableSummaryModal()">
+  <div class="modal-box w-96 max-w-full relative">
+    <button type="button" onclick="hideTableSummaryModal()" class="modal-close">&times;</button>
+    <h3 class="text-lg font-bold mb-4">Tables</h3>
+    <ul id="table-summary-list" class="list-disc pl-5 space-y-1"></ul>
   </div>
 </div>
 
