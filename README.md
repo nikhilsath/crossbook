@@ -34,7 +34,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Search & Visibility Controls:** Text-based search filters and toggleable columns for list views, with filter controls implemented via Jinja macros.
 * **Navigation:** Centralized in `templates/base.html`, providing consistent header navigation and action buttons across all entity pages.
 * **Database Layer:** Abstracted in the `db/` package (`database.py`, `schema.py`, `records.py`, `relationships.py`) for connection handling, schema loading, CRUD operations, and relationship management.
-* **Logging:** Python’s `logging` module tracks errors and activity. Flask session is not currently used.
+* **Logging:** Python’s `logging` module tracks errors and activity.
 
 ### Future Cloud Migration
 
@@ -45,7 +45,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 ## Current Status
 
 * **Detail View Layout Editor:** drag-and-drop and resizing are fully functional and layouts save via the `/<table>/layout` endpoint.
-* **Setup Wizard:** `/wizard/` walks through choosing or creating a database, adjusting settings, adding an initial table, and optionally importing a CSV. Step 3 can now import a CSV file to populate the table schema automatically.
+* **Setup Wizard:** `/wizard/` walks through choosing or creating a database, adjusting settings, adding an initial table, and optionally importing a CSV. Step 3 can now import a CSV file to populate the table schema automatically. Wizard routes store progress information in the Flask `session` so each step remembers prior choices.
 
 ## Implemented Features
 
