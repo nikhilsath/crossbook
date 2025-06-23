@@ -110,7 +110,7 @@ function isNumericField(val) {
   if (fieldTypes && fieldTypes[type]) {
     return !!fieldTypes[type].numeric;
   }
-  return type === 'number';
+  return false;
 }
 
 function toggleDisabled(label, input, disabled) {
@@ -275,7 +275,7 @@ export function populateFieldDropdown(dropdown, restrictNumeric, allowedTypes, c
     const fields = Object.keys(tableSchema);
     fields.forEach(field => {
       const type = tableSchema[field] ? tableSchema[field].type : '';
-      if (restrictNumeric && type !== 'number') return;
+      if (restrictNumeric && !(fieldTypes && fieldTypes[type] && fieldTypes[type].numeric)) return;
       if (allowedTypes && !allowedTypes.includes(type)) return;
       if (excludeTypes && excludeTypes.includes(type)) return;
       const val = `${table}:${field}`;
