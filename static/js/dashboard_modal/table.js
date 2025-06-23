@@ -4,6 +4,31 @@
 
 import { populateFieldDropdown } from './value.js';
 
+let fieldTypes = null;
+let optionFieldTypes = [];
+let numericFieldTypes = [];
+
+async function loadFieldTypes() {
+  if (fieldTypes) return fieldTypes;
+  try {
+    const res = await fetch('/api/field-types');
+    fieldTypes = await res.json();
+  } catch {
+    fieldTypes = {};
+  }
+  return fieldTypes;
+}
+
+async function initFieldTypeCategories() {
+  await loadFieldTypes();
+  optionFieldTypes = Object.keys(fieldTypes).filter(
+    t => fieldTypes[t] && fieldTypes[t].allows_options
+  );
+  numericFieldTypes = Object.keys(fieldTypes).filter(
+    t => fieldTypes[t] && fieldTypes[t].numeric
+  );
+}
+
 export let tableType = 'base-count';
 export let selectCountField = null;
 export let topNumericField = null;
@@ -21,7 +46,7 @@ let filteredTableToggleBtn, filteredTableToggleLabel, filteredTableOptions;
 let filteredSortToggleBtn, filteredSortToggleLabel, filteredSortOptions;
 let filteredSearchInputEl, filteredLimitInputEl, filteredRecordsContainer;
 
-export function initTableWidgets() {
+export async function initTableWidgets() {
   tableTitleInputEl = document.getElementById('tableTitleInput');
   tableCreateBtnEl = document.getElementById('tableCreateBtn');
   tablePreviewEl = document.getElementById('tablePreview');
@@ -55,6 +80,8 @@ export function initTableWidgets() {
     });
   }
 
+  await initFieldTypeCategories();
+
   if (selectCountToggleBtn && selectCountOptions) {
     selectCountToggleBtn.addEventListener('click', e => { e.stopPropagation(); selectCountOptions.classList.toggle('hidden'); });
     document.addEventListener('click', e => {
@@ -63,7 +90,7 @@ export function initTableWidgets() {
       }
     });
     selectCountOptions.addEventListener('click', e => e.stopPropagation());
-    populateFieldDropdown(selectCountOptions, false, ['select','multi_select'], val => {
+    populateFieldDropdown(selectCountOptions, false, optionFieldTypes, val => {
       selectCountField = val;
       if (selectCountToggleLabel) {
         const [t,f] = val.split(':');
@@ -81,7 +108,7 @@ export function initTableWidgets() {
       }
     });
     topFieldOptions.addEventListener('click', e => e.stopPropagation());
-    populateFieldDropdown(topFieldOptions, true, ['number'], val => {
+    populateFieldDropdown(topFieldOptions, true, numericFieldTypes, val => {
       topNumericField = val;
       if (topFieldToggleLabel) {
         const [t,f] = val.split(':');
