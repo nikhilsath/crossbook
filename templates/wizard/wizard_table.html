@@ -44,7 +44,7 @@
           <option value="" disabled selected>Select field</option>
           {% for source_table, fields in field_schema.items() %}
             {% for field, meta in fields.items() %}
-              {% if meta.type in ['select', 'multi_select'] %}
+              {% if meta.type in FIELD_TYPES and FIELD_TYPES[meta.type].allows_options %}
                 <option value="{{ source_table }}.{{ field }}">{{ source_table }} → {{ field }}</option>
               {% endif %}
             {% endfor %}
