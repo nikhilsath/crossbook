@@ -105,7 +105,7 @@ a:hover {
 .btn-primary,
 .btn-secondary,
 .btn-danger {
-  color: #fff;
+  color: var(--text-light);
   padding: 0.25rem 0.75rem;
   border-radius: 0.25rem;
   display: inline-block;
