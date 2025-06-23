@@ -13,3 +13,4 @@ def api_base_tables():
     with get_connection() as conn:
         data = load_card_info(conn)
     return jsonify(data)
+
