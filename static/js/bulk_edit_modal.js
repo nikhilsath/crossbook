@@ -56,13 +56,13 @@ async function buildInput() {
   const container = document.getElementById('bulk-input-container');
   let html = '';
 
-  if (meta.name === 'textarea') {
+  if (meta.is_textarea) {
     html = '<textarea id="bulk-value" class="form-input"></textarea>';
   } else if (meta.numeric) {
     html = '<input id="bulk-value" type="number" class="form-input">';
-  } else if (meta.name === 'boolean') {
+  } else if (meta.is_boolean) {
     html = '<select id="bulk-value" class="form-select"><option value="1">True</option><option value="0">False</option></select>';
-  } else if (meta.allows_foreign_key || meta.name === 'multi_select') {
+  } else if (meta.allows_multiple) {
     html = '<div class="max-h-48 overflow-y-auto border p-2 space-y-1">' +
       options.map(o => `<label class="flex items-center space-x-2"><input type="checkbox" value="${o}" class="bulk-multi-option form-input"><span class="text-sm">${o}</span></label>`).join('') +
       '</div>';
@@ -70,7 +70,7 @@ async function buildInput() {
     html = '<select id="bulk-value" class="form-select">' +
       options.map(o => `<option value="${o}">${o}</option>`).join('') +
       '</select>';
-  } else if (meta.name === 'url') {
+  } else if (meta.is_url) {
     html = '<input id="bulk-value" type="url" class="form-input">';
   } else {
     html = '<input id="bulk-value" type="text" class="form-input">';
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const type = fieldSel.selectedOptions[0].dataset.type;
     const meta = fieldTypes[type] || {};
     let value;
-    if (meta.allows_foreign_key || meta.name === 'multi_select') {
+    if (meta.allows_multiple) {
       value = Array.from(document.querySelectorAll('.bulk-multi-option:checked')).map(cb => cb.value);
     } else {
       value = document.getElementById('bulk-value').value;

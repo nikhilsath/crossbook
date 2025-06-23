@@ -13,6 +13,11 @@ class FieldType:
         allows_options=False,
         allows_foreign_key=False,
         searchable=False,
+        *,
+        allows_multiple=False,
+        is_textarea=False,
+        is_boolean=False,
+        is_url=False,
     ):
         self.name = name
         self.sql_type = sql_type
@@ -26,6 +31,10 @@ class FieldType:
         self.allows_options = allows_options
         self.allows_foreign_key = allows_foreign_key
         self.searchable = searchable
+        self.allows_multiple = allows_multiple
+        self.is_textarea = is_textarea
+        self.is_boolean = is_boolean
+        self.is_url = is_url
 
 FIELD_TYPES = {}
 
@@ -42,6 +51,11 @@ def register_type(
     allows_options=False,
     allows_foreign_key=False,
     searchable=False,
+    *,
+    allows_multiple=False,
+    is_textarea=False,
+    is_boolean=False,
+    is_url=False,
 ):
     FIELD_TYPES[name] = FieldType(
         name,
@@ -56,6 +70,10 @@ def register_type(
         allows_options,
         allows_foreign_key,
         searchable,
+        allows_multiple=allows_multiple,
+        is_textarea=is_textarea,
+        is_boolean=is_boolean,
+        is_url=is_url,
     )
 
 
