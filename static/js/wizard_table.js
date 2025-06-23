@@ -177,39 +177,40 @@ function updateTitleFieldOptions(idx) {
   select.disabled = tables[idx].length === 0;
 }
 
-function initFieldTypeSelect() {
+let fieldTypes = null;
+
+async function loadFieldTypes() {
+  if (fieldTypes) return fieldTypes;
+  try {
+    const res = await fetch('/api/field-types');
+    fieldTypes = await res.json();
+  } catch {
+    fieldTypes = {};
+  }
+  return fieldTypes;
+}
+
+async function initFieldTypeSelect() {
   const select = document.getElementById('field_type');
   if (!select) return;
-  fetch('/api/field-types')
-    .then((res) => res.json())
-    .then((types) => {
-      types.forEach((t) => {
-        if (t === 'title') return;
-        const opt = document.createElement('option');
-        opt.value = t;
-        opt.textContent = t;
-        select.appendChild(opt);
-      });
-    })
-    .catch(() => {});
+  await loadFieldTypes();
+  Object.keys(fieldTypes).forEach((t) => {
+    if (t === 'title') return;
+    const opt = document.createElement('option');
+    opt.value = t;
+    opt.textContent = t;
+    select.appendChild(opt);
+  });
 
   select.addEventListener('change', () => {
-    const type = select.value;
+    const meta = fieldTypes[select.value] || {};
     const optionsContainer = document.getElementById('field-options-container');
     const fkContainer = document.getElementById('fk-select-container');
     if (optionsContainer) {
-      if (type === 'select' || type === 'multi_select') {
-        optionsContainer.classList.remove('hidden');
-      } else {
-        optionsContainer.classList.add('hidden');
-      }
+      optionsContainer.classList.toggle('hidden', !meta.allows_options);
     }
     if (fkContainer) {
-      if (type === 'foreign_key') {
-        fkContainer.classList.remove('hidden');
-      } else {
-        fkContainer.classList.add('hidden');
-      }
+      fkContainer.classList.toggle('hidden', !meta.allows_foreign_key);
     }
   });
 }
