@@ -27,3 +27,7 @@ export function closeModal(id) {
     delete triggers[id];
   }
 }
+
+// make modal functions globally accessible so templates can use them directly
+window.openModal = openModal;
+window.closeModal = closeModal;
