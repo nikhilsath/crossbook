@@ -63,35 +63,52 @@ def skip_import():
 @wizard_bp.route('/wizard/database', methods=['GET', 'POST'])
 def database_step():
     progress = session.setdefault('wizard_progress', {})
+    error = None
     if request.method == 'POST':
-        if 'file' in request.files and request.files['file'].filename:
-            file = request.files['file']
-            filename = secure_filename(file.filename)
-            if filename.endswith('.db'):
+        try:
+            if 'file' in request.files and request.files['file'].filename:
+                file = request.files['file']
+                filename = secure_filename(file.filename)
+                if not filename.endswith('.db'):
+                    error = 'Database file must have a .db extension.'
+                else:
+                    save_path = os.path.join('data', filename)
+                    file.save(save_path)
+                    initialize_database(save_path)
+                    ensure_default_configs(save_path)
+                    db_database.init_db_path(save_path)
+                    update_config('db_path', save_path)
+                    reload_app_state()
+            elif request.form.get('create_name'):
+                name = request.form.get('create_name')
+                filename = secure_filename(name)
+                if not filename.endswith('.db'):
+                    filename += '.db'
                 save_path = os.path.join('data', filename)
-                file.save(save_path)
+                open(save_path, 'a').close()
                 initialize_database(save_path)
                 ensure_default_configs(save_path)
                 db_database.init_db_path(save_path)
                 update_config('db_path', save_path)
                 reload_app_state()
-        name = request.form.get('create_name')
-        if name:
-            filename = secure_filename(name)
-            if not filename.endswith('.db'):
-                filename += '.db'
-            save_path = os.path.join('data', filename)
-            open(save_path, 'a').close()
-            initialize_database(save_path)
-            ensure_default_configs(save_path)
-            db_database.init_db_path(save_path)
-            update_config('db_path', save_path)
-            reload_app_state()
-        progress['database'] = True
-        session['wizard_progress'] = progress
-        return redirect(url_for('wizard.settings_step'))
+            else:
+                error = 'Please upload a file or enter a name.'
+        except Exception as exc:
+            logger.exception('Failed to handle database file: %s', exc)
+            error = f'Failed to save file: {exc}'
+
+        if not error:
+            progress['database'] = True
+            session['wizard_progress'] = progress
+            return redirect(url_for('wizard.settings_step'))
+
     status = db_database.check_db_status(db_database.DB_PATH)
-    return render_template('wizard/wizard_database.html', db_path=db_database.DB_PATH, db_status=status)
+    return render_template(
+        'wizard/wizard_database.html',
+        db_path=db_database.DB_PATH,
+        db_status=status,
+        error=error,
+    )
 
 
 @wizard_bp.route('/wizard/settings', methods=['GET', 'POST'])
@@ -233,19 +250,31 @@ def import_step():
         return redirect(url_for('home'))
 
     base_tables = current_app.config.get('BASE_TABLES', [])
+    error = None
     if request.method == 'POST':
         table = request.form.get('table')
         file = request.files.get('file')
         if table and file and file.filename.endswith('.csv'):
-            headers, rows = parse_csv(file)
-            for row in rows:
-                try:
-                    create_record(table, row)
-                except Exception:
-                    logger.exception('Failed to import row')
-        progress['import'] = True
-        session['wizard_progress'] = progress
-        session['wizard_complete'] = True
-        session.pop('wizard_progress', None)
-        return redirect(url_for('home'))
-    return render_template('wizard/wizard_import.html', base_tables=base_tables)
+            try:
+                headers, rows = parse_csv(file)
+                for row in rows:
+                    try:
+                        create_record(table, row)
+                    except Exception:
+                        logger.exception('Failed to import row')
+            except Exception as exc:
+                logger.exception('Failed to import CSV: %s', exc)
+                error = f'Failed to import CSV: {exc}'
+        else:
+            error = 'Please select a table and upload a .csv file.'
+
+        if not error:
+            progress['import'] = True
+            session['wizard_progress'] = progress
+            session['wizard_complete'] = True
+            session.pop('wizard_progress', None)
+            return redirect(url_for('home'))
+
+    return render_template(
+        'wizard/wizard_import.html', base_tables=base_tables, error=error
+    )
