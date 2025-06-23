@@ -2,6 +2,8 @@ import { populateFieldDropdown } from './value.js';
 
 let fieldTypes = null;
 let nonTextTypes = [];
+let optionFieldTypes = [];
+let numericAndDateTypes = [];
 
 async function loadFieldTypes() {
   if (fieldTypes) return fieldTypes;
@@ -18,6 +20,12 @@ async function initFieldTypeCategories() {
   await loadFieldTypes();
   nonTextTypes = Object.keys(fieldTypes).filter(
     t => !(fieldTypes[t] && fieldTypes[t].is_text_like)
+  );
+  optionFieldTypes = Object.keys(fieldTypes).filter(
+    t => fieldTypes[t] && fieldTypes[t].allows_options
+  );
+  numericAndDateTypes = Object.keys(fieldTypes).filter(
+    t => fieldTypes[t] && (fieldTypes[t].numeric || t === 'date')
   );
 }
 
@@ -49,7 +57,7 @@ export function updateChartUI() {
   chartCreateBtnEl.classList.remove('hidden');
   if (type === 'pie') {
     chartXFieldLabel.textContent = 'Category Field';
-    populateFieldDropdown(chartXOptions, false, ['select', 'multi_select'], val => {
+    populateFieldDropdown(chartXOptions, false, optionFieldTypes, val => {
       chartXField = val;
       if (chartXLabel) {
         const [t,f] = val.split(':');
@@ -70,7 +78,7 @@ export function updateChartUI() {
     chartOrientContainer.classList.remove('hidden');
   } else if (type === 'line') {
     chartXFieldLabel.textContent = 'Field';
-    populateFieldDropdown(chartXOptions, false, ['number', 'date'], val => {
+    populateFieldDropdown(chartXOptions, false, numericAndDateTypes, val => {
       chartXField = val;
       if (chartXLabel) {
         const [t,f] = val.split(':');
