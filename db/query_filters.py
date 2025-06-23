@@ -2,6 +2,7 @@ import logging
 from db.database import SUPPORTS_REGEX
 from db.schema import get_field_schema
 from db.validation import validate_fields
+from utils.field_registry import FIELD_TYPES
 
 logger = logging.getLogger(__name__)
 
@@ -126,9 +127,9 @@ def _build_filters(
         search_term = search.strip()
         all_fields = get_field_schema()[table]
         search_fields = [
-            field
-            for field, meta in all_fields.items()
-            if meta["type"] in ("text", "textarea", "select", "multi_select", "url")
+            f
+            for f, m in all_fields.items()
+            if m["type"] in FIELD_TYPES and FIELD_TYPES[m["type"]].searchable
         ]
         if search_fields:
             validate_fields(table, search_fields)
