@@ -21,13 +21,17 @@ logger = logging.getLogger(__name__)
 @admin_bp.route('/dashboard')
 def dashboard():
     widgets = get_dashboard_widgets()
+    view = request.args.get("view") or "Dashboard"
+    groups = sorted({(w.get("group") or "Dashboard") for w in widgets})
     for w in widgets:
         if w.get('widget_type') == 'table':
             try:
                 w['parsed'] = json.loads(w.get('content') or '{}')
             except Exception:
                 w['parsed'] = {}
-    return render_template('dashboard.html', widgets=widgets)
+    return render_template(
+        'dashboard.html', widgets=widgets, view=view, groups=groups
+    )
 
 
 @admin_bp.route('/dashboard/widget', methods=['POST'])
@@ -70,6 +74,7 @@ def dashboard_create_widget():
         if content is None:
             content = ''
 
+    group = (data.get('group') or 'Dashboard').strip() or 'Dashboard'
     widget_id = create_widget(
         title,
         content,
@@ -78,6 +83,7 @@ def dashboard_create_widget():
         col_span,
         None,
         row_span,
+        group,
     )
 
     if not widget_id:

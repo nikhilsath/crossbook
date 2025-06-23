@@ -400,7 +400,8 @@ export async function createValueWidget() {
     col_start: 1,
     col_span: 4,
     row_start: 1,
-    row_span: 3
+    row_span: 3,
+    group: window.DASHBOARD_VIEW || 'Dashboard'
   };
 
   try {

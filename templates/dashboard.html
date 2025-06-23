@@ -8,6 +8,17 @@
 <button id="dashboard_save" class="btn-secondary hidden">Save Layout</button>
 {% endblock %}
 
+{% block header_actions %}
+<div class="flex items-center space-x-2">
+  <select id="dashboardViewSelect" class="form-select px-2 py-1 text-sm">
+    {% for g in groups %}
+    <option value="{{ g }}" {% if g == view %}selected{% endif %}>{{ g }}</option>
+    {% endfor %}
+  </select>
+  <button id="addDashboardView" class="btn-secondary px-2">+</button>
+</div>
+{% endblock %}
+
 {% block content %}
 <div class="flex items-center mb-4">
   <h1 class="text-3xl font-bold mr-4">Dashboard</h1>
@@ -31,11 +42,13 @@
       'colStart': col_start,
       'colSpan': col_span,
       'rowStart': row_start,
-      'rowSpan': row_span
+      'rowSpan': row_span,
+      'group': widget.group or 'Dashboard'
     } }) %}
     <div id="widget-{{ widget.id }}" class="dashboard-widget draggable-field min-h-0 border p-2 rounded shadow bg-card"
          data-widget="{{ widget.id }}"
          data-type="{{ widget.widget_type }}"
+         data-group="{{ widget.group or 'Dashboard' }}"
          {% if widget.widget_type in ['chart', 'value'] %}data-config='{{ widget.content }}'{% endif %}
          data-styling="{{ widget.styling or '{}' }}"
          style="grid-column: {{ col_start }} / span {{ col_span }}; grid-row: {{ row_start }} / span {{ row_span }};">
@@ -101,6 +114,7 @@
 
 <script>const FIELD_SCHEMA = {{ field_schema | tojson }};</script>
 <script>window.WIDGET_LAYOUT = {{ widget_layout | tojson }};</script>
+<script>window.DASHBOARD_VIEW = {{ view | tojson }}; window.DASHBOARD_GROUPS = {{ groups | tojson }};</script>
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('#dashboard-grid .draggable-field').forEach(el => {
@@ -122,5 +136,6 @@
 <script type="module" src="{{ url_for('static', filename='js/dashboard_grid.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/dashboard_charts.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/dashboard_values.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/dashboard_views.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/dashboard_update.js') }}"></script>
 {% endblock %}

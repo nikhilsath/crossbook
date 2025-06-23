@@ -128,10 +128,14 @@ function enableDashboardDrag() {
       colStart: newColStart + 1,
       colSpan:  startRect.colSpan,
       rowStart: newRowStart + 1,
-      rowSpan:  startRect.rowSpan
+      rowSpan:  startRect.rowSpan,
+      group: startRect.group
     };
+    const currentView = window.DASHBOARD_VIEW || 'Dashboard';
     const hasOverlap = Object.entries(widgetLayout).some(([other, rect]) =>
-      other !== widgetId && intersects(widgetLayout[widgetId], rect)
+      other !== widgetId &&
+      rect.group === currentView &&
+      intersects(widgetLayout[widgetId], rect)
     );
     if (hasOverlap) {
       revertPosition(widgetEl, widgetLayout);
@@ -231,10 +235,14 @@ function enableDashboardResize() {
       colStart: parseInt(partsCol[0]),
       colSpan:  parseInt(partsCol[3]),
       rowStart: parseInt(partsRow[0]),
-      rowSpan:  parseInt(partsRow[3])
+      rowSpan:  parseInt(partsRow[3]),
+      group: widgetLayout[widgetId].group
     };
+    const currentView = window.DASHBOARD_VIEW || 'Dashboard';
     const hasOverlap = Object.entries(widgetLayout).some(([id, rect]) =>
-      id !== widgetId && intersects(newRect, rect)
+      id !== widgetId &&
+      rect.group === currentView &&
+      intersects(newRect, rect)
     );
     if (hasOverlap) {
       revertPosition(widgetEl, widgetLayout);

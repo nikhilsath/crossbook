@@ -31,7 +31,7 @@ def get_dashboard_widgets() -> list[dict]:
         cursor = conn.cursor()
         try:
             cursor.execute(
-                "SELECT id, title, content, widget_type, col_start, col_span, row_start, row_span, styling "
+                "SELECT id, title, content, widget_type, col_start, col_span, row_start, row_span, styling, \"group\" "
                 "FROM dashboard_widget ORDER BY id"
             )
             rows = cursor.fetchall()
@@ -49,6 +49,7 @@ def create_widget(
     col_span: int,
     row_start: int | None,
     row_span: int,
+    group: str = "Dashboard",
 ) -> int | None:
     if row_start is None:
         with get_connection() as conn:
@@ -65,10 +66,19 @@ def create_widget(
             cur.execute(
                 """
                 INSERT INTO dashboard_widget
-                    (title, content, widget_type, col_start, col_span, row_start, row_span)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                    (title, content, widget_type, col_start, col_span, row_start, row_span, "group")
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
-                (title, content, widget_type, col_start, col_span, row_start, row_span),
+                (
+                    title,
+                    content,
+                    widget_type,
+                    col_start,
+                    col_span,
+                    row_start,
+                    row_span,
+                    group,
+                ),
             )
             conn.commit()
             return cur.lastrowid
