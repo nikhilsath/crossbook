@@ -232,6 +232,7 @@ The worker also processes scheduled automation tasks defined in `automation/engi
   * `bulk_edit_modal.js` for multi-record editing
   * `column_visibility.js` to toggle table columns
   * `dashboard_modal.js` for dashboard widgets
+  * `modal_helper.js` centralizes open/close logic for all modals and popovers
   * `edit_fields.js` for client-side schema and field editing
   * `editor.js` initializes Quill editors for textarea fields (see the [Quill documentation](https://quilljs.com/docs/quickstart/) for editor usage)
   * `field_ajax.js` for inline field updates without page reloads (imported by `detail_view.html`)
@@ -245,8 +246,8 @@ The worker also processes scheduled automation tasks defined in `automation/engi
   * `config_admin.js` processes layout defaults forms
   * `undo_edit.js` allows reverting edits via AJAX
 
-* **Static Assets & Styling:** Tailwind is loaded via CDN in `templates/base.html`. Global rules live in `static/css/styles.css`, while `static/css/overrides.css` contains Tailwind tweaks used by the layout editors. Update these files to change colors, spacing or other visual details. Any custom IDs or extra class names used in the templates are defined in these stylesheets so all styling remains centralized.
-* **`.popover-dark` utility:** Defined in `static/css/styles.css`, this dark themed dropdown container sets `z-index: 200` so popovers stay above the sidebar. It is used for column and filter dropdowns in `list_view.html`, the header and relation popovers in `detail_view.html`, and within `macros/filter_controls.html`, `macros/fields.html` and dashboard modals.
+* **Static Assets & Styling:** Tailwind is loaded via CDN in `templates/base.html`. Global rules live in `static/css/styles.css` and overrides in `static/css/overrides.css`. Every element should have an id and class so styling is defined in these files using Tailwind utilities instead of inline classes.
+* **`.popover-dark` utility:** Provides consistent popover styling. Combined with the handlers in `modal_helper.js`, this class ensures dropdowns behave the same throughout the app.
 * **`.tag-container` utility:** Provides dark mode styling for selected tag lists. Applied in multi-select and foreign key fields via `macros/fields.html` and the `tag_selector.js` macro.
 
 * **Templating & Macros:** Jinja2 templates in `templates/` include the core pages (`base.html`, `index.html`, `list_view.html`, `detail_view.html`, `new_record.html`, `dashboard.html`) plus admin and import views. Partial templates like `modals/edit_fields_modal.html` and `modals/bulk_edit_modal.html` are used for modals. Reusable macros live in `templates/macros/fields.html` and `filter_controls.html`.
@@ -473,11 +474,12 @@ By using this macro in `detail_view.html`, the template stays cleaner and any ch
 
 ## Styling
 
-The UI relies on Tailwind utility classes with a small set of custom overrides. Tailwind is loaded via CDN in `templates/base.html` and we primarily use inline Tailwind classes for layout. Any custom IDs or extra class names that appear in the templates are defined in the CSS files so they can be managed in one place.
+The UI relies on Tailwind utility classes with a small set of custom overrides. Tailwind is loaded via CDN in `templates/base.html`. Every element receives an id and class so styling is defined in `static/css/styles.css` or `static/css/overrides.css` using `@apply` instead of inline classes.
 
 1. Edit `static/css/styles.css` for additional rules or to define IDs referenced in templates.
 2. Adjust `static/css/overrides.css` to tweak layout editor styles or Tailwind utilities.
 3. Reload the browser after making changes to see your updates.
+4. All modals and popovers call the shared functions in `modal_helper.js` so their open and close behavior is consistent.
 
 ## License
 
