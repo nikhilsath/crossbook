@@ -118,7 +118,7 @@ document.addEventListener("change", event => {
             `<span data-popup-key="${respHeader}" class="text-green-600 valid-popup">✅ ${results.valid} valid</span>` +
             `<span data-popup-key="${respHeader}" class="text-yellow-600 warning-popup">⚠️ ${results.warning ?? 0} warnings</span>` +
             `<span data-popup-key="${respHeader}" class="text-red-600 invalid-popup">❌ ${results.invalid} invalid</span>` +
-            `<span data-popup-key="${respHeader}" class="text-black blank-popup">⬛ ${results.blank} blank</span>`;
+            `<span data-popup-key="${respHeader}" class="blank-popup">⬛ ${results.blank} blank</span>`;
   
           // Insert into DOM, placing before select-wrapper if present
           const flexRow = container.querySelector('.flex.justify-between');
