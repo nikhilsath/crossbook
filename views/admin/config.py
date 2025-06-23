@@ -110,7 +110,7 @@ def update_database_file():
 @admin_bp.route('/api/field-types')
 def api_field_types():
     """Return list of available field types."""
-    return jsonify(list(FIELD_TYPES.keys()))
+    return jsonify({name: vars(ft) for name, ft in FIELD_TYPES.items()})
 
 
 @admin_bp.route('/add-table', methods=['POST'])
