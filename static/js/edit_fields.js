@@ -9,10 +9,10 @@ document.addEventListener("DOMContentLoaded", () => {
       .then(res => res.json())
       .then(types => {
         types.forEach(t => {
-          if (t === 'title') return;
+          if (t.name === 'title') return;
           const opt = document.createElement('option');
-          opt.value = t;
-          opt.textContent = t;
+          opt.value = t.name;
+          opt.textContent = t.name;
           fieldTypeSelect.appendChild(opt);
         });
       })

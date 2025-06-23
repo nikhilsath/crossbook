@@ -12,6 +12,7 @@ export function closeBulkEditModal() {
 let tableName;
 let bulkBtn;
 let exportBtn;
+let fieldTypeMap = {};
 
 function updateSelectedCount() {
   const count = document.querySelectorAll('.row-select:checked').length;
@@ -39,24 +40,28 @@ function buildInput() {
   const optEl = sel.selectedOptions[0];
   const type = optEl.dataset.type;
   const options = optEl.dataset.options ? JSON.parse(optEl.dataset.options) : [];
+  const meta = fieldTypeMap[type] || {};
+  const input = meta.input_type || 'text';
   const container = document.getElementById('bulk-input-container');
   let html = '';
-  if (type === 'textarea') {
+  if (input === 'textarea') {
     html = '<textarea id="bulk-value" class="form-input"></textarea>';
-  } else if (type === 'number') {
+  } else if (input === 'number') {
     html = '<input id="bulk-value" type="number" class="form-input">';
-  } else if (type === 'boolean') {
+  } else if (input === 'boolean') {
     html = '<select id="bulk-value" class="form-select"><option value="1">True</option><option value="0">False</option></select>';
-  } else if (type === 'select') {
+  } else if (input === 'select') {
     html = '<select id="bulk-value" class="form-select">' +
       options.map(o => `<option value="${o}">${o}</option>`).join('') +
       '</select>';
-  } else if (type === 'multi_select' || type === 'foreign_key') {
+  } else if (input === 'multi_select') {
     html = '<div class="max-h-48 overflow-y-auto border p-2 space-y-1">' +
       options.map(o => `<label class="flex items-center space-x-2"><input type="checkbox" value="${o}" class="bulk-multi-option form-input"><span class="text-sm">${o}</span></label>`).join('') +
       '</div>';
-  } else if (type === 'url') {
+  } else if (input === 'url') {
     html = '<input id="bulk-value" type="url" class="form-input">';
+  } else if (input === 'date') {
+    html = '<input id="bulk-value" type="date" class="form-input">';
   } else {
     html = '<input id="bulk-value" type="text" class="form-input">';
   }
@@ -75,7 +80,19 @@ document.addEventListener('DOMContentLoaded', () => {
   tableName = document.getElementById('records-table').dataset.table;
   bulkBtn = document.getElementById('bulk_edit');
   exportBtn = document.getElementById('export_csv');
-  buildInput();
+
+  fetch('/api/field-types')
+    .then(res => res.json())
+    .then(types => {
+      fieldTypeMap = types.reduce((acc, t) => {
+        acc[t.name] = t;
+        return acc;
+      }, {});
+      buildInput();
+    })
+    .catch(() => {
+      buildInput();
+    });
   document.getElementById('bulk-field').addEventListener('change', buildInput);
 
   document.querySelectorAll('.row-select').forEach(cb => {
@@ -103,8 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const fieldSel = document.getElementById('bulk-field');
     const field = fieldSel.value;
     const type = fieldSel.selectedOptions[0].dataset.type;
+    const meta = fieldTypeMap[type] || {};
     let value;
-    if (type === 'multi_select' || type === 'foreign_key') {
+    if (meta.input_type === 'multi_select') {
       value = Array.from(document.querySelectorAll('.bulk-multi-option:checked')).map(cb => cb.value);
     } else {
       value = document.getElementById('bulk-value').value;

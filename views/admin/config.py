@@ -109,8 +109,14 @@ def update_database_file():
 
 @admin_bp.route('/api/field-types')
 def api_field_types():
-    """Return list of available field types."""
-    return jsonify(list(FIELD_TYPES.keys()))
+    """Return metadata for available field types."""
+    return jsonify([
+        {
+            'name': name,
+            'input_type': ft.input_type,
+        }
+        for name, ft in FIELD_TYPES.items()
+    ])
 
 
 @admin_bp.route('/add-table', methods=['POST'])
