@@ -11,6 +11,7 @@ from werkzeug.utils import secure_filename
 import os
 import json
 import logging
+from utils.name_utils import to_identifier
 import db.database as db_database
 from db.bootstrap import initialize_database, ensure_default_configs
 from db.config import update_config, get_config_rows
@@ -162,8 +163,8 @@ def settings_step():
 def table_step():
     progress = session.setdefault('wizard_progress', {})
     if request.method == 'POST':
-        table_names = [t.strip() for t in request.form.getlist('table_name')]
-        title_fields = [t.strip() for t in request.form.getlist('title_field')]
+        table_names = [to_identifier(t.strip(), 'tbl_') for t in request.form.getlist('table_name')]
+        title_fields = [to_identifier(t.strip(), 'f_') for t in request.form.getlist('title_field')]
         descriptions = [d.strip() for d in request.form.getlist('description')]
         fields_json_list = request.form.getlist('fields_json')
         any_created = False
@@ -187,9 +188,9 @@ def table_step():
                         logger.exception('Failed to parse fields_json')
 
                 for f in field_defs:
-                    if f.get('name') == title_field:
+                    name = to_identifier(f.get('name'), 'f_')
+                    if name == title_field:
                         continue
-                    name = f.get('name')
                     ftype = f.get('type')
                     if not name or not ftype:
                         continue
