@@ -260,6 +260,7 @@ register_type(
     filter_macro='multi_select_popover',
     normalizer=normalize_multi,
     allows_options=True,
+    allows_multiple=True,
     searchable=True,
 )
 register_type(
@@ -272,6 +273,7 @@ register_type(
     filter_macro='multi_select_popover',
     normalizer=normalize_multi,
     allows_foreign_key=True,
+    allows_multiple=True,
 )
 register_type(
     'boolean',
@@ -282,6 +284,7 @@ register_type(
     macro='render_boolean',
     filter_macro='boolean_filter',
     normalizer=normalize_boolean,
+    is_boolean=True,
 )
 register_type(
     'textarea',
@@ -292,6 +295,7 @@ register_type(
     macro='render_textarea',
     filter_macro='text_filter',
     searchable=True,
+    is_textarea=True,
 )
 register_type(
     'url',
@@ -302,4 +306,5 @@ register_type(
     macro='render_url',
     filter_macro='text_filter',
     searchable=True,
+    is_url=True,
 )
