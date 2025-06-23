@@ -12,6 +12,18 @@ export function closeBulkEditModal() {
 let tableName;
 let bulkBtn;
 let exportBtn;
+let fieldTypes;
+
+async function loadFieldTypes() {
+  if (fieldTypes) return fieldTypes;
+  try {
+    const res = await fetch('/api/field-types');
+    fieldTypes = await res.json();
+  } catch {
+    fieldTypes = {};
+  }
+  return fieldTypes;
+}
 
 function updateSelectedCount() {
   const count = document.querySelectorAll('.row-select:checked').length;
@@ -34,28 +46,31 @@ function updateBulkButtonState() {
   updateSelectedCount();
 }
 
-function buildInput() {
+async function buildInput() {
   const sel = document.getElementById('bulk-field');
   const optEl = sel.selectedOptions[0];
   const type = optEl.dataset.type;
   const options = optEl.dataset.options ? JSON.parse(optEl.dataset.options) : [];
+  await loadFieldTypes();
+  const meta = fieldTypes[type] || {};
   const container = document.getElementById('bulk-input-container');
   let html = '';
-  if (type === 'textarea') {
+
+  if (meta.name === 'textarea') {
     html = '<textarea id="bulk-value" class="form-input"></textarea>';
-  } else if (type === 'number') {
+  } else if (meta.numeric) {
     html = '<input id="bulk-value" type="number" class="form-input">';
-  } else if (type === 'boolean') {
+  } else if (meta.name === 'boolean') {
     html = '<select id="bulk-value" class="form-select"><option value="1">True</option><option value="0">False</option></select>';
-  } else if (type === 'select') {
-    html = '<select id="bulk-value" class="form-select">' +
-      options.map(o => `<option value="${o}">${o}</option>`).join('') +
-      '</select>';
-  } else if (type === 'multi_select' || type === 'foreign_key') {
+  } else if (meta.allows_foreign_key || meta.name === 'multi_select') {
     html = '<div class="max-h-48 overflow-y-auto border p-2 space-y-1">' +
       options.map(o => `<label class="flex items-center space-x-2"><input type="checkbox" value="${o}" class="bulk-multi-option form-input"><span class="text-sm">${o}</span></label>`).join('') +
       '</div>';
-  } else if (type === 'url') {
+  } else if (meta.allows_options) {
+    html = '<select id="bulk-value" class="form-select">' +
+      options.map(o => `<option value="${o}">${o}</option>`).join('') +
+      '</select>';
+  } else if (meta.name === 'url') {
     html = '<input id="bulk-value" type="url" class="form-input">';
   } else {
     html = '<input id="bulk-value" type="text" class="form-input">';
@@ -71,10 +86,11 @@ function exportSelected() {
   window.location = `/${tableName}/export?` + params.toString();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   tableName = document.getElementById('records-table').dataset.table;
   bulkBtn = document.getElementById('bulk_edit');
   exportBtn = document.getElementById('export_csv');
+  await loadFieldTypes();
   buildInput();
   document.getElementById('bulk-field').addEventListener('change', buildInput);
 
@@ -103,8 +119,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const fieldSel = document.getElementById('bulk-field');
     const field = fieldSel.value;
     const type = fieldSel.selectedOptions[0].dataset.type;
+    const meta = fieldTypes[type] || {};
     let value;
-    if (type === 'multi_select' || type === 'foreign_key') {
+    if (meta.allows_foreign_key || meta.name === 'multi_select') {
       value = Array.from(document.querySelectorAll('.bulk-multi-option:checked')).map(cb => cb.value);
     } else {
       value = document.getElementById('bulk-value').value;
