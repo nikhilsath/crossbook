@@ -5,12 +5,15 @@ from huey import SqliteHuey
 from db.database import get_connection
 from db.records import create_record
 
+# Project root directory
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
 logger = logging.getLogger(__name__)
 
 # Huey queue for background imports
 huey = SqliteHuey(
     'crossbook-tasks',  # queue name
-    filename=os.path.join(os.getcwd(), 'data', 'huey.db'),
+    filename=os.path.join(PROJECT_ROOT, 'data', 'huey.db'),
     store_none=False,  # don't clutter the DB with None results
 )
 
