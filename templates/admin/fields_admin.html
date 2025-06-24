@@ -35,11 +35,23 @@
         {% endfor %}
         </tbody>
       </table>
-      <div class="mt-2">
+      <div class="mt-2 flex items-center space-x-2">
+        <button type="button" class="btn-primary" onclick="openLayoutModal('edit_fields_modal_{{ table }}')">Edit Fields</button>
         <button type="submit" class="btn-primary">Submit</button>
       </div>
-    </div>
+      {% with record={'id': 0}, modal_id='edit_fields_modal_' ~ table %}
+        {% include "modals/edit_fields_modal.html" %}
+      {% endwith %}
+      </div>
   </details>
   {% endfor %}
 </div>
+<script type="module">
+  window.openLayoutModal = function(id) {
+    document.getElementById(id).classList.remove('hidden');
+  };
+  window.closeLayoutModal = function(id) {
+    document.getElementById(id).classList.add('hidden');
+  };
+</script>
 {% endblock %}
