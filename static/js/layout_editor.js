@@ -19,17 +19,6 @@ function initLayout() {
   console.debug('[layout] initLayout width', CONTAINER_WIDTH);
 }
 
-function sanitizeLayoutCache() {
-  if (typeof layoutCache === 'undefined') return;
-  Object.entries(layoutCache).forEach(([field, rect]) => {
-    rect.colStart = Math.max(1, parseInt(rect.colStart) || 1);
-    rect.colSpan  = Math.max(1, parseInt(rect.colSpan)  || 1);
-    rect.rowStart = Math.max(1, parseInt(rect.rowStart) || 1);
-    rect.rowSpan  = Math.max(1, parseInt(rect.rowSpan)  || 1);
-    layoutCache[field] = rect;
-  });
-}
-
 function bindEventHandlers() {
   const saveLayoutBtn  = document.getElementById('save-layout');
   const resetLayoutBtn = document.getElementById('reset-layout');
@@ -40,7 +29,6 @@ function bindEventHandlers() {
 
 function onLoadJS(){
   console.debug('[layout] onLoadJS');
-  sanitizeLayoutCache();
   initLayout();
   bindEventHandlers();
 }
