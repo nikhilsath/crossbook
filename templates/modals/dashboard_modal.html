@@ -6,7 +6,7 @@
     <div class="mb-4 border-b border-gray-200">
       <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="dashboardTab" role="tablist">
         <li class="mr-2" role="presentation">
-          <button id="tab-value" type="button" role="tab" aria-controls="pane-value" aria-selected="true" class="inline-block p-2 rounded-t-lg border-b-2 text-teal-600 border-teal-600">Value</button>
+          <button id="tab-value" type="button" role="tab" aria-controls="pane-value" aria-selected="true" class="inline-block p-2 rounded-t-lg border-b-2 text-primary border-primary">Value</button>
         </li>
         <li class="mr-2" role="presentation">
           <button id="tab-table" type="button" role="tab" aria-controls="pane-table" aria-selected="false" class="inline-block p-2 rounded-t-lg border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300">Table</button>
@@ -24,7 +24,7 @@
           {% for op in ['Sum', 'Count', 'Math'] %}
           <label class="flex-1 cursor-pointer">
             <input type="radio" name="dashboardOperation" value="{{ op|lower }}" class="sr-only peer">
-            <div class="p-2 border rounded text-center peer-checked:bg-teal-600 peer-checked:text-white">
+            <div class="p-2 border rounded text-center peer-checked:bg-primary peer-checked:text-white">
               {{ op }}
             </div>
           </label>
@@ -41,11 +41,11 @@
           <div id="aggToggle1" class="flex">
             <label class="cursor-pointer">
               <input type="radio" name="agg1" value="sum" class="sr-only peer" checked>
-              <div class="p-1 border rounded-l text-center peer-checked:bg-teal-600 peer-checked:text-white">Sum</div>
+              <div class="p-1 border rounded-l text-center peer-checked:bg-primary peer-checked:text-white">Sum</div>
             </label>
             <label class="cursor-pointer">
               <input type="radio" name="agg1" value="count" class="sr-only peer">
-              <div class="p-1 border border-l-0 rounded-r text-center peer-checked:bg-teal-600 peer-checked:text-white">Count</div>
+              <div class="p-1 border border-l-0 rounded-r text-center peer-checked:bg-primary peer-checked:text-white">Count</div>
             </label>
           </div>
         </div>
@@ -54,7 +54,7 @@
           {% for op in ['Add', 'Subtract', 'Multiply', 'Divide', 'Average'] %}
           <label class="flex-1 cursor-pointer">
             <input type="radio" name="mathOperation" value="{{ op|lower }}" class="sr-only peer">
-            <div class="p-2 border rounded text-center peer-checked:bg-teal-600 peer-checked:text-white">
+            <div class="p-2 border rounded text-center peer-checked:bg-primary peer-checked:text-white">
               {{ op }}
             </div>
           </label>
@@ -71,11 +71,11 @@
           <div id="aggToggle2" class="flex">
             <label class="cursor-pointer">
               <input type="radio" name="agg2" value="sum" class="sr-only peer" checked>
-              <div class="p-1 border rounded-l text-center peer-checked:bg-teal-600 peer-checked:text-white">Sum</div>
+              <div class="p-1 border rounded-l text-center peer-checked:bg-primary peer-checked:text-white">Sum</div>
             </label>
             <label class="cursor-pointer">
               <input type="radio" name="agg2" value="count" class="sr-only peer">
-              <div class="p-1 border border-l-0 rounded-r text-center peer-checked:bg-teal-600 peer-checked:text-white">Count</div>
+              <div class="p-1 border border-l-0 rounded-r text-center peer-checked:bg-primary peer-checked:text-white">Count</div>
             </label>
           </div>
         </div>
@@ -194,11 +194,11 @@
         <div id="chartOrientContainer" class="flex mb-4 hidden">
           <label class="cursor-pointer">
             <input type="radio" name="chartOrient" value="x" class="sr-only peer" checked>
-            <div class="p-1 border rounded-l text-center peer-checked:bg-teal-600 peer-checked:text-white">X Axis</div>
+            <div class="p-1 border rounded-l text-center peer-checked:bg-primary peer-checked:text-white">X Axis</div>
           </label>
           <label class="cursor-pointer">
             <input type="radio" name="chartOrient" value="y" class="sr-only peer">
-            <div class="p-1 border border-l-0 rounded-r text-center peer-checked:bg-teal-600 peer-checked:text-white">Y Axis</div>
+            <div class="p-1 border border-l-0 rounded-r text-center peer-checked:bg-primary peer-checked:text-white">Y Axis</div>
           </label>
         </div>
         <div id="chartYFieldContainer" class="mb-4 hidden">
@@ -213,15 +213,15 @@
         <div id="chartAggContainer" class="flex mb-4 hidden">
           <label class="cursor-pointer">
             <input type="radio" name="chartAgg" value="" class="sr-only peer" checked>
-            <div class="p-1 border rounded-l text-center peer-checked:bg-teal-600 peer-checked:text-white">None</div>
+            <div class="p-1 border rounded-l text-center peer-checked:bg-primary peer-checked:text-white">None</div>
           </label>
           <label class="cursor-pointer">
             <input type="radio" name="chartAgg" value="sum" class="sr-only peer">
-            <div class="p-1 border border-l-0 text-center peer-checked:bg-teal-600 peer-checked:text-white">Sum</div>
+            <div class="p-1 border border-l-0 text-center peer-checked:bg-primary peer-checked:text-white">Sum</div>
           </label>
           <label class="cursor-pointer">
             <input type="radio" name="chartAgg" value="count" class="sr-only peer">
-            <div class="p-1 border border-l-0 rounded-r text-center peer-checked:bg-teal-600 peer-checked:text-white">Count</div>
+            <div class="p-1 border border-l-0 rounded-r text-center peer-checked:bg-primary peer-checked:text-white">Count</div>
           </label>
         </div>
         <input id="chartTitleInput" type="text" placeholder="Widget Title" class="form-input w-full mb-4 hidden" />

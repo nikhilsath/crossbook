@@ -23,8 +23,8 @@ function setActiveTab(name) {
     if (tab) {
       const active = n === name;
       tab.setAttribute('aria-selected', active ? 'true' : 'false');
-      tab.classList.toggle('text-teal-600', active);
-      tab.classList.toggle('border-teal-600', active);
+      tab.classList.toggle('text-primary', active);
+      tab.classList.toggle('border-primary', active);
       tab.classList.toggle('border-transparent', !active);
       tab.classList.toggle('hover:text-gray-600', !active);
       tab.classList.toggle('hover:border-gray-300', !active);

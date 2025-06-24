@@ -142,7 +142,7 @@ export async function initTableWidgets() {
       input.type = 'radio';
       input.name = 'filteredTable';
       input.value = tbl;
-      input.className = 'rounded border-gray-300 text-teal-600 shadow-sm focus:ring-teal-500';
+      input.className = 'rounded border-gray-300 text-primary shadow-sm focus:ring-teal-500';
       input.addEventListener('change', () => {
         filteredTable = tbl;
         if (filteredTableToggleLabel) filteredTableToggleLabel.textContent = tbl;
@@ -188,7 +188,7 @@ export async function initTableWidgets() {
       input.type = 'radio';
       input.name = 'filteredSort';
       input.value = fld;
-      input.className = 'rounded border-gray-300 text-teal-600 shadow-sm focus:ring-teal-500';
+      input.className = 'rounded border-gray-300 text-primary shadow-sm focus:ring-teal-500';
       input.addEventListener('change', () => {
         filteredSort = fld;
         if (filteredSortToggleLabel) filteredSortToggleLabel.textContent = fld;
@@ -298,7 +298,7 @@ export function updateTablePreview() {
         tableData = rows || [];
         tableData.forEach(r => {
           const tr = document.createElement('tr');
-          tr.innerHTML = `<td class="px-2 py-1"><a href="/${tbl}/${r.id}" class="text-teal-600 underline">${r.id}</a></td><td class="px-2 py-1">${r.value}</td>`;
+          tr.innerHTML = `<td class="px-2 py-1"><a href="/${tbl}/${r.id}" class="text-primary underline">${r.id}</a></td><td class="px-2 py-1">${r.value}</td>`;
           tablePreviewBodyEl.appendChild(tr);
         });
         tablePreviewEl.classList.remove('hidden');
@@ -335,7 +335,7 @@ export function updateTablePreview() {
         tableData.forEach(r => {
           const tr = document.createElement('tr');
           const label = r[labelField];
-          tr.innerHTML = `<td class="px-2 py-1"><a href="/${filteredTable}/${r.id}" class="text-teal-600 underline">${r.id}</a></td><td class="px-2 py-1">${label ?? ''}</td>`;
+          tr.innerHTML = `<td class="px-2 py-1"><a href="/${filteredTable}/${r.id}" class="text-primary underline">${r.id}</a></td><td class="px-2 py-1">${label ?? ''}</td>`;
           tablePreviewBodyEl.appendChild(tr);
         });
         tablePreviewEl.classList.remove('hidden');
