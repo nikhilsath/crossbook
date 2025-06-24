@@ -128,7 +128,7 @@ export async function initChartWidgets() {
   chartAggContainer = document.getElementById('chartAggContainer');
   chartXFieldLabel = document.getElementById('chartXFieldLabel');
   chartOrientContainer = document.getElementById('chartOrientContainer');
-  chartAggToggleEl = document.getElementById('chartAggToggle');
+  chartAggToggleEl = document.getElementById('chartAggContainer');
   chartTitleInputEl = document.getElementById('chartTitleInput');
   chartCreateBtnEl = document.getElementById('chartCreateBtn');
 
