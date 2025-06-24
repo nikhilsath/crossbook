@@ -397,7 +397,7 @@ a:hover {
   width: 24rem; /* w-96 */
   max-width: 100%;
   max-height: 85vh; /* allow modal to grow but stay within viewport */
-  overflow-y: auto; /* scroll when content exceeds available height */
+  overflow: visible; /* let popovers escape modal bounds */
   position: relative;
 }
 
