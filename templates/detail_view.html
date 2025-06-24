@@ -228,7 +228,7 @@
   </div>
 
 
-<script>const layoutCache = {{ field_schema_layout | tojson }};</script>
+<script>window.layoutCache = {{ field_schema_layout | tojson }};</script>
 <script>window.FIELD_LAYOUT_DEFAULTS = {{ field_layout_defaults | tojson }};</script>
 <script>window.RELATION_VISIBILITY = {{ relationship_visibility | tojson }};</script>
 <script>
