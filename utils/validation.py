@@ -5,7 +5,11 @@ from db.schema import get_field_schema
 from utils.field_registry import register_type, get_field_type
 
 logger = logging.getLogger(__name__)
-SCHEMA = get_field_schema()
+
+def get_options(table: str, field: str) -> list[str]:
+    """Return options for the given field from the field schema."""
+    schema = get_field_schema()
+    return schema.get(table, {}).get(field, {}).get("options", [])
 
 def validation_sorter(table, field, header, fieldType, values):
     logger.debug("✅ Validation function was triggered.")
@@ -242,7 +246,7 @@ register_type(
 register_type(
     'select',
     sql_type='TEXT',
-    validator=lambda t, f, v: validate_select_column(v, SCHEMA[t][f]['options']),
+    validator=lambda t, f, v: validate_select_column(v, get_options(t, f)),
     default_width=5,
     default_height=4,
     macro='render_select',
@@ -253,7 +257,7 @@ register_type(
 register_type(
     'multi_select',
     sql_type='TEXT',
-    validator=lambda t, f, v: validate_multi_select_column(v, SCHEMA[t][f]['options']),
+    validator=lambda t, f, v: validate_multi_select_column(v, get_options(t, f)),
     default_width=6,
     default_height=8,
     macro='render_multi_select',
@@ -266,7 +270,7 @@ register_type(
 register_type(
     'foreign_key',
     sql_type='TEXT',
-    validator=lambda t, f, v: validate_select_column(v, SCHEMA[t][f]['options']),
+    validator=lambda t, f, v: validate_select_column(v, get_options(t, f)),
     default_width=5,
     default_height=10,
     macro='render_foreign_key',
