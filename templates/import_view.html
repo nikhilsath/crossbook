@@ -29,9 +29,13 @@
       </div>
       {% endif %}
       <!-- Import Records button, initially disabled -->
-    <button id="import-btn" type="button" disabled class="ml-auto btn-primary px-4 py-2 rounded opacity-50 cursor-not-allowed">
+    <button id="import-btn" type="button" disabled data-table="{{ selected_table }}" class="ml-auto btn-primary px-4 py-2 rounded opacity-50 cursor-not-allowed">
       Import Records
     </button>
+    </div>
+    <div id="import-status-container" class="hidden mt-4 w-full">
+      <progress id="import-progress" value="0" max="0" class="w-full"></progress>
+      <div id="import-errors" class="mt-2 text-sm text-red-600"></div>
     </div>
   </div>
 
@@ -87,5 +91,6 @@
 <script> const fieldSchema = {{ field_status|tojson }};</script>
 <script src="/static/imports/match_logic.js"></script>
 <script src="/static/imports/validation_UI.js"></script>
+<script src="/static/imports/import_start.js"></script>
 <script>window.importedRows = {{ rows | tojson }};</script>
 {% endblock %}
