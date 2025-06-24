@@ -5,9 +5,9 @@
 
     <div class="flex flex-wrap gap-1 mb-2 tag-container">
       {% for tag in selected_options if tag %}
-        <span class="inline-flex items-center bg-teal-100 text-teal-700 text-xs px-2 py-1 rounded-full">
+        <span class="inline-flex items-center bg-primary-light text-primary text-xs px-2 py-1 rounded-full">
           {{ tag }}
-          <button type="button" class="ml-1 text-teal-600 hover:text-red-500" onclick="this.closest('form').querySelector('input[value=' + JSON.stringify('{{ tag }}') + ']').checked = false; submitMultiSelectAuto(this.closest('form'))">×</button>
+          <button type="button" class="ml-1 text-primary hover:text-red-500" onclick="this.closest('form').querySelector('input[value=' + JSON.stringify('{{ tag }}') + ']').checked = false; submitMultiSelectAuto(this.closest('form'))">×</button>
         </span>
       {% endfor %}
     </div>
@@ -26,7 +26,7 @@
             value="{{ option }}"
             {% if option in selected_options %}checked{% endif %}
             onchange="submitMultiSelectAuto(this.form)"
-            class="rounded border-gray-300 text-teal-600 shadow-sm focus:ring-teal-600"
+            class="rounded border-gray-300 text-primary shadow-sm focus:ring-teal-600"
           >
           <span class="text-sm">{{ option }}</span>
         </label>

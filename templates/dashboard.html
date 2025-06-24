@@ -83,13 +83,13 @@
             {% elif widget.parsed.type == 'top-numeric' %}
               {% set tbl = widget.parsed.table %}
               {% for row in widget.parsed.data if widget.parsed %}
-                <tr><td class="px-2 py-1"><a href="/{{ tbl }}/{{ row.id }}" class="text-teal-600 underline">{{ row.id }}</a></td><td class="px-2 py-1">{{ row.value }}</td></tr>
+                <tr><td class="px-2 py-1"><a href="/{{ tbl }}/{{ row.id }}" class="text-primary underline">{{ row.id }}</a></td><td class="px-2 py-1">{{ row.value }}</td></tr>
               {% endfor %}
             {% elif widget.parsed.type == 'filtered-records' %}
               {% set tbl = widget.parsed.table %}
               {% set label_field = get_title_field(tbl) or tbl %}
               {% for row in widget.parsed.data if widget.parsed %}
-                <tr><td class="px-2 py-1"><a href="/{{ tbl }}/{{ row.id }}" class="text-teal-600 underline">{{ row.id }}</a></td><td class="px-2 py-1">{{ row[label_field] }}</td></tr>
+                <tr><td class="px-2 py-1"><a href="/{{ tbl }}/{{ row.id }}" class="text-primary underline">{{ row.id }}</a></td><td class="px-2 py-1">{{ row[label_field] }}</td></tr>
               {% endfor %}
             {% else %}
               {% for row in widget.parsed.data if widget.parsed %}

@@ -38,7 +38,7 @@
                 {% elif item.type in ('integer', 'number') %}
                   <input type="number" name="value" value="{{ item.value }}" class="form-control flex-grow">
                 {% elif item.type == 'boolean' %}
-                  <input type="checkbox" name="value" value="1" {% if item.value in ('1', 1, True, 'true') %}checked{% endif %} class="h-4 w-4 text-teal-600 bg-dark border-gray-300 rounded focus:ring-teal-600">
+                  <input type="checkbox" name="value" value="1" {% if item.value in ('1', 1, True, 'true') %}checked{% endif %} class="h-4 w-4 text-primary bg-dark border-gray-300 rounded focus:ring-teal-600">
                   <input type="hidden" name="value" value="0">
                 {% elif item.type == 'date' %}
                   <input type="date" name="value" value="{{ item.value }}" class="form-control flex-grow">

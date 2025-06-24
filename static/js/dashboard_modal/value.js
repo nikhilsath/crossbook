@@ -285,14 +285,14 @@ export function populateFieldDropdown(dropdown, restrictNumeric, allowedTypes, c
       input.type = 'radio';
       input.name = 'fieldSelect';
       input.value = val;
-      input.className = 'rounded border-gray-300 text-teal-600 shadow-sm focus:ring-teal-500';
+      input.className = 'rounded border-gray-300 text-primary shadow-sm focus:ring-teal-500';
       input.addEventListener('change', () => {
         callback(val);
         dropdown.classList.add('hidden');
       });
       const span = document.createElement('span');
       span.className = 'text-sm';
-      span.innerHTML = `<strong>${table}</strong>: ${field} <span class="text-teal-600 text-xs">(${type})</span>`;
+      span.innerHTML = `<strong>${table}</strong>: ${field} <span class="text-primary text-xs">(${type})</span>`;
       label.appendChild(input);
       label.appendChild(span);
       dropdown.appendChild(label);
