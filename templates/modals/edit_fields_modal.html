@@ -1,7 +1,8 @@
-<div id="edit_fields_modal" class="modal-container hidden"
-     onclick="if(event.target.id === 'edit_fields_modal') closeLayoutModal()">
+{% set _modal_id = modal_id or 'edit_fields_modal' %}
+<div id="{{ _modal_id }}" class="modal-container hidden"
+     onclick="if(event.target.id === '{{ _modal_id }}') closeLayoutModal('{{ _modal_id }}')">
   <div class="modal-box w-96 max-w-full relative">
-    <button type="button" onclick="closeLayoutModal()" class="modal-close">&times;</button>
+    <button type="button" onclick="closeLayoutModal('{{ _modal_id }}')" class="modal-close">&times;</button>
     <div class="mb-4 border-b border-gray-200">
       <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="editFieldsTabs" role="tablist">
         <li class="mr-2" role="presentation">
