@@ -41,6 +41,8 @@ def detail_view(table, record_id):
         abort(404)
     existing_related = get_related_records(table, record_id)
     base_tables = current_app.config['BASE_TABLES']
+    card_info = current_app.config.get('CARD_INFO', [])
+    label_map = {c['table_name']: c['display_name'] for c in card_info}
     visibility_all = get_relationship_visibility().get(table, {})
     related = []
     for tbl in base_tables:
@@ -48,7 +50,7 @@ def detail_view(table, record_id):
             continue
         group = existing_related.get(
             tbl,
-            {"label": tbl.capitalize() + "s", "items": []},
+            {"label": label_map.get(tbl, tbl.capitalize()), "items": []},
         )
         vis = visibility_all.get(tbl, {})
         related.append((tbl, group, vis))

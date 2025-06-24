@@ -57,9 +57,15 @@ def get_related_records(source_table, record_id):
             if not row:
                 continue
             item = {"id": row[0], "name": row[1], "two_way": bool(two_way)}
+            # Determine display label for the related table
+            row_label = cur.execute(
+                "SELECT display_name FROM config_base_tables WHERE table_name = ?",
+                (target_table,),
+            ).fetchone()
+            table_label = row_label[0] if row_label else target_table.capitalize()
             group = related.setdefault(
                 target_table,
-                {"label": target_table.capitalize() + "s", "items": []},
+                {"label": table_label, "items": []},
             )
             group["items"].append(item)
     return related
