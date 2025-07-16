@@ -34,6 +34,8 @@ DEFAULT_CONFIGS = [
     ("filename", "logs/crossbook.log", "general", "string", 0),
     ("heading", "", "home", "string", 1),
     ("relationship_visibility", "{}", "general", "json", 0),
+    ("crawler_folders", "[]", "crawler", "json", 0),
+    ("crawler_file_count", 0, "crawler", "integer", 0),
 ]
 
 
