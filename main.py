@@ -75,13 +75,11 @@ from views.admin import admin_bp
 from views.records.record_views import records_bp
 from views.wizard import wizard_bp
 from views.api import api_bp
-from views.crawler import crawler_bp
 
 app.register_blueprint(admin_bp)
 app.register_blueprint(records_bp)
 app.register_blueprint(wizard_bp)
 app.register_blueprint(api_bp)
-app.register_blueprint(crawler_bp)
 
 @app.context_processor
 def inject_field_schema():
