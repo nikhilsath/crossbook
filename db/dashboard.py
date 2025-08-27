@@ -22,7 +22,7 @@ def sum_field(table: str, field: str) -> float:
             result = cursor.fetchone()[0]
             return result or 0
         except Exception as e:
-            logger.warning(f"[sum_field] SQL error for {table}.{field}: {e}")
+            logger.exception(f"[sum_field] SQL error for {table}.{field}: {e}")
             return 0
 
 # Return all dashboard widgets ordered by id.
@@ -38,7 +38,7 @@ def get_dashboard_widgets() -> list[dict]:
             cols = [d[0] for d in cursor.description]
             return [dict(zip(cols, r)) for r in rows]
         except Exception as e:
-            logger.warning("[get_dashboard_widgets] SQL error: %s", e)
+            logger.exception("[get_dashboard_widgets] SQL error: %s", e)
             return []
 
 def create_widget(
@@ -83,7 +83,7 @@ def create_widget(
             conn.commit()
             return cur.lastrowid
         except Exception as exc:
-            logger.warning("[create_widget] SQL error: %s", exc)
+            logger.exception("[create_widget] SQL error: %s", exc)
             return None
 
 def update_widget_layout(layout_items: list[dict]) -> int:
@@ -156,7 +156,7 @@ def update_widget_styling(widget_id: int, styling: dict) -> bool:
             conn.commit()
             return cur.rowcount > 0
         except Exception as exc:
-            logger.warning("[update_widget_styling] SQL error: %s", exc)
+            logger.exception("[update_widget_styling] SQL error: %s", exc)
             return False
 
 
@@ -172,7 +172,7 @@ def delete_widget(widget_id: int) -> bool:
             conn.commit()
             return cur.rowcount > 0
         except Exception as exc:
-            logger.warning("[delete_widget] SQL error: %s", exc)
+            logger.exception("[delete_widget] SQL error: %s", exc)
             return False
 
 
@@ -184,7 +184,7 @@ def get_base_table_counts() -> list[dict]:
         try:
             cnt = count_records(table)
         except Exception as exc:
-            logger.warning("[get_base_table_counts] error for %s: %s", table, exc)
+            logger.exception("[get_base_table_counts] error for %s: %s", table, exc)
             cnt = 0
         results.append({"table": table, "count": cnt})
     return results
@@ -213,7 +213,7 @@ def get_top_numeric_values(
             rows = cur.fetchall()
             return [{"id": r[0], "value": r[1]} for r in rows]
         except Exception as exc:
-            logger.warning(
+            logger.exception(
                 "[get_top_numeric_values] SQL error for %s.%s: %s", table, field, exc
             )
             return []
@@ -235,7 +235,7 @@ def get_filtered_records(
         )
         return rows
     except Exception as exc:
-        logger.warning(
+        logger.exception(
             "[get_filtered_records] error for %s: %s", table, exc
         )
         return []

@@ -97,7 +97,7 @@ def add_relationship(
             conn.commit()
             success = True
         except Exception as e:
-            logger.warning(f"[RELATIONSHIP ADD ERROR] {e}")
+            logger.exception(f"[RELATIONSHIP ADD ERROR] {e}")
             success = False
         if success:
             touch_last_edited(table_a, id_a)
@@ -138,7 +138,7 @@ def remove_relationship(table_a, id_a, table_b, id_b, *, actor: str | None = Non
             conn.commit()
             success = True
         except Exception as e:
-            logger.warning(f"[RELATIONSHIP REMOVE ERROR] {e}")
+            logger.exception(f"[RELATIONSHIP REMOVE ERROR] {e}")
             success = False
         if success:
             touch_last_edited(table_a, id_a)

@@ -117,7 +117,7 @@ def update_foreign_field_options():
                 )
                 options = [r[1] for r in cur.fetchall()]
             except Exception as e:
-                logger.warning(
+                logger.exception(
                     "Skipping %s.%s → %s: %s",
                     table_name,
                     field_name,

@@ -322,7 +322,7 @@ def update_relationships(table):
     try:
         update_relationship_visibility(table, visibility)
     except Exception as e:
-        current_app.logger.warning('[relationships] update failed: %s', e)
+        current_app.logger.exception('[relationships] update failed: %s', e)
         return jsonify({'error': 'update failed'}), 500
     return jsonify({'success': True})
 
