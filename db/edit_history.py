@@ -48,7 +48,7 @@ def append_edit_log(
                 new_value,
             )
         except Exception as e:
-            logger.warning("[EDIT LOG ERROR] %s", e)
+            logger.exception("[EDIT LOG ERROR] %s", e)
 
 
 def get_edit_history(table_name: str, record_id: int, limit: int | None = None) -> list[dict]:
