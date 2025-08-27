@@ -1,5 +1,6 @@
 import json
 import logging
+import sqlite3
 
 from db.database import get_connection
 from db.validation import validate_table, validate_field
@@ -47,12 +48,12 @@ def load_field_schema():
             if options:
                 try:
                     schema[table][field]["options"] = json.loads(options)
-                except Exception:
+                except json.JSONDecodeError:
                     schema[table][field]["options"] = []
             if styling is not None:
                 try:
                     schema[table][field]["styling"] = json.loads(styling)
-                except Exception:
+                except json.JSONDecodeError:
                     schema[table][field]["styling"] = styling
         return schema
 
@@ -116,7 +117,7 @@ def update_foreign_field_options():
                     f"SELECT id, {label_field} FROM {foreign_table} LIMIT {MAX_OPTIONS}"
                 )
                 options = [r[1] for r in cur.fetchall()]
-            except Exception as e:
+            except (sqlite3.DatabaseError, ValueError) as e:
                 logger.exception(
                     "Skipping %s.%s → %s: %s",
                     table_name,
@@ -359,7 +360,7 @@ def create_base_table(table_name: str, description: str, title_field: str) -> bo
             # centrally in the ``relationships`` table.
 
             conn.commit()
-        except Exception as exc:
+        except sqlite3.DatabaseError as exc:
             logger.exception("Error creating base table %s: %s", table_name, exc)
             conn.rollback()
             return False

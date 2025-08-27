@@ -13,7 +13,7 @@ try:
     _test.execute("SELECT 'a' REGEXP 'a'")
     _test.close()
     SUPPORTS_REGEX = True
-except Exception:
+except sqlite3.Error:
     SUPPORTS_REGEX = False
 
 DB_PATH = os.path.abspath(DEFAULT_DB_PATH)
@@ -36,13 +36,13 @@ def init_db_path(path: str | None = None) -> None:
         cfg_path = cfg.get("db_path")
         if cfg_path:
             DB_PATH = os.path.abspath(cfg_path)
-    except Exception:
+    except sqlite3.DatabaseError:
         pass
 
     try:
         from db.bootstrap import ensure_relationships_table
         ensure_relationships_table(DB_PATH)
-    except Exception:
+    except sqlite3.DatabaseError:
         pass
 
 
@@ -57,7 +57,7 @@ def get_connection():
                 2,
                 lambda pattern, value: 1 if value is not None and re.search(pattern, str(value)) else 0,
             )
-        except Exception:
+        except sqlite3.DatabaseError:
             pass
     try:
         yield conn
@@ -80,5 +80,5 @@ def check_db_status(path: str) -> str:
         if 'locked' in str(exc).lower():
             return 'locked'
         return 'corrupted'
-    except Exception:
+    except sqlite3.DatabaseError:
         return 'corrupted'

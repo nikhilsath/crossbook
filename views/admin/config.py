@@ -1,6 +1,7 @@
 import json
 import os
 import logging
+import sqlite3
 from flask import (
     render_template,
     redirect,
@@ -43,7 +44,7 @@ def config_page():
         if item.get('type') == 'json':
             try:
                 item['parsed'] = json.loads(item.get('value') or '{}')
-            except Exception:
+            except json.JSONDecodeError:
                 item['parsed'] = {}
         if item['key'] == 'db_path':
             continue
@@ -145,7 +146,7 @@ def add_table():
         return jsonify({'error': 'Invalid table name'}), 400
     try:
         success = create_base_table(table_name, description, table_name)
-    except Exception as exc:
+    except (sqlite3.DatabaseError, ValueError) as exc:
         logger.exception('Failed to create table %s: %s', table_name, exc)
         return jsonify({'error': str(exc)}), 400
     if not success:

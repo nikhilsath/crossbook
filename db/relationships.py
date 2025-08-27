@@ -1,4 +1,5 @@
 import logging
+import sqlite3
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +97,7 @@ def add_relationship(
             )
             conn.commit()
             success = True
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             logger.exception(f"[RELATIONSHIP ADD ERROR] {e}")
             success = False
         if success:
@@ -137,7 +138,7 @@ def remove_relationship(table_a, id_a, table_b, id_b, *, actor: str | None = Non
             )
             conn.commit()
             success = True
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             logger.exception(f"[RELATIONSHIP REMOVE ERROR] {e}")
             success = False
         if success:

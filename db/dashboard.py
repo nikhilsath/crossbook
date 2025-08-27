@@ -5,6 +5,7 @@ from db.database import get_connection
 from db.schema import get_field_schema
 from db.validation import validate_table
 from db.records import count_records, get_all_records
+import sqlite3
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,7 @@ def sum_field(table: str, field: str) -> float:
             cursor.execute(sql)
             result = cursor.fetchone()[0]
             return result or 0
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             logger.exception(f"[sum_field] SQL error for {table}.{field}: {e}")
             return 0
 
@@ -37,7 +38,7 @@ def get_dashboard_widgets() -> list[dict]:
             rows = cursor.fetchall()
             cols = [d[0] for d in cursor.description]
             return [dict(zip(cols, r)) for r in rows]
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             logger.exception("[get_dashboard_widgets] SQL error: %s", e)
             return []
 
@@ -82,7 +83,7 @@ def create_widget(
             )
             conn.commit()
             return cur.lastrowid
-        except Exception as exc:
+        except sqlite3.DatabaseError as exc:
             logger.exception("[create_widget] SQL error: %s", exc)
             return None
 
@@ -155,7 +156,7 @@ def update_widget_styling(widget_id: int, styling: dict) -> bool:
             )
             conn.commit()
             return cur.rowcount > 0
-        except Exception as exc:
+        except sqlite3.DatabaseError as exc:
             logger.exception("[update_widget_styling] SQL error: %s", exc)
             return False
 
@@ -171,7 +172,7 @@ def delete_widget(widget_id: int) -> bool:
             )
             conn.commit()
             return cur.rowcount > 0
-        except Exception as exc:
+        except sqlite3.DatabaseError as exc:
             logger.exception("[delete_widget] SQL error: %s", exc)
             return False
 
@@ -183,7 +184,7 @@ def get_base_table_counts() -> list[dict]:
     for table in base_tables:
         try:
             cnt = count_records(table)
-        except Exception as exc:
+        except sqlite3.DatabaseError as exc:
             logger.exception("[get_base_table_counts] error for %s: %s", table, exc)
             cnt = 0
         results.append({"table": table, "count": cnt})
@@ -212,7 +213,7 @@ def get_top_numeric_values(
             cur.execute(sql, (int(limit),))
             rows = cur.fetchall()
             return [{"id": r[0], "value": r[1]} for r in rows]
-        except Exception as exc:
+        except sqlite3.DatabaseError as exc:
             logger.exception(
                 "[get_top_numeric_values] SQL error for %s.%s: %s", table, field, exc
             )
@@ -234,7 +235,7 @@ def get_filtered_records(
             limit=limit,
         )
         return rows
-    except Exception as exc:
+    except sqlite3.DatabaseError as exc:
         logger.exception(
             "[get_filtered_records] error for %s: %s", table, exc
         )

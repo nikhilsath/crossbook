@@ -3,6 +3,7 @@ import logging
 from db.schema import refresh_card_cache, update_foreign_field_options
 from db.config import get_config_rows
 from db.database import init_db_path, check_db_status, DB_PATH
+import sqlite3
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -15,7 +16,7 @@ def reload_app_state() -> None:
         rows = get_config_rows('database')
         cfg = {row['key']: row['value'] for row in rows}
         init_db_path(cfg.get('db_path'))
-    except Exception:
+    except sqlite3.DatabaseError:
         init_db_path()
 
     card_info, base_tables = refresh_card_cache()

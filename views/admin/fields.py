@@ -1,4 +1,5 @@
 import logging
+import sqlite3
 from flask import render_template, current_app
 
 from db.schema import get_field_schema
@@ -21,7 +22,7 @@ def admin_fields():
                 continue
             try:
                 nn = count_nonnull(table, field)
-            except Exception:
+            except (sqlite3.DatabaseError, ValueError):
                 logger.exception('Failed counting %s.%s', table, field)
                 nn = 0
             fields.append({'name': field, 'type': meta.get('type'), 'count': nn})
