@@ -275,6 +275,16 @@ Changes are applied immediately by reloading the logger. Log files default to
 `logs/crossbook.log`; create the `logs/` directory if it does not exist. Switch
 `handler_type` to move between rotating, timed and stream handlers.
 
+#### Logging Best Practices
+
+Crossbook modules should adhere to these requirements:
+
+1. **Use a consistent logger:** obtain a module-level logger with `logging.getLogger(__name__)` so each module logs under its own name.
+2. **Log at the right level:** use `debug` for detailed info, `info` for general events, `warning` for unexpected but non-breaking issues, and `error` or `exception` to log errors with tracebacks.
+3. **Catch specific exceptions first:** handle known exceptions before using a broad `except` as a catch‑all.
+4. **Include tracebacks:** call `log.exception()` or `log.error(..., exc_info=True)` to record full tracebacks for easier debugging.
+5. **Add context when useful:** supply extra details with the `extra={}` parameter, such as IDs or other relevant metadata.
+
 ### **Main Application – `main.py`**
 
 This is the core of the Flask application. It defines the web routes, handles database interactions, and implements the logic for listing records, showing details, editing fields, and managing relationships. The application uses a single Flask app instance and a single SQLite database file.
