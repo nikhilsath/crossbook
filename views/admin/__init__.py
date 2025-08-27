@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 def reload_app_state() -> None:
     """Refresh cached navigation and schema data after a DB change."""
+    logger.info("Reloading application state")
     try:
         rows = get_config_rows('database')
         cfg = {row['key']: row['value'] for row in rows}
@@ -28,6 +29,7 @@ def reload_app_state() -> None:
     # Update wizard state based on new database status
     status = check_db_status(DB_PATH)
     current_app.config['NEEDS_WIZARD'] = status != 'valid'
+    logger.debug("App state reloaded with %d base tables", len(base_tables))
 
 
 @admin_bp.route('/admin')

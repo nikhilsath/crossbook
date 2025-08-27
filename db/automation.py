@@ -40,6 +40,12 @@ def create_rule(
         )
         rule_id = cur.lastrowid
         conn.commit()
+    logger.info(
+        "Created automation rule %s (id=%s) for table %s",
+        name,
+        rule_id,
+        table_name,
+    )
     return rule_id
 
 
@@ -55,6 +61,7 @@ def update_rule(rule_id: int, **updates) -> bool:
             params,
         )
         conn.commit()
+    logger.info("Updated automation rule %s with %s", rule_id, updates)
     return True
 
 
@@ -62,11 +69,13 @@ def delete_rule(rule_id: int) -> bool:
     with get_connection() as conn:
         conn.execute("DELETE FROM automation_rules WHERE id = ?", (rule_id,))
         conn.commit()
+    logger.info("Deleted automation rule %s", rule_id)
     return True
 
 
 def get_rules(table_name: str | None = None) -> list[dict]:
     """Return automation rules optionally filtered by table."""
+    logger.debug("Fetching rules for table %s", table_name)
     with get_connection() as conn:
         cur = conn.cursor()
         if table_name:
@@ -89,6 +98,7 @@ def increment_run_count(rule_id: int) -> None:
             (rule_id,),
         )
         conn.commit()
+    logger.debug("Incremented run count for rule %s", rule_id)
 
 
 def reset_run_count(rule_id: int) -> None:
@@ -98,3 +108,4 @@ def reset_run_count(rule_id: int) -> None:
             (rule_id,),
         )
         conn.commit()
+    logger.info("Reset run count for rule %s", rule_id)
