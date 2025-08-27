@@ -1,4 +1,5 @@
 import logging
+import sqlite3
 
 logger = logging.getLogger(__name__)
 import datetime
@@ -38,7 +39,7 @@ def get_all_records(
                     validate_field(table, sort_field)
                     dir_sql = "DESC" if str(direction).lower() == "desc" else "ASC"
                     sql += f" ORDER BY {sort_field} COLLATE NOCASE {dir_sql}"
-                except Exception:
+                except ValueError:
                     logger.exception("Invalid sort field: %s", sort_field)
 
             if limit is not None:
@@ -50,7 +51,7 @@ def get_all_records(
             rows = cursor.fetchall()
             cols = [desc[0] for desc in cursor.description]
             return [dict(zip(cols, row)) for row in rows]
-        except Exception as e:
+        except (sqlite3.DatabaseError, ValueError) as e:
             logger.exception(f"[QUERY ERROR] {e}")
             return []
 
@@ -70,7 +71,7 @@ def count_records(table, search=None, filters=None, ops=None, modes=None):
             cursor.execute(sql, params)
             row = cursor.fetchone()
             return row[0] if row else 0
-        except Exception as e:
+        except (sqlite3.DatabaseError, ValueError) as e:
             logger.exception(f"[COUNT ERROR] {e}")
             return 0
 
@@ -141,7 +142,7 @@ def update_field_value(table, record_id, field, new_value):
                 f"Updated {table}.{field} for id={record_id} to {new_value!r}"
             )
             success = True
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             logger.exception(f"[UPDATE ERROR] {e}")
             success = False
         if success:
@@ -197,7 +198,7 @@ def create_record(table, form_data):
             record_id = cursor.lastrowid
             conn.commit()
             return record_id
-        except Exception as e:
+        except (sqlite3.DatabaseError, ValueError) as e:
             logger.exception(f"[CREATE ERROR] {e}")
             return None
 
@@ -210,7 +211,7 @@ def delete_record(table, record_id):
             cursor.execute(f"DELETE FROM {table} WHERE id = ?", (record_id,))
             conn.commit()
             return True
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             logger.exception(f"[DELETE ERROR] {e}")
             return False
 
@@ -227,7 +228,7 @@ def count_nonnull(table: str, field: str) -> int:
             sql = f'SELECT COUNT(*) FROM "{table}" WHERE "{field}" IS NOT NULL'
             cursor.execute(sql)
             return cursor.fetchone()[0] or 0
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             logger.exception(f"[count_nonnull] SQL error for {table}.{field}: {e}")
             return 0
 
@@ -247,7 +248,7 @@ def field_distribution(table: str, field: str) -> dict[str, int]:
                 f'SELECT "{field}" FROM "{table}" WHERE "{field}" IS NOT NULL'
             )
             rows = [r[0] for r in cursor.fetchall()]
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             logger.exception(f"[field_distribution] SQL error for {table}.{field}: {e}")
             return {}
 

@@ -42,7 +42,7 @@ def get_config_rows(sections: str | list[str] | None = None):
         if opts:
             try:
                 item["options"] = json.loads(opts)
-            except Exception:
+            except json.JSONDecodeError:
                 item["options"] = []
         else:
             item["options"] = []
@@ -64,7 +64,7 @@ def get_layout_defaults() -> dict:
     if row and row[0]:
         try:
             data = json.loads(row[0])
-        except Exception:
+        except json.JSONDecodeError:
             data = {}
 
     if not data:
@@ -87,7 +87,7 @@ def get_relationship_visibility() -> dict:
         return {}
     try:
         return json.loads(row[0])
-    except Exception:
+    except json.JSONDecodeError:
         return {}
 
 

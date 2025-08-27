@@ -12,6 +12,7 @@ import os
 import json
 import logging
 from utils.name_utils import to_identifier
+import sqlite3
 import db.database as db_database
 from db.bootstrap import initialize_database, ensure_default_configs
 from db.config import update_config, get_config_rows
@@ -93,7 +94,7 @@ def database_step():
                 reload_app_state()
             else:
                 error = 'Please upload a file or enter a name.'
-        except Exception as exc:
+        except (sqlite3.DatabaseError, OSError, ValueError) as exc:
             logger.exception('Failed to handle database file: %s', exc)
             error = f'Failed to save file: {exc}'
 
@@ -203,7 +204,7 @@ def table_step():
                 if fields_json:
                     try:
                         field_defs = json.loads(fields_json)
-                    except Exception:
+                    except json.JSONDecodeError:
                         logger.exception('Failed to parse fields_json')
 
                 for f in field_defs:
@@ -222,7 +223,7 @@ def table_step():
                             f.get('options'),
                             f.get('foreign_key'),
                         )
-                    except Exception:
+                    except (sqlite3.DatabaseError, ValueError):
                         logger.exception('Failed to add field %s', name)
                 any_created = True
             else:
@@ -260,9 +261,9 @@ def import_step():
                 for row in rows:
                     try:
                         create_record(table, row)
-                    except Exception:
+                    except (sqlite3.DatabaseError, ValueError):
                         logger.exception('Failed to import row')
-            except Exception as exc:
+            except (sqlite3.DatabaseError, ValueError, UnicodeDecodeError) as exc:
                 logger.exception('Failed to import CSV: %s', exc)
                 error = f'Failed to import CSV: {exc}'
         else:

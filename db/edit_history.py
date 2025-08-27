@@ -1,5 +1,6 @@
 import logging
 import datetime
+import sqlite3
 from db.database import get_connection
 from db.validation import validate_table
 
@@ -47,7 +48,7 @@ def append_edit_log(
                 old_value,
                 new_value,
             )
-        except Exception as e:
+        except sqlite3.DatabaseError as e:
             logger.exception("[EDIT LOG ERROR] %s", e)
 
 
@@ -119,7 +120,7 @@ def revert_edit(entry: dict) -> bool:
             update_field_value(table, record_id, field, old_val)
         if not field.startswith("relation_"):
             append_edit_log(table, record_id, field, new_val, old_val, actor="undo")
-    except Exception:
+    except (sqlite3.DatabaseError, ValueError):
         logger.exception("Failed to revert edit")
         return False
     return True

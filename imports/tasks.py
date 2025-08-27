@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import sqlite3
 from huey import SqliteHuey
 from db.database import get_connection
 from db.records import create_record
@@ -53,8 +54,8 @@ def _run_import(job_id, table, rows):
         for idx, row in enumerate(rows, start=1):
             try:
                 if create_record(table, row) is None:
-                    raise Exception("Failed to create")
-            except Exception as exc:  # noqa: BLE001
+                    raise sqlite3.DatabaseError("Failed to create")
+            except (sqlite3.DatabaseError, ValueError) as exc:  # noqa: BLE001
                 errors.append({"row": idx, "message": str(exc)})
             if idx % 10 == 0 or idx == len(rows):
                 logger.info(
@@ -75,6 +76,10 @@ def _run_import(job_id, table, rows):
             len(errors),
         )
         return {"job_id": job_id, "imported": len(rows) - len(errors), "errors": errors}
+    except sqlite3.DatabaseError:
+        logger.exception("Import job %s for table %s failed", job_id, table)
+        _update_import_status(job_id, status="failed")
+        raise
     except Exception:
         logger.exception("Import job %s for table %s failed", job_id, table)
         _update_import_status(job_id, status="failed")

@@ -14,7 +14,7 @@ def require_base_table(func):
             table = args[0]
         try:
             validate_table(table)
-        except Exception:
+        except ValueError:
             abort(404)
         return func(*args, **kwargs)
     return wrapper

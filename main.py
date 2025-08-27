@@ -45,7 +45,7 @@ if status == 'valid':
                 cfg_path = cfg.get('db_path')
                 if cfg_path:
                     init_db_path(cfg_path)
-    except Exception:
+    except sqlite3.DatabaseError:
         needs_wizard = True
 else:
     needs_wizard = True

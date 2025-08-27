@@ -27,7 +27,7 @@ def dashboard():
         if w.get('widget_type') == 'table':
             try:
                 w['parsed'] = json.loads(w.get('content') or '{}')
-            except Exception:
+            except json.JSONDecodeError:
                 w['parsed'] = {}
     return render_template(
         'dashboard.html', widgets=widgets, view=view, groups=groups
