@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 def dashboard():
     widgets = get_dashboard_widgets()
     view = request.args.get("view") or "Dashboard"
+    logger.debug("Rendering dashboard view %s", view)
     groups = sorted({(w.get("group") or "Dashboard") for w in widgets})
     for w in widgets:
         if w.get('widget_type') == 'table':
@@ -89,6 +90,7 @@ def dashboard_create_widget():
     if not widget_id:
         return jsonify({'error': 'Failed to create widget'}), 500
 
+    logger.info("Created dashboard widget %s type=%s", widget_id, widget_type)
     return jsonify({'success': True, 'id': widget_id})
 
 
@@ -99,6 +101,7 @@ def dashboard_update_layout():
         return jsonify({'error': 'Invalid JSON or missing `layout`'}), 400
     layout_items = data['layout']
     updated = update_widget_layout(layout_items)
+    logger.info("Updated dashboard layout for %d items", len(layout_items))
     return jsonify({'success': True, 'updated': updated})
 
 
@@ -110,6 +113,11 @@ def dashboard_update_style():
     if widget_id is None or not isinstance(styling, dict):
         return jsonify({'error': 'Invalid data'}), 400
     success = update_widget_styling(widget_id, styling)
+    logger.info(
+        "Updated dashboard styling widget=%s success=%s",
+        widget_id,
+        bool(success),
+    )
     return jsonify({'success': bool(success)})
 
 
@@ -119,6 +127,7 @@ def dashboard_delete_widget(widget_id):
     success = delete_widget(widget_id)
     if not success:
         return jsonify({'error': 'Failed to delete widget'}), 500
+    logger.info("Deleted dashboard widget %s", widget_id)
     return jsonify({'success': True})
 
 
@@ -126,6 +135,7 @@ def dashboard_delete_widget(widget_id):
 def dashboard_base_count():
     """Return counts for all base tables."""
     data = get_base_table_counts()
+    logger.debug("Returning base table counts")
     return jsonify(data)
 
 
@@ -148,6 +158,9 @@ def dashboard_top_numeric():
         )
     except ValueError:
         return jsonify([]), 400
+    logger.debug(
+        "Top numeric for %s.%s limit=%s direction=%s", table, field, limit, direction
+    )
     return jsonify(data)
 
 
@@ -165,4 +178,11 @@ def dashboard_filtered_records():
         data = get_filtered_records(table, filters=search, order_by=order_by, limit=limit)
     except ValueError:
         return jsonify([]), 400
+    logger.debug(
+        "Filtered records for %s search=%s order_by=%s limit=%s",
+        table,
+        search,
+        order_by,
+        limit,
+    )
     return jsonify(data)

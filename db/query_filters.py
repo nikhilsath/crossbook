@@ -81,6 +81,14 @@ def _build_filters(
     modes=None,
 ):
     """Return SQL where clauses and params for the provided filters/search."""
+    logger.debug(
+        "Building filters table=%s search=%s filters=%s ops=%s modes=%s",
+        table,
+        search,
+        filters,
+        ops,
+        modes,
+    )
     clauses: list[str] = []
     params: list[str] = []
 
@@ -137,4 +145,5 @@ def _build_filters(
             clauses.append("(" + " OR ".join(subconds) + ")")
             params.extend([f"%{search_term}%"] * len(subconds))
 
+    logger.debug("Built clauses=%s params=%s", clauses, params)
     return clauses, params
