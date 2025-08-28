@@ -312,9 +312,28 @@ def manage_relationship():
             abort(400, 'Invalid action')
     except HTTPException:
         raise
+    except ValueError as e:
+        logger.warning(
+            'manage_relationship validation failed action=%s %s:%s -> %s:%s',
+            action,
+            table_a,
+            id_a,
+            table_b,
+            id_b,
+            extra={
+                "action": action,
+                "table_a": table_a,
+                "id_a": id_a,
+                "table_b": table_b,
+                "id_b": id_b,
+                "error": str(e),
+            },
+            exc_info=True,
+        )
+        abort(400, str(e))
     except Exception:
         logger.exception(
-            'manage_relationship raised exception action=%s %s:%s -> %s:%s',
+            'Unexpected exception in manage_relationship action=%s %s:%s -> %s:%s',
             action,
             table_a,
             id_a,
