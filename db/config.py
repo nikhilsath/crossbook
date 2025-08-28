@@ -45,9 +45,10 @@ def get_config_rows(sections: str | list[str] | None = None):
         if opts:
             try:
                 item["options"] = json.loads(opts)
-            except json.JSONDecodeError:
+            except json.JSONDecodeError as exc:
                 logger.exception(
-                    "Invalid JSON in config options", extra={"key": item.get("key")}
+                    "Invalid JSON in config options",
+                    extra={"key": item.get("key"), "error": str(exc)},
                 )
                 item["options"] = []
         else:
@@ -70,8 +71,11 @@ def get_layout_defaults() -> dict:
     if row and row[0]:
         try:
             data = json.loads(row[0])
-        except json.JSONDecodeError:
-            logger.exception("Invalid JSON in layout_defaults config")
+        except json.JSONDecodeError as exc:
+            logger.exception(
+                "Invalid JSON in layout_defaults config",
+                extra={"key": "layout_defaults", "error": str(exc)},
+            )
             data = {}
 
     if not data:
@@ -94,8 +98,11 @@ def get_relationship_visibility() -> dict:
         return {}
     try:
         return json.loads(row[0])
-    except json.JSONDecodeError:
-        logger.exception("Invalid JSON in relationship_visibility config")
+    except json.JSONDecodeError as exc:
+        logger.exception(
+            "Invalid JSON in relationship_visibility config",
+            extra={"key": "relationship_visibility", "error": str(exc)},
+        )
         return {}
 
 

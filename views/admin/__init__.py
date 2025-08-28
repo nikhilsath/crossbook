@@ -20,8 +20,11 @@ def reload_app_state() -> None:
         rows = get_config_rows('database')
         cfg = {row['key']: row['value'] for row in rows}
         init_db_path(cfg.get('db_path'))
-    except sqlite3.DatabaseError:
-        logger.exception("Failed to load database configuration")
+    except sqlite3.DatabaseError as exc:
+        logger.exception(
+            "Failed to load database configuration",
+            extra={"db_path": DB_PATH, "error": str(exc)},
+        )
         init_db_path()
 
     card_info, base_tables = refresh_card_cache()

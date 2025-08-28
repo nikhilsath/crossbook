@@ -47,8 +47,11 @@ if status == 'valid':
                 cfg_path = cfg.get('db_path')
                 if cfg_path:
                     init_db_path(cfg_path)
-    except sqlite3.DatabaseError:
-        logger.exception("Failed to verify database during startup")
+    except sqlite3.DatabaseError as exc:
+        logger.exception(
+            "Failed to verify database during startup",
+            extra={"db_path": DB_PATH, "error": str(exc)},
+        )
         needs_wizard = True
 else:
     needs_wizard = True
