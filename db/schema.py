@@ -295,10 +295,10 @@ def update_field_styling(table: str, field: str, styling_dict: dict) -> bool:
 def create_base_table(table_name: str, description: str, title_field: str) -> bool:
     """Create a new base table and associated metadata."""
     if not table_name.isidentifier():
-        logger.error("Invalid table name: %s", table_name)
+        logger.info("Invalid table name: %s", table_name)
         return False
     if not title_field.isidentifier():
-        logger.error("Invalid title field: %s", title_field)
+        logger.info("Invalid title field: %s", title_field)
         return False
 
     with get_connection() as conn:
@@ -310,7 +310,7 @@ def create_base_table(table_name: str, description: str, title_field: str) -> bo
                 (table_name,),
             )
             if cur.fetchone():
-                logger.error("Table %s already exists", table_name)
+                logger.info("Table %s already exists", table_name)
                 return False
 
             # Create the base table with timestamp columns

@@ -120,13 +120,13 @@ def add_field_route(table, record_id):
         logger.info('Added column to %s: field=%r type=%r', table, field_name, field_type)
         return redirect(url_for('records.detail_view', table=table, record_id=record_id))
     except json.JSONDecodeError as e:
-        logger.warning('add_field_route invalid styling JSON: %s', e)
+        logger.info('add_field_route invalid styling JSON: %s', e)
         return 'Invalid styling data', 400
     except sqlite3.DatabaseError as e:
         logger.exception('add_field_route database error: %s', e)
         return 'Server error', 500
     except ValueError as e:
-        logger.warning('add_field_route validation failed: %s', e)
+        logger.info('add_field_route validation failed: %s', e)
         return str(e), 400
 
 
