@@ -95,7 +95,11 @@ def database_step():
             else:
                 error = 'Please upload a file or enter a name.'
         except (sqlite3.DatabaseError, OSError, ValueError) as exc:
-            logger.exception('Failed to handle database file: %s', exc)
+            logger.exception(
+                'Failed to handle database file: %s',
+                exc,
+                extra={"error": str(exc)},
+            )
             error = f'Failed to save file: {exc}'
 
         if not error:
@@ -205,7 +209,10 @@ def table_step():
                     try:
                         field_defs = json.loads(fields_json)
                     except json.JSONDecodeError:
-                        logger.exception('Failed to parse fields_json')
+                        logger.exception(
+                            'Failed to parse fields_json',
+                            extra={"error": "invalid_json"},
+                        )
 
                 for f in field_defs:
                     name = to_identifier(f.get('name'), 'f_')
@@ -224,7 +231,11 @@ def table_step():
                             f.get('foreign_key'),
                         )
                     except (sqlite3.DatabaseError, ValueError):
-                        logger.exception('Failed to add field %s', name)
+                        logger.exception(
+                            'Failed to add field %s',
+                            name,
+                            extra={"field": name},
+                        )
                 any_created = True
             else:
                 error = f'Table "{table_name}" could not be created.'
@@ -262,9 +273,13 @@ def import_step():
                     try:
                         create_record(table, row)
                     except (sqlite3.DatabaseError, ValueError):
-                        logger.exception('Failed to import row')
+                        logger.exception('Failed to import row', extra={"table": table})
             except (sqlite3.DatabaseError, ValueError, UnicodeDecodeError) as exc:
-                logger.exception('Failed to import CSV: %s', exc)
+                logger.exception(
+                    'Failed to import CSV: %s',
+                    exc,
+                    extra={"error": str(exc), "table": table},
+                )
                 error = f'Failed to import CSV: {exc}'
         else:
             error = 'Please select a table and upload a .csv file.'

@@ -91,6 +91,11 @@ def update_foreign_field_options():
                     field_name,
                     foreign_table,
                     e,
+                    extra={
+                        "table": table_name,
+                        "field": field_name,
+                        "foreign_table": foreign_table,
+                    },
                 )
                 continue
             try:
@@ -109,8 +114,17 @@ def update_foreign_field_options():
                 total = cur.fetchone()[0]
                 if total > MAX_OPTIONS:
                     logger.info(
-                        "Skipping %s.%s → %s: %d rows exceeds limit", 
-                        table_name, field_name, foreign_table, total
+                        "Skipping %s.%s → %s: %d rows exceeds limit",
+                        table_name,
+                        field_name,
+                        foreign_table,
+                        total,
+                        extra={
+                            "table": table_name,
+                            "field": field_name,
+                            "foreign_table": foreign_table,
+                            "row_count": total,
+                        },
                     )
                     continue
                 cur.execute(
@@ -124,6 +138,12 @@ def update_foreign_field_options():
                     field_name,
                     foreign_table,
                     e,
+                    extra={
+                        "table": table_name,
+                        "field": field_name,
+                        "foreign_table": foreign_table,
+                        "error": str(e),
+                    },
                 )
                 continue
             cur.execute(
@@ -218,6 +238,7 @@ def update_layout(table: str, layout_items: list[dict]) -> int:
                 col_span,
                 row_start,
                 row_span,
+                extra={"table": table, "field": field},
             )
 
             # Perform the SQL UPDATE
@@ -295,10 +316,18 @@ def update_field_styling(table: str, field: str, styling_dict: dict) -> bool:
 def create_base_table(table_name: str, description: str, title_field: str) -> bool:
     """Create a new base table and associated metadata."""
     if not table_name.isidentifier():
-        logger.info("Invalid table name: %s", table_name)
+        logger.info(
+            "Invalid table name: %s",
+            table_name,
+            extra={"table": table_name},
+        )
         return False
     if not title_field.isidentifier():
-        logger.info("Invalid title field: %s", title_field)
+        logger.info(
+            "Invalid title field: %s",
+            title_field,
+            extra={"title_field": title_field},
+        )
         return False
 
     with get_connection() as conn:
@@ -310,7 +339,11 @@ def create_base_table(table_name: str, description: str, title_field: str) -> bo
                 (table_name,),
             )
             if cur.fetchone():
-                logger.info("Table %s already exists", table_name)
+                logger.info(
+                    "Table %s already exists",
+                    table_name,
+                    extra={"table": table_name},
+                )
                 return False
 
             # Create the base table with timestamp columns
@@ -361,7 +394,12 @@ def create_base_table(table_name: str, description: str, title_field: str) -> bo
 
             conn.commit()
         except sqlite3.DatabaseError as exc:
-            logger.exception("Error creating base table %s: %s", table_name, exc)
+            logger.exception(
+                "Error creating base table %s: %s",
+                table_name,
+                exc,
+                extra={"table": table_name, "error": str(exc)},
+            )
             conn.rollback()
             return False
 

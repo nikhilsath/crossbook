@@ -16,7 +16,12 @@ logger = logging.getLogger(__name__)
 @records_bp.route('/<table>')
 @require_base_table
 def list_view(table):
-    logger.debug("Rendering list view for %s with args %s", table, dict(request.args))
+    logger.debug(
+        "Rendering list view for %s with args %s",
+        table,
+        dict(request.args),
+        extra={"table": table},
+    )
     ctx = build_list_context(table)
     if request.accept_mimetypes.best == 'application/json':
         rows = render_template('_record_rows.html', **ctx)
@@ -39,7 +44,13 @@ def api_list(table):
     """Return id and label info for records in the table."""
     search = request.args.get('search')
     limit = request.args.get('limit', type=int)
-    logger.debug("api_list table=%s search=%s limit=%s", table, search, limit)
+    logger.debug(
+        "api_list table=%s search=%s limit=%s",
+        table,
+        search,
+        limit,
+        extra={"table": table, "search": search, "limit": limit},
+    )
 
     with get_connection() as conn:
         cur = conn.cursor()
@@ -74,7 +85,12 @@ def api_list(table):
 @records_bp.route('/api/<table>/records')
 @require_base_table
 def api_records(table):
-    logger.debug("api_records table=%s args=%s", table, dict(request.args))
+    logger.debug(
+        "api_records table=%s args=%s",
+        table,
+        dict(request.args),
+        extra={"table": table},
+    )
     ctx = build_list_context(table)
     rows = render_template('_record_rows.html', **ctx)
     pager = render_template('_pagination.html', **ctx)
@@ -95,7 +111,12 @@ def export_csv(table):
     """Stream CSV of records using current filters and search."""
     params = parse_list_params(table)
     fields = [f for f in params['fields'] if not f.startswith('_')]
-    logger.info("Exporting CSV for %s fields=%s", table, fields)
+    logger.info(
+        "Exporting CSV for %s fields=%s",
+        table,
+        fields,
+        extra={"table": table, "fields": fields},
+    )
     ids_param = request.args.getlist('ids') or request.args.get('ids', '')
     if isinstance(ids_param, str):
         ids = [i for i in ids_param.split(',') if i]

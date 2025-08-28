@@ -47,7 +47,12 @@ def _update_import_status(job_id, **kwargs):
 
 def _run_import(job_id, table, rows):
     """Helper to perform the actual row import."""
-    logger.info("Import job %s started for table %s", job_id, table)
+    logger.info(
+        "Import job %s started for table %s",
+        job_id,
+        table,
+        extra={"job_id": job_id, "table": table},
+    )
     _update_import_status(job_id, status="in_progress", total_rows=len(rows))
     errors: list[dict] = []
     try:
@@ -59,7 +64,17 @@ def _run_import(job_id, table, rows):
                 errors.append({"row": idx, "message": str(exc)})
             if idx % 10 == 0 or idx == len(rows):
                 logger.info(
-                    "Job %s table %s processed %s/%s rows", job_id, table, idx, len(rows)
+                    "Job %s table %s processed %s/%s rows",
+                    job_id,
+                    table,
+                    idx,
+                    len(rows),
+                    extra={
+                        "job_id": job_id,
+                        "table": table,
+                        "processed": idx,
+                        "total_rows": len(rows),
+                    },
                 )
                 _update_import_status(
                     job_id, imported_rows=idx, errors=json.dumps(errors)
@@ -74,14 +89,30 @@ def _run_import(job_id, table, rows):
             table,
             len(rows) - len(errors),
             len(errors),
+            extra={
+                "job_id": job_id,
+                "table": table,
+                "imported": len(rows) - len(errors),
+                "error_count": len(errors),
+            },
         )
         return {"job_id": job_id, "imported": len(rows) - len(errors), "errors": errors}
     except sqlite3.DatabaseError:
-        logger.exception("Import job %s for table %s failed", job_id, table)
+        logger.exception(
+            "Import job %s for table %s failed",
+            job_id,
+            table,
+            extra={"job_id": job_id, "table": table},
+        )
         _update_import_status(job_id, status="failed")
         raise
     except Exception:
-        logger.exception("Import job %s for table %s failed", job_id, table)
+        logger.exception(
+            "Import job %s for table %s failed",
+            job_id,
+            table,
+            extra={"job_id": job_id, "table": table},
+        )
         _update_import_status(job_id, status="failed")
         raise
 

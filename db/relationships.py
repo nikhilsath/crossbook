@@ -98,7 +98,17 @@ def add_relationship(
             conn.commit()
             success = True
         except sqlite3.DatabaseError as e:
-            logger.exception(f"[RELATIONSHIP ADD ERROR] {e}")
+            logger.exception(
+                "[RELATIONSHIP ADD ERROR] %s",
+                e,
+                extra={
+                    "table_a": table_a,
+                    "id_a": id_a,
+                    "table_b": table_b,
+                    "id_b": id_b,
+                    "error": str(e),
+                },
+            )
             success = False
         if success:
             touch_last_edited(table_a, id_a)
@@ -139,7 +149,17 @@ def remove_relationship(table_a, id_a, table_b, id_b, *, actor: str | None = Non
             conn.commit()
             success = True
         except sqlite3.DatabaseError as e:
-            logger.exception(f"[RELATIONSHIP REMOVE ERROR] {e}")
+            logger.exception(
+                "[RELATIONSHIP REMOVE ERROR] %s",
+                e,
+                extra={
+                    "table_a": table_a,
+                    "id_a": id_a,
+                    "table_b": table_b,
+                    "id_b": id_b,
+                    "error": str(e),
+                },
+            )
             success = False
         if success:
             touch_last_edited(table_a, id_a)

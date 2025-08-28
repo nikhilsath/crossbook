@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 @admin_bp.route('/admin/api/automation/rules')
 def list_rules():
-    logger.debug("Listing automation rules")
+    logger.debug("Listing automation rules", extra={"route": "list_rules"})
     return jsonify(get_rules())
 
 
@@ -35,7 +35,11 @@ def create_rule_route():
         bool(data.get('run_on_import')),
         data.get('schedule', 'none'),
     )
-    logger.info("Created automation rule %s", rule_id)
+    logger.info(
+        "Created automation rule %s",
+        rule_id,
+        extra={"rule_id": rule_id},
+    )
     return jsonify({'id': rule_id})
 
 
@@ -43,34 +47,55 @@ def create_rule_route():
 def update_rule_route(rule_id):
     data = request.get_json(silent=True) or {}
     update_rule(rule_id, **data)
-    logger.info("Updated automation rule %s", rule_id)
+    logger.info(
+        "Updated automation rule %s",
+        rule_id,
+        extra={"rule_id": rule_id},
+    )
     return jsonify({'success': True})
 
 
 @admin_bp.route('/admin/api/automation/rules/<int:rule_id>/delete', methods=['POST'])
 def delete_rule_route(rule_id):
     delete_rule(rule_id)
-    logger.info("Deleted automation rule %s", rule_id)
+    logger.info(
+        "Deleted automation rule %s",
+        rule_id,
+        extra={"rule_id": rule_id},
+    )
     return jsonify({'success': True})
 
 
 @admin_bp.route('/admin/api/automation/rules/<int:rule_id>/run', methods=['POST'])
 def run_rule_route(rule_id):
     count = run_rule(rule_id)
-    logger.info("Ran automation rule %s updated=%s", rule_id, count)
+    logger.info(
+        "Ran automation rule %s updated=%s",
+        rule_id,
+        count,
+        extra={"rule_id": rule_id, "updated": count},
+    )
     return jsonify({'updated': count})
 
 
 @admin_bp.route('/admin/api/automation/rules/<int:rule_id>/reset', methods=['POST'])
 def reset_rule_route(rule_id):
     reset_run_count(rule_id)
-    logger.info("Reset run count for rule %s", rule_id)
+    logger.info(
+        "Reset run count for rule %s",
+        rule_id,
+        extra={"rule_id": rule_id},
+    )
     return jsonify({'success': True})
 
 
 @admin_bp.route('/admin/api/automation/rules/<int:rule_id>/logs')
 def rule_logs(rule_id):
-    logger.debug("Fetching logs for rule %s", rule_id)
+    logger.debug(
+        "Fetching logs for rule %s",
+        rule_id,
+        extra={"rule_id": rule_id},
+    )
     with get_connection() as conn:
         cur = conn.cursor()
         cur.execute(
@@ -91,5 +116,9 @@ def rollback_entry():
     if not entry:
         return jsonify({'error': 'not_found'}), 404
     revert_edit(entry)
-    logger.info("Rolled back edit entry %s", entry_id)
+    logger.info(
+        "Rolled back edit entry %s",
+        entry_id,
+        extra={"entry_id": entry_id},
+    )
     return jsonify({'success': True})

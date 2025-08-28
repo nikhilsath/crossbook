@@ -23,7 +23,13 @@ def sum_field(table: str, field: str) -> float:
             result = cursor.fetchone()[0]
             return result or 0
         except sqlite3.DatabaseError as e:
-            logger.exception(f"[sum_field] SQL error for {table}.{field}: {e}")
+            logger.exception(
+                "[sum_field] SQL error for %s.%s: %s",
+                table,
+                field,
+                e,
+                extra={"table": table, "field": field},
+            )
             return 0
 
 # Return all dashboard widgets ordered by id.
@@ -39,7 +45,11 @@ def get_dashboard_widgets() -> list[dict]:
             cols = [d[0] for d in cursor.description]
             return [dict(zip(cols, r)) for r in rows]
         except sqlite3.DatabaseError as e:
-            logger.exception("[get_dashboard_widgets] SQL error: %s", e)
+            logger.exception(
+                "[get_dashboard_widgets] SQL error: %s",
+                e,
+                extra={"error": str(e)},
+            )
             return []
 
 def create_widget(
@@ -84,7 +94,11 @@ def create_widget(
             conn.commit()
             return cur.lastrowid
         except sqlite3.DatabaseError as exc:
-            logger.exception("[create_widget] SQL error: %s", exc)
+            logger.exception(
+                "[create_widget] SQL error: %s",
+                exc,
+                extra={"error": str(exc)},
+            )
             return None
 
 def update_widget_layout(layout_items: list[dict]) -> int:
@@ -117,6 +131,7 @@ def update_widget_layout(layout_items: list[dict]) -> int:
                 col_span,
                 row_start,
                 row_span,
+                extra={"widget_id": widget_id},
             )
             cur.execute(
                 """
@@ -140,7 +155,12 @@ def update_widget_styling(widget_id: int, styling: dict) -> bool:
     try:
         styling_json = json.dumps(styling or {})
     except (TypeError, ValueError) as exc:
-        logger.info("[update_widget_styling] invalid styling for %s: %s", widget_id, exc)
+        logger.info(
+            "[update_widget_styling] invalid styling for %s: %s",
+            widget_id,
+            exc,
+            extra={"widget_id": widget_id, "error": str(exc)},
+        )
         return False
 
     with get_connection() as conn:
@@ -157,7 +177,11 @@ def update_widget_styling(widget_id: int, styling: dict) -> bool:
             conn.commit()
             return cur.rowcount > 0
         except sqlite3.DatabaseError as exc:
-            logger.exception("[update_widget_styling] SQL error: %s", exc)
+            logger.exception(
+                "[update_widget_styling] SQL error: %s",
+                exc,
+                extra={"widget_id": widget_id, "error": str(exc)},
+            )
             return False
 
 
@@ -173,7 +197,11 @@ def delete_widget(widget_id: int) -> bool:
             conn.commit()
             return cur.rowcount > 0
         except sqlite3.DatabaseError as exc:
-            logger.exception("[delete_widget] SQL error: %s", exc)
+            logger.exception(
+                "[delete_widget] SQL error: %s",
+                exc,
+                extra={"widget_id": widget_id, "error": str(exc)},
+            )
             return False
 
 
@@ -185,7 +213,12 @@ def get_base_table_counts() -> list[dict]:
         try:
             cnt = count_records(table)
         except sqlite3.DatabaseError as exc:
-            logger.exception("[get_base_table_counts] error for %s: %s", table, exc)
+            logger.exception(
+                "[get_base_table_counts] error for %s: %s",
+                table,
+                exc,
+                extra={"table": table, "error": str(exc)},
+            )
             cnt = 0
         results.append({"table": table, "count": cnt})
     return results
@@ -215,7 +248,11 @@ def get_top_numeric_values(
             return [{"id": r[0], "value": r[1]} for r in rows]
         except sqlite3.DatabaseError as exc:
             logger.exception(
-                "[get_top_numeric_values] SQL error for %s.%s: %s", table, field, exc
+                "[get_top_numeric_values] SQL error for %s.%s: %s",
+                table,
+                field,
+                exc,
+                extra={"table": table, "field": field, "error": str(exc)},
             )
             return []
 
@@ -237,6 +274,9 @@ def get_filtered_records(
         return rows
     except sqlite3.DatabaseError as exc:
         logger.exception(
-            "[get_filtered_records] error for %s: %s", table, exc
+            "[get_filtered_records] error for %s: %s",
+            table,
+            exc,
+            extra={"table": table, "error": str(exc)},
         )
         return []
