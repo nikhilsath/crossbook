@@ -16,6 +16,7 @@ from db.edit_history import (
     revert_edit,
 )
 from db.relationships import get_related_records, add_relationship, remove_relationship
+from werkzeug.exceptions import HTTPException
 from db.edit_fields import add_column_to_table, add_field_to_schema, drop_column_from_table, remove_field_from_schema
 from db.schema import (
     get_field_schema,
@@ -144,10 +145,9 @@ def add_field_route(table, record_id):
         )
         return redirect(url_for('records.detail_view', table=table, record_id=record_id))
     except json.JSONDecodeError as e:
-        logger.info(
-            'add_field_route invalid styling JSON: %s',
-            e,
-            extra={"table": table, "record_id": record_id, "error": str(e)},
+        logger.exception(
+            'add_field_route invalid styling JSON',
+            extra={"table": table, "record_id": record_id},
         )
         return 'Invalid styling data', 400
     except sqlite3.DatabaseError as e:
@@ -158,9 +158,8 @@ def add_field_route(table, record_id):
         )
         return 'Server error', 500
     except ValueError as e:
-        logger.info(
-            'add_field_route validation failed: %s',
-            e,
+        logger.exception(
+            'add_field_route validation failed',
             extra={"table": table, "record_id": record_id, "error": str(e)},
         )
         return str(e), 400
@@ -173,6 +172,11 @@ def count_nonnull(table):
     try:
         count = db_count_nonnull(table, field)
     except ValueError:
+        logger.warning(
+            'count_nonnull invalid field',
+            exc_info=True,
+            extra={"table": table, "field": field},
+        )
         return jsonify({'count': 0}), 400
     return jsonify({'count': count})
 
@@ -184,6 +188,11 @@ def sum_field_route(table):
     try:
         result = db_sum_field(table, field)
     except ValueError:
+        logger.warning(
+            'sum_field invalid field',
+            exc_info=True,
+            extra={"table": table, "field": field},
+        )
         return jsonify({'sum': 0}), 400
     return jsonify({'sum': result})
 
@@ -195,6 +204,11 @@ def field_distribution_route(table):
     try:
         counts = field_distribution(table, field)
     except ValueError:
+        logger.warning(
+            'field_distribution invalid field',
+            exc_info=True,
+            extra={"table": table, "field": field},
+        )
         return jsonify({}), 400
     return jsonify(counts)
 
@@ -225,8 +239,16 @@ def update_field(table, record_id):
     try:
         new_value = update_record_field(table, record_id, field, raw_value)
     except ValueError as e:
+        logger.exception(
+            'update_field validation failed',
+            extra={"table": table, "record_id": record_id, "field": field},
+        )
         abort(400, str(e))
     except RuntimeError:
+        logger.exception(
+            'update_field database update failed',
+            extra={"table": table, "record_id": record_id, "field": field},
+        )
         abort(500, 'Database update failed')
     logger.debug(
         'update_field: table=%s id=%s field=%s value=%r',
@@ -257,6 +279,10 @@ def bulk_update(table):
     try:
         updated = bulk_update_records(table, ids, field, value)
     except ValueError as e:
+        logger.exception(
+            'bulk_update validation failed',
+            extra={"table": table, "field": field, "error": str(e)},
+        )
         return jsonify({'error': str(e)}), 400
     return jsonify({'success': True, 'updated': updated})
 
@@ -275,12 +301,34 @@ def manage_relationship():
     table_b = data.get('table_b')
     id_b = data.get('id_b')
     two_way = data.get('two_way', True)
-    if action == 'add':
-        success = add_relationship(table_a, id_a, table_b, id_b, two_way=bool(two_way))
-    elif action == 'remove':
-        success = remove_relationship(table_a, id_a, table_b, id_b)
-    else:
-        abort(400, 'Invalid action')
+    try:
+        if action == 'add':
+            success = add_relationship(
+                table_a, id_a, table_b, id_b, two_way=bool(two_way)
+            )
+        elif action == 'remove':
+            success = remove_relationship(table_a, id_a, table_b, id_b)
+        else:
+            abort(400, 'Invalid action')
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception(
+            'manage_relationship raised exception action=%s %s:%s -> %s:%s',
+            action,
+            table_a,
+            id_a,
+            table_b,
+            id_b,
+            extra={
+                "action": action,
+                "table_a": table_a,
+                "id_a": id_a,
+                "table_b": table_b,
+                "id_b": id_b,
+            },
+        )
+        abort(500, 'Failed to modify relationship')
     if not success:
         logger.error(
             'manage_relationship failed action=%s %s:%s -> %s:%s',
@@ -296,6 +344,7 @@ def manage_relationship():
                 "table_b": table_b,
                 "id_b": id_b,
             },
+            exc_info=True,
         )
         abort(500, 'Failed to modify relationship')
     else:
@@ -362,6 +411,10 @@ def update_layout(table):
     try:
         updated = db_update_layout(table, layout_items)
     except ValueError as e:
+        logger.exception(
+            'update_layout validation failed',
+            extra={"table": table, "error": str(e)},
+        )
         return jsonify({'error': str(e)}), 400
     logger.info(
         '[layout] update_layout %s updated=%s',
@@ -393,6 +446,10 @@ def update_style(table):
     try:
         success = db_update_field_styling(table, field, styling)
     except ValueError as e:
+        logger.exception(
+            'update_style validation failed',
+            extra={"table": table, "field": field, "error": str(e)},
+        )
         return jsonify({'error': str(e)}), 400
     logger.info(
         '[style] update_style %s.%s success=%s',

@@ -113,6 +113,7 @@ def validate_number_column(values, integer_only=False):
         try:
             int(s) if integer_only else float(s)
         except ValueError:
+            logger.debug("Invalid numeric value", exc_info=True)
             invalid += 1
             details["invalid"].append({"row": idx, "reason": "not a number", })
             continue
@@ -200,6 +201,7 @@ def normalize_number(value):
     try:
         return str(float(value))
     except (TypeError, ValueError):
+        logger.warning("Failed to normalize number", exc_info=True)
         return "0"
 
 

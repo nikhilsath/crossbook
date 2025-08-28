@@ -48,6 +48,7 @@ if status == 'valid':
                 if cfg_path:
                     init_db_path(cfg_path)
     except sqlite3.DatabaseError:
+        logger.exception("Failed to verify database during startup")
         needs_wizard = True
 else:
     needs_wizard = True

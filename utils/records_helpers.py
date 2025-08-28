@@ -1,8 +1,11 @@
 from functools import wraps
+import logging
 from flask import request, abort
 from db.validation import validate_table
 from db.schema import get_field_schema
 from db.records import get_all_records, count_records
+
+logger = logging.getLogger(__name__)
 
 
 def require_base_table(func):
@@ -15,6 +18,7 @@ def require_base_table(func):
         try:
             validate_table(table)
         except ValueError:
+            logger.exception("Unknown table requested", extra={"table": table})
             abort(404)
         return func(*args, **kwargs)
     return wrapper

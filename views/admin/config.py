@@ -45,6 +45,9 @@ def config_page():
             try:
                 item['parsed'] = json.loads(item.get('value') or '{}')
             except json.JSONDecodeError:
+                logger.exception(
+                    "Failed to parse JSON config", extra={"key": item.get('key')}
+                )
                 item['parsed'] = {}
         if item['key'] == 'db_path':
             continue

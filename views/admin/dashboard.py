@@ -33,6 +33,9 @@ def dashboard():
             try:
                 w['parsed'] = json.loads(w.get('content') or '{}')
             except json.JSONDecodeError:
+                logger.exception(
+                    "Failed to parse widget content", extra={"widget": w.get('id')}
+                )
                 w['parsed'] = {}
     return render_template(
         'dashboard.html', widgets=widgets, view=view, groups=groups
@@ -49,6 +52,7 @@ def dashboard_create_widget():
         col_span = int(data.get('col_span', 1))
         row_span = int(data.get('row_span', 1))
     except (TypeError, ValueError):
+        logger.exception("Invalid layout values for widget creation", extra=data)
         return jsonify({'error': 'Invalid layout values'}), 400
 
     if not title or not widget_type:
@@ -70,6 +74,9 @@ def dashboard_create_widget():
             try:
                 json.loads(content)
             except json.JSONDecodeError:
+                logger.exception(
+                    "Invalid JSON for widget content", extra={"content": content}
+                )
                 return jsonify({'error': 'Invalid JSON for content'}), 400
         else:
             content = json.dumps(content)
@@ -165,6 +172,7 @@ def dashboard_top_numeric():
     try:
         limit = int(request.args.get('limit', 10))
     except (TypeError, ValueError):
+        logger.warning("Invalid limit for top numeric", exc_info=True)
         limit = 10
     direction = request.args.get('direction', 'desc')
     try:
@@ -175,6 +183,10 @@ def dashboard_top_numeric():
             ascending=(direction == 'asc'),
         )
     except ValueError:
+        logger.exception(
+            "Failed to fetch top numeric values",
+            extra={"table": table, "field": field},
+        )
         return jsonify([]), 400
     logger.debug(
         "Top numeric for %s.%s limit=%s direction=%s",
@@ -201,10 +213,15 @@ def dashboard_filtered_records():
     try:
         limit = int(request.args.get('limit', 10))
     except (TypeError, ValueError):
+        logger.warning("Invalid limit for filtered records", exc_info=True)
         limit = 10
     try:
         data = get_filtered_records(table, filters=search, order_by=order_by, limit=limit)
     except ValueError:
+        logger.exception(
+            "Failed to fetch filtered records",
+            extra={"table": table, "search": search, "order_by": order_by},
+        )
         return jsonify([]), 400
     logger.debug(
         "Filtered records for %s search=%s order_by=%s limit=%s",
