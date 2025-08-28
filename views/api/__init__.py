@@ -12,6 +12,10 @@ def api_base_tables():
     """Return configured base tables with display info."""
     with get_connection() as conn:
         data = load_card_info(conn)
-    logger.debug("Loaded %d base tables", len(data))
+    logger.debug(
+        "Loaded %d base tables",
+        len(data),
+        extra={"base_table_count": len(data)},
+    )
     return jsonify(data)
 

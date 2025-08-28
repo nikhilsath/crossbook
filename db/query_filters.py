@@ -88,6 +88,7 @@ def _build_filters(
         filters,
         ops,
         modes,
+        extra={"table": table, "search": search},
     )
     clauses: list[str] = []
     params: list[str] = []
@@ -145,5 +146,10 @@ def _build_filters(
             clauses.append("(" + " OR ".join(subconds) + ")")
             params.extend([f"%{search_term}%"] * len(subconds))
 
-    logger.debug("Built clauses=%s params=%s", clauses, params)
+    logger.debug(
+        "Built clauses=%s params=%s",
+        clauses,
+        params,
+        extra={"table": table, "clauses": clauses},
+    )
     return clauses, params

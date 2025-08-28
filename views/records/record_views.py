@@ -58,7 +58,11 @@ def detail_view(table, record_id):
     field_schema = get_field_schema()
     raw_layout = field_schema.get(table, {})
     field_schema_layout = {field: meta.get('layout', {}) for field, meta in raw_layout.items()}
-    logger.debug("[DETAIL] Using layout: %s", field_schema_layout)
+    logger.debug(
+        "[DETAIL] Using layout: %s",
+        field_schema_layout,
+        extra={"table": table, "record_id": record_id},
+    )
     history = get_edit_history(table, record_id)
     defaults = get_layout_defaults() or {}
     width_overrides = defaults.get('width', {})
@@ -96,9 +100,19 @@ def add_field_route(table, record_id):
     try:
         field_name = request.form['field_name']
         logger.debug(
-            'add_field_route start: table=%r, record_id=%r, form=%r', table, record_id, dict(request.form)
+            'add_field_route start: table=%r, record_id=%r, form=%r',
+            table,
+            record_id,
+            dict(request.form),
+            extra={"table": table, "record_id": record_id},
         )
-        logger.info('table=%s record_id=%s form=%s', table, record_id, dict(request.form))
+        logger.info(
+            'table=%s record_id=%s form=%s',
+            table,
+            record_id,
+            dict(request.form),
+            extra={"table": table, "record_id": record_id},
+        )
         field_type = request.form['field_type']
         if field_type == 'title':
             return 'Cannot add additional title field', 400
@@ -108,7 +122,11 @@ def add_field_route(table, record_id):
         field_options = [opt.strip() for opt in field_options_raw.split(',') if opt.strip()] if field_options_raw else []
         styling = json.loads(styling_raw) if styling_raw else None
         add_column_to_table(table, field_name, field_type)
-        logger.info('Returned from add_column_to_table for field %s', field_name)
+        logger.info(
+            'Returned from add_column_to_table for field %s',
+            field_name,
+            extra={"table": table, "record_id": record_id, "field": field_name},
+        )
         add_field_to_schema(
             table=table,
             field_name=field_name,
@@ -117,16 +135,34 @@ def add_field_route(table, record_id):
             foreign_key=foreign_key,
             styling=styling,
         )
-        logger.info('Added column to %s: field=%r type=%r', table, field_name, field_type)
+        logger.info(
+            'Added column to %s: field=%r type=%r',
+            table,
+            field_name,
+            field_type,
+            extra={"table": table, "field": field_name, "type": field_type},
+        )
         return redirect(url_for('records.detail_view', table=table, record_id=record_id))
     except json.JSONDecodeError as e:
-        logger.info('add_field_route invalid styling JSON: %s', e)
+        logger.info(
+            'add_field_route invalid styling JSON: %s',
+            e,
+            extra={"table": table, "record_id": record_id, "error": str(e)},
+        )
         return 'Invalid styling data', 400
     except sqlite3.DatabaseError as e:
-        logger.exception('add_field_route database error: %s', e)
+        logger.exception(
+            'add_field_route database error: %s',
+            e,
+            extra={"table": table, "record_id": record_id, "error": str(e)},
+        )
         return 'Server error', 500
     except ValueError as e:
-        logger.info('add_field_route validation failed: %s', e)
+        logger.info(
+            'add_field_route validation failed: %s',
+            e,
+            extra={"table": table, "record_id": record_id, "error": str(e)},
+        )
         return str(e), 400
 
 
@@ -192,7 +228,14 @@ def update_field(table, record_id):
         abort(400, str(e))
     except RuntimeError:
         abort(500, 'Database update failed')
-    logger.debug('update_field: table=%s id=%s field=%s value=%r', table, record_id, field, new_value)
+    logger.debug(
+        'update_field: table=%s id=%s field=%s value=%r',
+        table,
+        record_id,
+        field,
+        new_value,
+        extra={"table": table, "record_id": record_id, "field": field},
+    )
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return jsonify({"success": True, "new_value": new_value})
@@ -221,7 +264,11 @@ def bulk_update(table):
 @records_bp.route('/relationship', methods=['POST'])
 def manage_relationship():
     data = request.get_json()
-    logger.debug('manage_relationship request: %s', data)
+    logger.debug(
+        'manage_relationship request: %s',
+        data,
+        extra={"action": data.get('action'), "table_a": data.get('table_a'), "table_b": data.get('table_b')},
+    )
     action = data.get('action')
     table_a = data.get('table_a')
     id_a = data.get('id_a')
@@ -235,10 +282,38 @@ def manage_relationship():
     else:
         abort(400, 'Invalid action')
     if not success:
-        logger.error('manage_relationship failed action=%s %s:%s -> %s:%s', action, table_a, id_a, table_b, id_b)
+        logger.error(
+            'manage_relationship failed action=%s %s:%s -> %s:%s',
+            action,
+            table_a,
+            id_a,
+            table_b,
+            id_b,
+            extra={
+                "action": action,
+                "table_a": table_a,
+                "id_a": id_a,
+                "table_b": table_b,
+                "id_b": id_b,
+            },
+        )
         abort(500, 'Failed to modify relationship')
     else:
-        logger.info('manage_relationship %s %s:%s %s:%s', action, table_a, id_a, table_b, id_b)
+        logger.info(
+            'manage_relationship %s %s:%s %s:%s',
+            action,
+            table_a,
+            id_a,
+            table_b,
+            id_b,
+            extra={
+                "action": action,
+                "table_a": table_a,
+                "id_a": id_a,
+                "table_b": table_b,
+                "id_b": id_b,
+            },
+        )
     return {'success': True}
 
 
@@ -288,8 +363,17 @@ def update_layout(table):
         updated = db_update_layout(table, layout_items)
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
-    logger.info('[layout] update_layout %s updated=%s', table, updated)
-    logger.debug('[layout] payload %s', layout_items)
+    logger.info(
+        '[layout] update_layout %s updated=%s',
+        table,
+        updated,
+        extra={"table": table, "updated": updated},
+    )
+    logger.debug(
+        '[layout] payload %s',
+        layout_items,
+        extra={"table": table},
+    )
     return jsonify({'success': True, 'updated': updated})
 
 
@@ -310,8 +394,18 @@ def update_style(table):
         success = db_update_field_styling(table, field, styling)
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
-    logger.info('[style] update_style %s.%s success=%s', table, field, bool(success))
-    logger.debug('[style] payload %s', styling)
+    logger.info(
+        '[style] update_style %s.%s success=%s',
+        table,
+        field,
+        bool(success),
+        extra={"table": table, "field": field, "success": bool(success)},
+    )
+    logger.debug(
+        '[style] payload %s',
+        styling,
+        extra={"table": table, "field": field},
+    )
     return jsonify({'success': bool(success)})
 
 
@@ -326,7 +420,11 @@ def update_relationships(table):
     try:
         update_relationship_visibility(table, visibility)
     except sqlite3.DatabaseError as e:
-        current_app.logger.exception('[relationships] update failed: %s', e)
+        current_app.logger.exception(
+            '[relationships] update failed: %s',
+            e,
+            extra={"table": table, "error": str(e)},
+        )
         return jsonify({'error': 'update failed'}), 500
     return jsonify({'success': True})
 

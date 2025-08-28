@@ -23,7 +23,12 @@ def admin_fields():
             try:
                 nn = count_nonnull(table, field)
             except (sqlite3.DatabaseError, ValueError):
-                logger.exception('Failed counting %s.%s', table, field)
+                logger.exception(
+                    'Failed counting %s.%s',
+                    table,
+                    field,
+                    extra={"table": table, "field": field},
+                )
                 nn = 0
             fields.append({'name': field, 'type': meta.get('type'), 'count': nn})
         table_data[table] = fields

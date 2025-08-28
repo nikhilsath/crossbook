@@ -12,11 +12,17 @@ def get_options(table: str, field: str) -> list[str]:
     return schema.get(table, {}).get(field, {}).get("options", [])
 
 def validation_sorter(table, field, header, fieldType, values):
-    logger.debug("✅ Validation function was triggered.")
+    logger.debug(
+        "✅ Validation function was triggered.",
+        extra={"table": table, "field": field},
+    )
 
     ft = get_field_type(fieldType)
     if not ft or not ft.validator:
-        logger.debug("no validation for this datatype")
+        logger.debug(
+            "no validation for this datatype",
+            extra={"datatype": fieldType},
+        )
         return {}
 
     result = ft.validator(table, field, values)

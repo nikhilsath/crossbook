@@ -53,7 +53,17 @@ def update_record_field(table: str, record_id: int, field: str, value: Any) -> s
         append_edit_log(table, record_id, field, str(prev_value), str(new_value))
 
     logger.info(
-        "Field updated for %s id=%s: %s -> %r", table, record_id, field, new_value
+        "Field updated for %s id=%s: %s -> %r",
+        table,
+        record_id,
+        field,
+        new_value,
+        extra={
+            "table": table,
+            "record_id": record_id,
+            "field": field,
+            "new_value": new_value,
+        },
     )
     return new_value
 
@@ -71,5 +81,11 @@ def bulk_update_records(table: str, ids: list[int], field: str, value: Any) -> i
         if update_field_value(table, rid, field, new_value):
             append_edit_log(table, rid, field, None, str(new_value))
             updated += 1
-    logger.info("Bulk updated %s records for %s.%s", updated, table, field)
+    logger.info(
+        "Bulk updated %s records for %s.%s",
+        updated,
+        table,
+        field,
+        extra={"table": table, "field": field, "updated": updated},
+    )
     return updated

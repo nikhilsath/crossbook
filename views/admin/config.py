@@ -147,7 +147,12 @@ def add_table():
     try:
         success = create_base_table(table_name, description, table_name)
     except (sqlite3.DatabaseError, ValueError) as exc:
-        logger.exception('Failed to create table %s: %s', table_name, exc)
+        logger.exception(
+            'Failed to create table %s: %s',
+            table_name,
+            exc,
+            extra={"table": table_name, "error": str(exc)},
+        )
         return jsonify({'error': str(exc)}), 400
     if not success:
         return jsonify({'error': 'Failed to create table'}), 400

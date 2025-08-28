@@ -40,19 +40,32 @@ def get_all_records(
                     dir_sql = "DESC" if str(direction).lower() == "desc" else "ASC"
                     sql += f" ORDER BY {sort_field} COLLATE NOCASE {dir_sql}"
                 except ValueError:
-                    logger.exception("Invalid sort field: %s", sort_field)
+                    logger.exception(
+                        "Invalid sort field: %s",
+                        sort_field,
+                        extra={"table": table, "sort_field": sort_field},
+                    )
 
             if limit is not None:
                 sql += f" LIMIT {int(limit)} OFFSET {int(offset)}"
 
-            logger.info(f"[QUERY] SQL: {sql} | params: {params}")
+            logger.info(
+                "[QUERY] SQL: %s | params: %s",
+                sql,
+                params,
+                extra={"table": table},
+            )
             cursor.execute(sql, params)
 
             rows = cursor.fetchall()
             cols = [desc[0] for desc in cursor.description]
             return [dict(zip(cols, row)) for row in rows]
         except (sqlite3.DatabaseError, ValueError) as e:
-            logger.exception(f"[QUERY ERROR] {e}")
+            logger.exception(
+                "[QUERY ERROR] %s",
+                e,
+                extra={"table": table, "error": str(e)},
+            )
             return []
 
 
@@ -67,12 +80,21 @@ def count_records(table, search=None, filters=None, ops=None, modes=None):
             sql = f"SELECT COUNT(*) FROM {table}"
             if clauses:
                 sql += " WHERE " + " AND ".join(clauses)
-            logger.info(f"[COUNT] SQL: {sql} | params: {params}")
+            logger.info(
+                "[COUNT] SQL: %s | params: %s",
+                sql,
+                params,
+                extra={"table": table},
+            )
             cursor.execute(sql, params)
             row = cursor.fetchone()
             return row[0] if row else 0
         except (sqlite3.DatabaseError, ValueError) as e:
-            logger.exception(f"[COUNT ERROR] {e}")
+            logger.exception(
+                "[COUNT ERROR] %s",
+                e,
+                extra={"table": table, "error": str(e)},
+            )
             return 0
 
 def get_record_by_id(table, record_id):
@@ -131,7 +153,16 @@ def update_field_value(table, record_id, field, new_value):
         cursor = conn.cursor()
         try:
             logger.debug(
-                f"update_field_value: table={table}, id={record_id}, field={field}, value={new_value!r}"
+                "update_field_value: table=%s id=%s field=%s value=%r",
+                table,
+                record_id,
+                field,
+                new_value,
+                extra={
+                    "table": table,
+                    "record_id": record_id,
+                    "field": field,
+                },
             )
             cursor.execute(
                 f"UPDATE {table} SET {field} = ? WHERE id = ?",
@@ -139,11 +170,29 @@ def update_field_value(table, record_id, field, new_value):
             )
             conn.commit()
             logger.info(
-                f"Updated {table}.{field} for id={record_id} to {new_value!r}"
+                "Updated %s.%s for id=%s to %r",
+                table,
+                field,
+                record_id,
+                new_value,
+                extra={
+                    "table": table,
+                    "field": field,
+                    "record_id": record_id,
+                },
             )
             success = True
         except sqlite3.DatabaseError as e:
-            logger.exception(f"[UPDATE ERROR] {e}")
+            logger.exception(
+                "[UPDATE ERROR] %s",
+                e,
+                extra={
+                    "table": table,
+                    "record_id": record_id,
+                    "field": field,
+                    "error": str(e),
+                },
+            )
             success = False
         if success:
             touch_last_edited(table, record_id)
@@ -199,7 +248,11 @@ def create_record(table, form_data):
             conn.commit()
             return record_id
         except (sqlite3.DatabaseError, ValueError) as e:
-            logger.exception(f"[CREATE ERROR] {e}")
+            logger.exception(
+                "[CREATE ERROR] %s",
+                e,
+                extra={"table": table, "error": str(e)},
+            )
             return None
 
 def delete_record(table, record_id):
@@ -212,12 +265,19 @@ def delete_record(table, record_id):
             conn.commit()
             return True
         except sqlite3.DatabaseError as e:
-            logger.exception(f"[DELETE ERROR] {e}")
+            logger.exception(
+                "[DELETE ERROR] %s",
+                e,
+                extra={"table": table, "record_id": record_id, "error": str(e)},
+            )
             return False
 
 def count_nonnull(table: str, field: str) -> int:
     validate_table(table)
-    logger.info("count_nonnull kickoff")
+    logger.info(
+        "count_nonnull kickoff",
+        extra={"table": table, "field": field},
+    )
     # Verify that the field exists and is not hidden or "id"
     fmeta = get_field_schema().get(table, {}).get(field)
     if fmeta is None or fmeta.get("type") == "hidden" or field == "id":
@@ -229,7 +289,13 @@ def count_nonnull(table: str, field: str) -> int:
             cursor.execute(sql)
             return cursor.fetchone()[0] or 0
         except sqlite3.DatabaseError as e:
-            logger.exception(f"[count_nonnull] SQL error for {table}.{field}: {e}")
+            logger.exception(
+                "[count_nonnull] SQL error for %s.%s: %s",
+                table,
+                field,
+                e,
+                extra={"table": table, "field": field, "error": str(e)},
+            )
             return 0
 
 
@@ -249,7 +315,13 @@ def field_distribution(table: str, field: str) -> dict[str, int]:
             )
             rows = [r[0] for r in cursor.fetchall()]
         except sqlite3.DatabaseError as e:
-            logger.exception(f"[field_distribution] SQL error for {table}.{field}: {e}")
+            logger.exception(
+                "[field_distribution] SQL error for %s.%s: %s",
+                table,
+                field,
+                e,
+                extra={"table": table, "field": field, "error": str(e)},
+            )
             return {}
 
     counts: dict[str, int] = {}

@@ -22,7 +22,11 @@ logger = logging.getLogger(__name__)
 def dashboard():
     widgets = get_dashboard_widgets()
     view = request.args.get("view") or "Dashboard"
-    logger.debug("Rendering dashboard view %s", view)
+    logger.debug(
+        "Rendering dashboard view %s",
+        view,
+        extra={"view": view},
+    )
     groups = sorted({(w.get("group") or "Dashboard") for w in widgets})
     for w in widgets:
         if w.get('widget_type') == 'table':
@@ -90,7 +94,12 @@ def dashboard_create_widget():
     if not widget_id:
         return jsonify({'error': 'Failed to create widget'}), 500
 
-    logger.info("Created dashboard widget %s type=%s", widget_id, widget_type)
+    logger.info(
+        "Created dashboard widget %s type=%s",
+        widget_id,
+        widget_type,
+        extra={"widget_id": widget_id, "widget_type": widget_type},
+    )
     return jsonify({'success': True, 'id': widget_id})
 
 
@@ -101,7 +110,11 @@ def dashboard_update_layout():
         return jsonify({'error': 'Invalid JSON or missing `layout`'}), 400
     layout_items = data['layout']
     updated = update_widget_layout(layout_items)
-    logger.info("Updated dashboard layout for %d items", len(layout_items))
+    logger.info(
+        "Updated dashboard layout for %d items",
+        len(layout_items),
+        extra={"item_count": len(layout_items)},
+    )
     return jsonify({'success': True, 'updated': updated})
 
 
@@ -117,6 +130,7 @@ def dashboard_update_style():
         "Updated dashboard styling widget=%s success=%s",
         widget_id,
         bool(success),
+        extra={"widget_id": widget_id, "success": bool(success)},
     )
     return jsonify({'success': bool(success)})
 
@@ -127,7 +141,11 @@ def dashboard_delete_widget(widget_id):
     success = delete_widget(widget_id)
     if not success:
         return jsonify({'error': 'Failed to delete widget'}), 500
-    logger.info("Deleted dashboard widget %s", widget_id)
+    logger.info(
+        "Deleted dashboard widget %s",
+        widget_id,
+        extra={"widget_id": widget_id},
+    )
     return jsonify({'success': True})
 
 
@@ -135,7 +153,7 @@ def dashboard_delete_widget(widget_id):
 def dashboard_base_count():
     """Return counts for all base tables."""
     data = get_base_table_counts()
-    logger.debug("Returning base table counts")
+    logger.debug("Returning base table counts", extra={"route": "dashboard_base_count"})
     return jsonify(data)
 
 
@@ -159,7 +177,17 @@ def dashboard_top_numeric():
     except ValueError:
         return jsonify([]), 400
     logger.debug(
-        "Top numeric for %s.%s limit=%s direction=%s", table, field, limit, direction
+        "Top numeric for %s.%s limit=%s direction=%s",
+        table,
+        field,
+        limit,
+        direction,
+        extra={
+            "table": table,
+            "field": field,
+            "limit": limit,
+            "direction": direction,
+        },
     )
     return jsonify(data)
 
@@ -184,5 +212,11 @@ def dashboard_filtered_records():
         search,
         order_by,
         limit,
+        extra={
+            "table": table,
+            "search": search,
+            "order_by": order_by,
+            "limit": limit,
+        },
     )
     return jsonify(data)

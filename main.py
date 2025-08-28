@@ -86,10 +86,18 @@ app.register_blueprint(api_bp)
 @app.context_processor
 def inject_field_schema():
     schema = get_field_schema()
-    logger.debug("Injected field schema keys 2: %s", list(schema.keys()))
+    logger.debug(
+        "Injected field schema keys 2: %s",
+        list(schema.keys()),
+        extra={"schema_keys": list(schema.keys())},
+    )
 
     macro_map = {name: ft.macro for name, ft in FIELD_TYPES.items() if ft.macro}
-    logger.debug("Field macro map keys: %s", list(macro_map.keys()))
+    logger.debug(
+        "Field macro map keys: %s",
+        list(macro_map.keys()),
+        extra={"macro_keys": list(macro_map.keys())},
+    )
 
     filter_macro_map = {
         name: ft.filter_macro

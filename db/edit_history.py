@@ -30,6 +30,12 @@ def append_edit_log(
                 old_value,
                 new_value,
                 actor,
+                extra={
+                    "table": table,
+                    "record_id": record_id,
+                    "field": field_name,
+                    "actor": actor,
+                },
             )
             cursor.execute(
                 """
@@ -47,9 +53,18 @@ def append_edit_log(
                 field_name,
                 old_value,
                 new_value,
+                extra={
+                    "table": table,
+                    "record_id": record_id,
+                    "field": field_name,
+                },
             )
         except sqlite3.DatabaseError as e:
-            logger.exception("[EDIT LOG ERROR] %s", e)
+            logger.exception(
+                "[EDIT LOG ERROR] %s",
+                e,
+                extra={"table": table, "record_id": record_id},
+            )
 
 
 def get_edit_history(table_name: str, record_id: int, limit: int | None = None) -> list[dict]:
@@ -98,7 +113,10 @@ def revert_edit(entry: dict) -> bool:
 
     try:
         if not field:
-            logger.warning("revert_edit: no field_name provided")
+            logger.warning(
+                "revert_edit: no field_name provided",
+                extra={"table": table, "record_id": record_id},
+            )
             return False
         if field.startswith("relation_"):
             from db.relationships import add_relationship, remove_relationship
@@ -121,6 +139,9 @@ def revert_edit(entry: dict) -> bool:
         if not field.startswith("relation_"):
             append_edit_log(table, record_id, field, new_val, old_val, actor="undo")
     except (sqlite3.DatabaseError, ValueError):
-        logger.exception("Failed to revert edit")
+        logger.exception(
+            "Failed to revert edit",
+            extra={"table": table, "record_id": record_id, "field": field},
+        )
         return False
     return True
