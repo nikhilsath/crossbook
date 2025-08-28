@@ -21,6 +21,8 @@ from db.config import get_config_rows
 from utils.field_registry import FIELD_TYPES
 import utils.validation  # ensure register_type() runs at startup  # noqa: F401
 
+logger = logging.getLogger(__name__)
+
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = os.environ.get('SECRET_KEY', 'crossbook-secret')
 app.jinja_env.add_extension('jinja2.ext.do')
@@ -84,10 +86,10 @@ app.register_blueprint(api_bp)
 @app.context_processor
 def inject_field_schema():
     schema = get_field_schema()
-    current_app.logger.debug("Injected field schema keys 2: %s", list(schema.keys()))
+    logger.debug("Injected field schema keys 2: %s", list(schema.keys()))
 
     macro_map = {name: ft.macro for name, ft in FIELD_TYPES.items() if ft.macro}
-    current_app.logger.debug("Field macro map keys: %s", list(macro_map.keys()))
+    logger.debug("Field macro map keys: %s", list(macro_map.keys()))
 
     filter_macro_map = {
         name: ft.filter_macro
