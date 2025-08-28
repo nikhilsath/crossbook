@@ -24,6 +24,7 @@ def _normalize_value(ftype: str, value: Any) -> str:
         try:
             return str(float(value))
         except (TypeError, ValueError):
+            logger.warning("Failed to normalize number", exc_info=True)
             return "0"
     if ftype in {"multi_select", "foreign_key"}:
         if isinstance(value, Iterable) and not isinstance(value, (str, bytes)):

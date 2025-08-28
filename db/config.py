@@ -1,6 +1,9 @@
 from datetime import datetime
 from db.database import get_connection
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def get_config_rows(sections: str | list[str] | None = None):
@@ -43,6 +46,9 @@ def get_config_rows(sections: str | list[str] | None = None):
             try:
                 item["options"] = json.loads(opts)
             except json.JSONDecodeError:
+                logger.exception(
+                    "Invalid JSON in config options", extra={"key": item.get("key")}
+                )
                 item["options"] = []
         else:
             item["options"] = []
@@ -65,6 +71,7 @@ def get_layout_defaults() -> dict:
         try:
             data = json.loads(row[0])
         except json.JSONDecodeError:
+            logger.exception("Invalid JSON in layout_defaults config")
             data = {}
 
     if not data:
@@ -88,6 +95,7 @@ def get_relationship_visibility() -> dict:
     try:
         return json.loads(row[0])
     except json.JSONDecodeError:
+        logger.exception("Invalid JSON in relationship_visibility config")
         return {}
 
 

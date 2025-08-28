@@ -122,6 +122,11 @@ def update_widget_layout(layout_items: list[dict]) -> int:
                 row_start = float(item.get("rowStart", 0))
                 row_span = float(item.get("rowSpan", 0))
             except (TypeError, ValueError):
+                logger.warning(
+                    "Invalid widget layout values",
+                    exc_info=True,
+                    extra={"widget_id": widget_id},
+                )
                 continue
 
             logger.debug(
@@ -155,7 +160,7 @@ def update_widget_styling(widget_id: int, styling: dict) -> bool:
     try:
         styling_json = json.dumps(styling or {})
     except (TypeError, ValueError) as exc:
-        logger.info(
+        logger.exception(
             "[update_widget_styling] invalid styling for %s: %s",
             widget_id,
             exc,

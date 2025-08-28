@@ -53,6 +53,9 @@ def get_related_records(source_table, record_id):
             try:
                 validate_table(target_table)
             except ValueError:
+                logger.warning(
+                    "Invalid related table", exc_info=True, extra={"table": target_table}
+                )
                 continue
             row = _get_label(cur, target_table, target_id)
             if not row:

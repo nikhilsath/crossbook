@@ -61,6 +61,10 @@ def _run_import(job_id, table, rows):
                 if create_record(table, row) is None:
                     raise sqlite3.DatabaseError("Failed to create")
             except (sqlite3.DatabaseError, ValueError) as exc:  # noqa: BLE001
+                logger.exception(
+                    "Failed to import row",  # noqa: TRY401
+                    extra={"job_id": job_id, "table": table, "row": idx},
+                )
                 errors.append({"row": idx, "message": str(exc)})
             if idx % 10 == 0 or idx == len(rows):
                 logger.info(

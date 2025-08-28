@@ -49,11 +49,19 @@ def load_field_schema():
                 try:
                     schema[table][field]["options"] = json.loads(options)
                 except json.JSONDecodeError:
+                    logger.exception(
+                        "Invalid JSON in field options",
+                        extra={"table": table, "field": field},
+                    )
                     schema[table][field]["options"] = []
             if styling is not None:
                 try:
                     schema[table][field]["styling"] = json.loads(styling)
                 except json.JSONDecodeError:
+                    logger.exception(
+                        "Invalid JSON in field styling",
+                        extra={"table": table, "field": field},
+                    )
                     schema[table][field]["styling"] = styling
         return schema
 
@@ -228,6 +236,11 @@ def update_layout(table: str, layout_items: list[dict]) -> int:
                 row_start = float(item.get("rowStart", 0))
                 row_span = float(item.get("rowSpan", 0))
             except (TypeError, ValueError):
+                logger.warning(
+                    "Invalid layout values",
+                    exc_info=True,
+                    extra={"table": table, "field": field},
+                )
                 continue
 
             logger.debug(
@@ -292,6 +305,9 @@ def update_field_styling(table: str, field: str, styling_dict: dict) -> bool:
     try:
         styling_json = json.dumps(styling_dict or {})
     except (TypeError, ValueError) as exc:
+        logger.exception(
+            "Invalid styling data", extra={"table": table, "field": field}
+        )
         raise ValueError("Invalid styling data") from exc
 
     with get_connection() as conn:

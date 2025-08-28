@@ -1,4 +1,5 @@
 import json
+import logging
 from flask import render_template, request, jsonify
 from db.schema import get_field_schema
 from imports.import_csv import parse_csv
@@ -7,7 +8,7 @@ from db.database import get_connection
 from imports.tasks import process_import, init_import_table
 from . import admin_bp
 
-
+logger = logging.getLogger(__name__)
 @admin_bp.route('/import', methods=['GET', 'POST'])
 def import_records():
     schema = get_field_schema()
@@ -111,6 +112,7 @@ def import_status_route():
     try:
         import_id = int(request.args.get('importId', 0))
     except (TypeError, ValueError):
+        logger.warning("Invalid importId provided", exc_info=True)
         return jsonify({'error': 'Invalid importId'}), 400
 
     with get_connection() as conn:
