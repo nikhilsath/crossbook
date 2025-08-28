@@ -16,8 +16,11 @@ try:
     _test.execute("SELECT 'a' REGEXP 'a'")
     _test.close()
     SUPPORTS_REGEX = True
-except sqlite3.Error:
-    logger.exception("SQLite REGEXP support check failed")
+except sqlite3.Error as exc:
+    logger.exception(
+        "SQLite REGEXP support check failed",
+        extra={"database": ":memory:", "error": str(exc)},
+    )
     SUPPORTS_REGEX = False
 
 DB_PATH = os.path.abspath(DEFAULT_DB_PATH)
@@ -40,14 +43,20 @@ def init_db_path(path: str | None = None) -> None:
         cfg_path = cfg.get("db_path")
         if cfg_path:
             DB_PATH = os.path.abspath(cfg_path)
-    except sqlite3.DatabaseError:
-        logger.exception("Failed to load database path from config")
+    except sqlite3.DatabaseError as exc:
+        logger.exception(
+            "Failed to load database path from config",
+            extra={"error": str(exc)},
+        )
 
     try:
         from db.bootstrap import ensure_relationships_table
         ensure_relationships_table(DB_PATH)
-    except sqlite3.DatabaseError:
-        logger.exception("Failed to ensure relationships table")
+    except sqlite3.DatabaseError as exc:
+        logger.exception(
+            "Failed to ensure relationships table",
+            extra={"db_path": DB_PATH, "error": str(exc)},
+        )
 
 
 @contextmanager
@@ -61,8 +70,11 @@ def get_connection():
                 2,
                 lambda pattern, value: 1 if value is not None and re.search(pattern, str(value)) else 0,
             )
-        except sqlite3.DatabaseError:
-            logger.exception("Failed to register REGEXP function")
+        except sqlite3.DatabaseError as exc:
+            logger.exception(
+                "Failed to register REGEXP function",
+                extra={"db_path": DB_PATH, "error": str(exc)},
+            )
     try:
         yield conn
     finally:
@@ -81,10 +93,16 @@ def check_db_status(path: str) -> str:
                 return 'valid'
             return 'corrupted'
     except sqlite3.OperationalError as exc:
-        logger.exception("Database operational error during integrity check")
+        logger.exception(
+            "Database operational error during integrity check",
+            extra={"db_path": path, "error": str(exc)},
+        )
         if 'locked' in str(exc).lower():
             return 'locked'
         return 'corrupted'
-    except sqlite3.DatabaseError:
-        logger.exception("Database error during integrity check")
+    except sqlite3.DatabaseError as exc:
+        logger.exception(
+            "Database error during integrity check",
+            extra={"db_path": path, "error": str(exc)},
+        )
         return 'corrupted'
