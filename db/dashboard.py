@@ -140,7 +140,7 @@ def update_widget_styling(widget_id: int, styling: dict) -> bool:
     try:
         styling_json = json.dumps(styling or {})
     except (TypeError, ValueError) as exc:
-        logger.warning("[update_widget_styling] invalid styling for %s: %s", widget_id, exc)
+        logger.info("[update_widget_styling] invalid styling for %s: %s", widget_id, exc)
         return False
 
     with get_connection() as conn:

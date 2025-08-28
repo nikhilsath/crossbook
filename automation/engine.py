@@ -12,7 +12,7 @@ def run_rule(rule_id: int) -> int:
     """Execute a single automation rule. Returns number of records updated."""
     rules = [r for r in get_rules() if r["id"] == rule_id]
     if not rules:
-        logger.warning("Rule %s not found", rule_id)
+        logger.info("Rule %s not found", rule_id)
         return 0
     rule = rules[0]
     table = rule["table_name"]
