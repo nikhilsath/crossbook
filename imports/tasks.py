@@ -110,9 +110,18 @@ def _run_import(job_id, table, rows):
         )
         _update_import_status(job_id, status="failed")
         raise
-    except Exception:
+    except ValueError:
         logger.exception(
             "Import job %s for table %s failed",
+            job_id,
+            table,
+            extra={"job_id": job_id, "table": table},
+        )
+        _update_import_status(job_id, status="failed")
+        raise
+    except Exception:
+        logger.exception(
+            "Unexpected error for import job %s table %s",
             job_id,
             table,
             extra={"job_id": job_id, "table": table},
