@@ -1,4 +1,5 @@
 import logging
+import sqlite3
 from db.database import get_connection
 from db.records import update_field_value
 from db.edit_history import append_edit_log
@@ -28,27 +29,46 @@ def run_rule(rule_id: int) -> int:
 
     sql_op = "=" if operator == "equals" else "LIKE"
     param = condition_value if operator == "equals" else f"%{condition_value}%"
-    with get_connection() as conn:
-        cur = conn.cursor()
-        cur.execute(
-            f"SELECT id, {action_field} FROM {table} WHERE {condition_field} {sql_op} ?",
-            (param,),
+    try:
+        with get_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                f"SELECT id, {action_field} FROM {table} WHERE {condition_field} {sql_op} ?",
+                (param,),
+            )
+            rows = cur.fetchall()
+    except sqlite3.DatabaseError:
+        logger.exception(
+            "Failed to fetch rows for rule %s", extra={"rule_id": rule_id}
         )
-        rows = cur.fetchall()
+        return 0
     count = 0
     for rec_id, old_val in rows:
-        if update_field_value(table, rec_id, action_field, action_value):
-            append_edit_log(
-                table,
+        try:
+            if update_field_value(table, rec_id, action_field, action_value):
+                append_edit_log(
+                    table,
+                    rec_id,
+                    action_field,
+                    old_val,
+                    action_value,
+                    actor=f"rule:{rule_id}",
+                )
+                count += 1
+        except (sqlite3.DatabaseError, ValueError):
+            logger.exception(
+                "Failed to apply rule %s to record %s",
+                rule_id,
                 rec_id,
-                action_field,
-                old_val,
-                action_value,
-                actor=f"rule:{rule_id}",
+                extra={"rule_id": rule_id, "record_id": rec_id},
             )
-            count += 1
     if rows:
-        increment_run_count(rule_id)
+        try:
+            increment_run_count(rule_id)
+        except sqlite3.DatabaseError:
+            logger.exception(
+                "Failed to increment run count for rule %s", extra={"rule_id": rule_id}
+            )
     return count
 
 
@@ -60,11 +80,21 @@ def run_rule_task(rule_id: int) -> int:
 def run_import_rules(table_name: str) -> None:
     for rule in get_rules(table_name):
         if rule.get("run_on_import"):
-            run_rule(rule["id"])
+            try:
+                run_rule(rule["id"])
+            except Exception:
+                logger.exception(
+                    "Failed to run import rule %s", extra={"rule_id": rule["id"]}
+                )
 
 
 def trigger_scheduled_rules() -> None:
     for rule in get_rules():
         if rule.get("schedule") in {"daily", "always"}:
-            task = run_rule_task.s(rule["id"])
-            huey.enqueue(task)
+            try:
+                task = run_rule_task.s(rule["id"])
+                huey.enqueue(task)
+            except Exception:
+                logger.exception(
+                    "Failed to enqueue scheduled rule %s", extra={"rule_id": rule["id"]}
+                )
