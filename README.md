@@ -5,6 +5,7 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 
 ## Table of Contents
 - [Project Summary](#project-summary)
+  - [Launch (Local)](#launch-local)
   - [Future Cloud Migration](#future-cloud-migration)
 - [Current Status](#current-status)
 - [Implemented Features](#implemented-features)
@@ -35,6 +36,21 @@ Crossbook is a structured, browser-based knowledge interface for managing conten
 * **Navigation:** Centralized in `templates/base.html`, providing consistent header navigation and action buttons across all entity pages.
 * **Database Layer:** Abstracted in the `db/` package (`database.py`, `schema.py`, `records.py`, `relationships.py`) for connection handling, schema loading, CRUD operations, and relationship management.
 * **Logging:** Python’s `logging` module tracks errors and activity.
+
+## Launch (Local)
+
+Run the app locally with Python:
+
+1. Create a virtual environment and install dependencies
+   - `python3 -m venv venv && source venv/bin/activate`
+   - `pip install -r requirements.txt`
+2. Start the web server
+   - `python main.py`
+3. Open your browser at `http://127.0.0.1:5000`
+
+Notes:
+- On first run, you’ll be redirected to the setup wizard at `/wizard` to initialize the database.
+- For CSV imports and automation rules, start the worker in another terminal: `huey_consumer.py imports.tasks.huey`.
 
 ### Future Cloud Migration
 
@@ -495,5 +511,4 @@ The UI relies on Tailwind utility classes with a small set of custom overrides. 
 
 This software is provided for evaluation and internal use only.
 Modification, redistribution, or commercial deployment is prohibited without written permission.
-
 
