@@ -27,12 +27,14 @@
         {% for item in items %}
           <tr>
             <td class="px-2 py-1 text-center">
-              <input type="radio"
-                     name="title-{{ table }}"
-                     class="title-radio"
-                     data-table="{{ table }}"
-                     value="{{ item.name }}"
-                     {% if item.title %}checked{% endif %}>
+              {% if item.type == 'text' %}
+                <input type="radio"
+                       name="title-{{ table }}"
+                       class="title-radio"
+                       data-table="{{ table }}"
+                       value="{{ item.name }}"
+                       {% if item.title %}checked{% endif %}>
+              {% endif %}
             </td>
             <td class="px-2 py-1 font-mono">{{ item.name }}</td>
             <td class="px-2 py-1">{{ item.type }}</td>

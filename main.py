@@ -91,7 +91,7 @@ app.register_blueprint(api_bp)
 def inject_field_schema():
     schema = get_field_schema()
     logger.debug(
-        "Injected field schema keys 2: %s",
+        "Injected field schema keys: %s",
         list(schema.keys()),
         extra={"schema_keys": list(schema.keys())},
     )

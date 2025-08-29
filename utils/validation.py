@@ -212,16 +212,6 @@ def normalize_multi(value):
 
 # Register built-in field types with the registry
 register_type(
-    'title',
-    sql_type='TEXT',
-    validator=lambda t, f, v: validate_text_column(v),
-    default_width=12,
-    default_height=4,
-    macro='render_text',
-    filter_macro='text_filter',
-    searchable=True,
-)
-register_type(
     'text',
     sql_type='TEXT',
     validator=lambda t, f, v: validate_text_column(v),

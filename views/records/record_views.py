@@ -115,8 +115,6 @@ def add_field_route(table, record_id):
             extra={"table": table, "record_id": record_id},
         )
         field_type = request.form['field_type']
-        if field_type == 'title':
-            return 'Cannot add additional title field', 400
         field_options_raw = request.form.get('field_options', '')
         foreign_key = request.form.get('foreign_key_target', None)
         styling_raw = request.form.get('styling')
