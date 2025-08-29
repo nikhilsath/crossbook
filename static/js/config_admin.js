@@ -176,7 +176,10 @@ document.addEventListener('DOMContentLoaded', () => {
               if (typeCell) typeCell.textContent = newType;
               const titleCell = row?.querySelector('td:nth-child(1)');
               const radio = titleCell?.querySelector('input.title-radio');
-              if (radio) radio.classList.toggle('hidden', newType !== 'text');
+              if (radio) {
+                const allowed = new Set(['text','date','url','select','number']);
+                radio.classList.toggle('hidden', !allowed.has(newType));
+              }
               // Close popover
               popover.classList.add('hidden');
             } catch (err) {
@@ -207,4 +210,37 @@ document.addEventListener('DOMContentLoaded', () => {
       handleFieldTypeSelected(table, field, newType, sel);
     });
   })();
+
+  // Clear values handler with confirmation
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.clear-btn');
+    if (!btn) return;
+    const table = btn.dataset.table;
+    const field = btn.dataset.field;
+    // Query current count for confirmation context
+    let count = 0;
+    try {
+      const resp = await fetch(`/${encodeURIComponent(table)}/count-nonnull?field=${encodeURIComponent(field)}`);
+      const data = await resp.json();
+      count = Number(data.count || 0);
+    } catch {}
+    const sure = window.confirm(`Are you sure you want to clear ${count} value(s) from ${table}.${field}?`);
+    if (!sure) return;
+    try {
+      const resp = await fetch(`/admin/fields/${encodeURIComponent(table)}/clear`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ field })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok || !data.success) throw new Error(data.error || 'clear_failed');
+      // Update the Not Null count cell to 0
+      const row = btn.closest('tr');
+      const nnCell = row?.querySelector('td:nth-child(4)');
+      if (nnCell) nnCell.textContent = '0';
+    } catch (err) {
+      console.error('[fields_admin] clear failed', err);
+      alert('Failed to clear values — see logs');
+    }
+  });
 });

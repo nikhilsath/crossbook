@@ -18,6 +18,7 @@ from db.bootstrap import initialize_database, ensure_default_configs
 from db.config import update_config, get_config_rows
 from db.schema import create_base_table
 from db.edit_fields import add_column_to_table, add_field_to_schema
+from db.database import get_connection
 from imports.import_csv import parse_csv
 from db.records import create_record
 from views.admin import reload_app_state
@@ -216,12 +217,24 @@ def table_step():
 
                 for f in field_defs:
                     name = to_identifier(f.get('name'), 'f_')
-                    if name == title_field:
-                        continue
                     ftype = f.get('type')
                     if not name or not ftype:
                         continue
                     try:
+                        if name == title_field:
+                            # Update field_schema entry for the pre-created title field
+                            opts = f.get('options')
+                            fk = f.get('foreign_key')
+                            opts_json = json.dumps(opts or [])
+                            with get_connection() as conn:
+                                cur = conn.cursor()
+                                cur.execute(
+                                    "UPDATE field_schema SET field_type = ?, field_options = ?, foreign_key = ? WHERE table_name = ? AND field_name = ?",
+                                    (ftype, opts_json, fk, table_name, name),
+                                )
+                                conn.commit()
+                            continue
+                        # Normal non-title fields
                         add_column_to_table(table_name, name, ftype)
                         add_field_to_schema(
                             table_name,

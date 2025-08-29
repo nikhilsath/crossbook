@@ -224,3 +224,37 @@ def admin_convert_field_type():
             return jsonify({'error': str(exc)}), 500
 
     return jsonify({'success': True})
+
+
+@admin_bp.route('/admin/fields/<table>/clear', methods=['POST'])
+def admin_clear_field_values(table):
+    """Set all non-null values in a field to NULL for the given table.
+
+    Body JSON or form data must include 'field'. Returns {success, cleared}.
+    """
+    field = request.form.get('field') if not request.is_json else (request.get_json(silent=True) or {}).get('field')
+    if not field:
+        return jsonify({'success': False, 'error': 'field required'}), 400
+    try:
+        validate_table(table)
+        validate_field(table, field)
+    except ValueError as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+    # Protect id and hidden
+    schema = get_field_schema()
+    fmeta = schema.get(table, {}).get(field, {})
+    if field == 'id' or fmeta.get('type') == 'hidden':
+        return jsonify({'success': False, 'error': 'cannot clear this field'}), 400
+
+    with get_connection() as conn:
+        cur = conn.cursor()
+        try:
+            cur.execute(f'UPDATE "{table}" SET "{field}" = NULL WHERE "{field}" IS NOT NULL')
+            cleared = cur.rowcount or 0
+            conn.commit()
+        except sqlite3.DatabaseError as exc:
+            logger.exception('Failed to clear values', extra={'table': table, 'field': field, 'error': str(exc)})
+            return jsonify({'success': False, 'error': str(exc)}), 500
+
+    return jsonify({'success': True, 'cleared': cleared})

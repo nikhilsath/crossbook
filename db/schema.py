@@ -469,8 +469,10 @@ def set_title_field(table: str, field: str) -> bool:
             if not row:
                 raise ValueError("Unknown field")
             ftype = (row[0] or '').strip()
-            if ftype != 'text':
-                raise ValueError("Only text fields can be set as title")
+            # Allow a limited set of types to be marked as title
+            allowed = {"text", "date", "url", "select", "number"}
+            if ftype not in allowed:
+                raise ValueError("Only text, date, url, select, or number fields can be title")
 
             # Clear existing title flags for this table
             cur.execute(

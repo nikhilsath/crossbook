@@ -27,7 +27,7 @@
         {% for item in items %}
           <tr>
             <td class="px-2 py-1 text-center">
-              {% if item.type == 'text' %}
+              {% if item.type in ['text','date','url','select','number'] %}
                 <input type="radio"
                        name="title-{{ table }}"
                        class="title-radio"
@@ -69,14 +69,23 @@
                 {% if item.readonly %}checked{% endif %}
               >
             </td>
-            <td class="px-2 py-1"><button type="button" class="btn-danger">Clear</button></td>
+            <td class="px-2 py-1">
+              <button
+                type="button"
+                class="btn-danger clear-btn"
+                title="clear"
+                data-table="{{ table }}"
+                data-field="{{ item.name }}"
+              >
+                Clear
+              </button>
+            </td>
           </tr>
         {% endfor %}
         </tbody>
       </table>
       <div class="mt-2 flex items-center space-x-2">
         <button type="button" class="btn-primary" onclick="openLayoutModal('edit_fields_modal_{{ table }}')">Add/Remove Fields</button>
-        <button type="submit" class="btn-primary">Submit</button>
       </div>
       {% with record={'id': 0}, modal_id='edit_fields_modal_' ~ table %}
         {% include "modals/edit_fields_modal.html" %}
