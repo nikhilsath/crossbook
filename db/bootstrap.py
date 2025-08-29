@@ -149,6 +149,7 @@ def _create_core_tables(cur: sqlite3.Cursor) -> None:
             col_span INTEGER NOT NULL DEFAULT 0,
             row_start INTEGER NOT NULL DEFAULT 0,
             row_span INTEGER NOT NULL DEFAULT 0,
+            title INTEGER NOT NULL DEFAULT 0,
             styling TEXT
         )
         """

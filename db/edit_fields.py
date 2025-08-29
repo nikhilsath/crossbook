@@ -13,6 +13,7 @@ def add_field_to_schema(
     foreign_key=None,
     layout=None,
     styling=None,
+    title: int | bool = 0,
 ):
     """Insert a new field into the field_schema table."""
     validate_table(table)
@@ -50,27 +51,54 @@ def add_field_to_schema(
         row_start = max_bottom
         row_span = height_overrides.get(field_type, base_height)
 
-        # 4) Insert into field_schema including the styling column
-        cur.execute(
-            """
-            INSERT INTO field_schema
-              (table_name, field_name, field_type, field_options, foreign_key,
-               col_start, col_span, row_start, row_span, styling)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                table,
-                field_name,
-                field_type,
-                options_str,
-                foreign_key,
-                col_start,
-                col_span,
-                row_start,
-                row_span,
-                styling_str,
-            ),
-        )
+        # 4) Insert into field_schema including the title and styling columns
+        title_flag = 1 if bool(title) else 0
+        # Backward compatibility: some databases may not yet have the 'title' column
+        cur.execute("PRAGMA table_info('field_schema')")
+        cols = {r[1] for r in cur.fetchall()}
+        if 'title' in cols:
+            cur.execute(
+                """
+                INSERT INTO field_schema
+                  (table_name, field_name, field_type, field_options, foreign_key,
+                   col_start, col_span, row_start, row_span, title, styling)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    table,
+                    field_name,
+                    field_type,
+                    options_str,
+                    foreign_key,
+                    col_start,
+                    col_span,
+                    row_start,
+                    row_span,
+                    title_flag,
+                    styling_str,
+                ),
+            )
+        else:
+            cur.execute(
+                """
+                INSERT INTO field_schema
+                  (table_name, field_name, field_type, field_options, foreign_key,
+                   col_start, col_span, row_start, row_span, styling)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    table,
+                    field_name,
+                    field_type,
+                    options_str,
+                    foreign_key,
+                    col_start,
+                    col_span,
+                    row_start,
+                    row_span,
+                    styling_str,
+                ),
+            )
         conn.commit()
 
 def add_column_to_table(table_name, field_name, field_type):

@@ -23,5 +23,27 @@ function initLayoutDefaultsForms() {
 
 document.addEventListener('DOMContentLoaded', () => {
   initLayoutDefaultsForms();
+  // Handle title field selection radios
+  document.querySelectorAll('input.title-radio').forEach(r => {
+    r.addEventListener('change', async (e) => {
+      const input = e.currentTarget;
+      if (!input.checked) return;
+      const table = input.dataset.table;
+      const field = input.value;
+      try {
+        const resp = await fetch(`/admin/fields/${encodeURIComponent(table)}/title`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ field })
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok || !data.success) {
+          alert('Failed to set title field');
+        }
+      } catch (err) {
+        console.error('Title set failed', err);
+        alert('Failed to set title field');
+      }
+    });
+  });
 });
-

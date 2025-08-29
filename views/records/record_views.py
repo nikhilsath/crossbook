@@ -135,6 +135,7 @@ def add_field_route(table, record_id):
             field_options=field_options,
             foreign_key=foreign_key,
             styling=styling,
+            title=0,
         )
         logger.info(
             'Added column to %s: field=%r type=%r',

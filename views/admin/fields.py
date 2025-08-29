@@ -1,8 +1,8 @@
 import logging
 import sqlite3
-from flask import render_template, current_app
+from flask import render_template, current_app, request, jsonify
 
-from db.schema import get_field_schema
+from db.schema import get_field_schema, set_title_field
 from db.records import count_nonnull
 from . import admin_bp
 
@@ -30,6 +30,35 @@ def admin_fields():
                     extra={"table": table, "field": field},
                 )
                 nn = 0
-            fields.append({'name': field, 'type': meta.get('type'), 'count': nn})
+            fields.append({
+                'name': field,
+                'type': meta.get('type'),
+                'count': nn,
+                'title': bool(meta.get('title')),
+            })
         table_data[table] = fields
     return render_template('admin/fields_admin.html', tables=table_data)
+
+
+@admin_bp.route('/admin/fields/<table>/title', methods=['POST'])
+def admin_set_title_field(table):
+    """Set the title field for a given table.
+
+    Expects JSON or form data with key 'field'. Returns JSON {success: bool}.
+    """
+    field = None
+    if request.is_json:
+        payload = request.get_json(silent=True) or {}
+        field = payload.get('field')
+    else:
+        field = request.form.get('field')
+
+    if not field:
+        return jsonify({'success': False, 'error': 'field required'}), 400
+
+    try:
+        ok = set_title_field(table, field)
+    except Exception as e:
+        logger.exception('Failed to set title field', extra={'table': table, 'field': field})
+        return jsonify({'success': False, 'error': str(e)}), 400
+    return jsonify({'success': bool(ok)})

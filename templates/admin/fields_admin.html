@@ -14,6 +14,7 @@
       <table class="min-w-full text-sm text-left text-light divide-y">
         <thead class="text-xs uppercase bg-card">
           <tr>
+            <th class="w-16 px-2 py-1">Title</th>
             <th class="w-64 px-2 py-1">Field</th>
             <th class="w-40 px-2 py-1">Type</th>
             <th class="w-40 px-2 py-1">Not&nbsp;Null</th>
@@ -25,6 +26,14 @@
         <tbody class="divide-y divide-gray-200">
         {% for item in items %}
           <tr>
+            <td class="px-2 py-1 text-center">
+              <input type="radio"
+                     name="title-{{ table }}"
+                     class="title-radio"
+                     data-table="{{ table }}"
+                     value="{{ item.name }}"
+                     {% if item.title %}checked{% endif %}>
+            </td>
             <td class="px-2 py-1 font-mono">{{ item.name }}</td>
             <td class="px-2 py-1">{{ item.type }}</td>
             <td class="px-2 py-1">{{ item.count }}</td>
@@ -47,6 +56,7 @@
   {% endfor %}
 </div>
 <script src="{{ url_for('static', filename='js/edit_fields.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/config_admin.js') }}"></script>
 <script type="module">
   window.openLayoutModal = function(id) {
     document.getElementById(id).classList.remove('hidden');

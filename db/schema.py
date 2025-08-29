@@ -14,55 +14,133 @@ def load_field_schema():
     """
     with get_connection() as conn:
         cur = conn.cursor()
-        # Select all schema columns including new coordinates
-        cur.execute(
-            """
-        SELECT table_name,
-               field_name,
-               field_type,
-               field_options,
-               foreign_key,
-               col_start,
-               col_span,
-               row_start,
-               row_span,
-               styling
-        FROM field_schema
-            """
-        )
-        rows = cur.fetchall()
         schema = {}
-        for table, field, ftype, options, fk, col_start, col_span, row_start, row_span, styling in rows:
-            schema.setdefault(table, {})[field] = {
-                "type": ftype.strip(),
-                "options": [],
-                "foreign_key": fk,
-                "layout": {
-                    "colStart": col_start,
-                    "colSpan": col_span,
-                    "rowStart": row_start,
-                    "rowSpan": row_span,
-                },
-                "styling": {},
-            }
-            if options:
-                try:
-                    schema[table][field]["options"] = json.loads(options)
-                except json.JSONDecodeError:
-                    logger.exception(
-                        "Invalid JSON in field options",
-                        extra={"table": table, "field": field},
-                    )
-                    schema[table][field]["options"] = []
-            if styling is not None:
-                try:
-                    schema[table][field]["styling"] = json.loads(styling)
-                except json.JSONDecodeError:
-                    logger.exception(
-                        "Invalid JSON in field styling",
-                        extra={"table": table, "field": field},
-                    )
-                    schema[table][field]["styling"] = styling
+        try:
+            # Preferred path: include the new title column
+            cur.execute(
+                """
+            SELECT table_name,
+                   field_name,
+                   field_type,
+                   field_options,
+                   foreign_key,
+                   col_start,
+                   col_span,
+                   row_start,
+                   row_span,
+                   title,
+                   styling
+            FROM field_schema
+                """
+            )
+            rows = cur.fetchall()
+            for (
+                table,
+                field,
+                ftype,
+                options,
+                fk,
+                col_start,
+                col_span,
+                row_start,
+                row_span,
+                title,
+                styling,
+            ) in rows:
+                schema.setdefault(table, {})[field] = {
+                    "type": ftype.strip(),
+                    "options": [],
+                    "foreign_key": fk,
+                    "layout": {
+                        "colStart": col_start,
+                        "colSpan": col_span,
+                        "rowStart": row_start,
+                        "rowSpan": row_span,
+                    },
+                    "title": bool(title),
+                    "styling": {},
+                }
+                if options:
+                    try:
+                        schema[table][field]["options"] = json.loads(options)
+                    except json.JSONDecodeError:
+                        logger.exception(
+                            "Invalid JSON in field options",
+                            extra={"table": table, "field": field},
+                        )
+                        schema[table][field]["options"] = []
+                if styling is not None:
+                    try:
+                        schema[table][field]["styling"] = json.loads(styling)
+                    except json.JSONDecodeError:
+                        logger.exception(
+                            "Invalid JSON in field styling",
+                            extra={"table": table, "field": field},
+                        )
+                        schema[table][field]["styling"] = styling
+        except sqlite3.OperationalError as e:
+            # Backward compatibility: older DB without title column
+            logger.debug("Falling back to legacy field_schema layout: %s", e)
+            cur.execute(
+                """
+            SELECT table_name,
+                   field_name,
+                   field_type,
+                   field_options,
+                   foreign_key,
+                   col_start,
+                   col_span,
+                   row_start,
+                   row_span,
+                   styling
+            FROM field_schema
+                """
+            )
+            rows = cur.fetchall()
+            for (
+                table,
+                field,
+                ftype,
+                options,
+                fk,
+                col_start,
+                col_span,
+                row_start,
+                row_span,
+                styling,
+            ) in rows:
+                schema.setdefault(table, {})[field] = {
+                    "type": ftype.strip(),
+                    "options": [],
+                    "foreign_key": fk,
+                    "layout": {
+                        "colStart": col_start,
+                        "colSpan": col_span,
+                        "rowStart": row_start,
+                        "rowSpan": row_span,
+                    },
+                    # Infer title flag from type for legacy DBs
+                    "title": ftype.strip() == "title",
+                    "styling": {},
+                }
+                if options:
+                    try:
+                        schema[table][field]["options"] = json.loads(options)
+                    except json.JSONDecodeError:
+                        logger.exception(
+                            "Invalid JSON in field options",
+                            extra={"table": table, "field": field},
+                        )
+                        schema[table][field]["options"] = []
+                if styling is not None:
+                    try:
+                        schema[table][field]["styling"] = json.loads(styling)
+                    except json.JSONDecodeError:
+                        logger.exception(
+                            "Invalid JSON in field styling",
+                            extra={"table": table, "field": field},
+                        )
+                        schema[table][field]["styling"] = styling
         return schema
 
 
@@ -175,7 +253,7 @@ def get_title_field(table: str) -> str | None:
     schema = load_field_schema()
     tbl = schema.get(table, {})
     for field, meta in tbl.items():
-        if meta.get("type") == "title":
+        if meta.get("title"):
             return field
     return None
 
@@ -374,19 +452,19 @@ def create_base_table(table_name: str, description: str, title_field: str) -> bo
                 """
             )
 
-            # Insert default field schema rows
+            # Insert default field schema rows, including title flag
             defaults = [
-                (table_name, "id", "hidden", None, None, 0, 0, 0, 0),
-                (table_name, title_field, "title", None, None, 0, 0, 0, 0),
-                (table_name, "date_created", "date", None, None, 0, 0, 0, 0),
-                (table_name, "last_edited", "hidden", None, None, 0, 0, 0, 0),
+                (table_name, "id", "hidden", None, None, 0, 0, 0, 0, 0),
+                (table_name, title_field, "title", None, None, 0, 0, 0, 0, 1),
+                (table_name, "date_created", "date", None, None, 0, 0, 0, 0, 0),
+                (table_name, "last_edited", "hidden", None, None, 0, 0, 0, 0, 0),
             ]
             cur.executemany(
                 """
                 INSERT OR IGNORE INTO field_schema
                   (table_name, field_name, field_type, field_options, foreign_key,
-                   col_start, col_span, row_start, row_span)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                   col_start, col_span, row_start, row_span, title)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 defaults,
             )
@@ -420,3 +498,28 @@ def create_base_table(table_name: str, description: str, title_field: str) -> bo
             return False
 
     return True
+
+def set_title_field(table: str, field: str) -> bool:
+    """Set the title field for a table by toggling the title flag in field_schema.
+
+    This clears any existing title flags for the table, then sets the given field's
+    flag to 1. Returns True if the target field was updated.
+    """
+    validate_table(table)
+    validate_field(table, field)
+
+    with get_connection() as conn:
+        cur = conn.cursor()
+        # Clear existing title flags
+        cur.execute(
+            "UPDATE field_schema SET title = 0 WHERE table_name = ?",
+            (table,),
+        )
+        # Set new title flag
+        cur.execute(
+            "UPDATE field_schema SET title = 1 WHERE table_name = ? AND field_name = ?",
+            (table, field),
+        )
+        conn.commit()
+
+        return cur.rowcount > 0

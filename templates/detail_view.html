@@ -90,7 +90,7 @@
          data-record-id="{{ record.id }}">
 
       {% for field, value in record.items() %}
-        {% if field_schema[table][field].type not in ['hidden', 'title'] and field not in ['date_added', 'date_created', 'last_updated', 'last_edited'] %}
+        {% if (not field_schema[table][field].title) and field_schema[table][field].type != 'hidden' and field not in ['date_added', 'date_created', 'last_updated', 'last_edited'] %}
           {% set layout     = field_schema_layout[field] %}
           {% set styling    = field_schema[table][field].styling or {} %}
           {# Compute 1-based start lines and spans using PCT_SNAP #}
