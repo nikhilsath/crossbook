@@ -41,6 +41,10 @@ def update_record_field(table: str, record_id: int, field: str, value: Any) -> s
     if fmeta is None:
         raise ValueError("Unknown field")
 
+    # Prevent edits to read-only fields
+    if fmeta.get("readonly"):
+        raise ValueError("Field is read-only")
+
     new_value = _normalize_value(fmeta["type"], value)
 
     prev_record = get_record_by_id(table, record_id)

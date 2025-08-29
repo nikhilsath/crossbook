@@ -39,8 +39,36 @@
             <td class="px-2 py-1 font-mono">{{ item.name }}</td>
             <td class="px-2 py-1">{{ item.type }}</td>
             <td class="px-2 py-1">{{ item.count }}</td>
-            <td class="px-2 py-1"><button type="button" class="btn-secondary">Change</button></td>
-            <td class="px-2 py-1 text-center"><input type="checkbox" disabled></td>
+            <td class="px-2 py-1 relative">
+              <button
+                type="button"
+                class="btn-secondary btn-change"
+                data-table="{{ table }}"
+                data-field="{{ item.name }}"
+                data-type="{{ item.type }}"
+              >
+                Change
+              </button>
+              <div class="popover-dark absolute right-0 hidden mt-2 p-2 w-56 z-10" data-popover>
+                <label class="block text-xs mb-1">Field Type</label>
+                <select
+                  class="form-select field-type-select w-full"
+                  data-table="{{ table }}"
+                  data-field="{{ item.name }}"
+                  data-current-type="{{ item.type }}"
+                ></select>
+                <div class="mt-2 text-sm text-red-600 font-bold hidden" data-validation-msg></div>
+              </div>
+            </td>
+            <td class="px-2 py-1 text-center">
+              <input
+                type="checkbox"
+                class="readonly-checkbox"
+                data-table="{{ table }}"
+                data-field="{{ item.name }}"
+                {% if item.readonly %}checked{% endif %}
+              >
+            </td>
             <td class="px-2 py-1"><button type="button" class="btn-danger">Clear</button></td>
           </tr>
         {% endfor %}

@@ -15,6 +15,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const fieldTypeSelect = document.getElementById("field_type");
   const optionsContainer = document.getElementById("field_options_container");
   const fkSelectContainer = document.getElementById("fk_select_container");
+  const addFieldForm = document.getElementById("add-field-form");
+  const fieldNameInput = document.querySelector('#add-field-form input[name="field_name"]');
 
   if (!fieldTypeSelect) return;
   await loadFieldTypes();
@@ -38,6 +40,23 @@ document.addEventListener("DOMContentLoaded", async () => {
       fkSelectContainer.classList.toggle("hidden", !meta.allows_foreign_key);
     }
   });
+
+  // Normalize field name: replace spaces with underscores as user types
+  if (fieldNameInput) {
+    const normalize = () => {
+      fieldNameInput.value = fieldNameInput.value.replace(/\s+/g, '_');
+    };
+    fieldNameInput.addEventListener('input', normalize);
+    fieldNameInput.addEventListener('blur', normalize);
+  }
+
+  // Ensure normalization on submit as well
+  if (addFieldForm) {
+    addFieldForm.addEventListener('submit', () => {
+      const inp = addFieldForm.querySelector('input[name="field_name"]');
+      if (inp) inp.value = inp.value.replace(/\s+/g, '_');
+    });
+  }
 });
   
 
@@ -94,4 +113,3 @@ function updateRemoveInfo(count) {
     removeBtn.disabled = false;
   }
 }
-

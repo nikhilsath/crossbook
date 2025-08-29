@@ -118,6 +118,7 @@ def add_field_route(table, record_id):
         field_options_raw = request.form.get('field_options', '')
         foreign_key = request.form.get('foreign_key_target', None)
         styling_raw = request.form.get('styling')
+        readonly_flag = 1 if str(request.form.get('readonly', '')).lower() in ('1','true','on','yes') else 0
         field_options = [opt.strip() for opt in field_options_raw.split(',') if opt.strip()] if field_options_raw else []
         styling = json.loads(styling_raw) if styling_raw else None
         add_column_to_table(table, field_name, field_type)
@@ -133,6 +134,7 @@ def add_field_route(table, record_id):
             field_options=field_options,
             foreign_key=foreign_key,
             styling=styling,
+            readonly=readonly_flag,
             title=0,
         )
         logger.info(

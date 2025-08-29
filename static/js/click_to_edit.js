@@ -55,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const field = fieldEl.dataset.field;
     const type = fieldEl.dataset.type;
+    if (fieldEl.dataset.readonly === '1' || fieldEl.dataset.readonly === 'true') return;
     if (type === 'boolean' || fieldEl.querySelector('form') || currentEl) return;
 
     const html = await fetchFieldHTML(field, true);

@@ -22,6 +22,7 @@
             data-table="{{ table }}"
             data-record-id="{{ record.id }}"
             data-field="{{ title_field }}"
+            data-readonly="{{ 1 if field_schema[table][title_field].get('readonly') else 0 }}"
             {% endif %}>{{ display_value }}</span>
       <span id="record-id" class="text-gray-500 text-base">(ID {{ record.id }})</span>
       {% set date_added = record.get('date_added') or record.get('date_created') %}
@@ -109,6 +110,7 @@
                class="draggable-field border p-2 rounded shadow bg-card text-light{{ ' font-bold' if styling.bold }}{{ ' italic' if styling.italic }}{{ ' underline' if styling.underline }}"
                data-field="{{ field }}"
                data-type="{{ field_schema[table][field].type }}"
+               data-readonly="{{ 1 if field_schema[table][field].get('readonly') else 0 }}"
                data-styling='{{ styling | tojson }}'
                style="{{ style_parts | join('; ') }}">
             {{ fields.render_editable_field(

@@ -77,6 +77,18 @@ def load_field_schema():
                         extra={"table": table, "field": field},
                     )
                     schema[table][field]["styling"] = styling
+        # Optionally attach readonly flags if column exists
+        try:
+            cur.execute("PRAGMA table_info('field_schema')")
+            cols = {r[1] for r in cur.fetchall()}
+            if 'readonly' in cols:
+                cur.execute("SELECT table_name, field_name, readonly FROM field_schema")
+                for t, f, ro in cur.fetchall():
+                    if t in schema and f in schema[t]:
+                        schema[t][f]['readonly'] = bool(ro)
+        except sqlite3.DatabaseError:
+            # Ignore, default to editable
+            pass
         return schema
 
 

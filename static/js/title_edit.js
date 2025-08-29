@@ -1,10 +1,12 @@
 export function initTitleInlineEdit() {
   const titleEl = document.getElementById('record-title');
   if (!titleEl || !titleEl.dataset.field) return;
+  if (titleEl.dataset.readonly === '1' || titleEl.dataset.readonly === 'true') return;
 
   let original = '';
 
   titleEl.addEventListener('dblclick', () => {
+    if (titleEl.dataset.readonly === '1' || titleEl.dataset.readonly === 'true') return;
     if (titleEl.getAttribute('contenteditable') === 'true') return;
     original = titleEl.innerText.trim();
     titleEl.setAttribute('contenteditable', 'true');

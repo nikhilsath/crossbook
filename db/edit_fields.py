@@ -14,6 +14,7 @@ def add_field_to_schema(
     layout=None,
     styling=None,
     title: int | bool = 0,
+    readonly: int | bool = 0,
 ):
     """Insert a new field into the field_schema table."""
     validate_table(table)
@@ -51,54 +52,34 @@ def add_field_to_schema(
         row_start = max_bottom
         row_span = height_overrides.get(field_type, base_height)
 
-        # 4) Insert into field_schema including the title and styling columns
+        # 4) Insert into field_schema including optional 'title' and 'readonly' flags
         title_flag = 1 if bool(title) else 0
-        # Backward compatibility: some databases may not yet have the 'title' column
+        readonly_flag = 1 if bool(readonly) else 0
         cur.execute("PRAGMA table_info('field_schema')")
         cols = {r[1] for r in cur.fetchall()}
+
+        col_names = [
+            'table_name', 'field_name', 'field_type', 'field_options', 'foreign_key',
+            'col_start', 'col_span', 'row_start', 'row_span'
+        ]
+        values = [
+            table, field_name, field_type, options_str, foreign_key,
+            col_start, col_span, row_start, row_span
+        ]
         if 'title' in cols:
-            cur.execute(
-                """
-                INSERT INTO field_schema
-                  (table_name, field_name, field_type, field_options, foreign_key,
-                   col_start, col_span, row_start, row_span, title, styling)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    table,
-                    field_name,
-                    field_type,
-                    options_str,
-                    foreign_key,
-                    col_start,
-                    col_span,
-                    row_start,
-                    row_span,
-                    title_flag,
-                    styling_str,
-                ),
-            )
-        else:
-            cur.execute(
-                """
-                INSERT INTO field_schema
-                  (table_name, field_name, field_type, field_options, foreign_key,
-                   col_start, col_span, row_start, row_span, styling)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    table,
-                    field_name,
-                    field_type,
-                    options_str,
-                    foreign_key,
-                    col_start,
-                    col_span,
-                    row_start,
-                    row_span,
-                    styling_str,
-                ),
-            )
+            col_names.append('title')
+            values.append(title_flag)
+        if 'readonly' in cols:
+            col_names.append('readonly')
+            values.append(readonly_flag)
+        col_names.append('styling')
+        values.append(styling_str)
+
+        placeholders = ', '.join(['?'] * len(values))
+        cur.execute(
+            f"INSERT INTO field_schema ({', '.join(col_names)}) VALUES ({placeholders})",
+            tuple(values),
+        )
         conn.commit()
 
 def add_column_to_table(table_name, field_name, field_type):
