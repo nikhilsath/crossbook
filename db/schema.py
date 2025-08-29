@@ -510,11 +510,6 @@ def set_title_field(table: str, field: str) -> bool:
 
     with get_connection() as conn:
         cur = conn.cursor()
-        # Clear existing title flags
-        cur.execute(
-            "UPDATE field_schema SET title = 0 WHERE table_name = ?",
-            (table,),
-        )
         # Set new title flag
         cur.execute(
             "UPDATE field_schema SET title = 1 WHERE table_name = ? AND field_name = ?",
