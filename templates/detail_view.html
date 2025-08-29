@@ -274,6 +274,7 @@
 
 {% include "modals/edit_fields_modal.html" %}
 {% include "modals/new_record_modal.html" %}
+<script src="{{ url_for('static', filename='js/edit_fields.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/new_record_modal.js') }}"></script>
 
 {% endblock %}

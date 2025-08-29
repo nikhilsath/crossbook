@@ -46,6 +46,7 @@
   </details>
   {% endfor %}
 </div>
+<script src="{{ url_for('static', filename='js/edit_fields.js') }}"></script>
 <script type="module">
   window.openLayoutModal = function(id) {
     document.getElementById(id).classList.remove('hidden');
