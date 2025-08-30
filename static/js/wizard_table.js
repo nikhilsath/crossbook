@@ -195,7 +195,6 @@ async function initFieldTypeSelect() {
   if (!select) return;
   await loadFieldTypes();
   Object.keys(fieldTypes).forEach((t) => {
-    if (t === 'title') return;
     const opt = document.createElement('option');
     opt.value = t;
     opt.textContent = t;
