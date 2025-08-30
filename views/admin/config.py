@@ -74,7 +74,9 @@ def update_database_file():
     if 'file' in request.files and request.files['file'].filename:
         file = request.files['file']
         filename = secure_filename(file.filename)
-        if not filename.endswith('.db'):
+        if not filename.lower().endswith('.db'):
+            if wants_json:
+                return jsonify({'error': 'invalid_extension'}), 400
             return redirect(url_for('admin.database_page'))
         save_path = os.path.join('data', filename)
         file.save(save_path)

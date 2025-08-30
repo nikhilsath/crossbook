@@ -29,6 +29,20 @@ def test_config_db_upload_redirects(client, monkeypatch):
     assert resp.headers['Location'].endswith('/admin/database')
 
 
+def test_config_db_upload_invalid_extension_json(client):
+    import io
+
+    data = {'file': (io.BytesIO(b'data'), 'temp.txt')}
+    resp = client.post(
+        '/admin/config/db',
+        data=data,
+        content_type='multipart/form-data',
+        headers={'Accept': 'application/json'},
+    )
+    assert resp.status_code == 400
+    assert resp.get_json() == {'error': 'invalid_extension'}
+
+
 def test_config_db_create_redirects_to_wizard(client, monkeypatch):
     from views.admin import config as cfg
 
