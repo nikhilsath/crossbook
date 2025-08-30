@@ -78,8 +78,26 @@ def update_database_file():
             return redirect(url_for('admin.database_page'))
         save_path = os.path.join('data', filename)
         file.save(save_path)
-        initialize_database(save_path)
-        ensure_default_configs(save_path)
+        try:
+            initialize_database(save_path)
+        except Exception as exc:
+            logger.exception(
+                'Failed to initialize database',
+                extra={'path': save_path, 'error': str(exc)},
+            )
+            if wants_json:
+                return jsonify({'error': str(exc)}), 500
+            return redirect(url_for('admin.database_page'))
+        try:
+            ensure_default_configs(save_path)
+        except Exception as exc:
+            logger.exception(
+                'Failed to ensure default configs',
+                extra={'path': save_path, 'error': str(exc)},
+            )
+            if wants_json:
+                return jsonify({'error': str(exc)}), 500
+            return redirect(url_for('admin.database_page'))
         update_config('db_path', save_path)
         reload_app_state()
         if wants_json:
@@ -93,8 +111,26 @@ def update_database_file():
             filename += '.db'
         save_path = os.path.join('data', filename)
         open(save_path, 'a').close()
-        initialize_database(save_path)
-        ensure_default_configs(save_path)
+        try:
+            initialize_database(save_path)
+        except Exception as exc:
+            logger.exception(
+                'Failed to initialize database',
+                extra={'path': save_path, 'error': str(exc)},
+            )
+            if wants_json:
+                return jsonify({'error': str(exc)}), 500
+            return redirect(url_for('admin.database_page'))
+        try:
+            ensure_default_configs(save_path)
+        except Exception as exc:
+            logger.exception(
+                'Failed to ensure default configs',
+                extra={'path': save_path, 'error': str(exc)},
+            )
+            if wants_json:
+                return jsonify({'error': str(exc)}), 500
+            return redirect(url_for('admin.database_page'))
         update_config('db_path', save_path)
         reload_app_state()
         session['wizard_progress'] = {'database': True, 'skip_import': True}

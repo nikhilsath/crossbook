@@ -5,12 +5,17 @@ function initDatabaseControls() {
   if (uploadForm) {
     const fileInput = uploadForm.querySelector('input[type="file"]');
     const changeBtn = document.getElementById('change-db-btn');
+    const uploadErr = document.getElementById('change-db-error');
     if (changeBtn) {
       changeBtn.disabled = true;
       changeBtn.classList.add('opacity-50', 'cursor-not-allowed');
     }
     if (fileInput) {
       fileInput.addEventListener('change', () => {
+        if (uploadErr) {
+          uploadErr.textContent = '';
+          uploadErr.classList.add('hidden');
+        }
         if (fileInput.files && fileInput.files.length > 0) {
           console.log('File chosen:', fileInput.files[0].name);
           if (changeBtn) {
@@ -34,12 +39,7 @@ function initDatabaseControls() {
         body: fd,
         headers: { 'Accept': 'application/json' }
       })
-        .then(r => {
-          if (!r.ok) {
-            throw new Error('Server responded with status ' + r.status);
-          }
-          return r.json();
-        })
+        .then(r => r.json())
         .then(data => {
           if (data.redirect) {
             window.location.href = data.redirect;
@@ -55,13 +55,28 @@ function initDatabaseControls() {
             }
             window.location.reload();
           } else if (data.error) {
-            console.error('Failed to change database:', data.error);
+            if (uploadErr) {
+              uploadErr.textContent = data.error;
+              uploadErr.classList.remove('hidden');
+            } else {
+              console.error('Failed to change database:', data.error);
+            }
           } else {
-            console.error('Failed to change database: no db_path returned');
+            if (uploadErr) {
+              uploadErr.textContent = 'Failed to change database';
+              uploadErr.classList.remove('hidden');
+            } else {
+              console.error('Failed to change database: no db_path returned');
+            }
           }
         })
         .catch(err => {
-          console.error('Failed to change database:', err);
+          if (uploadErr) {
+            uploadErr.textContent = err.message;
+            uploadErr.classList.remove('hidden');
+          } else {
+            console.error('Failed to change database:', err);
+          }
         });
     });
   }
@@ -110,6 +125,15 @@ export function submitCreateDb(event) {
           err.textContent = data.error;
           err.classList.remove('hidden');
         }
+      }
+    })
+    .catch(err => {
+      const errEl = document.getElementById('create-db-error');
+      if (errEl) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+      } else {
+        console.error('Failed to create database:', err);
       }
     });
 }
