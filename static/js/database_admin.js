@@ -39,7 +39,10 @@ function initDatabaseControls() {
         body: fd,
         headers: { 'Accept': 'application/json' }
       })
-        .then(r => r.json())
+        .then(r => r.json().then(data => {
+          if (!r.ok) throw data;
+          return data;
+        }))
         .then(data => {
           if (data.redirect) {
             window.location.href = data.redirect;
@@ -72,10 +75,10 @@ function initDatabaseControls() {
         })
         .catch(err => {
           if (uploadErr) {
-            uploadErr.textContent = err.message;
+            uploadErr.textContent = err.error || err.message;
             uploadErr.classList.remove('hidden');
           } else {
-            console.error('Failed to change database:', err);
+            console.error('Failed to change database:', err.error || err);
           }
         });
     });
@@ -104,7 +107,10 @@ export function submitCreateDb(event) {
   const fd = new FormData();
   fd.append('create_name', name);
   fetch('/admin/config/db', { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } })
-    .then(r => r.json())
+    .then(r => r.json().then(data => {
+      if (!r.ok) throw data;
+      return data;
+    }))
     .then(data => {
       if (data.redirect) {
         window.location.href = data.redirect;
@@ -130,10 +136,10 @@ export function submitCreateDb(event) {
     .catch(err => {
       const errEl = document.getElementById('create-db-error');
       if (errEl) {
-        errEl.textContent = err.message;
+        errEl.textContent = err.error || err.message;
         errEl.classList.remove('hidden');
       } else {
-        console.error('Failed to create database:', err);
+        console.error('Failed to create database:', err.error || err);
       }
     });
 }
