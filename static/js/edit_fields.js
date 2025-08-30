@@ -22,7 +22,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   await loadFieldTypes();
 
   Object.keys(fieldTypes).forEach((t) => {
-    if (t === 'title') return;
     const opt = document.createElement('option');
     opt.value = t;
     opt.textContent = t;
