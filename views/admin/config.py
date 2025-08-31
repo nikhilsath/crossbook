@@ -102,9 +102,14 @@ def update_database_file():
             return redirect(url_for('admin.database_page'))
         update_config('db_path', save_path)
         reload_app_state()
+        status = check_db_status(save_path)
         if wants_json:
-            return jsonify({'db_path': save_path, 'status': check_db_status(save_path)})
-        return redirect(url_for('admin.database_page'))
+            return jsonify({
+                'db_path': save_path,
+                'status': status,
+                'redirect': url_for('home'),
+            })
+        return redirect(url_for('home'))
 
     name = request.form.get('create_name')
     if name:
