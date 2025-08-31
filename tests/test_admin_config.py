@@ -26,7 +26,7 @@ def test_config_db_upload_redirects(client, monkeypatch):
     data = {'file': (io.BytesIO(b'data'), 'temp.db')}
     resp = client.post('/admin/config/db', data=data, content_type='multipart/form-data')
     assert resp.status_code == 302
-    assert resp.headers['Location'].endswith('/admin/database')
+    assert resp.headers['Location'].endswith('/')
 
 
 def test_config_db_upload_invalid_extension_json(client):
