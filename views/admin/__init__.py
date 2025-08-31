@@ -1,10 +1,9 @@
 from flask import Blueprint, render_template, redirect, url_for, current_app
 import logging
-import sqlite3
-
-from db.schema import load_card_info, load_base_tables, update_foreign_field_options
+from db.schema import refresh_card_cache, update_foreign_field_options
 from db.config import get_config_rows
 from db.database import init_db_path, check_db_status, DB_PATH
+import sqlite3
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -28,9 +27,7 @@ def reload_app_state() -> None:
         )
         init_db_path()
 
-    with sqlite3.connect(DB_PATH) as conn:
-        card_info = load_card_info(conn)
-        base_tables = load_base_tables(conn)
+    card_info, base_tables = refresh_card_cache()
     current_app.config['CARD_INFO'] = card_info
     current_app.config['BASE_TABLES'] = base_tables
     update_foreign_field_options()
