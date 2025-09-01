@@ -56,7 +56,7 @@ function initDatabaseControls() {
               const color = data.status === 'valid' ? 'text-green-600' : 'text-red-600';
               disp.classList.add(color);
             }
-            window.location.reload();
+            window.location.href = '/';
           } else if (data.error) {
             if (uploadErr) {
               uploadErr.textContent = data.error;
