@@ -5,6 +5,7 @@ import sqlite3
 from db.schema import load_card_info, load_base_tables, update_foreign_field_options
 from db.config import get_config_rows
 from db.database import init_db_path, check_db_status, DB_PATH
+from logging_setup import configure_logging
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -21,12 +22,23 @@ def reload_app_state() -> None:
         rows = get_config_rows('database')
         cfg = {row['key']: row['value'] for row in rows}
         init_db_path(cfg.get('db_path'))
+        configure_logging(current_app)
     except sqlite3.DatabaseError as exc:
         logger.exception(
             "Failed to load database configuration",
             extra={"db_path": DB_PATH, "error": str(exc)},
         )
         init_db_path()
+
+    try:
+        from imports.tasks import init_import_table
+
+        init_import_table()
+    except Exception as exc:  # noqa: BLE001
+        logger.exception(
+            "Failed to initialize import table",
+            extra={"error": str(exc)},
+        )
 
     with sqlite3.connect(DB_PATH) as conn:
         card_info = load_card_info(conn)
