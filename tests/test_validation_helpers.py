@@ -5,7 +5,7 @@ from functools import partial
 import pytest
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from utils.validators import (
+from utils.validation import (
     validate_text_column,
     validate_textarea_column,
     validate_number_column,

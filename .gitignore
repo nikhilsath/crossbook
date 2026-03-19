@@ -175,9 +175,3 @@ pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python
 .DS_Store
-
-# SQLite database files created during tests or admin operations
-data/temp.db
-data/new.db
-data/admin_created.db
-data/test_created.db
