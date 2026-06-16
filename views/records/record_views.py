@@ -31,6 +31,7 @@ from utils.field_registry import get_field_type, get_type_size_map
 records_bp = Blueprint('records', __name__)
 from utils.records_helpers import require_base_table
 from utils.record_ops import update_record_field, bulk_update_records
+from utils.pendo import track as pendo_track
 
 logger = logging.getLogger(__name__)
 
@@ -137,6 +138,14 @@ def add_field_route(table, record_id):
             readonly=readonly_flag,
             title=0,
         )
+        pendo_track('field_added_to_table', {
+            'table': table,
+            'field_name': field_name,
+            'field_type': field_type,
+            'has_options': bool(field_options),
+            'has_foreign_key': bool(foreign_key),
+            'readonly': bool(readonly_flag),
+        })
         logger.info(
             'Added column to %s: field=%r type=%r',
             table,
@@ -221,8 +230,14 @@ def remove_field_route(table, record_id):
     fmeta = get_field_schema().get(table, {}).get(field_name)
     if not field_name or fmeta is None or fmeta['type'] == 'hidden' or field_name == 'id':
         abort(400, 'Invalid field')
+    field_type = fmeta.get('type', '') if fmeta else ''
     drop_column_from_table(table, field_name)
     remove_field_from_schema(table, field_name)
+    pendo_track('field_removed_from_table', {
+        'table': table,
+        'field_name': field_name,
+        'field_type': field_type,
+    })
     return redirect(url_for('records.detail_view', table=table, record_id=record_id))
 
 
@@ -239,6 +254,14 @@ def update_field(table, record_id):
     )
     try:
         new_value = update_record_field(table, record_id, field, raw_value)
+        schema = get_field_schema()
+        field_meta = schema.get(table, {}).get(field, {})
+        pendo_track('record_field_updated', {
+            'table': table,
+            'record_id': record_id,
+            'field': field,
+            'field_type': field_meta.get('type', ''),
+        })
     except ValueError as e:
         logger.exception(
             'update_field validation failed',
@@ -285,6 +308,12 @@ def bulk_update(table):
             extra={"table": table, "field": field, "error": str(e)},
         )
         return jsonify({'error': str(e)}), 400
+    pendo_track('bulk_records_updated', {
+        'table': table,
+        'field': field,
+        'record_count': len(ids),
+        'updated_count': updated,
+    })
     return jsonify({'success': True, 'updated': updated})
 
 
@@ -368,6 +397,12 @@ def manage_relationship():
         )
         abort(500, 'Failed to modify relationship')
     else:
+        pendo_track('relationship_managed', {
+            'action': action,
+            'table_a': table_a,
+            'table_b': table_b,
+            'two_way': bool(two_way) if action == 'add' else False,
+        })
         logger.info(
             'manage_relationship %s %s:%s %s:%s',
             action,
@@ -393,6 +428,11 @@ def create_record_route(table):
     if request.method == 'POST':
         record_id = create_record(table, request.form)
         if record_id:
+            pendo_track('record_created', {
+                'table': table,
+                'record_id': record_id,
+                'field_count': len(request.form),
+            })
             return redirect(f'/{table}/{record_id}')
         else:
             abort(500, 'Failed to create record')
@@ -405,6 +445,10 @@ def delete_record_route(table, record_id):
     success = delete_record(table, record_id)
     if not success:
         abort(500, 'Failed to delete record')
+    pendo_track('record_deleted', {
+        'table': table,
+        'record_id': record_id,
+    })
     return redirect(url_for('records.list_view', table=table))
 
 
@@ -417,6 +461,12 @@ def undo_edit_route(table, record_id, edit_id):
     success = revert_edit(entry)
     if not success:
         abort(500, 'Undo failed')
+    pendo_track('record_edit_reverted', {
+        'table': table,
+        'record_id': record_id,
+        'edit_id': edit_id,
+        'field_name': entry.get('field_name', ''),
+    })
     return jsonify({'success': True})
 
 

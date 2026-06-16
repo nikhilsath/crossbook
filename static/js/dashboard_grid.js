@@ -54,6 +54,11 @@ function saveDashboardLayout() {
     rowStart: rect.rowStart,
     rowSpan: rect.rowSpan
   }));
+  if (typeof pendo !== 'undefined') {
+    pendo.track('dashboard_layout_saved', {
+      widget_count: layout.length
+    });
+  }
   fetch('/dashboard/layout', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
