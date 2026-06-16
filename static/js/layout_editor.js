@@ -78,6 +78,12 @@ function handleSaveLayout() {
     .map(([field, rect]) => ({ field, colStart: rect.colStart, colSpan: rect.colSpan, rowStart: rect.rowStart, rowSpan: rect.rowSpan }));
   const payload = { layout: layoutEntries };
   console.debug('[layout] handleSaveLayout payload', payload);
+  if (typeof pendo !== 'undefined') {
+    pendo.track('record_layout_saved', {
+      table: table,
+      fields_count: layoutEntries.length
+    });
+  }
   fetch(`/${table}/layout`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

@@ -11,6 +11,7 @@ from automation.engine import run_rule
 from db.database import get_connection
 from db.edit_history import get_edit_entry, revert_edit
 from . import admin_bp
+from utils.pendo import track as pendo_track
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +36,14 @@ def create_rule_route():
         bool(data.get('run_on_import')),
         data.get('schedule', 'none'),
     )
+    pendo_track('automation_rule_created', {
+        'rule_id': rule_id,
+        'rule_name': data.get('name', ''),
+        'table_name': data.get('table_name', ''),
+        'condition_operator': data.get('condition_operator', 'equals'),
+        'run_on_import': bool(data.get('run_on_import')),
+        'schedule': data.get('schedule', 'none'),
+    })
     logger.info(
         "Created automation rule %s",
         rule_id,
@@ -47,6 +56,9 @@ def create_rule_route():
 def update_rule_route(rule_id):
     data = request.get_json(silent=True) or {}
     update_rule(rule_id, **data)
+    pendo_track('automation_rule_updated', {
+        'rule_id': rule_id,
+    })
     logger.info(
         "Updated automation rule %s",
         rule_id,
@@ -58,6 +70,9 @@ def update_rule_route(rule_id):
 @admin_bp.route('/admin/api/automation/rules/<int:rule_id>/delete', methods=['POST'])
 def delete_rule_route(rule_id):
     delete_rule(rule_id)
+    pendo_track('automation_rule_deleted', {
+        'rule_id': rule_id,
+    })
     logger.info(
         "Deleted automation rule %s",
         rule_id,
@@ -69,6 +84,10 @@ def delete_rule_route(rule_id):
 @admin_bp.route('/admin/api/automation/rules/<int:rule_id>/run', methods=['POST'])
 def run_rule_route(rule_id):
     count = run_rule(rule_id)
+    pendo_track('automation_rule_executed', {
+        'rule_id': rule_id,
+        'records_updated': count,
+    })
     logger.info(
         "Ran automation rule %s updated=%s",
         rule_id,
@@ -81,6 +100,9 @@ def run_rule_route(rule_id):
 @admin_bp.route('/admin/api/automation/rules/<int:rule_id>/reset', methods=['POST'])
 def reset_rule_route(rule_id):
     reset_run_count(rule_id)
+    pendo_track('automation_rule_reset', {
+        'rule_id': rule_id,
+    })
     logger.info(
         "Reset run count for rule %s",
         rule_id,
@@ -116,6 +138,9 @@ def rollback_entry():
     if not entry:
         return jsonify({'error': 'not_found'}), 404
     revert_edit(entry)
+    pendo_track('automation_edit_rolled_back', {
+        'entry_id': entry_id,
+    })
     logger.info(
         "Rolled back edit entry %s",
         entry_id,

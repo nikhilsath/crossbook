@@ -5,6 +5,7 @@ import sqlite3
 from huey import SqliteHuey
 from db.database import get_connection
 from db.records import create_record
+from utils.pendo import track as pendo_track
 
 # Project root directory
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -84,6 +85,14 @@ def _run_import(job_id, table, rows):
                     job_id, imported_rows=idx, errors=json.dumps(errors)
                 )
         _update_import_status(job_id, status="complete")
+        pendo_track('import_completed', {
+            'import_id': job_id,
+            'table': table,
+            'status': 'complete',
+            'total_rows': len(rows),
+            'imported_rows': len(rows) - len(errors),
+            'error_count': len(errors),
+        })
         # trigger automation rules that run on import
         from automation import engine as automation_engine
         automation_engine.run_import_rules(table)

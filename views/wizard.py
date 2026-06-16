@@ -22,6 +22,7 @@ from db.database import get_connection
 from imports.import_csv import parse_csv
 from db.records import create_record
 from views.admin import reload_app_state
+from utils.pendo import track as pendo_track
 
 wizard_bp = Blueprint('wizard', __name__)
 
@@ -49,6 +50,10 @@ def wizard_start():
     next_ep = _next_step()
     if next_ep:
         return redirect(url_for(next_ep))
+    pendo_track('wizard_completed', {
+        'steps_completed': sum(1 for k in ('database', 'settings', 'table', 'import') if progress.get(k)),
+        'import_skipped': bool(progress.get('skip_import')),
+    })
     session['wizard_complete'] = True
     session.pop('wizard_progress', None)
     return redirect(url_for('home'))
@@ -104,6 +109,12 @@ def database_step():
             error = f'Failed to save file: {exc}'
 
         if not error:
+            method = 'upload' if ('file' in request.files and request.files['file'].filename) else 'create'
+            pendo_track('wizard_database_configured', {
+                'method': method,
+                'db_filename': filename if 'filename' in dir() else '',
+                'db_status': 'configured',
+            })
             progress['database'] = True
             session['wizard_progress'] = progress
             return redirect(url_for('wizard.settings_step'))
@@ -170,6 +181,11 @@ def settings_step():
                     import os
                     val = os.path.join('logs', os.path.basename(val))
                 update_config(row['key'], val)
+        pendo_track('wizard_settings_configured', {
+            'settings_count': len(rows),
+            'handler_type': handler_type or '',
+            'heading_set': bool(request.form.get('heading')),
+        })
         progress['settings'] = True
         session['wizard_progress'] = progress
         return redirect(url_for('wizard.table_step'))
@@ -254,6 +270,11 @@ def table_step():
                 error = f'Table "{table_name}" could not be created.'
 
         if any_created:
+            created_names = [t for t in table_names if t]
+            pendo_track('wizard_tables_created', {
+                'tables_count': len(created_names),
+                'table_names': ','.join(created_names),
+            })
             reload_app_state()
             progress['table'] = True
             session['wizard_progress'] = progress
@@ -268,6 +289,9 @@ def table_step():
 def import_step():
     progress = session.setdefault('wizard_progress', {})
     if progress.get('skip_import'):
+        pendo_track('wizard_import_completed', {
+            'import_skipped': True,
+        })
         progress['import'] = True
         session['wizard_progress'] = progress
         session['wizard_complete'] = True
@@ -298,6 +322,12 @@ def import_step():
             error = 'Please select a table and upload a .csv file.'
 
         if not error:
+            pendo_track('wizard_import_completed', {
+                'import_skipped': False,
+                'table': table or '',
+                'rows_imported': len(rows),
+                'file_name': file.filename if file else '',
+            })
             progress['import'] = True
             session['wizard_progress'] = progress
             session['wizard_complete'] = True
