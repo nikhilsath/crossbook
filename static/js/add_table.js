@@ -29,6 +29,12 @@ export function submitNewTable(event) {
         err.textContent = data.error;
         err.classList.remove('hidden');
       } else {
+        if (typeof pendo !== 'undefined') {
+          pendo.track('table_created', {
+            table_name: name,
+            description: description
+          });
+        }
         window.location.reload();
       }
     })

@@ -6,7 +6,6 @@ from db.schema import get_field_schema, set_title_field
 from db.records import count_nonnull
 from . import admin_bp
 from db.database import get_connection
-from utils.pendo import track as pendo_track
 from db.validation import validate_table, validate_field
 from utils.validation import validation_sorter
 from utils.field_registry import FIELD_TYPES
@@ -82,11 +81,6 @@ def admin_set_title_field(table):
     except Exception as e:
         logger.exception('Failed to set title field', extra={'table': table, 'field': field})
         return jsonify({'success': False, 'error': str(e)}), 400
-    if ok:
-        pendo_track('title_field_changed', {
-            'table': table,
-            'field': field,
-        })
     return jsonify({'success': bool(ok)})
 
 
@@ -137,11 +131,6 @@ def admin_set_readonly(table):
             )
             return jsonify({'success': False, 'error': str(exc)}), 500
 
-    pendo_track('field_readonly_toggled', {
-        'table': table,
-        'field': field,
-        'readonly': ro,
-    })
     return jsonify({'success': True, 'readonly': ro})
 
 
@@ -234,11 +223,6 @@ def admin_convert_field_type():
             logger.exception('Failed to convert field type', extra={'table': table, 'field': field, 'new_type': new_type})
             return jsonify({'error': str(exc)}), 500
 
-    pendo_track('field_type_converted', {
-        'table': table,
-        'field': field,
-        'new_type': new_type,
-    })
     return jsonify({'success': True})
 
 
@@ -273,9 +257,4 @@ def admin_clear_field_values(table):
             logger.exception('Failed to clear values', extra={'table': table, 'field': field, 'error': str(exc)})
             return jsonify({'success': False, 'error': str(exc)}), 500
 
-    pendo_track('field_values_cleared', {
-        'table': table,
-        'field': field,
-        'cleared_count': cleared,
-    })
     return jsonify({'success': True, 'cleared': cleared})

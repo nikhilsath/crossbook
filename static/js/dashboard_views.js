@@ -40,6 +40,11 @@ export function initDashboardViews() {
         return;
       }
       addView(name);
+      if (typeof pendo !== 'undefined') {
+        pendo.track('dashboard_view_created', {
+          view_name: name
+        });
+      }
       closeModal('dashboardViewModal');
     });
   }

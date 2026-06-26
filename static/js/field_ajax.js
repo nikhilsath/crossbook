@@ -4,16 +4,31 @@ export function submitFieldAjax(formEl) {
     statusEl.textContent = 'Saving…';
     statusEl.classList.remove('hidden');
   }
+  const formData = new FormData(formEl);
   return fetch(formEl.action, {
     method: formEl.method || 'POST',
     headers: { 'X-Requested-With': 'XMLHttpRequest' },
-    body: new FormData(formEl)
+    body: formData
   })
     .then(resp => {
       if (!resp.ok) throw new Error('Network response was not ok');
       if (statusEl) {
         statusEl.textContent = 'Saved';
         setTimeout(() => statusEl.classList.add('hidden'), 2000);
+      }
+      if (typeof pendo !== 'undefined') {
+        const urlParts = formEl.action.split('/');
+        const tableName = urlParts[urlParts.length - 3] || '';
+        const recordId = urlParts[urlParts.length - 2] || '';
+        const fieldName = formData.get('field') || '';
+        const fieldEl = formEl.closest('.draggable-field');
+        const fieldType = fieldEl ? fieldEl.dataset.type || '' : '';
+        pendo.track('record_field_updated', {
+          table_name: tableName,
+          record_id: recordId,
+          field_name: fieldName,
+          field_type: fieldType
+        });
       }
       return resp;
     })

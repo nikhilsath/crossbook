@@ -49,6 +49,14 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(({ importId, totalRows }) => {
         importBtn.dataset.importId = importId;
         progressEl.max = totalRows;
+        if (typeof pendo !== 'undefined') {
+          pendo.track('csv_import_started', {
+            table_name: table,
+            total_rows: String(totalRows),
+            import_id: String(importId)
+          });
+        }
+        let importCompleteTracked = false;
         let interval = setInterval(() => {
           fetch(`/import-status?importId=${importId}`)
             .then(r => r.json())
@@ -65,6 +73,17 @@ document.addEventListener('DOMContentLoaded', () => {
                   ? '<div class="text-green-600">Import complete!</div>'
                   : '<div class="text-red-600">Import failed.</div>';
                 errorsEl.insertAdjacentHTML('afterbegin', msg);
+                if (!importCompleteTracked && typeof pendo !== 'undefined') {
+                  importCompleteTracked = true;
+                  pendo.track('csv_import_completed', {
+                    import_id: String(importId),
+                    table_name: table,
+                    status: data.status,
+                    total_rows: String(totalRows),
+                    imported_rows: String(data.importedRows),
+                    error_count: String(data.errorCount || 0)
+                  });
+                }
               }
             });
         }, 500);

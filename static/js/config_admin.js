@@ -39,6 +39,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await resp.json().catch(() => ({}));
         if (!resp.ok || !data.success) {
           alert('Failed to set title field');
+        } else if (typeof pendo !== 'undefined') {
+          pendo.track('title_field_changed', {
+            table_name: table,
+            field_name: field
+          });
         }
       } catch (err) {
         console.error('Title set failed', err);
@@ -61,6 +66,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const data = await resp.json().catch(() => ({}));
         if (!resp.ok || !data.success) throw new Error(data.error || 'update_failed');
+        if (typeof pendo !== 'undefined') {
+          pendo.track('field_readonly_toggled', {
+            table_name: table,
+            field_name: field,
+            readonly_value: String(want)
+          });
+        }
       } catch (err) {
         console.error('[fields_admin] readonly update failed', err);
         // revert UI
@@ -169,7 +181,14 @@ document.addEventListener('DOMContentLoaded', () => {
               });
               const payload = await r.json().catch(() => ({}));
               if (!r.ok || !payload.success) throw new Error(payload.error || 'convert_failed');
-
+              if (typeof pendo !== 'undefined') {
+                pendo.track('field_type_converted', {
+                  table_name: table,
+                  field_name: field,
+                  old_type: selectEl.dataset.currentType || '',
+                  new_type: newType
+                });
+              }
               // Update UI: type cell text and toggle title radio visibility
               const row = selectEl.closest('tr');
               const typeCell = row?.querySelector('td:nth-child(3)');
@@ -234,6 +253,13 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const data = await resp.json().catch(() => ({}));
       if (!resp.ok || !data.success) throw new Error(data.error || 'clear_failed');
+      if (typeof pendo !== 'undefined') {
+        pendo.track('field_values_cleared', {
+          table_name: table,
+          field_name: field,
+          cleared_count: String(count)
+        });
+      }
       // Update the Not Null count cell to 0
       const row = btn.closest('tr');
       const nnCell = row?.querySelector('td:nth-child(4)');

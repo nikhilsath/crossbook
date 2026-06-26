@@ -7,7 +7,6 @@ from utils.validation import validation_sorter
 from db.database import get_connection
 from imports.tasks import process_import, init_import_table
 from . import admin_bp
-from utils.pendo import track as pendo_track
 
 logger = logging.getLogger(__name__)
 @admin_bp.route('/import', methods=['GET', 'POST'])
@@ -28,12 +27,6 @@ def import_records():
                 parsed_headers, rows = parse_csv(file)
                 num_records = len(rows)
                 file_name = file.filename
-                pendo_track('csv_file_uploaded', {
-                    'file_name': file_name,
-                    'header_count': len(parsed_headers),
-                    'row_count': num_records,
-                    'selected_table': selected_table or '',
-                })
 
     if selected_table:
         table_schema = schema[selected_table]
@@ -79,12 +72,6 @@ def trigger_validation():
         values = [row.get(header, '') for row in rows]
         report[header] = validation_sorter(table, field, header, field_type, values)
 
-    tables_used = {info.get('table') for info in matched.values() if info.get('table')}
-    pendo_track('import_validation_triggered', {
-        'matched_fields_count': len(matched),
-        'table': ','.join(tables_used),
-        'total_rows': len(rows),
-    })
     return jsonify(report)
 
 
@@ -115,11 +102,6 @@ def import_start_route():
         import_id = cur.lastrowid
         conn.commit()
 
-    pendo_track('import_started', {
-        'table': table,
-        'total_rows': len(rows),
-        'import_id': import_id,
-    })
     process_import(import_id, table, rows)
     return jsonify({'importId': import_id, 'totalRows': len(rows)})
 

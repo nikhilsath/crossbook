@@ -57,6 +57,12 @@ function initDashboardModal() {
       e.preventDefault();
       const success = await createValueWidget();
       if (success) {
+        if (typeof pendo !== 'undefined') {
+          pendo.track('dashboard_widget_created', {
+            widget_type: 'value',
+            dashboard_view: window.DASHBOARD_VIEW || 'Dashboard'
+          });
+        }
         closeDashboardModal();
         window.location.reload();
       }
@@ -69,6 +75,12 @@ function initDashboardModal() {
       e.preventDefault();
       const success = await createTableWidget();
       if (success) {
+        if (typeof pendo !== 'undefined') {
+          pendo.track('dashboard_widget_created', {
+            widget_type: 'table',
+            dashboard_view: window.DASHBOARD_VIEW || 'Dashboard'
+          });
+        }
         closeDashboardModal();
         window.location.reload();
       }
@@ -81,6 +93,12 @@ function initDashboardModal() {
       e.preventDefault();
       const success = await createChartWidget();
       if (success) {
+        if (typeof pendo !== 'undefined') {
+          pendo.track('dashboard_widget_created', {
+            widget_type: 'chart',
+            dashboard_view: window.DASHBOARD_VIEW || 'Dashboard'
+          });
+        }
         closeDashboardModal();
         window.location.reload();
       }

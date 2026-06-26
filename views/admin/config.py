@@ -113,11 +113,6 @@ def update_database_file():
         update_config('db_path', save_path)
         reload_app_state()
         status = check_db_status(save_path)
-        pendo_track('database_file_changed', {
-            'method': 'upload',
-            'db_filename': filename,
-            'db_status': status,
-        })
         if wants_json:
             return jsonify({
                 'db_path': save_path,
@@ -155,11 +150,6 @@ def update_database_file():
             return redirect(url_for('admin.database_page'))
         update_config('db_path', save_path)
         reload_app_state()
-        pendo_track('database_file_changed', {
-            'method': 'create',
-            'db_filename': filename,
-            'db_status': check_db_status(save_path),
-        })
         session['wizard_progress'] = {'database': True, 'skip_import': True}
         session.pop('wizard_complete', None)
         if wants_json:
@@ -224,8 +214,4 @@ def add_table():
         return jsonify({'error': 'Failed to create table'}), 400
 
     reload_app_state()
-    pendo_track('table_created', {
-        'table_name': table_name,
-        'has_description': bool(description),
-    })
     return jsonify({'success': True})

@@ -102,14 +102,6 @@ def dashboard_create_widget():
     if not widget_id:
         return jsonify({'error': 'Failed to create widget'}), 500
 
-    pendo_track('dashboard_widget_created', {
-        'widget_id': widget_id,
-        'widget_type': widget_type,
-        'title': title,
-        'group': group,
-        'col_span': col_span,
-        'row_span': row_span,
-    })
     logger.info(
         "Created dashboard widget %s type=%s",
         widget_id,
@@ -158,7 +150,7 @@ def dashboard_delete_widget(widget_id):
     if not success:
         return jsonify({'error': 'Failed to delete widget'}), 500
     pendo_track('dashboard_widget_deleted', {
-        'widget_id': widget_id,
+        'widget_id': str(widget_id),
     })
     logger.info(
         "Deleted dashboard widget %s",

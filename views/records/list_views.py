@@ -9,7 +9,6 @@ from db.records import get_all_records
 
 from .record_views import records_bp
 from utils.records_helpers import parse_list_params, build_list_context, require_base_table
-from utils.pendo import track as pendo_track
 
 logger = logging.getLogger(__name__)
 
@@ -142,15 +141,6 @@ def export_csv(table):
             direction=params['direction'],
         )
 
-    record_list = list(records)
-    pendo_track('records_exported_csv', {
-        'table': table,
-        'record_count': len(record_list),
-        'field_count': len(fields),
-        'export_type': 'selected' if ids else 'all',
-        'has_search_filter': bool(params.get('search')),
-    })
-
     def generate():
         buf = io.StringIO()
         writer = csv.writer(buf)
@@ -158,7 +148,7 @@ def export_csv(table):
         yield buf.getvalue()
         buf.seek(0)
         buf.truncate(0)
-        for row in record_list:
+        for row in records:
             writer.writerow([row.get(f, '') for f in fields])
             yield buf.getvalue()
             buf.seek(0)

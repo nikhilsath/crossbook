@@ -101,6 +101,23 @@ document.addEventListener("change", event => {
       .then(report => {
         // Store the full validation report for popups
         window.validationReport = report;
+        if (typeof pendo !== 'undefined') {
+          let totalValid = 0, totalInvalid = 0, totalWarnings = 0, totalBlank = 0;
+          Object.values(report).forEach(r => {
+            totalValid += r.valid || 0;
+            totalInvalid += r.invalid || 0;
+            totalWarnings += r.warning || 0;
+            totalBlank += r.blank || 0;
+          });
+          pendo.track('import_fields_validated', {
+            table_name: table,
+            mapped_field_count: String(Object.keys(matchedFields).length),
+            total_valid: String(totalValid),
+            total_invalid: String(totalInvalid),
+            total_warnings: String(totalWarnings),
+            total_blank: String(totalBlank)
+          });
+        }
   
         // Render validation results inline
         Object.entries(report).forEach(([respHeader, results]) => {

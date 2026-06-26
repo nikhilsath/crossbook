@@ -80,8 +80,8 @@ function handleSaveLayout() {
   console.debug('[layout] handleSaveLayout payload', payload);
   if (typeof pendo !== 'undefined') {
     pendo.track('record_layout_saved', {
-      table: table,
-      fields_count: layoutEntries.length
+      table_name: table,
+      field_count: String(layoutEntries.length)
     });
   }
   fetch(`/${table}/layout`, {

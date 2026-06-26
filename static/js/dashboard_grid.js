@@ -56,7 +56,8 @@ function saveDashboardLayout() {
   }));
   if (typeof pendo !== 'undefined') {
     pendo.track('dashboard_layout_saved', {
-      widget_count: layout.length
+      widget_count: String(layout.length),
+      dashboard_view: window.DASHBOARD_VIEW || 'Dashboard'
     });
   }
   fetch('/dashboard/layout', {

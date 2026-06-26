@@ -45,10 +45,24 @@ function initDatabaseControls() {
         }))
         .then(data => {
           if (data.redirect) {
+            if (typeof pendo !== 'undefined') {
+              pendo.track('database_file_uploaded', {
+                action_type: 'upload',
+                db_path: data.db_path || '',
+                db_status: data.status || ''
+              });
+            }
             window.location.href = data.redirect;
             return;
           }
           if (data.db_path) {
+            if (typeof pendo !== 'undefined') {
+              pendo.track('database_file_uploaded', {
+                action_type: 'upload',
+                db_path: data.db_path,
+                db_status: data.status || ''
+              });
+            }
             const disp = document.getElementById('db-path-display');
             if (disp) {
               disp.textContent = data.db_path;
@@ -113,10 +127,24 @@ export function submitCreateDb(event) {
     }))
     .then(data => {
       if (data.redirect) {
+        if (typeof pendo !== 'undefined') {
+          pendo.track('database_created', {
+            db_name: name,
+            db_path: data.db_path || '',
+            db_status: data.status || ''
+          });
+        }
         window.location.href = data.redirect;
         return;
       }
       if (data.db_path) {
+        if (typeof pendo !== 'undefined') {
+          pendo.track('database_created', {
+            db_name: name,
+            db_path: data.db_path,
+            db_status: data.status || ''
+          });
+        }
         const disp = document.getElementById('db-path-display');
         if (disp) {
           disp.textContent = data.db_path;

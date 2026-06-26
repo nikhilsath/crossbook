@@ -83,6 +83,15 @@ function exportSelected() {
   if (ids.length === 0) return;
   const params = new URLSearchParams();
   params.set('ids', ids.join(','));
+  if (typeof pendo !== 'undefined') {
+    const searchInput = document.querySelector('input[name="search"]');
+    pendo.track('records_exported_csv', {
+      table_name: tableName,
+      record_count: String(ids.length),
+      has_search_filter: String(!!searchInput && !!searchInput.value),
+      export_type: 'selected'
+    });
+  }
   window.location = `/${tableName}/export?` + params.toString();
 }
 
@@ -140,6 +149,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         status.textContent = 'Updated!';
         status.classList.remove('hidden', 'text-red-600');
         status.classList.add('text-green-600');
+        if (typeof pendo !== 'undefined') {
+          pendo.track('records_bulk_updated', {
+            table_name: tableName,
+            field_name: field,
+            record_count: String(ids.length),
+            updated_count: String(ids.length)
+          });
+        }
         setTimeout(() => location.reload(), 500);
       })
       .catch(() => {

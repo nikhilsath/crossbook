@@ -63,12 +63,37 @@ async function submitRuleForm(e) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
+    if (typeof pendo !== 'undefined') {
+      pendo.track('automation_rule_updated', {
+        rule_id: id,
+        rule_name: payload.name,
+        table_name: payload.table_name,
+        condition_field: payload.condition_field,
+        condition_operator: payload.condition_operator,
+        action_field: payload.action_field,
+        schedule: payload.schedule,
+        run_on_import: String(payload.run_on_import)
+      });
+    }
   } else {
-    await fetch('/admin/api/automation/rules', {
+    const resp = await fetch('/admin/api/automation/rules', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
+    const data = await resp.json().catch(() => ({}));
+    if (typeof pendo !== 'undefined') {
+      pendo.track('automation_rule_created', {
+        rule_id: String(data.id || ''),
+        rule_name: payload.name,
+        table_name: payload.table_name,
+        condition_field: payload.condition_field,
+        condition_operator: payload.condition_operator,
+        action_field: payload.action_field,
+        schedule: payload.schedule,
+        run_on_import: String(payload.run_on_import)
+      });
+    }
   }
   closeRuleModal();
   fetchRules();
@@ -77,6 +102,11 @@ async function submitRuleForm(e) {
 async function deleteRule(id) {
   if (!confirm('Delete rule ' + id + '?')) return;
   await fetch(`/admin/api/automation/rules/${id}/delete`, { method: 'POST' });
+  if (typeof pendo !== 'undefined') {
+    pendo.track('automation_rule_deleted', {
+      rule_id: String(id)
+    });
+  }
   fetchRules();
 }
 
@@ -123,6 +153,12 @@ async function rollbackEntry(id) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ entry_id: id }),
   });
+  if (typeof pendo !== 'undefined') {
+    pendo.track('automation_entry_rolled_back', {
+      entry_id: String(id),
+      rule_id: String(activeLogRuleId || '')
+    });
+  }
   if (activeLogRuleId !== null) openLogsModal(activeLogRuleId);
   fetchRules();
 }
